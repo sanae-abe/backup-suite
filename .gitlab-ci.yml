@@ -235,7 +235,6 @@ package:create-distributions:
   dependencies:
     - build:linux-x64-optimized
     - build:linux-arm64
-    - build:macos-universal
   before_script:
     - apk add --no-cache tar gzip zip
   script:
@@ -247,9 +246,12 @@ package:create-distributions:
     - tar -czf backup-suite-linux-arm64.tar.gz -C artifacts/linux-arm64 .
     - sha256sum backup-suite-linux-arm64.tar.gz > backup-suite-linux-arm64.tar.gz.sha256
 
-    # macOS パッケージ
-    - tar -czf backup-suite-macos-universal.tar.gz -C artifacts/macos-universal .
-    - sha256sum backup-suite-macos-universal.tar.gz > backup-suite-macos-universal.tar.gz.sha256
+    # macOS パッケージ（build:macos-universal が実行された場合のみ）
+    - |
+      if [ -d "artifacts/macos-universal" ]; then
+        tar -czf backup-suite-macos-universal.tar.gz -C artifacts/macos-universal .
+        sha256sum backup-suite-macos-universal.tar.gz > backup-suite-macos-universal.tar.gz.sha256
+      fi
 
     # インストールスクリプト包含版
     - mkdir -p complete-package
@@ -337,7 +339,8 @@ release:create-github-style-release:
       |----------------|---------|--------|
       | Linux x64 | [backup-suite-linux-x64.tar.gz](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-linux-x64.tar.gz) | [SHA256](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-linux-x64.tar.gz.sha256) |
       | Linux ARM64 | [backup-suite-linux-arm64.tar.gz](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-linux-arm64.tar.gz) | [SHA256](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-linux-arm64.tar.gz.sha256) |
-      | macOS Universal | [backup-suite-macos-universal.tar.gz](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-macos-universal.tar.gz) | [SHA256](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-macos-universal.tar.gz.sha256) |
+
+      **注**: macOS版は手動ビルドが必要です。CI/CDパイプラインで \`build:macos-universal\` ジョブを手動実行してください。
 
       ## 🚀 クイックインストール
       \`\`\`bash
