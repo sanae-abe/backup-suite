@@ -347,7 +347,7 @@ fn benchmark_exclude_patterns(c: &mut Criterion) {
 
     let mut group = c.benchmark_group("exclude_patterns");
 
-    let patterns = vec![
+    let patterns = [
         Regex::new(r".*\.tmp$").unwrap(),
         Regex::new(r".*\.bak$").unwrap(),
         Regex::new(r"node_modules/.*").unwrap(),
