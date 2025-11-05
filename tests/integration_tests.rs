@@ -43,7 +43,8 @@ fn test_full_backup_workflow_single_file() -> Result<()> {
     ));
 
     // バックアップ実行
-    let runner = backup_suite::BackupRunner::new(config, false);
+    let runner = backup_suite::BackupRunner::new(config, false)
+        .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
     // 検証
@@ -89,7 +90,8 @@ fn test_full_backup_workflow_directory() -> Result<()> {
         "test".to_string(),
     ));
 
-    let runner = backup_suite::BackupRunner::new(config, false);
+    let runner = backup_suite::BackupRunner::new(config, false)
+        .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
     // 3ファイルがバックアップされたことを確認
@@ -132,7 +134,8 @@ fn test_exclude_patterns_simple() -> Result<()> {
     config.backup.destination = backup_dir.clone();
     config.targets.push(target);
 
-    let runner = backup_suite::BackupRunner::new(config, false);
+    let runner = backup_suite::BackupRunner::new(config, false)
+        .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
     // .tmpファイルが除外され、2ファイルのみバックアップされる
@@ -177,7 +180,8 @@ fn test_exclude_patterns_complex() -> Result<()> {
     config.backup.destination = backup_dir.clone();
     config.targets.push(target);
 
-    let runner = backup_suite::BackupRunner::new(config, false);
+    let runner = backup_suite::BackupRunner::new(config, false)
+        .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
     // 2ファイルのみバックアップ (main.rs, config.toml)
@@ -226,7 +230,8 @@ fn test_priority_filtering() -> Result<()> {
     ));
 
     // 高優先度のみバックアップ
-    let runner = backup_suite::BackupRunner::new(config, false);
+    let runner = backup_suite::BackupRunner::new(config, false)
+        .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(Some(&Priority::High), None)?;
 
     // 1ファイルのみバックアップされる
@@ -264,7 +269,8 @@ fn test_priority_filtering_medium_and_high() -> Result<()> {
     config.targets.push(Target::new(low_file, Priority::Low, "test".to_string()));
 
     // Medium優先度でバックアップ (Medium以上が対象)
-    let runner = backup_suite::BackupRunner::new(config, false);
+    let runner = backup_suite::BackupRunner::new(config, false)
+        .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(Some(&Priority::Medium), None)?;
 
     // 2ファイルがバックアップされる (high + medium)
@@ -337,7 +343,8 @@ fn test_nonexistent_source_handling() {
     ));
 
     // エラーが返されることを確認
-    let runner = backup_suite::BackupRunner::new(config, false);
+    let runner = backup_suite::BackupRunner::new(config, false)
+        .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None);
     assert!(result.is_err());
 }
@@ -367,7 +374,8 @@ fn test_invalid_destination_handling() {
     ));
 
     // エラーが返されることを確認
-    let runner = backup_suite::BackupRunner::new(config, false);
+    let runner = backup_suite::BackupRunner::new(config, false)
+        .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None);
     assert!(result.is_err());
 }
@@ -399,7 +407,8 @@ fn test_parallel_backup_large_directory() -> Result<()> {
     ));
 
     // 並列バックアップ実行
-    let runner = backup_suite::BackupRunner::new(config, false);
+    let runner = backup_suite::BackupRunner::new(config, false)
+        .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
     // 全ファイルがバックアップされたことを確認
@@ -441,7 +450,8 @@ fn test_category_organization() -> Result<()> {
         "personal".to_string(),
     ));
 
-    let runner = backup_suite::BackupRunner::new(config, false);
+    let runner = backup_suite::BackupRunner::new(config, false)
+        .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
     assert_eq!(result.total_files, 2);
@@ -478,7 +488,8 @@ fn test_large_file_backup_performance() -> Result<()> {
     ));
 
     let start = std::time::Instant::now();
-    let runner = backup_suite::BackupRunner::new(config, false);
+    let runner = backup_suite::BackupRunner::new(config, false)
+        .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
     let duration = start.elapsed();
 
