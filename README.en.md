@@ -38,38 +38,120 @@ backup-suite cleanup --days 7     # Delete backups older than 7 days
 backup-suite restore             # Restore from latest backup
 ```
 
-## 🚀 Quick Start
+## 🚀 Installation
 
-### Installation
+### Rust Toolchain Installation
 
-#### Method 1: Binary Download (Recommended)
 ```bash
-# Download the latest release
-curl -L https://github.com/user/backup-suite/releases/latest/download/backup-suite-macos-x86_64.tar.gz | tar xz
+# 1. Download and run Rustup (Rust installer)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
-# Place in ~/.local/bin
-mv backup-suite ~/.local/bin/
-chmod +x ~/.local/bin/backup-suite
+# 2. Load environment variables
+source ~/.cargo/env
+
+# Open a new terminal or run:
+# bash users
+source ~/.bashrc
+
+# zsh users (macOS default)
+source ~/.zshrc
+
+# 3. Verify installation
+rustc --version
+cargo --version
 ```
 
-#### Method 2: Cargo (Rust)
-```bash
-cargo install backup-suite
-```
+### 🚀 backup-suite Installation
 
-#### Method 3: Build from Source
 ```bash
-git clone https://github.com/user/backup-suite.git
+# 1. Clone repository
+git clone git@rendezvous.m3.com:sanae-abe/backup-suite.git
 cd backup-suite
-cargo build --release
-cp target/release/backup-suite ~/.local/bin/
+
+# 2. Build & install
+cargo install --path .
+
+# 3. Verify operation
+backup-suite --version
+backup-suite --help
+```
+
+### 🔄 Update
+
+```bash
+# 1. Get latest source
+cd backup-suite  # Project directory
+git pull
+
+# 2. Rebuild & install
+cargo install --path . --force
+
+# 3. Verify version
+backup-suite --version
+```
+
+### 🧹 Uninstall
+
+```bash
+# 1. Remove backup-suite
+cargo uninstall backup-suite
+
+# 2. Delete configuration files (optional)
+rm -rf ~/.config/backup-suite/
+
+# 3. Delete log files (optional)
+rm -rf ~/.local/share/backup-suite/
+
+# 4. Delete project directory (optional)
+rm -rf ~/backup-suite  # Cloned directory
+```
+
+### 🔧 Troubleshooting
+
+#### Common Issues and Solutions
+
+**Issue 1**: `rustc` or `cargo` command not found
+```bash
+# Solution: Install Rust toolchain
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+
+# Verify
+rustc --version
+cargo --version
+```
+
+**Issue 2**: Git clone access denied error
+```bash
+# Solution: SSH key setup or HTTPS authentication
+# If SSH keys are configured
+git clone git@rendezvous.m3.com:sanae-abe/backup-suite.git
+
+# Or use HTTPS (requires GitLab login)
+git clone https://rendezvous.m3.com/sanae-abe/backup-suite.git
+```
+
+**Issue 3**: Compilation errors occur
+```bash
+# Solution: Update Rust to latest version
+rustup update stable
+cargo clean  # Clear cache
+cargo build  # Rebuild
+```
+
+**Issue 4**: `backup-suite` command not found
+```bash
+# Solution: PATH verification and addition
+echo $PATH | grep -q "$HOME/.cargo/bin" || echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc  # or ~/.zshrc
+
+# Verify
+which backup-suite
+backup-suite --version
 ```
 
 ### Initial Setup
 ```bash
-# Shell completion setup (zsh)
-backup-suite completion zsh > ~/.local/share/zsh/site-functions/_backup-suite
-
 # Verify basic configuration
 backup-suite status
 ```
@@ -102,6 +184,28 @@ backup-suite run --dry-run         # Dry run (verification only)
 backup-suite schedule setup --high daily --medium weekly --low monthly
 backup-suite schedule enable
 ```
+
+## 📸 Usage Examples Screenshots
+
+### Help Screen
+![backup-suite help](docs/screenshots/help.webp)
+*Display commands and options in Japanese*
+
+### Backup Target List
+![backup-suite list](docs/screenshots/list.webp)
+*Display registered backup targets in table format*
+
+### Backup Execution
+![backup-suite run](docs/screenshots/run.webp)
+*Actual backup execution screen*
+
+### Backup Execution (Dry Run)
+![backup-suite dry-run](docs/screenshots/dry-run.webp)
+*Verify execution content without actually copying files*
+
+### Backup History
+![backup-suite history](docs/screenshots/history.webp)
+*Check past backup execution history*
 
 ## 🏗️ Architecture
 
