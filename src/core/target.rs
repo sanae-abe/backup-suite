@@ -24,7 +24,7 @@ use std::path::PathBuf;
 ///     "重要データ".to_string()
 /// );
 /// ```
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "lowercase")]
 pub enum Priority {
     High,

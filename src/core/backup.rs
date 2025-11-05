@@ -306,16 +306,16 @@ impl BackupRunner {
                         if entry.file_type().is_file() {
                             let source = entry.path().to_path_buf();
 
-                            // 除外フィルタチェック
-                            if let Some(ref f) = filter {
-                                if f.should_exclude(&source) {
-                                    continue;
-                                }
-                            }
-
                             // 相対パスを保持してバックアップ先を決定（セキュリティ強化版）
                             match source.strip_prefix(&target.path) {
                                 Ok(relative) => {
+                                    // 除外フィルタチェック（相対パスに対して）
+                                    if let Some(ref f) = filter {
+                                        if f.should_exclude(relative) {
+                                            continue;
+                                        }
+                                    }
+
                                     // safe_joinを使用してディレクトリトラバーサル対策
                                     match safe_join(&backup_dir, relative) {
                                         Ok(dest) => all_files.push((source, dest)),
