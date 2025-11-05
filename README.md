@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust](https://img.shields.io/badge/rust-latest-blue.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases)
+[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases)
 
 **M3社内向バックアップソリューション**
 
@@ -65,7 +65,7 @@ cargo --version
 
 ```bash
 # 1. リポジトリをクローン
-git clone https://rendezvous.m3.com:3789/sanae-abe/backup-suite.git
+git clone https://rendezvous.m3.com/sanae-abe/backup-suite.git
 cd backup-suite
 
 # 2. ビルド&インストール
@@ -84,7 +84,7 @@ backup-suite --help
 
 ```bash
 # 自動設定スクリプト（推奨）
-curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/setup-cargo-registry.sh | bash
+curl -sSL https://rendezvous.m3.com/sanae-abe/backup-suite/-/raw/main/setup-cargo-registry.sh | bash
 ```
 
 **接続エラーが発生する場合**の代替手順：
@@ -94,7 +94,7 @@ curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/setup
 mkdir -p ~/.cargo
 cat >> ~/.cargo/config.toml << 'EOF'
 [registries]
-m3-internal = { index = "https://rendezvous.m3.com:3789/api/v4/projects/1/packages/cargo" }
+m3-internal = { index = "https://rendezvous.m3.com/api/v4/projects/1/packages/cargo" }
 
 [net]
 git-fetch-with-cli = true
@@ -156,7 +156,7 @@ rm -rf ~/.config/backup-suite/
 **問題1**: `curl: (35) LibreSSL SSL routines: ST_CONNECT:tlsv1 alert protocol version`
 ```bash
 # 解決策: ソースからビルドを使用
-git clone https://rendezvous.m3.com:3789/sanae-abe/backup-suite.git
+git clone https://rendezvous.m3.com/sanae-abe/backup-suite.git
 cd backup-suite
 cargo install --path .
 ```
@@ -167,7 +167,7 @@ cargo install --path .
 mkdir -p ~/.cargo
 cat >> ~/.cargo/config.toml << 'EOF'
 [registries]
-m3-internal = { index = "https://rendezvous.m3.com:3789/api/v4/projects/1/packages/cargo" }
+m3-internal = { index = "https://rendezvous.m3.com/api/v4/projects/1/packages/cargo" }
 EOF
 ```
 
@@ -339,5 +339,5 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 **backup-suite**
 
 - **開発者**: sanae-abe@m3.com
-- **GitLab**: https://rendezvous.m3.com:3789/sanae-abe/backup-suite
+- **GitLab**: https://rendezvous.m3.com/sanae-abe/backup-suite
 - **Package Registry**: m3-internal
