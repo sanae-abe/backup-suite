@@ -1,5 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use std::io::{self, Write};
+use std::io::Write;
 
 // UI関連の関数（実装を想定）
 
@@ -218,7 +218,7 @@ fn bench_ui_full_render(c: &mut Criterion) {
 
 fn bench_large_table_render(c: &mut Criterion) {
     let rows = 100;
-    let columns = vec!["ファイル名", "サイズ", "状態", "日時"];
+    let _columns = vec!["ファイル名", "サイズ", "状態", "日時"];
     let widths = vec![30, 15, 10, 20];
 
     let mut group = c.benchmark_group("large_table_render");
@@ -229,9 +229,11 @@ fn bench_large_table_render(c: &mut Criterion) {
             let mut output = Vec::new();
 
             for i in 0..rows {
+                let filename = format!("file_{}.txt", i);
+                let filesize = format_file_size((i as u64) * 1024);
                 let row_data = vec![
-                    &format!("file_{}.txt", i),
-                    &format_file_size((i as u64) * 1024),
+                    &filename,
+                    &filesize,
                     "完了",
                     "2025-11-05 10:00:00",
                 ];
