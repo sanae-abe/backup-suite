@@ -334,7 +334,7 @@ impl Config {
     /// ```
     pub fn filter_by_priority(&self, priority: &super::target::Priority) -> Vec<&Target> {
         self.targets.iter()
-            .filter(|t| &t.priority <= priority)
+            .filter(|t| &t.priority >= priority)
             .collect()
     }
 

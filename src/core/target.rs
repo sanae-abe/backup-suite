@@ -27,9 +27,9 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "lowercase")]
 pub enum Priority {
-    High,
-    Medium,
     Low,
+    Medium,
+    High,
 }
 
 /// バックアップ対象の種別
