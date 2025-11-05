@@ -195,9 +195,6 @@ impl EncryptionEngine {
             encrypted_chunks.push(chunk_ciphertext);
         }
 
-        // サイズ情報を書き込み
-        writer.write_all(&total_size.to_le_bytes())?;
-
         Ok(EncryptedData {
             nonce: nonce_bytes,
             salt,
