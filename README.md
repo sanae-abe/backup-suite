@@ -186,7 +186,7 @@ backup-suite schedule setup --high daily --medium weekly --low monthly
 backup-suite schedule enable
 ```
 
-## 🏗️ 企業環境での設定
+## 🏗️ 基本設定例
 
 ### 基本設定例（~/.config/backup-suite/config.toml）
 ```toml
