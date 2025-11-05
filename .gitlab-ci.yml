@@ -41,6 +41,7 @@ security:vulnerability-scan:
   stage: validate
   image: rust:latest
   before_script:
+    - rustup component add clippy
     - cargo install cargo-audit cargo-deny
   script:
     # 脆弱性スキャン
