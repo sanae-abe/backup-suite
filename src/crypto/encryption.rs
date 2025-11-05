@@ -105,11 +105,6 @@ impl EncryptionEngine {
         Self { config }
     }
 
-    /// デフォルト設定で暗号化エンジンを作成
-    pub fn default() -> Self {
-        Self::new(EncryptionConfig::default())
-    }
-
     /// ランダムなナンスを生成
     fn generate_nonce() -> [u8; 12] {
         let mut nonce = [0u8; 12];
@@ -257,6 +252,12 @@ impl EncryptionEngine {
     }
 }
 
+impl Default for EncryptionEngine {
+    fn default() -> Self {
+        Self::new(EncryptionConfig::default())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -266,8 +267,9 @@ mod tests {
         let engine = EncryptionEngine::default();
         let master_key = MasterKey::generate();
         let original_data = b"Hello, World! This is a test message.";
+        let salt = [0u8; 16]; // テスト用のsalt
 
-        let encrypted = engine.encrypt(original_data, &master_key).unwrap();
+        let encrypted = engine.encrypt(original_data, &master_key, salt).unwrap();
         let decrypted = engine.decrypt(&encrypted, &master_key).unwrap();
 
         assert_eq!(original_data, decrypted.as_slice());
@@ -279,8 +281,9 @@ mod tests {
         let engine = EncryptionEngine::default();
         let master_key = MasterKey::generate();
         let original_data = b"Test data for serialization";
+        let salt = [1u8; 16]; // テスト用のsalt
 
-        let encrypted = engine.encrypt(original_data, &master_key).unwrap();
+        let encrypted = engine.encrypt(original_data, &master_key, salt).unwrap();
         let serialized = encrypted.to_bytes();
         let deserialized = EncryptedData::from_bytes(&serialized).unwrap();
 
@@ -294,8 +297,9 @@ mod tests {
         let master_key1 = MasterKey::generate();
         let master_key2 = MasterKey::generate();
         let original_data = b"Secret message";
+        let salt = [2u8; 16]; // テスト用のsalt
 
-        let encrypted = engine.encrypt(original_data, &master_key1).unwrap();
+        let encrypted = engine.encrypt(original_data, &master_key1, salt).unwrap();
 
         // 異なるキーでの復号化は失敗する
         assert!(engine.decrypt(&encrypted, &master_key2).is_err());

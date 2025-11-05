@@ -219,9 +219,7 @@ impl BackupRunner {
 
         // カテゴリフィルタの適用
         if let Some(category) = category_filter {
-            targets = targets.into_iter()
-                .filter(|t| t.category == category)
-                .collect();
+            targets.retain(|t| t.category == category);
         }
 
         if targets.is_empty() {

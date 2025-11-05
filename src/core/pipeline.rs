@@ -166,11 +166,6 @@ impl ProcessingPipeline {
         }
     }
 
-    /// デフォルト設定でパイプラインを作成
-    pub fn default() -> Self {
-        Self::new(PipelineConfig::default())
-    }
-
     /// 暗号化有効でパイプラインを作成
     pub fn with_encryption(password: &str) -> Result<(Self, [u8; 16])> {
         let config = PipelineConfig::default()
@@ -345,6 +340,12 @@ impl ProcessingPipeline {
             encryption_enabled: self.encryption_engine.is_some(),
             compression_type: self.config.compression_type,
         }
+    }
+}
+
+impl Default for ProcessingPipeline {
+    fn default() -> Self {
+        Self::new(PipelineConfig::default())
     }
 }
 

@@ -3,6 +3,7 @@
 //! zstd と gzip アルゴリズムによる高性能データ圧縮システム
 
 use std::io::{Read, Write};
+use std::str::FromStr;
 use flate2::{Compression, read::GzDecoder, write::GzEncoder};
 use zstd::{Encoder as ZstdEncoder, Decoder as ZstdDecoder};
 use crate::error::{BackupError, Result};
@@ -18,9 +19,10 @@ pub enum CompressionType {
     None,
 }
 
-impl CompressionType {
-    /// 文字列から圧縮タイプを解析
-    pub fn from_str(s: &str) -> Result<Self> {
+impl FromStr for CompressionType {
+    type Err = BackupError;
+
+    fn from_str(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "zstd" => Ok(Self::Zstd),
             "gzip" => Ok(Self::Gzip),
@@ -28,7 +30,9 @@ impl CompressionType {
             _ => Err(BackupError::CompressionError(format!("不明な圧縮タイプ: {}", s))),
         }
     }
+}
 
+impl CompressionType {
     /// 圧縮タイプを文字列に変換
     pub fn to_str(&self) -> &'static str {
         match self {

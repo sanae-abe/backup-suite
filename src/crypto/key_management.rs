@@ -65,11 +65,6 @@ impl KeyDerivation {
         Self { config }
     }
 
-    /// デフォルト設定でキー導出エンジンを作成
-    pub fn default() -> Self {
-        Self::new(KeyDerivationConfig::default())
-    }
-
     /// パスワードからマスターキーを導出
     pub fn derive_key(&self, password: &str, salt: &[u8]) -> Result<MasterKey> {
         let argon2 = Argon2::new(
@@ -123,6 +118,12 @@ impl KeyDerivation {
     }
 }
 
+impl Default for KeyDerivation {
+    fn default() -> Self {
+        Self::new(KeyDerivationConfig::default())
+    }
+}
+
 /// キーマネージャー
 pub struct KeyManager {
     derivation: KeyDerivation,
@@ -136,13 +137,6 @@ impl KeyManager {
         }
     }
 
-    /// デフォルト設定でキーマネージャーを作成
-    pub fn default() -> Self {
-        Self {
-            derivation: KeyDerivation::default(),
-        }
-    }
-
     /// パスワードからマスターキーを生成（新しいソルト付き）
     pub fn create_master_key(&self, password: &str) -> Result<(MasterKey, [u8; 16])> {
         let salt = KeyDerivation::generate_salt();
@@ -153,6 +147,14 @@ impl KeyManager {
     /// 既存のソルトでマスターキーを復元
     pub fn restore_master_key(&self, password: &str, salt: &[u8]) -> Result<MasterKey> {
         self.derivation.derive_key(password, salt)
+    }
+}
+
+impl Default for KeyManager {
+    fn default() -> Self {
+        Self {
+            derivation: KeyDerivation::default(),
+        }
     }
 }
 

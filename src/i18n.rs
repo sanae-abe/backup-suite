@@ -34,7 +34,7 @@ impl Language {
     }
 
     /// Parse language from string
-    pub fn from_str(s: &str) -> Option<Self> {
+    pub fn parse(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "en" | "english" => Some(Language::English),
             "ja" | "japanese" | "日本語" => Some(Language::Japanese),
@@ -708,19 +708,19 @@ mod tests {
     #[test]
     fn test_language_detection() {
         // Default should be English
-        let lang = Language::detect();
+        let _lang = Language::detect();
         // This test might fail if LANG is set to ja
-        // assert_eq!(lang, Language::English);
+        // assert_eq!(_lang, Language::English);
     }
 
     #[test]
     fn test_language_parsing() {
-        assert_eq!(Language::from_str("en"), Some(Language::English));
-        assert_eq!(Language::from_str("english"), Some(Language::English));
-        assert_eq!(Language::from_str("ja"), Some(Language::Japanese));
-        assert_eq!(Language::from_str("japanese"), Some(Language::Japanese));
-        assert_eq!(Language::from_str("日本語"), Some(Language::Japanese));
-        assert_eq!(Language::from_str("unknown"), None);
+        assert_eq!(Language::parse("en"), Some(Language::English));
+        assert_eq!(Language::parse("english"), Some(Language::English));
+        assert_eq!(Language::parse("ja"), Some(Language::Japanese));
+        assert_eq!(Language::parse("japanese"), Some(Language::Japanese));
+        assert_eq!(Language::parse("日本語"), Some(Language::Japanese));
+        assert_eq!(Language::parse("unknown"), None);
     }
 
     #[test]
