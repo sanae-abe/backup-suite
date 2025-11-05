@@ -53,7 +53,8 @@ fn test_full_backup_workflow_single_file() -> Result<()> {
 
     // バックアップファイルが存在することを確認
     let backed_up_file = backup_dir
-        .join(result.backup_name)
+        .join(&result.backup_name)
+        .join("all")
         .join("test.txt");
     assert!(backed_up_file.exists());
 
@@ -96,7 +97,7 @@ fn test_full_backup_workflow_directory() -> Result<()> {
     assert_eq!(result.successful, 3);
 
     // バックアップディレクトリの構造を確認
-    let backup_root = backup_dir.join(&result.backup_name);
+    let backup_root = backup_dir.join(&result.backup_name).join("all");
     assert!(backup_root.join("file1.txt").exists());
     assert!(backup_root.join("file2.txt").exists());
     assert!(backup_root.join("subdir/file3.txt").exists());
@@ -137,7 +138,7 @@ fn test_exclude_patterns_simple() -> Result<()> {
     // .tmpファイルが除外され、2ファイルのみバックアップされる
     assert_eq!(result.total_files, 2);
 
-    let backup_root = backup_dir.join(&result.backup_name);
+    let backup_root = backup_dir.join(&result.backup_name).join("all");
     assert!(backup_root.join("include.txt").exists());
     assert!(backup_root.join("include2.md").exists());
     assert!(!backup_root.join("exclude.tmp").exists());
@@ -231,7 +232,7 @@ fn test_priority_filtering() -> Result<()> {
     // 1ファイルのみバックアップされる
     assert_eq!(result.total_files, 1);
 
-    let backup_root = backup_dir.join(&result.backup_name);
+    let backup_root = backup_dir.join(&result.backup_name).join("all");
     assert!(backup_root.join("high.txt").exists());
     assert!(!backup_root.join("medium.txt").exists());
     assert!(!backup_root.join("low.txt").exists());
@@ -446,7 +447,7 @@ fn test_category_organization() -> Result<()> {
     assert_eq!(result.total_files, 2);
 
     // カテゴリ別に整理されているか確認
-    let backup_root = backup_dir.join(&result.backup_name);
+    let backup_root = backup_dir.join(&result.backup_name).join("all");
     assert!(backup_root.join("work.txt").exists());
     assert!(backup_root.join("personal.txt").exists());
 
