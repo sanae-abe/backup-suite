@@ -225,6 +225,8 @@ build:macos-universal:
   tags:
     - macos
   allow_failure: true
+  when: manual          # 手動実行のみ（macOSランナーが利用可能な場合に実行）
+  timeout: 30m          # タイムアウトを30分に設定（無限待機防止）
 
 # 📦 パッケージングステージ
 package:create-distributions:
