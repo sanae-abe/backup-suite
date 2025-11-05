@@ -59,27 +59,52 @@ rustc --version
 cargo --version
 ```
 
-### 🎯 推奨インストール方法: GitLab Package Registry
+### 🎯 インストール方法
 
-#### ステップ1: カスタムレジストリ設定（初回のみ）
+#### 方法1: ソースからビルド（推奨・最も確実）
 
 ```bash
-# 設定スクリプトを実行（対話的セットアップ）
+# 1. リポジトリをクローン
+git clone https://rendezvous.m3.com:3789/sanae-abe/backup-suite.git
+cd backup-suite
+
+# 2. ビルド&インストール
+cargo install --path .
+
+# 3. 動作確認
+backup-suite --version
+backup-suite --help
+```
+
+#### 方法2: GitLab Package Registry
+
+**⚠️ 注意**: サーバー接続問題が発生する場合は方法1を使用してください
+
+##### ステップ1: カスタムレジストリ設定
+
+```bash
+# 自動設定スクリプト（推奨）
 curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/setup-cargo-registry.sh | bash
 ```
 
-または手動設定：
+**接続エラーが発生する場合**の代替手順：
 
 ```bash
-# スクリプトをダウンロードして実行
-curl -o setup-cargo-registry.sh \
-  https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/setup-cargo-registry.sh
+# 手動でレジストリ設定を追加
+mkdir -p ~/.cargo
+cat >> ~/.cargo/config.toml << 'EOF'
+[registries]
+m3-internal = { index = "https://rendezvous.m3.com:3789/api/v4/projects/1/packages/cargo" }
 
-chmod +x setup-cargo-registry.sh
-./setup-cargo-registry.sh
+[net]
+git-fetch-with-cli = true
+EOF
+
+# 設定確認
+cat ~/.cargo/config.toml
 ```
 
-#### ステップ2: backup-suiteインストール
+##### ステップ2: backup-suiteインストール
 
 ```bash
 # M3内部レジストリからインストール
@@ -92,6 +117,20 @@ backup-suite --help
 
 ### 🔄 アップデート
 
+#### ソースからビルドした場合
+```bash
+# 1. 最新ソースを取得
+cd backup-suite  # プロジェクトディレクトリ
+git pull
+
+# 2. 再ビルド&インストール
+cargo install --path . --force
+
+# 3. バージョン確認
+backup-suite --version
+```
+
+#### Package Registryからインストールした場合
 ```bash
 # 最新版に更新
 cargo install backup-suite --registry m3-internal --force
@@ -108,6 +147,43 @@ cargo uninstall backup-suite
 
 # 設定ファイル削除（オプション）
 rm -rf ~/.config/backup-suite/
+```
+
+### 🔧 トラブルシューティング
+
+#### よくある問題と解決策
+
+**問題1**: `curl: (35) LibreSSL SSL routines: ST_CONNECT:tlsv1 alert protocol version`
+```bash
+# 解決策: ソースからビルドを使用
+git clone https://rendezvous.m3.com:3789/sanae-abe/backup-suite.git
+cd backup-suite
+cargo install --path .
+```
+
+**問題2**: `Connection reset by peer` でサーバーに接続できない
+```bash
+# 解決策: 手動でレジストリ設定
+mkdir -p ~/.cargo
+cat >> ~/.cargo/config.toml << 'EOF'
+[registries]
+m3-internal = { index = "https://rendezvous.m3.com:3789/api/v4/projects/1/packages/cargo" }
+EOF
+```
+
+**問題3**: `rustc` または `cargo` コマンドが見つからない
+```bash
+# 解決策: Rustツールチェーンを再インストール
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+```
+
+**問題4**: コンパイルエラーが発生する
+```bash
+# 解決策: Rustを最新版に更新
+rustup update
+cargo clean  # キャッシュクリア
+cargo build  # 再ビルド
 ```
 
 
