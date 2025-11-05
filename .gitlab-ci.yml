@@ -39,7 +39,7 @@ stages:
 # 🛡️ バリデーション・セキュリティステージ
 security:vulnerability-scan:
   stage: validate
-  image: rust:1.75
+  image: rust:latest
   before_script:
     - cargo install cargo-audit cargo-deny
   script:
@@ -78,7 +78,7 @@ security:secrets-detection:
 # 🧪 テスト・品質チェックステージ
 test:unit-tests:
   stage: test
-  image: rust:1.75
+  image: rust:latest
   before_script:
     - rustc --version
     - cargo --version
@@ -98,7 +98,7 @@ test:unit-tests:
 
 test:performance-benchmark:
   stage: test
-  image: rust:1.75
+  image: rust:latest
   script:
     # パフォーマンステスト
     - cargo bench --bench backup_performance
@@ -113,7 +113,7 @@ test:performance-benchmark:
 
 test:code-coverage:
   stage: test
-  image: rust:1.75
+  image: rust:latest
   before_script:
     - cargo install cargo-tarpaulin
   script:
@@ -128,7 +128,7 @@ test:code-coverage:
 # 🔨 ビルドステージ（本番最適化）
 build:linux-x64-optimized:
   stage: build
-  image: rust:1.75
+  image: rust:latest
   script:
     # 本番用最適化ビルド
     - export RUSTFLAGS="-C target-cpu=native -C opt-level=3 -C lto=fat"
@@ -155,7 +155,7 @@ build:linux-x64-optimized:
 
 build:linux-arm64:
   stage: build
-  image: rust:1.75
+  image: rust:latest
   before_script:
     - rustup target add aarch64-unknown-linux-gnu
     - apt-get update && apt-get install -y gcc-aarch64-linux-gnu
@@ -175,7 +175,7 @@ build:linux-arm64:
 
 build:macos-universal:
   stage: build
-  image: rust:1.75
+  image: rust:latest
   before_script:
     - rustup target add x86_64-apple-darwin aarch64-apple-darwin
   script:
@@ -251,7 +251,7 @@ package:create-distributions:
 # 📦 Package Registry公開
 publish:package-registry:
   stage: publish
-  image: rust:1.75
+  image: rust:latest
   dependencies:
     - build:linux-x64-optimized
   before_script:
