@@ -13,10 +13,23 @@ pub enum Language {
 
 impl Language {
     /// Detect language from environment and CLI arguments
-    /// Priority: CLI flag > Default (English)
-    /// Note: LANG environment variable is NOT checked - always defaults to English
+    /// Priority: CLI flag > Environment variable > Default (English)
     pub fn detect() -> Self {
-        // Always default to English
+        // Check LANG environment variable
+        if let Ok(lang) = std::env::var("LANG") {
+            if lang.starts_with("ja") || lang.starts_with("jp") {
+                return Language::Japanese;
+            }
+        }
+
+        // Check LC_ALL environment variable as fallback
+        if let Ok(lang) = std::env::var("LC_ALL") {
+            if lang.starts_with("ja") || lang.starts_with("jp") {
+                return Language::Japanese;
+            }
+        }
+
+        // Default to English
         Language::English
     }
 

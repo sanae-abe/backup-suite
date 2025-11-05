@@ -142,6 +142,27 @@ which backup-suite
 backup-suite --version
 ```
 
+## 📸 使用例スクリーンショット
+
+### ヘルプ画面
+![backup-suite help](docs/screenshots/help.webp)
+*コマンド一覧とオプションを日本語で表示*
+
+### バックアップ対象一覧
+![backup-suite list](docs/screenshots/list.webp)
+*登録されたバックアップ対象をテーブル形式で表示*
+
+### バックアップ実行
+![backup-suite run](docs/screenshots/run.webp)
+
+### バックアップ実行（ドライラン）
+![backup-suite dry-run](docs/screenshots/dry-run.webp)
+*実際にファイルをコピーせずに実行内容を確認*
+
+### バックアップ履歴
+![backup-suite history](docs/screenshots/history.webp)
+*過去のバックアップ実行履歴を確認*
+*実際のバックアップ実行画面*
 
 ## 🛠️ 初期設定・基本的な使用例
 
@@ -149,29 +170,27 @@ backup-suite --version
 
 #### 1. 基本セットアップ
 ```bash
-# 対話的初期設定
-backup-suite init --interactive
-
-# 設定確認
+# 設定確認（初回自動作成）
 backup-suite config show
 
-# 設定場所
-# Linux/macOS: ~/.config/backup-suite/config.toml
+# 設定ファイルの場所
+# ~/.config/backup-suite/config.toml
 ```
 
+**注意**: 言語は環境変数`LANG`で自動検出されます。日本語環境では自動的に日本語で表示されます。
+
 #### 2. バックアップ保存先の設定
-**Google Driveに保存先を設定**します：
 
 ```bash
 # Google Driveの保存先を設定
-backup-suite config set storage.path "/Users/あなたのユーザー名/Library/CloudStorage/GoogleDrive-your@email.com/マイドライブ/backup-storage"
+backup-suite config set-destination "/Users/あなたのユーザー名/Library/CloudStorage/GoogleDrive-your@email.com/マイドライブ/backup-storage"
+
+# 現在の設定を確認
+backup-suite config get-destination
 ```
 
 #### 3. 設定確認
 ```bash
-# 設定内容を確認
-backup-suite config show
-
 # バックアップ先ディレクトリの確認
 backup-suite status
 ```
@@ -242,7 +261,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ```
 
 
-## 📋 全コマンドリファレンス
+## 📋 コマンドリファレンス
 
 | コマンド     | 説明                 | 例                                            |
 | ------------ | -------------------- | --------------------------------------------- |
