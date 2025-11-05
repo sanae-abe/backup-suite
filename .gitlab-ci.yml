@@ -102,11 +102,11 @@ test:unit-tests:
     # 単体テスト実行
     - cargo test --all-features --verbose
 
-    # バックアップ機能の統合テスト
-    - cargo test --test integration_backup -- --test-threads=1
+    # 統合テスト実行
+    - cargo test --test integration_tests -- --test-threads=1
 
-    # 復元機能の統合テスト
-    - cargo test --test integration_restore -- --test-threads=1
+    # セキュリティテスト実行
+    - cargo test --test security_tests -- --test-threads=1
   artifacts:
     reports:
       junit: target/junit.xml
