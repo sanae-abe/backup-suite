@@ -1,4 +1,6 @@
-# backup-suite
+# Backup Suite
+
+[日本語](README.md) | [English](README.en.md) 
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Rust](https://img.shields.io/badge/rust-latest-blue.svg)](https://www.rust-lang.org)
