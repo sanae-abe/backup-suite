@@ -2,39 +2,57 @@
 
 [日本語](README.md) | [English](README.en.md) 
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Rust](https://img.shields.io/badge/rust-latest-blue.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases)
+> **M3 Corporate Backup Solution**
 
-> M3 Corporate Backup Solution
+## Key Features
 
-## ✨ Key Features
-
-### 🎯 **Priority-Based Backup Management**
+### 🎯 Priority-Based Backup Management
 - **Important work files** automatically backed up daily
 - **Photos and personal files** backed up weekly
 - **Archive files** backed up monthly
 
-### 🔐 **Military-Grade Encryption Protection**
+### 🔐 Military-Grade Encryption Protection
 - **AES-256-GCM encryption** virtually impossible to decrypt
 - **Data completely safe** even if computer is stolen
 - **Third parties cannot access** when stored in cloud
 - **Password required** - nobody can open without it
 
-### ⏰ **Fully Automated Scheduling**
+### ⏰ Fully Automated Scheduling
 - **No manual operation required** after setup - runs automatically
 - **Frequency adjusted by importance** (daily/weekly/monthly)
 - **Completely prevents forgotten backups**
 
-### 📊 **Clear Management and Maintenance**
+### 📊 Clear Management and Maintenance
 - **Check backup statistics** to see how much has been backed up
 - **View execution history** to see when backups ran
 - **Automatically delete old backups** to save disk space
 - **Easy restoration** when data is corrupted
 
-## 🚀 Installation
+## Screenshots
 
-### Rust Toolchain Installation
+### Help Screen
+![backup-suite help](docs/screenshots/help.webp)
+*Display command list and options in Japanese*
+
+### Backup Target List
+![backup-suite list](docs/screenshots/list.webp)
+*Display registered backup targets in table format*
+
+### Backup Execution
+![backup-suite run](docs/screenshots/run.webp)
+*Actual backup execution screen*
+
+### Backup Execution (Dry Run)
+![backup-suite dry-run](docs/screenshots/dry-run.webp)
+*Check execution content without actually copying files*
+
+### Backup History
+![backup-suite history](docs/screenshots/history.webp)
+*Check past backup execution history*
+
+## Installation
+
+### Prerequisites: Rust Toolchain Installation
 
 ```bash
 # 1. Download and run Rustup (Rust installer)
@@ -55,7 +73,7 @@ rustc --version
 cargo --version
 ```
 
-### 🚀 backup-suite Installation
+### Installation Steps
 
 ```bash
 # 1. Clone repository
@@ -70,7 +88,121 @@ backup-suite --version
 backup-suite --help
 ```
 
-### 🔄 Update
+## Quick Start
+
+### 1. Basic Setup
+```bash
+# Check current settings
+backup-suite status
+
+# Configuration file location
+# ~/.config/backup-suite/config.toml
+```
+
+**Note**: Language is automatically detected from the `LANG` environment variable. It will automatically display in Japanese in Japanese environments.
+
+### 2. Configure Backup Destination
+
+```bash
+# Set Google Drive destination
+backup-suite config set-destination "/Users/your-username/Library/CloudStorage/GoogleDrive-your@email.com/My Drive/backup-storage"
+
+# Check current settings
+backup-suite config get-destination
+```
+
+### 3. Verify Configuration
+```bash
+# Check backup destination directory
+backup-suite status
+```
+
+## Basic Usage
+
+1. **Add Files**
+```bash
+backup-suite add ~/Documents/project --priority high --category development
+backup-suite add ~/Photos --priority medium --category personal
+```
+
+2. **Check Target List**
+```bash
+backup-suite list
+backup-suite list --priority high  # High priority only
+```
+
+3. **Execute Backup**
+```bash
+backup-suite run                   # Execute all targets
+backup-suite run --priority high   # High priority only
+backup-suite run --category work   # Specific category only
+backup-suite run --dry-run         # Dry run (verification only)
+
+# Encrypted backup
+backup-suite run --encrypt --password "secure-password"
+```
+
+4. **Setup Automation**
+```bash
+# Set priority-based schedule
+backup-suite schedule setup --high daily --medium weekly --low monthly
+backup-suite schedule enable
+```
+
+## Configuration File
+
+### ~/.config/backup-suite/config.toml Example
+```toml
+[general]
+log_level = "info"
+log_file = "~/.local/share/backup-suite/logs/backup.log"
+
+[storage]
+type = "local"
+path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/My Drive/backup-storage"
+compression = "gzip"
+encryption = true
+encryption_key_file = "~/.config/backup-suite/keys/backup.key"
+
+[schedule]
+enabled = true
+daily_time = "02:00"
+weekly_day = "sunday"
+monthly_day = 1
+
+[targets]
+[[targets.directories]]
+name = "documents"
+path = "~/Documents"
+exclude = ["*.tmp", "*.cache", ".DS_Store"]
+
+[[targets.directories]]
+name = "projects"
+path = "~/Projects"
+exclude = ["node_modules/", "target/", ".git/", "*.log"]
+```
+
+## Command Reference
+
+| Command        | Description               | Example                                         |
+| -------------- | ------------------------- | ----------------------------------------------- |
+| **add**        | Add backup target         | `backup-suite add ~/docs --priority high`       |
+| **list, ls**   | Display target list       | `backup-suite list --priority medium`           |
+| **remove**     | Remove target             | `backup-suite remove ~/old-files`               |
+| **clear, rm**  | Bulk delete               | `backup-suite clear --priority low`             |
+| **run**        | Execute backup            | `backup-suite run --encrypt`                    |
+| **restore**    | Restore backup            | `backup-suite restore --from backup-20251104`   |
+| **cleanup**    | Delete old backups        | `backup-suite cleanup --days 30`                |
+| **status**     | Display current status    | `backup-suite status`                           |
+| **history**    | Display execution history | `backup-suite history --days 7`                 |
+| **schedule**   | Manage scheduling         | `backup-suite schedule enable`                  |
+| **config**     | Manage configuration      | `backup-suite config set-destination ~/backups` |
+| **open**       | Open backup directory     | `backup-suite open`                             |
+| **completion** | Generate shell completion | `backup-suite completion zsh`                   |
+
+## Update & Uninstall
+
+### Update
 
 ```bash
 # 1. Get latest source
@@ -84,7 +216,7 @@ cargo install --path . --force
 backup-suite --version
 ```
 
-### 🧹 Uninstall
+### Uninstall
 
 ```bash
 # 1. Remove backup-suite
@@ -100,9 +232,7 @@ rm -rf ~/.local/share/backup-suite/
 rm -rf ~/backup-suite  # Cloned directory
 ```
 
-### 🔧 Troubleshooting
-
-#### Common Issues and Solutions
+## Troubleshooting
 
 **Issue 1**: `rustc` or `cargo` command not found
 ```bash
@@ -136,150 +266,15 @@ cargo build  # Rebuild
 **Issue 4**: `backup-suite` command not found
 ```bash
 # Solution: Check and add PATH
-echo $PATH | grep -q "$HOME/.cargo/bin" || echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc  # or ~/.zshrc
+echo $PATH | grep -q "$HOME/.cargo/bin" || echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
 
 # Verify
 which backup-suite
 backup-suite --version
 ```
 
-## 📸 Usage Example Screenshots
-
-### Help Screen
-![backup-suite help](docs/screenshots/help.webp)
-*Display command list and options in Japanese*
-
-### Backup Target List
-![backup-suite list](docs/screenshots/list.webp)
-*Display registered backup targets in table format*
-
-### Backup Execution
-![backup-suite run](docs/screenshots/run.webp)
-
-### Backup Execution (Dry Run)
-![backup-suite dry-run](docs/screenshots/dry-run.webp)
-*Check execution content without actually copying files*
-
-### Backup History
-![backup-suite history](docs/screenshots/history.webp)
-*Check past backup execution history*
-*Actual backup execution screen*
-
-## 🛠️ Initial Setup
-
-### 1. Basic Setup
-```bash
-# Check current settings
-backup-suite status
-
-# Configuration file location
-# ~/.config/backup-suite/config.toml
-```
-
-**Note**: Language is automatically detected from the `LANG` environment variable. It will automatically display in Japanese in Japanese environments.
-
-### 2. Configure Backup Destination
-
-```bash
-# Set Google Drive destination
-backup-suite config set-destination "/Users/your-username/Library/CloudStorage/GoogleDrive-your@email.com/My Drive/backup-storage"
-
-# Check current settings
-backup-suite config get-destination
-```
-
-### 3. Verify Configuration
-```bash
-# Check backup destination directory
-backup-suite status
-```
-
-## ⚡️ Basic Usage Examples
-
-1. **Add Files**
-```bash
-backup-suite add ~/Documents/project --priority high --category development
-backup-suite add ~/Photos --priority medium --category personal
-```
-
-2. **Check Target List**
-```bash
-backup-suite list
-backup-suite list --priority high  # High priority only
-```
-
-3. **Execute Backup**
-```bash
-backup-suite run                   # Execute all targets
-backup-suite run --priority high   # High priority only
-backup-suite run --category work   # Specific category only
-backup-suite run --dry-run         # Dry run (verification only)
-
-# Encrypted backup
-backup-suite run --encrypt --password "secure-password"
-```
-
-4. **Setup Automation**
-```bash
-# Set priority-based schedule
-backup-suite schedule setup --high daily --medium weekly --low monthly
-backup-suite schedule enable
-```
-
-## 🏗️ Basic Configuration Example
-
-### /.config/backup-suite/config.toml
-```toml
-[general]
-log_level = "info"
-log_file = "~/.local/share/backup-suite/logs/backup.log"
-
-[storage]
-type = "local"
-path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/My Drive/backup-storage"
-compression = "gzip"
-encryption = true
-encryption_key_file = "~/.config/backup-suite/keys/backup.key"
-
-[schedule]
-enabled = true
-daily_time = "02:00"
-weekly_day = "sunday"
-monthly_day = 1
-
-[targets]
-[[targets.directories]]
-name = "documents"
-path = "~/Documents"
-exclude = ["*.tmp", "*.cache", ".DS_Store"]
-
-[[targets.directories]]
-name = "projects"
-path = "~/Projects"
-exclude = ["node_modules/", "target/", ".git/", "*.log"]
-```
-
-
-## 📋 Command Reference
-
-| Command        | Description               | Example                                         |
-| -------------- | ------------------------- | ----------------------------------------------- |
-| **add**        | Add backup target         | `backup-suite add ~/docs --priority high`       |
-| **list, ls**   | Display target list       | `backup-suite list --priority medium`           |
-| **remove**     | Remove target             | `backup-suite remove ~/old-files`               |
-| **clear, rm**  | Bulk delete               | `backup-suite clear --priority low`             |
-| **run**        | Execute backup            | `backup-suite run --encrypt`                    |
-| **restore**    | Restore backup            | `backup-suite restore --from backup-20251104`   |
-| **cleanup**    | Delete old backups        | `backup-suite cleanup --days 30`                |
-| **status**     | Display current status    | `backup-suite status`                           |
-| **history**    | Display execution history | `backup-suite history --days 7`                 |
-| **schedule**   | Manage scheduling         | `backup-suite schedule enable`                  |
-| **config**     | Manage configuration      | `backup-suite config set-destination ~/backups` |
-| **open**       | Open backup directory     | `backup-suite open`                             |
-| **completion** | Generate shell completion | `backup-suite completion zsh`                   |
-
-## 🛡️ Security & Quality
+## Security & Quality
 
 ### **Enterprise-Grade Security**
 - AES-256-GCM encryption support
@@ -292,7 +287,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 - Memory safety guarantee (prevents buffer overflow, memory leaks)
 - Compile-time error detection
 
-## 🔧 Technology Stack
+## Technology Stack
 
 - **Language**: Rust (latest stable version)
 - **CLI**: clap 4.x (command line parsing & completion generation)
@@ -300,7 +295,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 - **Configuration**: TOML (human-readable configuration format)
 - **Scheduling**: macOS launchctl, Linux systemd
 
-## 🚀 Supported Platforms
+## Supported Platforms
 
 | OS      | Architecture  | Support Status |
 | ------- | ------------- | -------------- |
@@ -309,33 +304,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 | 🍎 macOS | x86_64        | ✅ Full support |
 | 🍎 macOS | Apple Silicon | ✅ Full support |
 
-
 ---
 **Developer**: sanae-abe@m3.com
-
-4. **Configure Automation**
-```bash
-# Set up priority-based schedules
-backup-suite schedule setup --high daily --medium weekly --low monthly
-backup-suite schedule enable
-```
-
-## 📸 Usage Examples Screenshots
-
-### Help Screen
-![backup-suite help](docs/screenshots/help.webp)
-*Display commands and options in Japanese*
-
-### Backup Target List
-![backup-suite list](docs/screenshots/list.webp)
-*Display registered backup targets in table format*
-
-### Backup Execution
-![backup-suite run](docs/screenshots/run.webp)
-*Actual backup execution screen*
-
-### Backup Execution (Dry Run)
-![backup-suite dry-run](docs/screenshots/dry-run.webp)
-*Verify execution content without actually copying files*
 
 
