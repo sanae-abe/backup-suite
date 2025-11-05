@@ -526,7 +526,7 @@ fn check_launchd_status(lang: Language) -> Result<()> {
 /// Detect language from CLI argument and environment
 fn detect_language(lang_arg: Option<&str>) -> Language {
     if let Some(lang_str) = lang_arg {
-        if let Some(lang) = Language::from_str(lang_str) {
+        if let Some(lang) = Language::parse(lang_str) {
             return lang;
         }
     }
