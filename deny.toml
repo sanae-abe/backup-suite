@@ -3,30 +3,24 @@
 
 # ==================== Advisories ====================
 # セキュリティアドバイザリ・脆弱性チェック
+# 新形式: すべてのアドバイザリをデフォルトで拒否し、ignoreで例外指定
 
 [advisories]
-# データベース更新頻度
+# データベース更新設定
 db-path = "~/.cargo/advisory-db"
 db-urls = ["https://github.com/rustsec/advisory-db"]
 
-# 脆弱性検出時の動作
-vulnerability = "deny"      # CVE脆弱性は即座に拒否
-unmaintained = "none"       # メンテナンス終了クレートはチェックしない
-unsound = "deny"            # 安全でないコードは拒否
-yanked = "deny"             # Yankedクレートは拒否
-notice = "warn"             # 注意事項は警告
+# 無視するアドバイザリID（必要に応じて追加）
 ignore = [
-    # 一時的に無視する脆弱性ID（緊急時のみ使用）
     # 例: "RUSTSEC-2023-0001",
+    # 例: { id = "RUSTSEC-2023-0001", reason = "理由を記載" },
 ]
 
 # ==================== Licenses ====================
 # ライセンスコンプライアンスチェック
+# 新形式: allowで明示的に許可するライセンスを指定
 
 [licenses]
-# ライセンスなしクレートは拒否
-unlicensed = "deny"
-
 # 許可するライセンス（OSS friendly）
 allow = [
     "MIT",
@@ -42,27 +36,10 @@ allow = [
     "BSL-1.0",
 ]
 
-# 許可しないライセンス（Copyleft）
-deny = [
-    "GPL-2.0",
-    "GPL-3.0",
-    "AGPL-3.0",
-    "LGPL-2.0",
-    "LGPL-2.1",
-    "LGPL-3.0",
-]
+# ライセンス検出の信頼度閾値
+confidence-threshold = 0.8
 
-# Copyleftライセンスは拒否
-copyleft = "deny"
-
-# 複数ライセンスの扱い
-allow-osi-fsf-free = "neither"
-default = "deny"
-
-# 信頼する組織（自動許可）
-# confidence-threshold = 0.8
-
-# 特定クレートのライセンス例外
+# 特定クレートのライセンス明示化
 [[licenses.clarify]]
 name = "ring"
 version = "*"
@@ -99,9 +76,6 @@ deny = [
     { name = "tempdir" },                              # tempfile推奨
     { name = "time", version = "<0.3" },               # 旧バージョンは脆弱
 ]
-
-# 機能フラグの制限
-# features = ["exact"]              # 正確な機能フラグ一致を要求（配列形式が必要）
 
 # ワイルドカード依存の許可例外
 allow-wildcard-paths = false
