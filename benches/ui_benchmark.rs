@@ -218,7 +218,7 @@ fn bench_ui_full_render(c: &mut Criterion) {
 
 fn bench_large_table_render(c: &mut Criterion) {
     let rows = 100;
-    let _columns = vec!["ファイル名", "サイズ", "状態", "日時"];
+    let _columns = ["ファイル名", "サイズ", "状態", "日時"];
     let widths = vec![30, 15, 10, 20];
 
     let mut group = c.benchmark_group("large_table_render");
@@ -230,7 +230,7 @@ fn bench_large_table_render(c: &mut Criterion) {
 
             for i in 0..rows {
                 let filename = format!("file_{}.txt", i);
-                let filesize = format_file_size((i as u64) * 1024);
+                let filesize = format_file_size(i * 1024);
                 let row_data = vec![
                     &filename,
                     &filesize,
@@ -278,10 +278,10 @@ fn bench_interactive_prompt_render(c: &mut Criterion) {
             let mut output = Vec::new();
 
             writeln!(output, "{}", colorize_text("🎯 バックアップ設定", "cyan")).unwrap();
-            writeln!(output, "").unwrap();
+            writeln!(output).unwrap();
             writeln!(output, "対象ディレクトリ: {}", colorize_text("/home/user/documents", "green")).unwrap();
             writeln!(output, "バックアップ先: {}", colorize_text("/backup/dest", "green")).unwrap();
-            writeln!(output, "").unwrap();
+            writeln!(output).unwrap();
             writeln!(output, "{}", colorize_text("実行しますか? [Y/n]:", "yellow")).unwrap();
 
             black_box(output);
