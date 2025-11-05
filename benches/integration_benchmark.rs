@@ -1,6 +1,5 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::fs;
-use std::path::PathBuf;
 use tempfile::TempDir;
 
 // 統合シナリオのベンチマーク

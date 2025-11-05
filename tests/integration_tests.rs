@@ -44,7 +44,7 @@ fn test_full_backup_workflow_single_file() -> Result<()> {
 
     // バックアップ実行
     let runner = backup_suite::BackupRunner::new(config, false);
-    let result = runner.run(None)?;
+    let result = runner.run(None, None)?;
 
     // 検証
     assert_eq!(result.total_files, 1);
@@ -89,7 +89,7 @@ fn test_full_backup_workflow_directory() -> Result<()> {
     ));
 
     let runner = backup_suite::BackupRunner::new(config, false);
-    let result = runner.run(None)?;
+    let result = runner.run(None, None)?;
 
     // 3ファイルがバックアップされたことを確認
     assert_eq!(result.total_files, 3);
@@ -132,7 +132,7 @@ fn test_exclude_patterns_simple() -> Result<()> {
     config.targets.push(target);
 
     let runner = backup_suite::BackupRunner::new(config, false);
-    let result = runner.run(None)?;
+    let result = runner.run(None, None)?;
 
     // .tmpファイルが除外され、2ファイルのみバックアップされる
     assert_eq!(result.total_files, 2);
@@ -177,7 +177,7 @@ fn test_exclude_patterns_complex() -> Result<()> {
     config.targets.push(target);
 
     let runner = backup_suite::BackupRunner::new(config, false);
-    let result = runner.run(None)?;
+    let result = runner.run(None, None)?;
 
     // 2ファイルのみバックアップ (main.rs, config.toml)
     assert_eq!(result.total_files, 2);
@@ -226,7 +226,7 @@ fn test_priority_filtering() -> Result<()> {
 
     // 高優先度のみバックアップ
     let runner = backup_suite::BackupRunner::new(config, false);
-    let result = runner.run(Some(&Priority::High))?;
+    let result = runner.run(Some(&Priority::High), None)?;
 
     // 1ファイルのみバックアップされる
     assert_eq!(result.total_files, 1);
@@ -264,7 +264,7 @@ fn test_priority_filtering_medium_and_high() -> Result<()> {
 
     // Medium優先度でバックアップ (Medium以上が対象)
     let runner = backup_suite::BackupRunner::new(config, false);
-    let result = runner.run(Some(&Priority::Medium))?;
+    let result = runner.run(Some(&Priority::Medium), None)?;
 
     // 2ファイルがバックアップされる (high + medium)
     assert_eq!(result.total_files, 2);
@@ -337,7 +337,7 @@ fn test_nonexistent_source_handling() {
 
     // エラーが返されることを確認
     let runner = backup_suite::BackupRunner::new(config, false);
-    let result = runner.run(None);
+    let result = runner.run(None, None);
     assert!(result.is_err());
 }
 
@@ -367,7 +367,7 @@ fn test_invalid_destination_handling() {
 
     // エラーが返されることを確認
     let runner = backup_suite::BackupRunner::new(config, false);
-    let result = runner.run(None);
+    let result = runner.run(None, None);
     assert!(result.is_err());
 }
 
@@ -399,7 +399,7 @@ fn test_parallel_backup_large_directory() -> Result<()> {
 
     // 並列バックアップ実行
     let runner = backup_suite::BackupRunner::new(config, false);
-    let result = runner.run(None)?;
+    let result = runner.run(None, None)?;
 
     // 全ファイルがバックアップされたことを確認
     assert_eq!(result.total_files, 100);
@@ -441,7 +441,7 @@ fn test_category_organization() -> Result<()> {
     ));
 
     let runner = backup_suite::BackupRunner::new(config, false);
-    let result = runner.run(None)?;
+    let result = runner.run(None, None)?;
 
     assert_eq!(result.total_files, 2);
 
@@ -478,7 +478,7 @@ fn test_large_file_backup_performance() -> Result<()> {
 
     let start = std::time::Instant::now();
     let runner = backup_suite::BackupRunner::new(config, false);
-    let result = runner.run(None)?;
+    let result = runner.run(None, None)?;
     let duration = start.elapsed();
 
     assert_eq!(result.successful, 1);

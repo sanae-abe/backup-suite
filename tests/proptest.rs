@@ -337,7 +337,7 @@ fn test_nonexistent_path_handling() {
 #[test]
 fn test_concurrent_file_access_safety() -> Result<(), proptest::test_runner::TestCaseError> {
     proptest!(|(
-        num_threads in 2usize..10,
+        _num_threads in 2usize..10,
         num_files in 5usize..20,
     )| {
         let temp_dir = TempDir::new().unwrap();
@@ -361,7 +361,7 @@ fn test_concurrent_file_access_safety() -> Result<(), proptest::test_runner::Tes
 
         // 並列で複数回読み込んでもエラーが起きないことを確認
         let results: Vec<_> = files.par_iter()
-            .map(|file| fs::read_to_string(file))
+            .map(fs::read_to_string)
             .collect();
 
         // 全ての読み込みが成功することを確認
