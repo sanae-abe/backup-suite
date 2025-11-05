@@ -11,31 +11,51 @@ backup-suite は**Rust製**の高性能CLIツールです。優先度別管理�
 ## ✨ 主要機能
 
 ### 🎯 **優先度別バックアップ管理**
+**何ができる？**: 重要度に応じてファイルを分類し、効率的にバックアップできます
+- **重要な仕事ファイル**は毎日自動バックアップ
+- **写真や個人ファイル**は週次バックアップ
+- **アーカイブファイル**は月次バックアップ
+
 ```bash
-backup-suite add ~/important-docs --priority high --category work
-backup-suite add ~/photos --priority medium --category personal
-backup-suite run --priority high  # 高優先度のみ実行
+# 使用例：重要度を指定してファイルを登録
+backup-suite add ~/重要な書類 --priority high --category work
+backup-suite run --priority high  # 重要なファイルのみバックアップ
 ```
 
-### 🔐 **企業級セキュリティ**
+### 🔐 **強力なデータ保護**
+**何ができる？**: パスワードで大切なファイルを暗号化して安全に保存できます
+- **機密情報**を暗号化してバックアップ
+- **パスワード忘れ対策**で安全な復元が可能
+- **第三者からのアクセス**を完全にブロック
+
 ```bash
-backup-suite run --encrypt --password "your-secure-password"
-backup-suite add ~/confidential --priority high --encrypt
+# 使用例：パスワード付きでバックアップ
+backup-suite run --encrypt --password "安全なパスワード"
 ```
 
-### ⏰ **自動スケジューリング（macOS launchctl統合）**
+### ⏰ **完全自動化されたスケジューリング**
+**何ができる？**: 一度設定すれば、あとは完全に自動でバックアップが実行されます
+- **設定後は手動操作不要**で自動実行
+- **重要度別に頻度を調整**（毎日・週次・月次）
+- **バックアップ忘れ**を完全に防止
+
 ```bash
-backup-suite schedule setup --high daily --medium weekly --low monthly
-backup-suite schedule enable      # 全優先度の自動実行を有効化
-backup-suite schedule status      # 現在の設定確認
+# 使用例：自動バックアップを設定
+backup-suite schedule setup --high daily --medium weekly
+backup-suite schedule enable  # 自動実行を開始
 ```
 
-### 📊 **包括的な管理機能**
+### 📊 **わかりやすい管理とメンテナンス**
+**何ができる？**: バックアップの状況をひと目で確認し、簡単にメンテナンスできます
+- **どれくらいバックアップしたか**統計で確認
+- **いつ実行されたか**履歴で確認
+- **古いバックアップ**を自動削除してディスク節約
+- **データが壊れた時**の簡単復元
+
 ```bash
-backup-suite dashboard            # 統計ダッシュボード
-backup-suite history --days 30    # 30日間の実行履歴
-backup-suite cleanup --days 7     # 7日以上古いバックアップ削除
-backup-suite restore             # 最新バックアップから復元
+# 使用例：状況確認と管理
+backup-suite dashboard     # バックアップ状況を表示
+backup-suite restore      # 最新データから復元
 ```
 
 ## 🚀 インストール（M3社内GitLab Package Registry）
@@ -107,22 +127,6 @@ cargo uninstall backup-suite
 rm -rf ~/.config/backup-suite/
 ```
 
-## 📦 プロジェクトでの依存関係として使用
-
-`Cargo.toml`に追加：
-
-```toml
-[dependencies]
-backup-suite = { version = "1.0", registry = "m3-internal" }
-```
-
-```bash
-# 依存関係追加
-cargo add backup-suite --registry m3-internal
-
-# ビルド
-cargo build
-```
 
 ## 🛠️ 初期設定・基本的な使用例
 
@@ -180,7 +184,7 @@ log_file = "~/.local/share/backup-suite/logs/backup.log"
 
 [storage]
 type = "local"
-path = "/backup/storage"
+path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/マイドライブ/backup-storage"
 compression = "gzip"
 encryption = true
 encryption_key_file = "~/.config/backup-suite/keys/backup.key"
@@ -203,18 +207,6 @@ path = "~/Projects"
 exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ```
 
-### 企業プロキシ環境での設定
-```toml
-# ~/.cargo/config.toml（レジストリ設定と併記）
-[http]
-proxy = "http://proxy.company.com:8080"
-ssl-verify = true
-cainfo = "/etc/ssl/certs/company-ca.crt"
-
-[registries.m3-internal]
-index = "sparse+https://rendezvous.m3.com:3789/api/v4/projects/123/packages/cargo/"
-token = "glpat-xxxxxxxxxxxxxxxxxxxx"
-```
 
 ## 📋 全コマンドリファレンス
 
@@ -280,28 +272,6 @@ token = "glpat-xxxxxxxxxxxxxxxxxxxx"
 - **レジストリ名**: m3-internal
 - **CI/CD**: 自動ビルド・テスト・配布
 
-## 🤝 M3社内での貢献
-
-### 開発環境セットアップ
-```bash
-# リポジトリクローン
-git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
-cd backup-suite
-
-# 開発環境構築
-cargo build
-cargo test
-```
-
-### 貢献方法
-1. GitLab Issueで問題報告・機能提案
-2. Merge Requestで改善・修正
-3. ドキュメント改善
-4. 使用体験のフィードバック
-
-## 📄 ライセンス
-
-MIT License - 詳細は [LICENSE](LICENSE) ファイルを参照
 
 ---
 
