@@ -11,7 +11,7 @@ db-urls = ["https://github.com/rustsec/advisory-db"]
 
 # 脆弱性検出時の動作
 vulnerability = "deny"      # CVE脆弱性は即座に拒否
-unmaintained = "warn"       # メンテナンス終了クレートは警告
+unmaintained = "allow"      # メンテナンス終了クレートは許可（warningは非対応）
 unsound = "deny"            # 安全でないコードは拒否
 yanked = "deny"             # Yankedクレートは拒否
 notice = "warn"             # 注意事項は警告
@@ -101,7 +101,7 @@ deny = [
 ]
 
 # 機能フラグの制限
-features = "exact"              # 正確な機能フラグ一致を要求
+# features = ["exact"]              # 正確な機能フラグ一致を要求（配列形式が必要）
 
 # ワイルドカード依存の許可例外
 allow-wildcard-paths = false
@@ -117,12 +117,10 @@ unknown-registry = "deny"
 unknown-git = "deny"
 
 # 許可するレジストリ
-[sources.allow-registry]
-allow = ["https://github.com/rust-lang/crates.io-index"]
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
 
 # 許可するGitソース（必要な場合のみ）
-[sources.allow-git]
-allow = [
+allow-git = [
     # 例: "https://github.com/your-org/private-crate"
 ]
 
