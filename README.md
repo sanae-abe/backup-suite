@@ -45,13 +45,14 @@
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # 2. 環境変数を読み込み
-# bashの場合
 source ~/.cargo/env
 
-# zshの場合（macOS標準）
+# 新しいターミナルを開くか、以下を実行
+# bash使用時
+source ~/.bashrc
+
+# zsh使用時（macOS標準）
 source ~/.zshrc
-# または
-source ~/.cargo/env
 
 # 3. インストール確認
 rustc --version
