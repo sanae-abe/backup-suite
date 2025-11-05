@@ -9,6 +9,7 @@ use std::path::{Path, PathBuf};
 use tempfile::TempDir;
 
 /// テスト用のディレクトリ構造を作成するビルダー
+#[allow(dead_code)]
 pub struct TestEnvironment {
     pub temp_dir: TempDir,
     pub source_dir: PathBuf,
@@ -45,6 +46,7 @@ impl TestEnvironment {
     }
 
     /// 複数のファイルを一度に作成
+    #[allow(dead_code)]
     pub fn create_files(&self, files: &[(&str, &str)]) -> Result<Vec<PathBuf>> {
         files
             .iter()
@@ -60,6 +62,7 @@ impl TestEnvironment {
     }
 
     /// デフォルトの設定を作成
+    #[allow(dead_code)]
     pub fn create_config(&self) -> Config {
         let mut config = Config::default();
         config.backup.destination = self.backup_dir.clone();
@@ -67,6 +70,7 @@ impl TestEnvironment {
     }
 
     /// ターゲットを追加した設定を作成
+    #[allow(dead_code)]
     pub fn create_config_with_target(
         &self,
         path: impl Into<PathBuf>,
@@ -83,6 +87,7 @@ impl TestEnvironment {
     }
 
     /// 除外パターン付きターゲットを追加した設定を作成
+    #[allow(dead_code)]
     pub fn create_config_with_exclude_patterns(
         &self,
         path: impl Into<PathBuf>,
@@ -98,6 +103,7 @@ impl TestEnvironment {
     }
 
     /// バックアップディレクトリ内のファイル数をカウント
+    #[allow(dead_code)]
     pub fn count_backup_files(&self, backup_name: &str) -> Result<usize> {
         let backup_path = self.backup_dir.join(backup_name);
         if !backup_path.exists() {
@@ -115,6 +121,7 @@ impl TestEnvironment {
     }
 
     /// バックアップディレクトリ内に特定のファイルが存在するか確認
+    #[allow(dead_code)]
     pub fn backup_file_exists(&self, backup_name: &str, relative_path: &str) -> bool {
         let full_path = self
             .backup_dir
@@ -124,6 +131,7 @@ impl TestEnvironment {
     }
 
     /// バックアップファイルの内容を読み取る
+    #[allow(dead_code)]
     pub fn read_backup_file(&self, backup_name: &str, relative_path: &str) -> Result<String> {
         let full_path = self
             .backup_dir
@@ -133,11 +141,13 @@ impl TestEnvironment {
     }
 
     /// ソースディレクトリのパスを取得
+    #[allow(dead_code)]
     pub fn source_path(&self) -> &Path {
         &self.source_dir
     }
 
     /// バックアップディレクトリのパスを取得
+    #[allow(dead_code)]
     pub fn backup_path(&self) -> &Path {
         &self.backup_dir
     }
@@ -161,6 +171,7 @@ pub fn create_sample_directory_structure(env: &TestEnvironment) -> Result<()> {
 }
 
 /// 大量のファイルを持つディレクトリを作成（パフォーマンステスト用）
+#[allow(dead_code)]
 pub fn create_large_directory(env: &TestEnvironment, num_files: usize) -> Result<()> {
     for i in 0..num_files {
         env.create_file(
