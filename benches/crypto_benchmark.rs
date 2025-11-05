@@ -3,7 +3,7 @@
 //! backup-suiteの暗号化・圧縮機能の性能を測定します。
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use backup_suite::crypto::{EncryptionEngine, KeyManager, KeyDerivationConfig};
+use backup_suite::crypto::{EncryptionEngine, KeyManager};
 use backup_suite::compression::{CompressionEngine, CompressionType, CompressionConfig};
 
 /// 暗号化性能ベンチマーク
@@ -19,11 +19,11 @@ fn bench_encryption(c: &mut Criterion) {
                 let data = vec![0u8; size_kb * 1024];
                 let password = "test_password_for_benchmark";
                 let key_manager = KeyManager::default();
-                let (master_key, _salt) = key_manager.create_master_key(password).unwrap();
+                let (master_key, salt) = key_manager.create_master_key(password).unwrap();
                 let engine = EncryptionEngine::default();
 
                 b.iter(|| {
-                    black_box(engine.encrypt(black_box(&data), black_box(&master_key)).unwrap())
+                    black_box(engine.encrypt(black_box(&data), black_box(&master_key), black_box(&salt)).unwrap())
                 });
             },
         );
@@ -45,9 +45,9 @@ fn bench_decryption(c: &mut Criterion) {
                 let data = vec![0u8; size_kb * 1024];
                 let password = "test_password_for_benchmark";
                 let key_manager = KeyManager::default();
-                let (master_key, _salt) = key_manager.create_master_key(password).unwrap();
+                let (master_key, salt) = key_manager.create_master_key(password).unwrap();
                 let engine = EncryptionEngine::default();
-                let encrypted_data = engine.encrypt(&data, &master_key).unwrap();
+                let encrypted_data = engine.encrypt(&data, &master_key, &salt).unwrap();
 
                 b.iter(|| {
                     black_box(engine.decrypt(black_box(&encrypted_data), black_box(&master_key)).unwrap())

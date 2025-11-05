@@ -169,7 +169,7 @@ fn bench_security_features(c: &mut Criterion) {
         let safe_path = Path::new("documents/projects/backup-suite/file.txt");
 
         b.iter(|| {
-            black_box(validate_path_safety(black_box(safe_path)).unwrap())
+            validate_path_safety(black_box(safe_path)).unwrap()
         });
     });
 
@@ -245,7 +245,7 @@ fn bench_config_operations(c: &mut Criterion) {
         }
 
         b.iter(|| {
-            black_box(config.save().unwrap())
+            config.save().unwrap()
         });
     });
 
@@ -272,11 +272,9 @@ fn bench_directory_traversal(c: &mut Criterion) {
                 b.iter(|| {
                     use walkdir::WalkDir;
                     let mut count = 0;
-                    for entry in WalkDir::new(black_box(&test_dir)) {
-                        if let Ok(entry) = entry {
-                            if entry.file_type().is_file() {
-                                count += 1;
-                            }
+                    for entry in WalkDir::new(black_box(&test_dir)).into_iter().filter_map(|e| e.ok()) {
+                        if entry.file_type().is_file() {
+                            count += 1;
                         }
                     }
                     black_box(count)
@@ -297,7 +295,7 @@ fn bench_progress_display(c: &mut Criterion) {
         let progress = BackupProgress::new(1000);
 
         b.iter(|| {
-            black_box(progress.inc(black_box(1)))
+            progress.inc(black_box(1))
         });
     });
 
@@ -307,7 +305,7 @@ fn bench_progress_display(c: &mut Criterion) {
 
         b.iter(|| {
             progress.set_message(black_box("Processing file.txt"));
-            black_box(progress.inc(black_box(1)))
+            progress.inc(black_box(1))
         });
     });
 

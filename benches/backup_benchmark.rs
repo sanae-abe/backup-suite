@@ -9,7 +9,7 @@
 //! cargo bench -- --baseline optimized # 最適化後と比較
 //! ```
 
-use backup_suite::{Config, Priority, Target};
+use backup_suite::{BackupRunner, Config, Priority, Target};
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::fs;
 use tempfile::TempDir;
@@ -128,8 +128,8 @@ fn benchmark_small_files(c: &mut Criterion) {
                 b.iter_batched(
                     || setup_benchmark_env(num_files),
                     |(_temp_dir, config)| {
-                        let result =
-                            backup_suite::core::backup::run_backup(&config, None).unwrap();
+                        let runner = BackupRunner::new(config, false);
+                        let result = runner.run(None, None).unwrap();
                         black_box(result)
                     },
                     criterion::BatchSize::SmallInput,
@@ -157,8 +157,8 @@ fn benchmark_large_files(c: &mut Criterion) {
                 b.iter_batched(
                     || setup_large_files(1, size_mb),
                     |(_temp_dir, config)| {
-                        let result =
-                            backup_suite::core::backup::run_backup(&config, None).unwrap();
+                        let runner = BackupRunner::new(config, false);
+                        let result = runner.run(None, None).unwrap();
                         black_box(result)
                     },
                     criterion::BatchSize::SmallInput,
@@ -183,8 +183,8 @@ fn benchmark_nested_directories(c: &mut Criterion) {
                 b.iter_batched(
                     || setup_nested_structure(depth, 3),
                     |(_temp_dir, config)| {
-                        let result =
-                            backup_suite::core::backup::run_backup(&config, None).unwrap();
+                        let runner = BackupRunner::new(config, false);
+                        let result = runner.run(None, None).unwrap();
                         black_box(result)
                     },
                     criterion::BatchSize::SmallInput,
@@ -212,8 +212,8 @@ fn benchmark_parallel_processing(c: &mut Criterion) {
                 b.iter_batched(
                     || setup_benchmark_env(num_files),
                     |(_temp_dir, config)| {
-                        let result =
-                            backup_suite::core::backup::run_backup(&config, None).unwrap();
+                        let runner = BackupRunner::new(config, false);
+                        let result = runner.run(None, None).unwrap();
                         black_box(result)
                     },
                     criterion::BatchSize::SmallInput,
@@ -236,7 +236,8 @@ fn benchmark_priority_filtering(c: &mut Criterion) {
         b.iter_batched(
             || setup_benchmark_env(num_files),
             |(_temp_dir, config)| {
-                let result = backup_suite::core::backup::run_backup(&config, None).unwrap();
+                let runner = BackupRunner::new(config, false);
+                let result = runner.run(None, None).unwrap();
                 black_box(result)
             },
             criterion::BatchSize::SmallInput,
@@ -247,8 +248,8 @@ fn benchmark_priority_filtering(c: &mut Criterion) {
         b.iter_batched(
             || setup_benchmark_env(num_files),
             |(_temp_dir, config)| {
-                let result =
-                    backup_suite::core::backup::run_backup(&config, Some(Priority::High)).unwrap();
+                let runner = BackupRunner::new(config, false);
+                let result = runner.run(Some(&Priority::High), None).unwrap();
                 black_box(result)
             },
             criterion::BatchSize::SmallInput,
