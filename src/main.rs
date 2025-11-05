@@ -869,7 +869,7 @@ fn main() -> Result<()> {
                 format!("（{}）", options_info.join("、"))
             };
 
-            println!("{}🚀 {}{}{}",
+            println!("{}{}{}{}",
                 get_color("green"),
                 get_message(MessageKey::BackupRunning, lang),
                 options_str,
