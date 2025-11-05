@@ -15,7 +15,7 @@ backup-suite は**Rust製**の高性能CLIツールです。優先度別管理�
   - [🔐 軍事レベルの暗号化保護](#軍事レベルの暗号化保護)
   - [⏰ 完全自動化されたスケジューリング](#完全自動化されたスケジューリング)
   - [📊 わかりやすい管理とメンテナンス](#わかりやすい管理とメンテナンス)
-- [🚀 インストール（M3社内GitLab Package Registry）](#インストールm3社内gitlab-package-registry)
+- [🚀 インストール](#インストール)
   - [前提条件](#前提条件)
   - [推奨インストール方法: GitLab Package Registry](#推奨インストール方法-gitlab-package-registry)
   - [アップデート](#アップデート)
@@ -27,7 +27,6 @@ backup-suite は**Rust製**の高性能CLIツールです。優先度別管理�
 - [📋 全コマンドリファレンス](#全コマンドリファレンス)
 - [🛡️ セキュリティ・品質](#セキュリティ品質)
 - [🔧 技術スタック](#技術スタック)
-- [📚 ドキュメント](#ドキュメント)
 - [🚀 企業内配布状況](#企業内配布状況)
 
 ## ✨ 主要機能
@@ -58,7 +57,7 @@ backup-suite は**Rust製**の高性能CLIツールです。優先度別管理�
 - **古いバックアップ**を自動削除してディスク節約
 - **データが壊れた時**の簡単復元
 
-## 🚀 インストール（M3社内GitLab Package Registry）
+## 🚀 インストール
 
 ### 前提条件
 
@@ -264,17 +263,6 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 - **設定**: TOML （人間にとって読みやすい設定形式）
 - **スケジューリング**: macOS launchctl、Linux systemd
 
-## 📚 ドキュメント
-
-### 詳細ドキュメント
-- [📦 インストールガイド](INSTALL.md) - 詳細なインストール手順・トラブルシューティング
-- [🔧 Package Registry設定](docs/PACKAGE_REGISTRY_SETUP.md) - GitLab Package Registry詳細設定
-
-### 企業内サポート
-- **GitLab Issues**: [問題報告・機能要求](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/issues)
-- **開発者**: sanae-abe@m3.com
-- **内部Wiki**: M3社内ナレッジベースを参照
-
 ## 🚀 企業内配布状況
 
 ### 対応プラットフォーム
@@ -284,12 +272,6 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 | 🐧 Linux | aarch64 | ✅ 完全対応 |
 | 🍎 macOS | x86_64 | ✅ 完全対応 |
 | 🍎 macOS | Apple Silicon | ✅ 完全対応 |
-
-### 配布方法
-- **主要配布**: GitLab Package Registry（推奨）
-- **GitLabインスタンス**: rendezvous.m3.com:3789
-- **レジストリ名**: m3-internal
-- **CI/CD**: 自動ビルド・テスト・配布
 
 
 ---
