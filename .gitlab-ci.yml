@@ -1,0 +1,443 @@
+# GitLab CI/CD 設定ファイル
+# backup-suite プロジェクト用（本番配布対応）
+
+# CI/CD変数
+variables:
+  # Cargo設定
+  CARGO_HOME: $CI_PROJECT_DIR/.cargo
+  CARGO_TARGET_DIR: $CI_PROJECT_DIR/target
+
+  # Package Registry URL
+  CARGO_REGISTRY_URL: "sparse+$CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/cargo/"
+
+  # Rustコンパイラ設定
+  RUSTFLAGS: "-Dwarnings"  # 警告をエラーとして扱う
+
+  # バックアップソリューション固有設定
+  BACKUP_SUITE_VERSION: $CI_COMMIT_TAG
+  BACKUP_SUITE_BUILD_TIMESTAMP: $CI_PIPELINE_CREATED_AT
+
+# キャッシュ設定（ビルド高速化）
+cache:
+  key:
+    files:
+      - Cargo.lock
+  paths:
+    - .cargo/
+    - target/
+
+# ビルドステージ定義
+stages:
+  - validate    # バリデーション・セキュリティチェック
+  - test        # テスト・品質チェック
+  - build       # バイナリビルド
+  - package     # パッケージング
+  - publish     # Package Registry公開
+  - release     # リリース作成
+  - deploy      # 本番デプロイ
+
+# 🛡️ バリデーション・セキュリティステージ
+security:vulnerability-scan:
+  stage: validate
+  image: rust:1.75
+  before_script:
+    - cargo install cargo-audit cargo-deny
+  script:
+    # 脆弱性スキャン
+    - cargo audit --json > vulnerability-report.json
+
+    # ライセンス・依存関係チェック
+    - cargo deny check
+
+    # セキュリティ特化のクリップ
+    - cargo clippy --all-targets --all-features -- -D clippy::all -D clippy::suspicious
+  artifacts:
+    reports:
+      dependency_scanning: vulnerability-report.json
+    expire_in: 1 week
+  allow_failure: false
+
+security:secrets-detection:
+  stage: validate
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache git grep
+  script:
+    # 機密情報の検出
+    - |
+      echo "Scanning for secrets..."
+      if grep -r -E "(password|secret|key|token)" --include="*.rs" --include="*.toml" .; then
+        echo "⚠️ Potential secrets detected in source code"
+        exit 1
+      fi
+    - echo "✅ No secrets detected"
+  only:
+    - main
+    - tags
+
+# 🧪 テスト・品質チェックステージ
+test:unit-tests:
+  stage: test
+  image: rust:1.75
+  before_script:
+    - rustc --version
+    - cargo --version
+  script:
+    # 単体テスト実行
+    - cargo test --all-features --verbose
+
+    # バックアップ機能の統合テスト
+    - cargo test --test integration_backup -- --test-threads=1
+
+    # 復元機能の統合テスト
+    - cargo test --test integration_restore -- --test-threads=1
+  artifacts:
+    reports:
+      junit: target/junit.xml
+    expire_in: 1 week
+
+test:performance-benchmark:
+  stage: test
+  image: rust:1.75
+  script:
+    # パフォーマンステスト
+    - cargo bench --bench backup_performance
+    - cargo bench --bench compression_benchmark
+  artifacts:
+    paths:
+      - target/criterion/
+    expire_in: 1 week
+  only:
+    - main
+    - tags
+
+test:code-coverage:
+  stage: test
+  image: rust:1.75
+  before_script:
+    - cargo install cargo-tarpaulin
+  script:
+    - cargo tarpaulin --out Xml --output-dir coverage/ --exclude-files "target/*"
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura.xml
+  coverage: '/(\d+\.\d+)% coverage/'
+
+# 🔨 ビルドステージ（本番最適化）
+build:linux-x64-optimized:
+  stage: build
+  image: rust:1.75
+  script:
+    # 本番用最適化ビルド
+    - export RUSTFLAGS="-C target-cpu=native -C opt-level=3 -C lto=fat"
+    - cargo build --release --target x86_64-unknown-linux-gnu
+
+    # バイナリサイズ最適化
+    - strip target/x86_64-unknown-linux-gnu/release/backup-suite
+    - upx --ultra-brute target/x86_64-unknown-linux-gnu/release/backup-suite || true
+
+    # アーティファクト準備
+    - mkdir -p artifacts/linux-x64
+    - cp target/x86_64-unknown-linux-gnu/release/backup-suite artifacts/linux-x64/
+
+    # バージョン情報埋め込み
+    - echo "$CI_COMMIT_TAG" > artifacts/linux-x64/VERSION
+    - echo "$CI_COMMIT_SHA" > artifacts/linux-x64/COMMIT_SHA
+  artifacts:
+    paths:
+      - artifacts/linux-x64/
+    expire_in: 2 hours
+  only:
+    - main
+    - tags
+
+build:linux-arm64:
+  stage: build
+  image: rust:1.75
+  before_script:
+    - rustup target add aarch64-unknown-linux-gnu
+    - apt-get update && apt-get install -y gcc-aarch64-linux-gnu
+    - export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+  script:
+    - cargo build --release --target aarch64-unknown-linux-gnu
+    - mkdir -p artifacts/linux-arm64
+    - cp target/aarch64-unknown-linux-gnu/release/backup-suite artifacts/linux-arm64/
+    - echo "$CI_COMMIT_TAG" > artifacts/linux-arm64/VERSION
+  artifacts:
+    paths:
+      - artifacts/linux-arm64/
+    expire_in: 2 hours
+  only:
+    - main
+    - tags
+
+build:macos-universal:
+  stage: build
+  image: rust:1.75
+  before_script:
+    - rustup target add x86_64-apple-darwin aarch64-apple-darwin
+  script:
+    # Intel Mac
+    - cargo build --release --target x86_64-apple-darwin
+    - mkdir -p artifacts/macos-x64
+    - cp target/x86_64-apple-darwin/release/backup-suite artifacts/macos-x64/
+
+    # Apple Silicon Mac
+    - cargo build --release --target aarch64-apple-darwin
+    - mkdir -p artifacts/macos-arm64
+    - cp target/aarch64-apple-darwin/release/backup-suite artifacts/macos-arm64/
+
+    # ユニバーサルバイナリ作成（オプション）
+    - mkdir -p artifacts/macos-universal
+    - lipo -create \
+        target/x86_64-apple-darwin/release/backup-suite \
+        target/aarch64-apple-darwin/release/backup-suite \
+        -output artifacts/macos-universal/backup-suite || cp artifacts/macos-x64/backup-suite artifacts/macos-universal/
+  artifacts:
+    paths:
+      - artifacts/macos-x64/
+      - artifacts/macos-arm64/
+      - artifacts/macos-universal/
+    expire_in: 2 hours
+  only:
+    - main
+    - tags
+  tags:
+    - macos
+  allow_failure: true
+
+# 📦 パッケージングステージ
+package:create-distributions:
+  stage: package
+  image: alpine:latest
+  dependencies:
+    - build:linux-x64-optimized
+    - build:linux-arm64
+    - build:macos-universal
+  before_script:
+    - apk add --no-cache tar gzip zip
+  script:
+    # Linux x64 パッケージ
+    - tar -czf backup-suite-linux-x64.tar.gz -C artifacts/linux-x64 .
+    - sha256sum backup-suite-linux-x64.tar.gz > backup-suite-linux-x64.tar.gz.sha256
+
+    # Linux ARM64 パッケージ
+    - tar -czf backup-suite-linux-arm64.tar.gz -C artifacts/linux-arm64 .
+    - sha256sum backup-suite-linux-arm64.tar.gz > backup-suite-linux-arm64.tar.gz.sha256
+
+    # macOS パッケージ
+    - tar -czf backup-suite-macos-universal.tar.gz -C artifacts/macos-universal .
+    - sha256sum backup-suite-macos-universal.tar.gz > backup-suite-macos-universal.tar.gz.sha256
+
+    # インストールスクリプト包含版
+    - mkdir -p complete-package
+    - cp backup-suite-*.tar.gz complete-package/
+    - cp *.sha256 complete-package/
+    - echo "#!/bin/bash" > complete-package/install.sh
+    - cat install.sh >> complete-package/install.sh
+    - chmod +x complete-package/install.sh
+    - tar -czf backup-suite-complete-package.tar.gz -C complete-package .
+  artifacts:
+    paths:
+      - backup-suite-*.tar.gz
+      - backup-suite-*.sha256
+      - complete-package/
+    expire_in: 1 week
+  only:
+    - tags
+
+# 📦 Package Registry公開
+publish:package-registry:
+  stage: publish
+  image: rust:1.75
+  dependencies:
+    - build:linux-x64-optimized
+  before_script:
+    # GitLab Cargo Index設定
+    - mkdir -p $CARGO_HOME
+    - echo "[registries.gitlab]" >> $CARGO_HOME/config.toml
+    - echo "index = \"$CARGO_REGISTRY_URL\"" >> $CARGO_HOME/config.toml
+    - echo "token = \"$CI_JOB_TOKEN\"" >> $CARGO_HOME/config.toml
+  script:
+    # レジストリログイン
+    - cargo login --registry gitlab "$CI_JOB_TOKEN"
+
+    # パッケージ公開
+    - cargo publish --registry gitlab --allow-dirty
+
+    # 公開確認
+    - sleep 30  # レジストリ反映待ち
+    - cargo search --registry gitlab backup-suite
+  only:
+    - tags
+  when: manual
+  environment:
+    name: package-registry
+    url: $CI_PROJECT_URL/-/packages
+
+# 🚀 リリース作成
+release:create-github-style-release:
+  stage: release
+  image: alpine:latest
+  dependencies:
+    - package:create-distributions
+    - test:performance-benchmark
+  before_script:
+    - apk add --no-cache curl tar gzip jq
+  script:
+    # パフォーマンスレポート取得
+    - |
+      if [ -d "target/criterion" ]; then
+        PERF_SUMMARY=$(find target/criterion -name "*.json" | head -1)
+        if [ -f "$PERF_SUMMARY" ]; then
+          BACKUP_SPEED=$(jq -r '.mean.estimate' "$PERF_SUMMARY" || echo "N/A")
+        else
+          BACKUP_SPEED="N/A"
+        fi
+      else
+        BACKUP_SPEED="N/A"
+      fi
+
+    # リリースノート生成
+    - |
+      cat > release_notes.md << EOF
+      # 🗂️ backup-suite v$CI_COMMIT_TAG
+
+      ## ✨ 主な機能
+      - 🚀 高速バックアップ・復元（平均速度: ${BACKUP_SPEED} MB/s）
+      - 🗜️ 効率的な圧縮・重複排除
+      - 🔐 AES-256暗号化対応
+      - 📅 柔軟なスケジューリング
+      - 🔄 増分・差分バックアップ
+
+      ## 📦 ダウンロード
+      | プラットフォーム | バイナリ | SHA256 |
+      |----------------|---------|--------|
+      | Linux x64 | [backup-suite-linux-x64.tar.gz](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-linux-x64.tar.gz) | [SHA256](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-linux-x64.tar.gz.sha256) |
+      | Linux ARM64 | [backup-suite-linux-arm64.tar.gz](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-linux-arm64.tar.gz) | [SHA256](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-linux-arm64.tar.gz.sha256) |
+      | macOS Universal | [backup-suite-macos-universal.tar.gz](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-macos-universal.tar.gz) | [SHA256](${CI_PROJECT_URL}/-/releases/${CI_COMMIT_TAG}/downloads/backup-suite-macos-universal.tar.gz.sha256) |
+
+      ## 🚀 クイックインストール
+      \`\`\`bash
+      # 自動インストール
+      curl -sSL $CI_PROJECT_URL/-/raw/main/install.sh | bash
+
+      # Package Registryから
+      cargo install backup-suite --registry company
+
+      # 設定・使用開始
+      backup-suite init --interactive
+      \`\`\`
+
+      ## 📊 このリリースの改善点
+      - パフォーマンス向上
+      - セキュリティ強化
+      - 企業環境での使用性改善
+      EOF
+
+    # GitLab Releaseを作成
+    - |
+      curl --request POST \
+        --header "PRIVATE-TOKEN: $CI_JOB_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data "{
+          \"name\": \"backup-suite v$CI_COMMIT_TAG\",
+          \"tag_name\": \"$CI_COMMIT_TAG\",
+          \"description\": \"$(cat release_notes.md | jq -Rs .)\",
+          \"assets\": {
+            \"links\": [
+              {
+                \"name\": \"Linux x64 Binary\",
+                \"url\": \"$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_TAG/raw/backup-suite-linux-x64.tar.gz?job=package:create-distributions\",
+                \"link_type\": \"package\"
+              },
+              {
+                \"name\": \"Complete Package (All Platforms)\",
+                \"url\": \"$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_TAG/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions\",
+                \"link_type\": \"package\"
+              },
+              {
+                \"name\": \"Installation Guide\",
+                \"url\": \"$CI_PROJECT_URL/-/blob/main/INSTALL.md\",
+                \"link_type\": \"other\"
+              }
+            ]
+          }
+        }" \
+        "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases"
+  only:
+    - tags
+  environment:
+    name: releases
+    url: $CI_PROJECT_URL/-/releases
+
+# 🚀 本番デプロイ（社内配布サーバー）
+deploy:internal-distribution:
+  stage: deploy
+  image: alpine:latest
+  dependencies:
+    - package:create-distributions
+  before_script:
+    - apk add --no-cache rsync openssh-client
+    - eval $(ssh-agent -s)
+    - echo "$DEPLOY_SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - echo "$DEPLOY_SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
+  script:
+    # 社内配布サーバーに同期
+    - |
+      rsync -avz --delete \
+        backup-suite-*.tar.gz \
+        *.sha256 \
+        complete-package/ \
+        $DEPLOY_USER@$DEPLOY_SERVER:/var/www/internal-tools/backup-suite/v$CI_COMMIT_TAG/
+
+    # 最新版リンク更新
+    - |
+      ssh $DEPLOY_USER@$DEPLOY_SERVER \
+        "cd /var/www/internal-tools/backup-suite && rm -f latest && ln -s v$CI_COMMIT_TAG latest"
+  only:
+    - tags
+  environment:
+    name: internal-distribution
+    url: "https://tools.company.com/backup-suite"
+  when: manual
+
+# 📊 監査・通知
+audit:deployment-notification:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
+  script:
+    # Slack/Teams通知
+    - |
+      curl -X POST "$NOTIFICATION_WEBHOOK_URL" \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"text\": \"🎉 backup-suite v$CI_COMMIT_TAG リリース完了\",
+          \"attachments\": [{
+            \"color\": \"good\",
+            \"fields\": [
+              {\"title\": \"バージョン\", \"value\": \"$CI_COMMIT_TAG\", \"short\": true},
+              {\"title\": \"リリースページ\", \"value\": \"$CI_PROJECT_URL/-/releases/$CI_COMMIT_TAG\", \"short\": false}
+            ]
+          }]
+        }"
+
+    # 監査ログ
+    - echo "$(date): backup-suite v$CI_COMMIT_TAG deployed by $CI_COMMIT_AUTHOR" >> /var/log/deployments.log
+  only:
+    - tags
+  dependencies: []
+  allow_failure: true
+
+# 🏷️ ワークフロー制御
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/     # セマンティックバージョンタグ
+    - if: $CI_COMMIT_BRANCH == "main"              # メインブランチ
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"  # マージリクエスト
+    - if: $CI_COMMIT_BRANCH =~ /^release\/.*$/     # リリースブランチ
