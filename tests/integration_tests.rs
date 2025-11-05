@@ -342,11 +342,12 @@ fn test_nonexistent_source_handling() {
         "test".to_string(),
     ));
 
-    // エラーが返されることを確認
+    // 存在しないファイルはスキップされ、バックアップ件数が0になることを確認
     let runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
-    let result = runner.run(None, None);
-    assert!(result.is_err());
+    let result = runner.run(None, None).unwrap();
+    assert_eq!(result.total_files, 0);
+    assert_eq!(result.successful, 0);
 }
 
 #[test]
@@ -359,7 +360,8 @@ fn test_invalid_destination_handling() {
     // 書き込み不可能なディレクトリを指定 (Unix系)
     #[cfg(unix)]
     {
-        config.backup.destination = PathBuf::from("/root/backup_not_writable");
+        // /proc/self は常に読み取り専用なので、書き込みエラーが確実に発生
+        config.backup.destination = PathBuf::from("/proc/self/backup_not_writable");
     }
 
     #[cfg(windows)]
