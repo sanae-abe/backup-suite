@@ -23,7 +23,7 @@ fn bench_encryption(c: &mut Criterion) {
                 let engine = EncryptionEngine::default();
 
                 b.iter(|| {
-                    black_box(engine.encrypt(black_box(&data), black_box(&master_key), black_box(&salt)).unwrap())
+                    black_box(engine.encrypt(black_box(&data), black_box(&master_key), black_box(salt)).unwrap())
                 });
             },
         );
@@ -47,7 +47,7 @@ fn bench_decryption(c: &mut Criterion) {
                 let key_manager = KeyManager::default();
                 let (master_key, salt) = key_manager.create_master_key(password).unwrap();
                 let engine = EncryptionEngine::default();
-                let encrypted_data = engine.encrypt(&data, &master_key, &salt).unwrap();
+                let encrypted_data = engine.encrypt(&data, &master_key, salt).unwrap();
 
                 b.iter(|| {
                     black_box(engine.decrypt(black_box(&encrypted_data), black_box(&master_key)).unwrap())

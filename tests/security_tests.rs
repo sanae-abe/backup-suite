@@ -49,7 +49,7 @@ mod path_traversal_tests {
     #[ignore]
     fn test_path_traversal_with_unicode() {
         let temp = TempDir::new().unwrap();
-        let base = temp.path();
+        let _base = temp.path();
 
         // Unicode path traversal attempts
         let unicode_attacks = vec![
@@ -315,7 +315,7 @@ mod resource_exhaustion_tests {
     #[test]
     #[ignore]
     fn test_disk_space_check() {
-        let temp = TempDir::new().unwrap();
+        let _temp = TempDir::new().unwrap();
 
         // Uncomment after resource guard implementation
         // let guard = ResourceGuard::default();
@@ -365,7 +365,7 @@ mod input_validation_tests {
             "\t\n\r",
         ];
 
-        for path in invalid_paths {
+        for _path in invalid_paths {
             // Uncomment after validation implementation
             // let result = validate_path_string(path);
             // assert!(result.is_err(), "Empty/whitespace path should be rejected");
@@ -405,7 +405,7 @@ mod error_handling_tests {
         // Ensure no panics in error conditions
 
         let temp = TempDir::new().unwrap();
-        let nonexistent = temp.path().join("nonexistent");
+        let _nonexistent = temp.path().join("nonexistent");
 
         // Uncomment after implementation
         // let result = std::panic::catch_unwind(|| {
