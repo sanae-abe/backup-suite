@@ -11,7 +11,7 @@ db-urls = ["https://github.com/rustsec/advisory-db"]
 
 # 脆弱性検出時の動作
 vulnerability = "deny"      # CVE脆弱性は即座に拒否
-unmaintained = "allow"      # メンテナンス終了クレートは許可（warningは非対応）
+unmaintained = "none"       # メンテナンス終了クレートはチェックしない
 unsound = "deny"            # 安全でないコードは拒否
 yanked = "deny"             # Yankedクレートは拒否
 notice = "warn"             # 注意事項は警告
