@@ -348,7 +348,7 @@ mod tests {
     #[test]
     fn test_select_priority_values() {
         // 優先度の値が正しいことを確認
-        let priorities = vec!["high", "medium", "low"];
+        let priorities = ["high", "medium", "low"];
         assert!(priorities.contains(&"high"));
         assert!(priorities.contains(&"medium"));
         assert!(priorities.contains(&"low"));

@@ -268,6 +268,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[allow(clippy::const_is_empty)]
     fn test_version_info() {
         assert!(!VERSION.is_empty());
         assert_eq!(PKG_NAME, "backup-suite");

@@ -172,12 +172,14 @@ pub fn create_large_directory(env: &TestEnvironment, num_files: usize) -> Result
 }
 
 /// 大きなファイルを作成（パフォーマンステスト用）
+#[allow(dead_code)]
 pub fn create_large_file(env: &TestEnvironment, filename: &str, size_mb: usize) -> Result<PathBuf> {
     let content = vec![0u8; size_mb * 1024 * 1024];
     env.create_file(filename, &String::from_utf8_lossy(&content))
 }
 
 /// 様々な拡張子のファイルを作成（除外パターンテスト用）
+#[allow(dead_code)]
 pub fn create_mixed_extension_files(env: &TestEnvironment) -> Result<()> {
     env.create_file("document.txt", "text")?;
     env.create_file("document.md", "markdown")?;
@@ -191,6 +193,7 @@ pub fn create_mixed_extension_files(env: &TestEnvironment) -> Result<()> {
 }
 
 /// node_modules風のディレクトリ構造を作成（除外パターンテスト用）
+#[allow(dead_code)]
 pub fn create_node_modules_structure(env: &TestEnvironment) -> Result<()> {
     env.create_dir("node_modules")?;
     env.create_dir("node_modules/package1")?;
@@ -205,6 +208,7 @@ pub fn create_node_modules_structure(env: &TestEnvironment) -> Result<()> {
 }
 
 /// 隠しファイルとドットファイルを作成
+#[allow(dead_code)]
 pub fn create_hidden_files(env: &TestEnvironment) -> Result<()> {
     env.create_file(".env", "SECRET=value")?;
     env.create_file(".gitignore", "node_modules/")?;
@@ -214,6 +218,7 @@ pub fn create_hidden_files(env: &TestEnvironment) -> Result<()> {
 }
 
 /// ファイルのハッシュを計算（内容の検証用）
+#[allow(dead_code)]
 pub fn calculate_file_hash(path: &Path) -> Result<String> {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
@@ -225,6 +230,7 @@ pub fn calculate_file_hash(path: &Path) -> Result<String> {
 }
 
 /// バックアップ前後でファイルの内容が同じか確認
+#[allow(dead_code)]
 pub fn verify_file_integrity(source: &Path, backup: &Path) -> Result<bool> {
     let source_hash = calculate_file_hash(source)?;
     let backup_hash = calculate_file_hash(backup)?;
@@ -244,6 +250,7 @@ pub fn count_files_recursive(path: &Path) -> Result<usize> {
 }
 
 /// ディレクトリ構造を文字列として取得（デバッグ用）
+#[allow(dead_code)]
 pub fn debug_directory_structure(path: &Path) -> Result<String> {
     let mut result = String::new();
     for entry in walkdir::WalkDir::new(path).sort_by_file_name() {

@@ -125,7 +125,7 @@ fn bench_parallel_backup(c: &mut Criterion) {
                     .with_progress(false); // ベンチマーク中はプログレス無効
 
                 b.iter(|| {
-                    black_box(runner.run(None).unwrap())
+                    black_box(runner.run(None, None).unwrap())
                 });
             },
         );
@@ -349,7 +349,7 @@ fn bench_end_to_end(c: &mut Criterion) {
             .with_progress(false);
 
         b.iter(|| {
-            black_box(runner.run(None).unwrap())
+            black_box(runner.run(None, None).unwrap())
         });
     });
 
@@ -386,7 +386,7 @@ fn bench_memory_usage(c: &mut Criterion) {
             .with_progress(false);
 
         b.iter(|| {
-            black_box(runner.run(None).unwrap())
+            black_box(runner.run(None, None).unwrap())
         });
     });
 
