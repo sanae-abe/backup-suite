@@ -10,24 +10,35 @@ backup-suite は**Rust製**の高性能CLIツールです。優先度別管理�
 
 ## 📑 目次
 
-- [✨ 主要機能](#主要機能)
-  - [🎯 優先度別バックアップ管理](#優先度別バックアップ管理)
-  - [🔐 軍事レベルの暗号化保護](#軍事レベルの暗号化保護)
-  - [⏰ 完全自動化されたスケジューリング](#完全自動化されたスケジューリング)
-  - [📊 わかりやすい管理とメンテナンス](#わかりやすい管理とメンテナンス)
-- [🚀 インストール](#インストール)
-  - [前提条件](#前提条件)
-  - [推奨インストール方法: GitLab Package Registry](#推奨インストール方法-gitlab-package-registry)
-  - [アップデート](#アップデート)
-  - [アンインストール](#アンインストール)
-- [🛠️ 初期設定・基本的な使用例](#初期設定基本的な使用例)
-  - [初期設定](#初期設定)
-  - [基本的な使用例](#基本的な使用例)
-- [🏗️ 基本設定例](#基本設定例)
-- [📋 全コマンドリファレンス](#全コマンドリファレンス)
-- [🛡️ セキュリティ・品質](#セキュリティ品質)
-- [🔧 技術スタック](#技術スタック)
-- [🚀 企業内配布状況](#企業内配布状況)
+- [backup-suite](#backup-suite)
+  - [📑 目次](#-目次)
+  - [✨ 主要機能](#-主要機能)
+    - [🎯 **優先度別バックアップ管理**](#-優先度別バックアップ管理)
+    - [🔐 **軍事レベルの暗号化保護**](#-軍事レベルの暗号化保護)
+    - [⏰ **完全自動化されたスケジューリング**](#-完全自動化されたスケジューリング)
+    - [📊 **わかりやすい管理とメンテナンス**](#-わかりやすい管理とメンテナンス)
+  - [🚀 インストール](#-インストール)
+    - [前提条件](#前提条件)
+    - [🎯 推奨インストール方法: GitLab Package Registry](#-推奨インストール方法-gitlab-package-registry)
+      - [ステップ1: カスタムレジストリ設定（初回のみ）](#ステップ1-カスタムレジストリ設定初回のみ)
+      - [ステップ2: backup-suiteインストール](#ステップ2-backup-suiteインストール)
+    - [🔄 アップデート](#-アップデート)
+    - [🧹 アンインストール](#-アンインストール)
+  - [🛠️ 初期設定・基本的な使用例](#️-初期設定基本的な使用例)
+    - [初期設定](#初期設定)
+      - [1. 基本セットアップ](#1-基本セットアップ)
+      - [2. バックアップ保存先の設定](#2-バックアップ保存先の設定)
+      - [3. 設定確認](#3-設定確認)
+    - [基本的な使用例](#基本的な使用例)
+  - [🏗️ 基本設定例](#️-基本設定例)
+    - [基本設定例（~/.config/backup-suite/config.toml）](#基本設定例configbackup-suiteconfigtoml)
+  - [📋 全コマンドリファレンス](#-全コマンドリファレンス)
+  - [🛡️ セキュリティ・品質](#️-セキュリティ品質)
+    - [**企業級セキュリティ**](#企業級セキュリティ)
+    - [**型安全性・メモリ安全性**](#型安全性メモリ安全性)
+  - [🔧 技術スタック](#-技術スタック)
+  - [🚀 企業内配布状況](#-企業内配布状況)
+    - [対応プラットフォーム](#対応プラットフォーム)
 
 ## ✨ 主要機能
 
@@ -228,19 +239,19 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 
 ## 📋 全コマンドリファレンス
 
-| コマンド | 説明 | 例 |
-|----------|------|-----|
-| **init** | 対話的初期設定 | `backup-suite init --interactive` |
-| **config** | 設定管理 | `backup-suite config show` |
-| **add** | バックアップ対象追加 | `backup-suite add ~/docs --priority high` |
-| **list, ls** | 対象一覧表示 | `backup-suite list --priority medium` |
-| **remove** | 対象削除 | `backup-suite remove ~/old-files` |
-| **run** | バックアップ実行 | `backup-suite run --encrypt` |
-| **restore** | バックアップ復元 | `backup-suite restore --from backup-20251104` |
-| **cleanup** | 古いバックアップ削除 | `backup-suite cleanup --days 30` |
-| **status** | 現在の状態表示 | `backup-suite status` |
-| **history** | 実行履歴表示 | `backup-suite history --days 7` |
-| **schedule** | スケジューリング管理 | `backup-suite schedule enable` |
+| コマンド     | 説明                 | 例                                            |
+| ------------ | -------------------- | --------------------------------------------- |
+| **init**     | 対話的初期設定       | `backup-suite init --interactive`             |
+| **config**   | 設定管理             | `backup-suite config show`                    |
+| **add**      | バックアップ対象追加 | `backup-suite add ~/docs --priority high`     |
+| **list, ls** | 対象一覧表示         | `backup-suite list --priority medium`         |
+| **remove**   | 対象削除             | `backup-suite remove ~/old-files`             |
+| **run**      | バックアップ実行     | `backup-suite run --encrypt`                  |
+| **restore**  | バックアップ復元     | `backup-suite restore --from backup-20251104` |
+| **cleanup**  | 古いバックアップ削除 | `backup-suite cleanup --days 30`              |
+| **status**   | 現在の状態表示       | `backup-suite status`                         |
+| **history**  | 実行履歴表示         | `backup-suite history --days 7`               |
+| **schedule** | スケジューリング管理 | `backup-suite schedule enable`                |
 
 ## 🛡️ セキュリティ・品質
 
@@ -266,12 +277,12 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ## 🚀 企業内配布状況
 
 ### 対応プラットフォーム
-| OS | アーキテクチャ | 対応状況 |
-|----|-----------------|----------|
-| 🐧 Linux | x86_64 | ✅ 完全対応 |
-| 🐧 Linux | aarch64 | ✅ 完全対応 |
-| 🍎 macOS | x86_64 | ✅ 完全対応 |
-| 🍎 macOS | Apple Silicon | ✅ 完全対応 |
+| OS      | アーキテクチャ | 対応状況   |
+| ------- | -------------- | ---------- |
+| 🐧 Linux | x86_64         | ✅ 完全対応 |
+| 🐧 Linux | aarch64        | ✅ 完全対応 |
+| 🍎 macOS | x86_64         | ✅ 完全対応 |
+| 🍎 macOS | Apple Silicon  | ✅ 完全対応 |
 
 
 ---
