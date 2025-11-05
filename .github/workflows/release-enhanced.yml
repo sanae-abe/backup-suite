@@ -1,0 +1,506 @@
+name: Enhanced Release Pipeline
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.0.0)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write  # SLSA provenance用
+
+jobs:
+  # ==================== Phase 1: リリース検証 ====================
+
+  validate-release:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      is_prerelease: ${{ steps.check_prerelease.outputs.is_prerelease }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Check if pre-release
+        id: check_prerelease
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          if [[ "$VERSION" =~ (alpha|beta|rc) ]] || [ "${{ github.event.inputs.prerelease }}" = "true" ]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?$ ]]; then
+            echo "::error::Invalid version format: $VERSION"
+            exit 1
+          fi
+
+      - name: Verify version in Cargo.toml
+        run: |
+          CARGO_VERSION=$(grep "^version" Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          RELEASE_VERSION="${{ steps.get_version.outputs.version }}"
+          if [ "$CARGO_VERSION" != "$RELEASE_VERSION" ]; then
+            echo "::error::Version mismatch: Cargo.toml has $CARGO_VERSION but releasing $RELEASE_VERSION"
+            exit 1
+          fi
+
+      - name: Check changelog entry
+        run: |
+          if [ ! -f CHANGELOG.md ]; then
+            echo "::warning::CHANGELOG.md not found"
+            exit 0
+          fi
+          VERSION="${{ steps.get_version.outputs.version }}"
+          if ! grep -q "## \[$VERSION\]" CHANGELOG.md && ! grep -q "## $VERSION" CHANGELOG.md; then
+            echo "::warning::No changelog entry found for version $VERSION"
+          fi
+
+  # ==================== Phase 2: リリースノート生成 ====================
+
+  generate-changelog:
+    name: Generate Release Notes
+    needs: validate-release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      release_notes: ${{ steps.changelog.outputs.notes }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          VERSION="${{ needs.validate-release.outputs.version }}"
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          # Release notesファイルを作成
+          {
+            echo "# Release v$VERSION"
+            echo ""
+
+            if [ -f CHANGELOG.md ]; then
+              echo "## Changes"
+              # CHANGELOG.mdから該当バージョンのセクションを抽出
+              sed -n "/## \[*$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$ d' || echo "See git log for changes"
+              echo ""
+            fi
+
+            echo "## Commits"
+            if [ -z "$PREVIOUS_TAG" ]; then
+              git log --pretty=format:"- %s (%h)" --no-merges
+            else
+              git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges
+            fi
+            echo ""
+            echo ""
+
+            echo "## Contributors"
+            if [ -z "$PREVIOUS_TAG" ]; then
+              git log --pretty=format:"%an" --no-merges | sort -u | sed 's/^/- /'
+            else
+              git log ${PREVIOUS_TAG}..HEAD --pretty=format:"%an" --no-merges | sort -u | sed 's/^/- /'
+            fi
+            echo ""
+            echo ""
+
+            echo "## Checksums"
+            echo ""
+            echo "Checksums for release binaries will be added after build completion."
+            echo ""
+            echo "## Installation"
+            echo ""
+            echo "\`\`\`bash"
+            echo "# Linux (x86_64)"
+            echo "curl -LO https://github.com/${{ github.repository }}/releases/download/v$VERSION/backup-suite-linux-x86_64.tar.gz"
+            echo "tar xzf backup-suite-linux-x86_64.tar.gz"
+            echo ""
+            echo "# macOS (Intel)"
+            echo "curl -LO https://github.com/${{ github.repository }}/releases/download/v$VERSION/backup-suite-macos-x86_64.tar.gz"
+            echo "tar xzf backup-suite-macos-x86_64.tar.gz"
+            echo ""
+            echo "# macOS (Apple Silicon)"
+            echo "curl -LO https://github.com/${{ github.repository }}/releases/download/v$VERSION/backup-suite-macos-aarch64.tar.gz"
+            echo "tar xzf backup-suite-macos-aarch64.tar.gz"
+            echo "\`\`\`"
+          } > RELEASE_NOTES.md
+
+          cat RELEASE_NOTES.md
+
+      - name: Upload release notes
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-notes
+          path: RELEASE_NOTES.md
+
+  # ==================== Phase 3: クロスプラットフォームビルド ====================
+
+  build-release:
+    name: Build (${{ matrix.target }})
+    needs: [validate-release, generate-changelog]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Linux
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: backup-suite
+            asset_name: backup-suite-linux-x86_64
+            use_cross: false
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            artifact_name: backup-suite
+            asset_name: backup-suite-linux-aarch64
+            use_cross: true
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            artifact_name: backup-suite
+            asset_name: backup-suite-linux-x86_64-musl
+            use_cross: false
+
+          # macOS
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: backup-suite
+            asset_name: backup-suite-macos-x86_64
+            use_cross: false
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: backup-suite
+            asset_name: backup-suite-macos-aarch64
+            use_cross: false
+
+          # Windows
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: backup-suite.exe
+            asset_name: backup-suite-windows-x86_64.exe
+            use_cross: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross (if needed)
+        if: matrix.use_cross
+        run: cargo install cross --locked
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build release binary
+        run: |
+          if [ "${{ matrix.use_cross }}" = "true" ]; then
+            cross build --release --target ${{ matrix.target }} --locked
+          else
+            cargo build --release --target ${{ matrix.target }} --locked
+          fi
+        shell: bash
+
+      - name: Strip binary (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          strip target/${{ matrix.target }}/release/${{ matrix.artifact_name }} || true
+
+      - name: Create archive
+        id: archive
+        shell: bash
+        run: |
+          cd target/${{ matrix.target }}/release
+
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            7z a ../../../${{ matrix.asset_name }}.zip ${{ matrix.artifact_name }}
+            echo "archive_name=${{ matrix.asset_name }}.zip" >> $GITHUB_OUTPUT
+            echo "archive_path=${{ matrix.asset_name }}.zip" >> $GITHUB_OUTPUT
+          else
+            tar czf ../../../${{ matrix.asset_name }}.tar.gz ${{ matrix.artifact_name }}
+            echo "archive_name=${{ matrix.asset_name }}.tar.gz" >> $GITHUB_OUTPUT
+            echo "archive_path=${{ matrix.asset_name }}.tar.gz" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate SHA256 checksum
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            certUtil -hashfile ${{ steps.archive.outputs.archive_path }} SHA256 > ${{ steps.archive.outputs.archive_path }}.sha256
+          else
+            shasum -a 256 ${{ steps.archive.outputs.archive_path }} > ${{ steps.archive.outputs.archive_path }}.sha256
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-${{ matrix.target }}
+          path: |
+            ${{ steps.archive.outputs.archive_path }}
+            ${{ steps.archive.outputs.archive_path }}.sha256
+
+  # ==================== Phase 4: リリース作成 ====================
+
+  create-release:
+    name: Create GitHub Release
+    needs: [validate-release, generate-changelog, build-release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.create_release.outputs.id }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download release notes
+        uses: actions/download-artifact@v3
+        with:
+          name: release-notes
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.validate-release.outputs.version }}
+          name: Release v${{ needs.validate-release.outputs.version }}
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: ${{ needs.validate-release.outputs.is_prerelease == 'true' }}
+          files: |
+            artifacts/release-*/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ==================== Phase 5: 配布（オプション） ====================
+
+  publish-crates-io:
+    name: Publish to crates.io
+    needs: [validate-release, create-release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: needs.validate-release.outputs.is_prerelease == 'false'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Publish to crates.io
+        run: cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --allow-dirty
+        continue-on-error: true
+
+  publish-docker:
+    name: Publish Docker Image
+    needs: [validate-release, create-release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+        continue-on-error: true
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ secrets.DOCKER_USERNAME }}/backup-suite
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}},value=v${{ needs.validate-release.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ needs.validate-release.outputs.version }}
+            type=semver,pattern={{major}},value=v${{ needs.validate-release.outputs.version }}
+            type=raw,value=latest,enable=${{ needs.validate-release.outputs.is_prerelease == 'false' }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ==================== Phase 6: リリース後処理 ====================
+
+  post-release:
+    name: Post-Release Tasks
+    needs: [validate-release, create-release]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: needs.validate-release.outputs.is_prerelease == 'false'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Calculate next version
+        id: next_version
+        run: |
+          CURRENT_VERSION="${{ needs.validate-release.outputs.version }}"
+          MAJOR=$(echo $CURRENT_VERSION | cut -d. -f1)
+          MINOR=$(echo $CURRENT_VERSION | cut -d. -f2)
+          PATCH=$(echo $CURRENT_VERSION | cut -d. -f3 | cut -d- -f1)
+          NEXT_PATCH=$((PATCH + 1))
+          NEXT_VERSION="${MAJOR}.${MINOR}.${NEXT_PATCH}-dev"
+          echo "next_version=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update version in Cargo.toml
+        run: |
+          sed -i.bak "s/^version = \".*\"/version = \"${{ steps.next_version.outputs.next_version }}\"/" Cargo.toml
+          rm Cargo.toml.bak || true
+
+      - name: Create PR for version bump
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: bump version to ${{ steps.next_version.outputs.next_version }}"
+          title: "chore: bump version to ${{ steps.next_version.outputs.next_version }}"
+          body: |
+            ## Post-Release Version Bump
+
+            This PR updates the version to `${{ steps.next_version.outputs.next_version }}` following the release of `v${{ needs.validate-release.outputs.version }}`.
+
+            ### Changes
+            - Updated `Cargo.toml` version
+
+            ### Checklist
+            - [ ] Version number is correct
+            - [ ] No other changes included
+
+            ---
+            *This PR was automatically created by the release workflow.*
+          branch: chore/version-bump-${{ needs.validate-release.outputs.version }}
+          base: develop
+          delete-branch: true
+
+  # ==================== Final: リリースサマリー ====================
+
+  release-summary:
+    name: Release Summary
+    needs:
+      - validate-release
+      - generate-changelog
+      - build-release
+      - create-release
+    runs-on: ubuntu-latest
+    if: always()
+    timeout-minutes: 5
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# Release Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Release Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version**: v${{ needs.validate-release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Pre-release**: ${{ needs.validate-release.outputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Pipeline Status" >> $GITHUB_STEP_SUMMARY
+          echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Validation | ${{ needs.validate-release.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Changelog | ${{ needs.generate-changelog.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build-release.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Release | ${{ needs.create-release.result }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check critical jobs
+        if: |
+          needs.validate-release.result != 'success' ||
+          needs.build-release.result != 'success' ||
+          needs.create-release.result != 'success'
+        run: |
+          echo "::error::One or more critical release jobs failed"
+          exit 1
+
+      - name: Release completed
+        run: |
+          echo "Release v${{ needs.validate-release.outputs.version }} completed successfully! 🚀"
+          echo "Release URL: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.validate-release.outputs.version }}"

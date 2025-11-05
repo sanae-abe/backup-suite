@@ -1,0 +1,71 @@
+/// main.rsへのUI統合パッチ
+/// 以下のコマンドを新しいUI機能で置き換える
+
+// インポートに追加
+use backup_suite::ui::{display_dashboard, display_targets, display_history, display_backup_result, ColorTheme};
+
+// Commands::List の実装を置き換え（行619-641）
+Some(Commands::List { priority }) => {
+    let config = Config::load()?;
+    let theme = ColorTheme::auto();
+
+    let targets = if let Some(p) = priority {
+        let prio = parse_priority(&p)?;
+        config.filter_by_priority(&prio)
+    } else {
+        config.targets.iter().collect()
+    };
+
+    display_targets(&targets.iter().map(|&t| t.clone()).collect::<Vec<_>>(), &theme);
+}
+
+// Commands::Run の結果表示を置き換え（行681-698）
+Some(Commands::Run { priority, dry_run }) => {
+    let priority = priority.as_ref().map(|s| parse_priority(s)).transpose()?;
+    let config = Config::load()?;
+    let theme = ColorTheme::auto();
+
+    println!("{}🚀 バックアップ実行{}{}",
+        get_color("green"),
+        if dry_run { "（ドライラン）" } else { "" },
+        get_color("reset"));
+
+    let runner = BackupRunner::new(config, dry_run);
+    let result = runner.run(priority.as_ref())?;
+
+    if !dry_run {
+        display_backup_result(
+            result.total_files,
+            result.success_files,
+            result.failed_files,
+            result.total_bytes,
+            &theme,
+        );
+
+        if !result.errors.is_empty() {
+            println!("\n{}⚠️ エラー詳細{}", get_color("yellow"), get_color("reset"));
+            for (i, error) in result.errors.iter().enumerate() {
+                println!("  {}. {}", i + 1, error);
+            }
+        }
+    } else {
+        println!("{}📋 検出{}: {} ファイル",
+            get_color("gray"), get_color("reset"), result.total_files);
+    }
+}
+
+// Commands::History の実装を置き換え（行750-767）
+Some(Commands::History { days }) => {
+    let history = BackupHistory::filter_by_days(days)?;
+    let theme = ColorTheme::auto();
+
+    println!("\n{}📜 バックアップ履歴{}（{}日間）",
+        get_color("magenta"), get_color("reset"), days);
+
+    display_history(&history, &theme);
+}
+
+// Commands::Dashboard の実装を置き換え（行782-804）
+Some(Commands::Dashboard) => {
+    display_dashboard()?;
+}

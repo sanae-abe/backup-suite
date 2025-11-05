@@ -1,0 +1,94 @@
+[package]
+name = "backup-suite"
+version = "1.0.0"
+edition = "2021"
+authors = ["Backup Suite Contributors"]
+description = "高速・型安全・インテリジェントなローカルバックアップツール"
+license = "MIT"
+repository = "https://github.com/user/backup-suite"
+documentation = "https://docs.rs/backup-suite"
+homepage = "https://github.com/user/backup-suite"
+keywords = ["backup", "cli", "rust", "tool", "filesystem"]
+categories = ["command-line-utilities", "filesystem"]
+readme = "README.md"
+rust-version = "1.70"
+
+[lib]
+name = "backup_suite"
+path = "src/lib.rs"
+
+[[bin]]
+name = "backup-suite"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.100"
+chrono = { version = "0.4.42", features = ["serde"] }
+clap = { version = "4.5.51", features = ["derive", "cargo"] }
+clap_complete = "4.5.60"
+comfy-table = "7.1"
+console = "0.15"
+dialoguer = "0.11"
+dirs = "6.0.0"
+indicatif = "0.17"
+is-terminal = "0.4"
+num_cpus = "1.0"
+rayon = "1.11.0"
+regex = "1.12"
+serde = { version = "1.0.228", features = ["derive"] }
+skim = "0.20.5"
+thiserror = "1.0"
+toml = "0.9.8"
+walkdir = "2.5.0"
+
+# 暗号化関連
+aes-gcm = "0.10"
+argon2 = "0.5"
+rand = "0.8"
+zeroize = { version = "1.7", features = ["derive"] }
+
+# 圧縮関連
+zstd = "0.13"
+flate2 = "1.0"
+
+[dev-dependencies]
+proptest = "1.4"
+tempfile = "3.10"
+assert_fs = "1.1"
+predicates = "3.1"
+serial_test = "3.1"
+
+[dev-dependencies.criterion]
+version = "0.5"
+features = ["html_reports"]
+
+[[bench]]
+name = "backup_benchmark"
+harness = false
+
+[[bench]]
+name = "security_benchmark"
+harness = false
+
+[[bench]]
+name = "ui_benchmark"
+harness = false
+
+[[bench]]
+name = "integration_benchmark"
+harness = false
+
+[[bench]]
+name = "crypto_benchmark"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.bench]
+opt-level = 3
+lto = true

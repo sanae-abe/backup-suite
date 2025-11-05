@@ -1,0 +1,124 @@
+# rustfmt設定ファイル
+# backup-suite プロジェクト専用設定
+
+# エディション指定
+edition = "2021"
+
+# 基本フォーマット設定
+max_width = 100
+hard_tabs = false
+tab_spaces = 4
+
+# インポート設定
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"
+imports_indent = "Block"
+
+# コメント設定
+comment_width = 80
+wrap_comments = true
+normalize_comments = true
+normalize_doc_attributes = true
+
+# 関数設定
+fn_single_line = false
+fn_args_layout = "Tall"
+where_single_line = false
+
+# 構造体・列挙型設定
+struct_lit_single_line = false
+enum_discrim_align_threshold = 0
+
+# 配列・タプル設定
+array_width = 80
+chain_width = 60
+
+# 制御フロー設定
+control_brace_style = "AlwaysSameLine"
+indent_style = "Block"
+overflow_delimited_expr = true
+
+# マッチ式設定
+match_arm_blocks = true
+match_block_trailing_comma = true
+
+# 型設定
+use_small_heuristics = "Default"
+type_punctuation_density = "Wide"
+
+# その他
+reorder_imports = true
+reorder_modules = true
+remove_nested_parens = true
+space_before_colon = false
+space_after_colon = true
+spaces_around_ranges = false
+binop_separator = "Front"
+combine_control_expr = true
+condense_wildcard_suffixes = true
+force_explicit_abi = true
+format_code_in_doc_comments = true
+format_macro_matchers = true
+format_macro_bodies = true
+hex_literal_case = "Preserve"
+# use_field_init_shorthand = true  # nightly
+# use_try_shorthand = true          # nightly
+
+# エラー処理
+error_on_line_overflow = false
+error_on_unformatted = false
+ignore = []
+
+# Nightly専用機能（安定版では無視される）
+# unstable_features = true
+# format_strings = true
+# overflow_delimited_expr = true
+# struct_field_align_threshold = 20
+
+# 改行設定
+newline_style = "Auto"
+force_multiline_blocks = false
+brace_style = "SameLineWhere"
+empty_item_single_line = true
+struct_lit_width = 18
+fn_call_width = 60
+
+# インデント設定
+indent_style = "Block"
+trailing_comma = "Vertical"
+trailing_semicolon = true
+
+# 文字列設定
+format_strings = false  # 文字列リテラルのフォーマットを無効化（安全のため）
+
+# マクロ設定
+skip_macro_invocations = []
+
+# モジュール設定
+module_recursion_depth = 3
+
+# コード品質向上設定
+edition = "2021"
+unstable_features = false  # 安定版のみ使用
+version = "Two"            # rustfmt バージョン2
+
+# 特殊なケースの処理
+# 長い属性を改行
+attr_fn_like_width = 70
+
+# チェーンメソッドの改行
+chain_width = 60
+chains_overflow_last = false
+
+# 空行の処理
+blank_lines_upper_bound = 1
+blank_lines_lower_bound = 0
+
+# where句の処理
+where_single_line = false
+
+# クロージャー設定
+force_multiline_blocks = false
+
+# マクロのフォーマット
+skip_children = false

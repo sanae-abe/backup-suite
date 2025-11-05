@@ -1,0 +1,133 @@
+# cargo-deny configuration
+# https://embarkstudios.github.io/cargo-deny/
+
+# ==================== Advisories ====================
+# セキュリティアドバイザリ・脆弱性チェック
+
+[advisories]
+# データベース更新頻度
+db-path = "~/.cargo/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+
+# 脆弱性検出時の動作
+vulnerability = "deny"      # CVE脆弱性は即座に拒否
+unmaintained = "warn"       # メンテナンス終了クレートは警告
+unsound = "deny"            # 安全でないコードは拒否
+yanked = "deny"             # Yankedクレートは拒否
+notice = "warn"             # 注意事項は警告
+ignore = [
+    # 一時的に無視する脆弱性ID（緊急時のみ使用）
+    # 例: "RUSTSEC-2023-0001",
+]
+
+# ==================== Licenses ====================
+# ライセンスコンプライアンスチェック
+
+[licenses]
+# ライセンスなしクレートは拒否
+unlicensed = "deny"
+
+# 許可するライセンス（OSS friendly）
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-DFS-2016",
+    "CC0-1.0",
+    "0BSD",
+    "Zlib",
+    "BSL-1.0",
+]
+
+# 許可しないライセンス（Copyleft）
+deny = [
+    "GPL-2.0",
+    "GPL-3.0",
+    "AGPL-3.0",
+    "LGPL-2.0",
+    "LGPL-2.1",
+    "LGPL-3.0",
+]
+
+# Copyleftライセンスは拒否
+copyleft = "deny"
+
+# 複数ライセンスの扱い
+allow-osi-fsf-free = "neither"
+default = "deny"
+
+# 信頼する組織（自動許可）
+# confidence-threshold = 0.8
+
+# 特定クレートのライセンス例外
+[[licenses.clarify]]
+name = "ring"
+version = "*"
+expression = "ISC AND MIT AND OpenSSL"
+license-files = [
+    { path = "LICENSE", hash = 0xbd0eed23 }
+]
+
+# ==================== Bans ====================
+# 依存関係の禁止・制限
+
+[bans]
+# 複数バージョン依存の扱い
+multiple-versions = "warn"      # 警告のみ（厳格にする場合は "deny"）
+wildcards = "deny"              # ワイルドカード依存は拒否
+highlight = "all"               # すべての重複を強調表示
+
+# 許可する重複バージョン（一時的）
+skip = [
+    # 例: { name = "syn", version = "1.0" }
+]
+
+# 特定のバージョンツリー許可
+skip-tree = [
+    # 例: { name = "windows-sys", version = "0.48" }
+]
+
+# 禁止クレート（セキュリティリスク・非推奨等）
+deny = [
+    # セキュリティリスクのあるクレート
+    { name = "openssl-sys", wrappers = ["openssl"] },  # rustls推奨
+
+    # 非推奨クレート
+    { name = "tempdir" },                              # tempfile推奨
+    { name = "time", version = "<0.3" },               # 旧バージョンは脆弱
+]
+
+# 機能フラグの制限
+features = "exact"              # 正確な機能フラグ一致を要求
+
+# ワイルドカード依存の許可例外
+allow-wildcard-paths = false
+
+# ==================== Sources ====================
+# クレートソースの検証
+
+[sources]
+# 未知のレジストリは拒否
+unknown-registry = "deny"
+
+# 未知のGitソースは拒否
+unknown-git = "deny"
+
+# 許可するレジストリ
+[sources.allow-registry]
+allow = ["https://github.com/rust-lang/crates.io-index"]
+
+# 許可するGitソース（必要な場合のみ）
+[sources.allow-git]
+allow = [
+    # 例: "https://github.com/your-org/private-crate"
+]
+
+# ==================== Output ====================
+# 出力フォーマット設定
+
+[output]
+feature-depth = 1

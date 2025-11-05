@@ -1,0 +1,218 @@
+name: Performance Benchmarks
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # 毎週日曜日午前3時（UTC）に実行
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  benchmark:
+    name: Run Benchmarks
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Run basic benchmarks
+      run: cargo bench --bench backup_benchmark -- --output-format bencher | tee benchmark-results.txt
+
+    - name: Run security benchmarks
+      run: cargo bench --bench security_benchmark -- --output-format bencher | tee -a benchmark-results.txt
+
+    - name: Run UI benchmarks
+      run: cargo bench --bench ui_benchmark -- --output-format bencher | tee -a benchmark-results.txt
+
+    - name: Run integration benchmarks
+      run: cargo bench --bench integration_benchmark -- --output-format bencher | tee -a benchmark-results.txt
+
+    - name: Store benchmark results
+      uses: benchmark-action/github-action-benchmark@v1
+      with:
+        name: Rust Benchmark
+        tool: 'cargo'
+        output-file-path: benchmark-results.txt
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        auto-push: true
+        alert-threshold: '120%'
+        comment-on-alert: true
+        fail-on-alert: false
+
+    - name: Upload benchmark results
+      uses: actions/upload-artifact@v3
+      with:
+        name: benchmark-results
+        path: |
+          benchmark-results.txt
+          target/criterion
+        retention-days: 30
+
+  performance-test:
+    name: Performance Regression Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Cache dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-perf-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Build release binary
+      run: cargo build --release
+
+    - name: Create test data
+      run: |
+        mkdir -p /tmp/perf-test/source
+        mkdir -p /tmp/perf-test/backup
+        # 1000個の小さいファイル作成
+        for i in {1..1000}; do
+          echo "test content $i" > "/tmp/perf-test/source/file_$i.txt"
+        done
+        # 10個の大きいファイル作成（各10MB）
+        for i in {1..10}; do
+          dd if=/dev/urandom of="/tmp/perf-test/source/large_$i.bin" bs=1M count=10
+        done
+
+    - name: Run performance test
+      run: |
+        echo "パフォーマンステスト開始"
+        time ./target/release/backup-suite run --dry-run
+
+        # メモリ使用量チェック
+        /usr/bin/time -v ./target/release/backup-suite run --dry-run 2>&1 | tee perf-metrics.txt
+
+        # メモリ使用量が15MB以下であることを確認
+        MAX_MEM=$(grep "Maximum resident set size" perf-metrics.txt | awk '{print $6}')
+        if [ "$MAX_MEM" -gt 15360 ]; then
+          echo "エラー: メモリ使用量が上限を超えています: ${MAX_MEM}KB > 15360KB"
+          exit 1
+        fi
+
+    - name: Upload performance metrics
+      uses: actions/upload-artifact@v3
+      with:
+        name: performance-metrics
+        path: perf-metrics.txt
+        retention-days: 30
+
+  memory-profiling:
+    name: Memory Profiling
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Install valgrind
+      run: sudo apt-get update && sudo apt-get install -y valgrind
+
+    - name: Build with debug symbols
+      run: cargo build --release
+
+    - name: Run valgrind
+      run: |
+        valgrind --leak-check=full \
+                 --show-leak-kinds=all \
+                 --track-origins=yes \
+                 --verbose \
+                 --log-file=valgrind-output.txt \
+                 ./target/release/backup-suite --help
+
+    - name: Check for memory leaks
+      run: |
+        if grep -q "definitely lost" valgrind-output.txt; then
+          echo "メモリリークが検出されました"
+          cat valgrind-output.txt
+          exit 1
+        fi
+
+    - name: Upload valgrind output
+      uses: actions/upload-artifact@v3
+      with:
+        name: valgrind-output
+        path: valgrind-output.txt
+        retention-days: 30
+
+  cpu-profiling:
+    name: CPU Profiling
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust stable
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Install flamegraph dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y linux-tools-common linux-tools-generic
+        cargo install flamegraph
+
+    - name: Build release binary
+      run: cargo build --release
+
+    - name: Generate flamegraph
+      run: |
+        # perf権限設定
+        echo -1 | sudo tee /proc/sys/kernel/perf_event_paranoid
+        # flamegraph生成
+        cargo flamegraph --bin backup-suite -- --help || true
+
+    - name: Upload flamegraph
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: flamegraph
+        path: flamegraph.svg
+        retention-days: 30

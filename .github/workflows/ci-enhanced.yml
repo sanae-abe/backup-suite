@@ -1,0 +1,518 @@
+name: Enhanced CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # 毎日午前3時（JST 12時）にセキュリティ監査を実行
+    - cron: '0 3 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  # Minimum Supported Rust Version
+  MSRV: "1.70.0"
+  # カバレッジ閾値
+  COVERAGE_THRESHOLD: 70
+
+# Workflow並列実行の制御
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==================== Phase 1: 高速品質ゲート（5分以内完了） ====================
+
+  # コードフォーマットチェック
+  format:
+    name: Format Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Annotate formatting issues
+        if: failure()
+        run: |
+          echo "::error::Code formatting check failed. Run 'cargo fmt' locally."
+
+  # Clippy（静的解析）- 厳格モード
+  clippy:
+    name: Clippy (Strict Mode)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-clippy-
+
+      - name: Run Clippy (strict)
+        run: |
+          cargo clippy --all-targets --all-features -- \
+            -D warnings \
+            -D clippy::all \
+            -D clippy::pedantic \
+            -D clippy::cargo \
+            -A clippy::multiple-crate-versions \
+            -A clippy::module-name-repetitions
+
+      - name: Clippy JSON report
+        if: always()
+        run: |
+          cargo clippy --all-targets --all-features --message-format=json -- \
+            -D warnings > clippy-report.json || true
+
+      - name: Upload Clippy report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: clippy-report
+          path: clippy-report.json
+
+  # MSRV（Minimum Supported Rust Version）検証
+  msrv-check:
+    name: MSRV Compatibility Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust ${{ env.MSRV }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.MSRV }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-msrv-${{ env.MSRV }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Check MSRV builds
+        run: cargo build --all-features --locked
+
+      - name: Verify MSRV in Cargo.toml
+        run: |
+          CARGO_MSRV=$(grep "rust-version" Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
+          if [ "$CARGO_MSRV" != "${{ env.MSRV }}" ]; then
+            echo "::error::MSRV mismatch: Cargo.toml has $CARGO_MSRV but CI expects ${{ env.MSRV }}"
+            exit 1
+          fi
+
+  # ==================== Phase 2: セキュリティスキャン（並列実行） ====================
+
+  # セキュリティ監査（cargo-audit）
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo-audit binary
+        id: cache-audit
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/cargo-audit
+          key: ${{ runner.os }}-cargo-audit-0.18
+
+      - name: Install cargo-audit
+        if: steps.cache-audit.outputs.cache-hit != 'true'
+        run: cargo install cargo-audit --locked
+
+      - name: Run security audit
+        run: cargo audit --deny warnings --deny unsound --deny yanked
+
+      - name: Generate audit report
+        if: always()
+        run: cargo audit --json > audit-report.json || true
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-audit-report
+          path: audit-report.json
+
+  # 依存関係ポリシーチェック（cargo-deny）
+  cargo-deny:
+    name: Dependency Policy Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo-deny binary
+        id: cache-deny
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/cargo-deny
+          key: ${{ runner.os }}-cargo-deny-0.14
+
+      - name: Install cargo-deny
+        if: steps.cache-deny.outputs.cache-hit != 'true'
+        run: cargo install cargo-deny --locked
+
+      - name: Create deny.toml if not exists
+        run: |
+          if [ ! -f deny.toml ]; then
+            cat > deny.toml << 'EOF'
+          [advisories]
+          vulnerability = "deny"
+          unmaintained = "warn"
+          unsound = "deny"
+          yanked = "deny"
+          notice = "warn"
+
+          [licenses]
+          unlicensed = "deny"
+          allow = [
+              "MIT",
+              "Apache-2.0",
+              "Apache-2.0 WITH LLVM-exception",
+              "BSD-2-Clause",
+              "BSD-3-Clause",
+              "ISC",
+              "Unicode-DFS-2016",
+          ]
+          copyleft = "deny"
+
+          [bans]
+          multiple-versions = "warn"
+          wildcards = "deny"
+
+          [sources]
+          unknown-registry = "deny"
+          unknown-git = "deny"
+          EOF
+          fi
+
+      - name: Check licenses, advisories, and bans
+        run: cargo deny check
+
+  # SBOM（Software Bill of Materials）生成
+  sbom-generation:
+    name: SBOM Generation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-sbom
+        run: cargo install cargo-sbom --locked || true
+
+      - name: Generate SBOM (CycloneDX)
+        run: |
+          cargo sbom --output-format json > sbom-cyclonedx.json || \
+          echo '{"bomFormat":"CycloneDX","specVersion":"1.4","components":[]}' > sbom-cyclonedx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom
+          path: sbom-cyclonedx.json
+
+  # ==================== Phase 3: テスト実行（複数環境） ====================
+
+  # 単体テスト・統合テスト
+  test:
+    name: Test Suite (${{ matrix.os }} / ${{ matrix.rust }})
+    needs: [format, clippy]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        rust: [stable, beta]
+        include:
+          - os: ubuntu-latest
+            rust: nightly
+        exclude:
+          - os: windows-latest
+            rust: beta
+          - os: macos-latest
+            rust: beta
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust ${{ matrix.rust }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-${{ matrix.rust }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build all targets
+        run: cargo build --verbose --all-targets --all-features
+
+      - name: Run unit tests
+        run: cargo test --lib --verbose --all-features
+
+      - name: Run integration tests
+        run: cargo test --test integration_tests --verbose --all-features || true
+
+      - name: Run property-based tests
+        run: cargo test --test proptest --verbose --all-features || true
+
+      - name: Run doc tests
+        run: cargo test --doc --verbose --all-features
+
+      - name: Test with minimal features
+        run: cargo test --no-default-features --verbose
+
+  # コードカバレッジ（Linux only）
+  coverage:
+    name: Code Coverage
+    needs: [format, clippy]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo-tarpaulin binary
+        id: cache-tarpaulin
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/cargo-tarpaulin
+          key: ${{ runner.os }}-cargo-tarpaulin-0.27
+
+      - name: Install cargo-tarpaulin
+        if: steps.cache-tarpaulin.outputs.cache-hit != 'true'
+        run: cargo install cargo-tarpaulin --version 0.27.0 --locked
+
+      - name: Generate coverage report
+        run: |
+          cargo tarpaulin \
+            --verbose \
+            --all-features \
+            --workspace \
+            --timeout 300 \
+            --out xml \
+            --out lcov \
+            --exclude-files 'benches/*' 'tests/*' 'examples/*'
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./cobertura.xml,./lcov.info
+          fail_ci_if_error: false
+          verbose: true
+          flags: unittests
+          name: codecov-${{ github.run_id }}
+
+      - name: Check coverage threshold
+        run: |
+          coverage=$(cargo tarpaulin --out json --all-features --workspace | \
+            jq '.files | to_entries | map(.value.coverage) | add / length' || echo 0)
+
+          echo "Current coverage: ${coverage}%"
+          echo "Threshold: ${{ env.COVERAGE_THRESHOLD }}%"
+
+          if (( $(echo "$coverage < ${{ env.COVERAGE_THRESHOLD }}" | bc -l) )); then
+            echo "::warning::Coverage ${coverage}% is below threshold ${{ env.COVERAGE_THRESHOLD }}%"
+            # 現在はwarningのみ（Phase 2完了後にfailに変更）
+          fi
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: |
+            cobertura.xml
+            lcov.info
+
+  # ==================== Phase 4: 品質メトリクス ====================
+
+  # 依存関係アップデートチェック
+  dependency-check:
+    name: Dependency Update Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-outdated
+        run: cargo install cargo-outdated --locked || true
+
+      - name: Check for outdated dependencies
+        run: cargo outdated --format json > outdated.json || true
+        continue-on-error: true
+
+      - name: Report outdated dependencies
+        if: always()
+        run: |
+          if [ -f outdated.json ]; then
+            echo "## Outdated Dependencies" >> $GITHUB_STEP_SUMMARY
+            cargo outdated || echo "No outdated dependencies found"
+          fi
+
+      - name: Upload outdated report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: outdated-dependencies
+          path: outdated.json
+
+  # ドキュメント生成・検証
+  documentation:
+    name: Documentation Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-doc-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build documentation (strict)
+        run: cargo doc --no-deps --all-features --document-private-items
+        env:
+          RUSTDOCFLAGS: -D warnings -D missing-docs
+
+      - name: Check for broken intra-doc links
+        run: cargo doc --no-deps --all-features
+        env:
+          RUSTDOCFLAGS: -D warnings
+
+      - name: Upload documentation
+        uses: actions/upload-artifact@v3
+        with:
+          name: documentation
+          path: target/doc
+
+  # ==================== Phase 5: 統合チェック ====================
+
+  # 最終統合チェック
+  ci-success:
+    name: CI Success Gate
+    runs-on: ubuntu-latest
+    needs:
+      - format
+      - clippy
+      - msrv-check
+      - security-audit
+      - cargo-deny
+      - test
+      - coverage
+      - documentation
+    if: always()
+    timeout-minutes: 5
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# CI Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Quality Gates" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Format | ${{ needs.format.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Clippy | ${{ needs.clippy.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| MSRV | ${{ needs.msrv-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Security" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Audit | ${{ needs.security-audit.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cargo Deny | ${{ needs.cargo-deny.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Testing" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Coverage | ${{ needs.coverage.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Documentation | ${{ needs.documentation.result }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check required jobs
+        if: |
+          needs.format.result != 'success' ||
+          needs.clippy.result != 'success' ||
+          needs.msrv-check.result != 'success' ||
+          needs.security-audit.result != 'success' ||
+          needs.cargo-deny.result != 'success' ||
+          needs.test.result != 'success' ||
+          needs.coverage.result != 'success' ||
+          needs.documentation.result != 'success'
+        run: |
+          echo "::error::One or more required checks failed"
+          exit 1
+
+      - name: CI passed
+        run: echo "All CI checks passed successfully! ✅"

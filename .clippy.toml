@@ -1,0 +1,39 @@
+# Clippy設定ファイル
+# backup-suite プロジェクト専用設定
+
+# 複雑度の閾値
+cognitive-complexity-threshold = 25
+type-complexity-threshold = 500
+
+# 許可する lint（警告を無効化）
+# 必要に応じて調整
+
+# 警告レベルを上げる lint
+# これらは deny として扱われる
+
+# パニック系（本番環境で使用禁止）
+# unwrap_used, expect_used, panic などはワークフロー側で設定
+
+# パフォーマンス関連
+# 重いクローンを警告
+# large_types_passed_by_value は構造体サイズで判定
+
+# 可読性
+# 長すぎる行を警告（rustfmt に任せる）
+
+# セキュリティ
+# 安全でないパターンを警告
+
+# その他の設定
+# 関数の引数の最大数
+too-many-arguments-threshold = 7
+
+# enum variantの最大数
+enum-variant-size-threshold = 200
+
+# ベクトルの事前予約を推奨する閾値
+vec-box-size-threshold = 4096
+
+# 許可リスト（特定の状況で必要な場合）
+# allow-unwrap-in-tests = true  # テストコードではunwrap許可
+# allow-expect-in-tests = true  # テストコードではexpect許可
