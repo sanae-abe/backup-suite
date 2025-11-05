@@ -253,8 +253,8 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 
 ---
 
-** backup-suite
+**backup-suite**
 
-**開発者**: sanae-abe@m3.com
-**GitLab**: https://rendezvous.m3.com:3789/sanae-abe/backup-suite
-**Package Registry**: m3-internal
+- **開発者**: sanae-abe@m3.com
+- **GitLab**: https://rendezvous.m3.com:3789/sanae-abe/backup-suite
+- **Package Registry**: m3-internal
