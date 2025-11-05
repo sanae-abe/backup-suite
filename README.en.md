@@ -243,6 +243,7 @@ category = "development"
 | **history** | Display execution history | `backup-suite history --days 7` |
 | **dashboard** | Statistics dashboard | `backup-suite dashboard` |
 | **schedule** | Manage scheduling | `backup-suite schedule enable --priority high` |
+| **config** | Configuration management | `backup-suite config set-destination ~/backups` |
 | **open** | Open backup directory | `backup-suite open` |
 | **--version** | Version information | `backup-suite --version` |
 | **completion** | Generate shell completion | `backup-suite completion zsh` |

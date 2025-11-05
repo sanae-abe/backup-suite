@@ -170,8 +170,8 @@ backup-suite --version
 
 #### 1. 基本セットアップ
 ```bash
-# 設定確認（初回自動作成）
-backup-suite config show
+# 現在の設定確認
+backup-suite status
 
 # 設定ファイルの場所
 # ~/.config/backup-suite/config.toml
@@ -265,17 +265,19 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 
 | コマンド     | 説明                 | 例                                            |
 | ------------ | -------------------- | --------------------------------------------- |
-| **init**     | 対話的初期設定       | `backup-suite init --interactive`             |
-| **config**   | 設定管理             | `backup-suite config show`                    |
 | **add**      | バックアップ対象追加 | `backup-suite add ~/docs --priority high`     |
 | **list, ls** | 対象一覧表示         | `backup-suite list --priority medium`         |
 | **remove**   | 対象削除             | `backup-suite remove ~/old-files`             |
+| **clear, rm** | 一括削除            | `backup-suite clear --priority low`           |
 | **run**      | バックアップ実行     | `backup-suite run --encrypt`                  |
 | **restore**  | バックアップ復元     | `backup-suite restore --from backup-20251104` |
 | **cleanup**  | 古いバックアップ削除 | `backup-suite cleanup --days 30`              |
 | **status**   | 現在の状態表示       | `backup-suite status`                         |
 | **history**  | 実行履歴表示         | `backup-suite history --days 7`               |
 | **schedule** | スケジューリング管理 | `backup-suite schedule enable`                |
+| **config**   | 設定管理             | `backup-suite config set-destination ~/backups` |
+| **open**     | バックアップディレクトリを開く | `backup-suite open`               |
+| **completion** | シェル補完生成     | `backup-suite completion zsh`                 |
 
 ## 🛡️ セキュリティ・品質
 
