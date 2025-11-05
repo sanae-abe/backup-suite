@@ -118,7 +118,7 @@ test:performance-benchmark:
   script:
     # パフォーマンステスト
     - cargo bench --bench backup_performance
-    - cargo bench --bench compression_benchmark
+    - cargo bench --bench crypto_benchmark
   artifacts:
     paths:
       - target/criterion/
