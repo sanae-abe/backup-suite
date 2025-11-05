@@ -125,6 +125,7 @@ impl Default for KeyDerivation {
 }
 
 /// キーマネージャー
+#[derive(Default)]
 pub struct KeyManager {
     derivation: KeyDerivation,
 }
@@ -147,14 +148,6 @@ impl KeyManager {
     /// 既存のソルトでマスターキーを復元
     pub fn restore_master_key(&self, password: &str, salt: &[u8]) -> Result<MasterKey> {
         self.derivation.derive_key(password, salt)
-    }
-}
-
-impl Default for KeyManager {
-    fn default() -> Self {
-        Self {
-            derivation: KeyDerivation::default(),
-        }
     }
 }
 

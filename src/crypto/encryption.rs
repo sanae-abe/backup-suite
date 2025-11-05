@@ -113,6 +113,7 @@ impl EncryptionEngine {
     }
 
     /// データを暗号化
+    #[allow(deprecated)]
     pub fn encrypt(&self, data: &[u8], master_key: &MasterKey, salt: [u8; 16]) -> Result<EncryptedData> {
         let nonce_bytes = Self::generate_nonce();
 
@@ -134,6 +135,7 @@ impl EncryptionEngine {
     }
 
     /// データを復号化
+    #[allow(deprecated)]
     pub fn decrypt(&self, encrypted_data: &EncryptedData, master_key: &MasterKey) -> Result<Vec<u8>> {
         let key = Key::<Aes256Gcm>::from_slice(master_key.as_bytes());
         let cipher = Aes256Gcm::new(key);
@@ -147,6 +149,7 @@ impl EncryptionEngine {
     }
 
     /// ストリーミング暗号化（大容量ファイル用）
+    #[allow(deprecated)]
     pub fn encrypt_stream<R: Read, W: Write>(
         &self,
         mut reader: R,
@@ -179,6 +182,7 @@ impl EncryptionEngine {
             let mut chunk_nonce = nonce_bytes;
             chunk_nonce[8..12].copy_from_slice(&(encrypted_chunks.len() as u32).to_le_bytes());
 
+            #[allow(deprecated)]
             let nonce = Nonce::from_slice(&chunk_nonce);
             let chunk_ciphertext = cipher
                 .encrypt(nonce, &buffer[..bytes_read])
@@ -203,6 +207,7 @@ impl EncryptionEngine {
     }
 
     /// ストリーミング復号化（大容量ファイル用）
+    #[allow(deprecated)]
     pub fn decrypt_stream<R: Read, W: Write>(
         &self,
         mut reader: R,
@@ -238,6 +243,7 @@ impl EncryptionEngine {
             let mut chunk_nonce = nonce_bytes;
             chunk_nonce[8..12].copy_from_slice(&chunk_index.to_le_bytes());
 
+            #[allow(deprecated)]
             let nonce = Nonce::from_slice(&chunk_nonce);
             let plaintext = cipher
                 .decrypt(nonce, chunk_data.as_ref())
