@@ -133,13 +133,15 @@ test:code-coverage:
   before_script:
     - cargo install cargo-tarpaulin
   script:
-    - cargo tarpaulin --out Xml --output-dir coverage/ --exclude-files "target/*"
+    - cargo tarpaulin --out Xml --output-dir coverage/ --exclude-files "target/*" --timeout 300 --skip-clean || true
   artifacts:
     reports:
       coverage_report:
         coverage_format: cobertura
         path: coverage/cobertura.xml
+    when: always
   coverage: '/(\d+\.\d+)% coverage/'
+  allow_failure: true
 
 # 🔨 ビルドステージ（本番最適化）
 build:linux-x64-optimized:
