@@ -6,7 +6,7 @@
 [![Rust](https://img.shields.io/badge/rust-latest-blue.svg)](https://www.rust-lang.org)
 [![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases)
 
-**M3 Corporate Backup Solution**
+> M3 Corporate Backup Solution
 
 ## ✨ Key Features
 

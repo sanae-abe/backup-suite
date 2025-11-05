@@ -2,37 +2,33 @@
 
 [日本語](README.md) | [English](README.en.md) 
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Rust](https://img.shields.io/badge/rust-latest-blue.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-1.0.0-green.svg)](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases)
+> M3社内向バックアップソリューション
 
-**M3社内向バックアップソリューション**
+## 主要機能
 
-## ✨ 主要機能
-
-### 🎯 **優先度別バックアップ管理**
+### 優先度別バックアップ管理
 - **重要な仕事ファイル**は毎日自動バックアップ
 - **写真や個人ファイル**は週次バックアップ
 - **アーカイブファイル**は月次バックアップ
 
-### 🔐 **軍事レベルの暗号化保護**
+### 軍事レベルの暗号化保護
 - **AES-256-GCM暗号化**で解読は事実上不可能
 - **パソコン盗難時**でもデータは完全に安全
 - **クラウド保存時**も第三者は絶対に見れない
 - **パスワード**がないと誰も開けません
 
-### ⏰ **完全自動化されたスケジューリング**
+### 完全自動化されたスケジューリング
 - **設定後は手動操作不要**で自動実行
 - **重要度別に頻度を調整**（毎日・週次・月次）
 - **バックアップ忘れ**を完全に防止
 
-### 📊 **わかりやすい管理とメンテナンス**
+### わかりやすい管理とメンテナンス
 - **どれくらいバックアップしたか**統計で確認
 - **いつ実行されたか**履歴で確認
 - **古いバックアップ**を自動削除してディスク節約
 - **データが壊れた時**の簡単復元
 
-## 🚀 インストール
+## クイックスタート
 
 ### Rustツールチェーンのインストール
 
@@ -55,7 +51,7 @@ rustc --version
 cargo --version
 ```
 
-### 🚀 backup-suiteのインストール
+### インストール
 
 ```bash
 # 1. リポジトリをクローン
@@ -70,7 +66,7 @@ backup-suite --version
 backup-suite --help
 ```
 
-### 🔄 アップデート
+### アップデート
 
 ```bash
 # 1. 最新ソースを取得
@@ -84,7 +80,7 @@ cargo install --path . --force
 backup-suite --version
 ```
 
-### 🧹 アンインストール
+### アンインストール
 
 ```bash
 # 1. backup-suiteを削除
@@ -100,9 +96,7 @@ rm -rf ~/.local/share/backup-suite/
 rm -rf ~/backup-suite  # クローンしたディレクトリ
 ```
 
-### 🔧 トラブルシューティング
-
-#### よくある問題と解決策
+## よくある問題と解決策
 
 **問題1**: `rustc` または `cargo` コマンドが見つからない
 ```bash
@@ -144,7 +138,7 @@ which backup-suite
 backup-suite --version
 ```
 
-## 📸 使用例スクリーンショット
+## スクリーンショット
 
 ### ヘルプ画面
 ![backup-suite help](docs/screenshots/help.webp)
@@ -166,7 +160,7 @@ backup-suite --version
 *過去のバックアップ実行履歴を確認*
 *実際のバックアップ実行画面*
 
-## 🛠️初期設定
+## 初期設定
 
 ### 1. 基本セットアップ
 ```bash
@@ -195,7 +189,7 @@ backup-suite config get-destination
 backup-suite status
 ```
 
-## ⚡️基本的な使用例
+## 基本的な使用例
 
 1. **ファイルを追加**
 ```bash
@@ -227,7 +221,7 @@ backup-suite schedule setup --high daily --medium weekly --low monthly
 backup-suite schedule enable
 ```
 
-## 🏗️ 基本設定例
+## 基本設定例
 
 ### /.config/backup-suite/config.toml
 ```toml
@@ -261,7 +255,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ```
 
 
-## 📋 コマンドリファレンス
+## コマンドリファレンス
 
 | コマンド       | 説明                           | 例                                              |
 | -------------- | ------------------------------ | ----------------------------------------------- |
@@ -279,7 +273,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 | **open**       | バックアップディレクトリを開く | `backup-suite open`                             |
 | **completion** | シェル補完生成                 | `backup-suite completion zsh`                   |
 
-## 🛡️ セキュリティ・品質
+## セキュリティ・品質
 
 ### **企業級セキュリティ**
 - AES-256-GCM暗号化対応
@@ -292,7 +286,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 - メモリ安全性保証（バッファオーバーフロー、メモリリーク防止）
 - コンパイル時エラー検出
 
-## 🔧 技術スタック
+## 技術スタック
 
 - **言語**: Rust（最新安定版）
 - **CLI**: clap 4.x （コマンドライン解析・補完生成）
@@ -300,7 +294,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 - **設定**: TOML （人間にとって読みやすい設定形式）
 - **スケジューリング**: macOS launchctl、Linux systemd
 
-## 🚀 対応プラットフォーム
+## 対応プラットフォーム
 
 | OS      | アーキテクチャ | 対応状況   |
 | ------- | -------------- | ---------- |
