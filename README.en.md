@@ -1,4 +1,4 @@
-# Backup Suite
+# backup-suite
 
 [日本語](README.md) | [English](README.en.md) 
 
