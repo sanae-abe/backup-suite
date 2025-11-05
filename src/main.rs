@@ -247,8 +247,8 @@ fn select_file_with_skim(prompt: &str) -> Result<Option<PathBuf>> {
 
     if let Some(item) = selected_items.first() {
         let path_str = item.output().to_string();
-        let path = if path_str.starts_with("./") {
-            PathBuf::from(&path_str[2..])
+        let path = if let Some(stripped) = path_str.strip_prefix("./") {
+            PathBuf::from(stripped)
         } else {
             PathBuf::from(path_str)
         };
@@ -427,7 +427,7 @@ fn setup_launchd_schedule(priority: &str, config: &Config, lang: Language) -> Re
 
     // launchctl load
     let output = std::process::Command::new("launchctl")
-        .args(&["load", &plist_path.to_string_lossy()])
+        .args(["load", &plist_path.to_string_lossy()])
         .output()?;
 
     if !output.status.success() {
@@ -464,7 +464,7 @@ fn remove_launchd_schedule(priority: &str, lang: Language) -> Result<()> {
     if plist_path.exists() {
         // launchctl unload
         let output = std::process::Command::new("launchctl")
-            .args(&["unload", &plist_path.to_string_lossy()])
+            .args(["unload", &plist_path.to_string_lossy()])
             .output()?;
 
         if !output.status.success() {
@@ -510,7 +510,7 @@ fn check_launchd_status(lang: Language) -> Result<()> {
         let label = format!("com.backup-suite.{}", priority);
 
         let output = std::process::Command::new("launchctl")
-            .args(&["list", &label])
+            .args(["list", &label])
             .output()?;
 
         if output.status.success() {
@@ -764,7 +764,19 @@ fn main() -> Result<()> {
             let priority = parse_priority(&priority)?;
 
             // パスを決定（pathが指定されていない場合、またはinteractiveフラグが立っている場合はskin選択）
-            let target_path = if path.is_none() || interactive {
+            let target_path = if let Some(p) = path {
+                if interactive {
+                    match select_file_with_skim("追加するファイル/ディレクトリを選択: ")? {
+                        Some(selected_path) => selected_path,
+                        None => {
+                            println!("{}⚠️ {}{}", get_color("yellow"), get_message(MessageKey::SelectionCancelled, lang), get_color("reset"));
+                            return Ok(());
+                        }
+                    }
+                } else {
+                    p
+                }
+            } else {
                 match select_file_with_skim("追加するファイル/ディレクトリを選択: ")? {
                     Some(selected_path) => selected_path,
                     None => {
@@ -772,8 +784,6 @@ fn main() -> Result<()> {
                         return Ok(());
                     }
                 }
-            } else {
-                path.unwrap()
             };
 
             // ファイル/ディレクトリの存在確認
@@ -807,7 +817,19 @@ fn main() -> Result<()> {
             let mut config = Config::load()?;
 
             // パスを決定（pathが指定されていない場合、またはinteractiveフラグが立っている場合はskin選択）
-            let target_path = if path.is_none() || interactive {
+            let target_path = if let Some(p) = path {
+                if interactive {
+                    match select_target_with_skim(&config, lang)? {
+                        Some(selected_path) => selected_path,
+                        None => {
+                            println!("{}⚠️ {}{}", get_color("yellow"), get_message(MessageKey::SelectionCancelled, lang), get_color("reset"));
+                            return Ok(());
+                        }
+                    }
+                } else {
+                    p
+                }
+            } else {
                 match select_target_with_skim(&config, lang)? {
                     Some(selected_path) => selected_path,
                     None => {
@@ -815,8 +837,6 @@ fn main() -> Result<()> {
                         return Ok(());
                     }
                 }
-            } else {
-                path.unwrap()
             };
 
             if config.remove_target(&target_path) {
@@ -906,7 +926,7 @@ fn main() -> Result<()> {
                 runner = runner.with_encryption(pwd);
             }
 
-            let result = runner.run(priority.as_ref(), category.as_ref().map(|s| s.as_str()))?;
+            let result = runner.run(priority.as_ref(), category.as_deref())?;
 
             if !dry_run {
                 display_backup_result(
@@ -1019,12 +1039,14 @@ fn main() -> Result<()> {
                     // zstd → gzip → 無圧縮の順で試す
                     let final_data = if let Ok(decompressed) = zstd::decode_all(&decrypted_data[..]) {
                         decompressed
-                    } else if let Ok(decompressed) = flate2::read::GzDecoder::new(&decrypted_data[..])
-                        .bytes()
-                        .collect::<Result<Vec<u8>, _>>() {
-                        decompressed
                     } else {
-                        decrypted_data
+                        let mut decoder = flate2::read::GzDecoder::new(&decrypted_data[..]);
+                        let mut decompressed = Vec::new();
+                        if decoder.read_to_end(&mut decompressed).is_ok() {
+                            decompressed
+                        } else {
+                            decrypted_data
+                        }
                     };
 
                     // 復号化＋展開されたデータを保存
