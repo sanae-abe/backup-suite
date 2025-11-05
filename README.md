@@ -57,7 +57,7 @@ cargo --version
 
 ```bash
 # 1. リポジトリをクローン
-git clone git@rendezvous.m3.com:sanae-abe/backup-suite.gi
+git clone git@rendezvous.m3.com:sanae-abe/backup-suite.git
 cd backup-suite
 
 # 2. ビルド&インストール
