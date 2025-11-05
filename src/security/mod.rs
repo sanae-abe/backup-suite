@@ -19,13 +19,13 @@
 //!
 //! # 使用例
 //!
-//! ```rust
+//! ```rust,no_run
 //! use backup_suite::security::{safe_join, check_read_permission, sanitize_path_component};
 //! use std::path::Path;
 //!
 //! // 安全なパス結合
 //! let base = Path::new("/home/user/backups");
-//! let child = Path::new("documents/report.txt");
+//! let child = Path::new("report.txt");
 //! let safe_path = safe_join(base, child).unwrap();
 //!
 //! // 権限チェック

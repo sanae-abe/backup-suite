@@ -31,7 +31,7 @@
 //!
 //! // バックアップを実行
 //! let runner = BackupRunner::new(config, false);
-//! let result = runner.run(None).unwrap();
+//! let result = runner.run(None, None).unwrap();
 //!
 //! println!("成功: {}件, 失敗: {}件", result.successful, result.failed);
 //! ```

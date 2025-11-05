@@ -47,7 +47,7 @@
 //!
 //! // 3. バックアップ実行
 //! let runner = BackupRunner::new(config, false); // false = 実際に実行
-//! let result = runner.run(None)?; // None = 全優先度対象
+//! let result = runner.run(None, None)?; // None = 全優先度対象
 //!
 //! // 4. 結果確認
 //! if result.failed > 0 {
@@ -90,7 +90,7 @@
 //! let runner = BackupRunner::new(config, false)
 //!     .with_progress(true); // プログレスバー表示
 //!
-//! let result = runner.run(Some(&Priority::High))?;
+//! let result = runner.run(Some(&Priority::High), None)?;
 //! # Ok(())
 //! # }
 //! ```
@@ -209,7 +209,7 @@
 //!
 //! // CPU集約的環境での実行
 //! std::env::set_var("RAYON_NUM_THREADS", "8");
-//! let result = runner.run(None)?;
+//! let result = runner.run(None, None)?;
 //! # Ok(())
 //! # }
 //! ```

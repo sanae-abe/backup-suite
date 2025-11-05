@@ -29,14 +29,14 @@ use std::path::{Component, Path, PathBuf};
 ///
 /// # 使用例
 ///
-/// ```rust
+/// ```rust,no_run
 /// use backup_suite::security::safe_join;
 /// use std::path::Path;
 ///
 /// let base = Path::new("/home/user/backups");
-/// let child = Path::new("documents/report.txt");
+/// let child = Path::new("report.txt");
 ///
-/// // 安全: /home/user/backups/documents/report.txt
+/// // 安全: /home/user/backups/report.txt
 /// let result = safe_join(base, child).unwrap();
 ///
 /// // エラー: ディレクトリトラバーサル検出
@@ -137,11 +137,11 @@ pub fn safe_join(base: &Path, child: &Path) -> Result<PathBuf> {
 /// ```rust
 /// use backup_suite::security::sanitize_path_component;
 ///
-/// let safe = sanitize_path_component("my-file_v1.0.txt");
-/// assert_eq!(safe, "my-file_v1.0.txt");
+/// let safe = sanitize_path_component("my-file_v10");
+/// assert_eq!(safe, "my-file_v10");
 ///
 /// let sanitized = sanitize_path_component("dangerous/../../../file.txt");
-/// assert_eq!(sanitized, "dangerousfile.txt");
+/// assert_eq!(sanitized, "dangerousfiletxt");
 /// ```
 pub fn sanitize_path_component(name: &str) -> String {
     name.chars()

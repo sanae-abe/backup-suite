@@ -34,7 +34,7 @@ use crate::ui::progress::BackupProgress;
 ///
 /// let config = Config::load().unwrap();
 /// let runner = BackupRunner::new(config, false);
-/// let result = runner.run(None).unwrap();
+/// let result = runner.run(None, None).unwrap();
 ///
 /// if result.failed > 0 {
 ///     eprintln!("エラー: {}件のファイルでバックアップ失敗", result.failed);
@@ -86,13 +86,13 @@ impl BackupResult {
 /// // 基本的なバックアップ実行
 /// let config = Config::load().unwrap();
 /// let runner = BackupRunner::new(config, false);
-/// let result = runner.run(None).unwrap();
+/// let result = runner.run(None, None).unwrap();
 ///
 /// // 高優先度のみ実行
 /// let config = Config::load().unwrap();
 /// let runner = BackupRunner::new(config, false)
 ///     .with_progress(true);
-/// let result = runner.run(Some(&Priority::High)).unwrap();
+/// let result = runner.run(Some(&Priority::High), None).unwrap();
 /// ```
 pub struct BackupRunner {
     config: Config,
@@ -202,7 +202,7 @@ impl BackupRunner {
     /// let runner = BackupRunner::new(config, false);
     ///
     /// // 全ファイルをバックアップ
-    /// let result = runner.run(None).unwrap();
+    /// let result = runner.run(None, None).unwrap();
     ///
     /// // 高優先度のみバックアップ
     /// let config = Config::load().unwrap();
