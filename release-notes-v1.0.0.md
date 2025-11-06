@@ -19,51 +19,30 @@
 
 **注**: macOS版は手動ビルドが必要です。CI/CDパイプラインで `build:macos-universal` ジョブを手動実行してください。
 
-## 🚀 クイックインストール
+## 🚀 インストール
 
-### 手動インストール（推奨）
-```bash
-# 1. バイナリをダウンロード
-curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
+Rustをインストールして、自分の環境で直接ビルドします。
 
-# 2. 解凍
-tar -xzf backup-suite-*.tar.gz
-
-# 3. バイナリを適切な場所に移動
-sudo mv backup-suite /usr/local/bin/
-
-# 4. 動作確認
-backup-suite --version
-```
-
-### ローカルインストール
 ```bash
 # 1. リポジトリをクローン
 git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
 cd backup-suite
 
-# 2. インストールスクリプトを実行
-bash install.sh
+# 2. Rustインストール（未インストールの場合）
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
 
-# または、システム全体にインストール（/usr/local/bin）
-sudo bash install.sh
+# 3. ビルド＆インストール
+cargo build --release
+mkdir -p ~/.local/bin
+cp target/release/backup-suite ~/.local/bin/
 
-# 3. 動作確認
+# 4. PATHに追加（初回のみ）
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# 5. 動作確認
 backup-suite --version
-```
-
-### ソースからビルド
-```bash
-# 1. リポジトリをクローン
-git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
-cd backup-suite
-
-# 2. ビルド&インストール
-cargo install --path .
-
-# 3. 動作確認
-backup-suite --version
-backup-suite --help
 ```
 
 ## 📊 品質指標
