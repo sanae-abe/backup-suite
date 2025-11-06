@@ -32,6 +32,12 @@
 - **クラウド保存時**も第三者は絶対に見れない
 - **パスワード**がないと誰も開けません
 
+### 📦 高速圧縮によるストレージ節約
+- **Zstd圧縮**で高速かつ高圧縮率を実現
+- **Gzip圧縮**で互換性重視の圧縮
+- **圧縮なし**でも選択可能
+- **ディスク容量を最大70%削減**
+
 ### ⏰ 完全自動化されたスケジューリング
 - **設定後は手動操作不要**で自動実行
 - **重要度別に頻度を調整**（毎日・週次・月次）
@@ -159,8 +165,16 @@ backup-suite run --priority high   # 高優先度のみ
 backup-suite run --category work   # 特定カテゴリのみ
 backup-suite run --dry-run         # ドライラン（確認のみ）
 
+# 圧縮オプション
+backup-suite run --compress zstd   # Zstd圧縮（高速・高圧縮率・推奨）
+backup-suite run --compress gzip   # Gzip圧縮（互換性重視）
+backup-suite run --compress none   # 圧縮なし
+
 # 暗号化バックアップ
 backup-suite run --encrypt --password "secure-password"
+
+# 圧縮+暗号化の組み合わせ
+backup-suite run --compress zstd --encrypt --password "secure-password"
 ```
 
 4. **自動化設定**
@@ -181,7 +195,8 @@ log_file = "~/.local/share/backup-suite/logs/backup.log"
 [storage]
 type = "local"
 path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/マイドライブ/backup-storage"
-compression = "gzip"
+compression = "zstd"  # 圧縮タイプ: "zstd", "gzip", "none"
+compression_level = 3  # 圧縮レベル: 1-22（Zstd）, 1-9（Gzip）
 encryption = true
 encryption_key_file = "~/.config/backup-suite/keys/backup.key"
 
@@ -263,6 +278,7 @@ rm -rf ~/.local/share/backup-suite/
 
 - **言語**: Rust（最新安定版）
 - **CLI**: clap 4.x （コマンドライン解析・補完生成）
+- **圧縮**: Zstd（高速・高圧縮率）、Gzip（互換性）
 - **暗号化**: AES-256-GCM、Argon2
 - **設定**: TOML （人間にとって読みやすい設定形式）
 - **スケジューリング**: macOS launchctl、Linux systemd

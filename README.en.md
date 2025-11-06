@@ -32,6 +32,12 @@
 - **Third parties cannot access** when stored in cloud
 - **Password required** - nobody can open without it
 
+### 📦 High-Speed Compression for Storage Savings
+- **Zstd compression** for fast and high compression ratio
+- **Gzip compression** for compatibility focus
+- **No compression** option also available
+- **Reduce disk usage by up to 70%**
+
 ### ⏰ Fully Automated Scheduling
 - **No manual operation required** after setup - runs automatically
 - **Frequency adjusted by importance** (daily/weekly/monthly)
@@ -159,8 +165,16 @@ backup-suite run --priority high   # High priority only
 backup-suite run --category work   # Specific category only
 backup-suite run --dry-run         # Dry run (verification only)
 
+# Compression options
+backup-suite run --compress zstd   # Zstd compression (fast, high ratio, recommended)
+backup-suite run --compress gzip   # Gzip compression (compatibility focus)
+backup-suite run --compress none   # No compression
+
 # Encrypted backup
 backup-suite run --encrypt --password "secure-password"
+
+# Compression + encryption combination
+backup-suite run --compress zstd --encrypt --password "secure-password"
 ```
 
 4. **Setup Automation**
@@ -181,7 +195,8 @@ log_file = "~/.local/share/backup-suite/logs/backup.log"
 [storage]
 type = "local"
 path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/My Drive/backup-storage"
-compression = "gzip"
+compression = "zstd"  # Compression type: "zstd", "gzip", "none"
+compression_level = 3  # Compression level: 1-22 (Zstd), 1-9 (Gzip)
 encryption = true
 encryption_key_file = "~/.config/backup-suite/keys/backup.key"
 
@@ -263,6 +278,7 @@ rm -rf ~/.local/share/backup-suite/
 
 - **Language**: Rust (latest stable version)
 - **CLI**: clap 4.x (command line parsing & completion generation)
+- **Compression**: Zstd (fast & high ratio), Gzip (compatibility)
 - **Encryption**: AES-256-GCM, Argon2
 - **Configuration**: TOML (human-readable configuration format)
 - **Scheduling**: macOS launchctl, Linux systemd
