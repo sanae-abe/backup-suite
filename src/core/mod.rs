@@ -49,5 +49,7 @@ pub use config::Config;
 pub use copy_engine::CopyEngine;
 pub use filter::{default_exclude_patterns, FileFilter};
 pub use history::BackupHistory;
-pub use pipeline::{ProcessingPipeline, PipelineConfig, ProcessedData, ProcessingMetadata, PerformanceConfig};
+pub use pipeline::{
+    PerformanceConfig, PipelineConfig, ProcessedData, ProcessingMetadata, ProcessingPipeline,
+};
 pub use target::{Priority, Target, TargetType};

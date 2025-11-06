@@ -33,7 +33,7 @@ use crate::security::{check_read_permission, check_write_permission};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ScheduleConfig {
     pub enabled: bool,
-    pub high_frequency: String,    // "daily", "weekly", "monthly"
+    pub high_frequency: String, // "daily", "weekly", "monthly"
     pub medium_frequency: String,
     pub low_frequency: String,
 }
@@ -163,8 +163,7 @@ impl Config {
     /// println!("設定ファイル: {:?}", path);
     /// ```
     pub fn config_path() -> Result<PathBuf> {
-        let home = dirs::home_dir()
-            .context("ホームディレクトリが見つかりません")?;
+        let home = dirs::home_dir().context("ホームディレクトリが見つかりません")?;
         Ok(home.join(".config/backup-suite/config.toml"))
     }
 
@@ -201,8 +200,7 @@ impl Config {
         let content = std::fs::read_to_string(&config_path)
             .context(format!("設定ファイル読み込み失敗: {:?}", config_path))?;
 
-        let config: Config = toml::from_str(&content)
-            .context("TOML解析失敗")?;
+        let config: Config = toml::from_str(&content).context("TOML解析失敗")?;
 
         Ok(config)
     }
@@ -242,12 +240,10 @@ impl Config {
 
         // ディレクトリが存在しない場合は作成
         if let Some(parent) = config_path.parent() {
-            std::fs::create_dir_all(parent)
-                .context("設定ディレクトリ作成失敗")?;
+            std::fs::create_dir_all(parent).context("設定ディレクトリ作成失敗")?;
         }
 
-        let content = toml::to_string_pretty(self)
-            .context("TOML生成失敗")?;
+        let content = toml::to_string_pretty(self).context("TOML生成失敗")?;
 
         std::fs::write(&config_path, content)
             .context(format!("設定ファイル書き込み失敗: {:?}", config_path))?;
@@ -333,7 +329,8 @@ impl Config {
     /// println!("高優先度のバックアップ対象: {}件", high_priority.len());
     /// ```
     pub fn filter_by_priority(&self, priority: &super::target::Priority) -> Vec<&Target> {
-        self.targets.iter()
+        self.targets
+            .iter()
             .filter(|t| &t.priority >= priority)
             .collect()
     }
@@ -360,7 +357,8 @@ impl Config {
     /// println!("システムカテゴリのバックアップ対象: {}件", system_targets.len());
     /// ```
     pub fn filter_by_category(&self, category: &str) -> Vec<&Target> {
-        self.targets.iter()
+        self.targets
+            .iter()
             .filter(|t| t.category == category)
             .collect()
     }

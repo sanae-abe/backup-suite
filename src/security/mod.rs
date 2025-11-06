@@ -48,7 +48,7 @@ pub mod path;
 pub mod permissions;
 
 // 再エクスポート：頻繁に使用される機能を簡単にアクセス可能にする
-pub use path::{safe_join, sanitize_path_component, validate_path_safety};
+pub use path::{safe_join, safe_open, sanitize_path_component, validate_path_safety};
 pub use permissions::{check_permissions, check_read_permission, check_write_permission};
 
 #[cfg(unix)]

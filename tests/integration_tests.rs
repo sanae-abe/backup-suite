@@ -123,11 +123,7 @@ fn test_exclude_patterns_simple() -> Result<()> {
     fs::write(source_dir.join("include2.md"), "include")?;
 
     // 除外パターン設定
-    let mut target = Target::new(
-        source_dir.clone(),
-        Priority::High,
-        "files".to_string(),
-    );
+    let mut target = Target::new(source_dir.clone(), Priority::High, "files".to_string());
     target.exclude_patterns = vec![r".*\.tmp$".to_string()];
 
     let mut config = Config::default();
@@ -166,11 +162,7 @@ fn test_exclude_patterns_complex() -> Result<()> {
     fs::write(source_dir.join("config.toml"), "include")?;
 
     // 複数の除外パターン
-    let mut target = Target::new(
-        source_dir.clone(),
-        Priority::High,
-        "test".to_string(),
-    );
+    let mut target = Target::new(source_dir.clone(), Priority::High, "test".to_string());
     target.exclude_patterns = vec![
         r"node_modules/.*".to_string(),
         r"^\..+".to_string(), // 隠しファイル
@@ -223,11 +215,9 @@ fn test_priority_filtering() -> Result<()> {
         Priority::Medium,
         "priority".to_string(),
     ));
-    config.targets.push(Target::new(
-        low_file,
-        Priority::Low,
-        "priority".to_string(),
-    ));
+    config
+        .targets
+        .push(Target::new(low_file, Priority::Low, "priority".to_string()));
 
     // 高優先度のみバックアップ
     let runner = backup_suite::BackupRunner::new(config, false)
@@ -264,9 +254,17 @@ fn test_priority_filtering_medium_and_high() -> Result<()> {
     let mut config = Config::default();
     config.backup.destination = backup_dir.clone();
 
-    config.targets.push(Target::new(high_file, Priority::High, "test".to_string()));
-    config.targets.push(Target::new(medium_file, Priority::Medium, "test".to_string()));
-    config.targets.push(Target::new(low_file, Priority::Low, "test".to_string()));
+    config
+        .targets
+        .push(Target::new(high_file, Priority::High, "test".to_string()));
+    config.targets.push(Target::new(
+        medium_file,
+        Priority::Medium,
+        "test".to_string(),
+    ));
+    config
+        .targets
+        .push(Target::new(low_file, Priority::Low, "test".to_string()));
 
     // Medium優先度でバックアップ (Medium以上が対象)
     let runner = backup_suite::BackupRunner::new(config, false)
@@ -336,11 +334,9 @@ fn test_nonexistent_source_handling() {
 
     let mut config = Config::default();
     config.backup.destination = backup_dir;
-    config.targets.push(Target::new(
-        nonexistent,
-        Priority::High,
-        "test".to_string(),
-    ));
+    config
+        .targets
+        .push(Target::new(nonexistent, Priority::High, "test".to_string()));
 
     // 存在しないファイルはスキップされ、バックアップ件数が0になることを確認
     let runner = backup_suite::BackupRunner::new(config, false)
@@ -369,11 +365,9 @@ fn test_invalid_destination_handling() {
         config.backup.destination = PathBuf::from("C:\\Windows\\System32\\backup_not_writable");
     }
 
-    config.targets.push(Target::new(
-        source_file,
-        Priority::High,
-        "test".to_string(),
-    ));
+    config
+        .targets
+        .push(Target::new(source_file, Priority::High, "test".to_string()));
 
     // エラーが返されることを確認
     let runner = backup_suite::BackupRunner::new(config, false)
@@ -402,11 +396,9 @@ fn test_parallel_backup_large_directory() -> Result<()> {
 
     let mut config = Config::default();
     config.backup.destination = backup_dir.clone();
-    config.targets.push(Target::new(
-        source_dir,
-        Priority::High,
-        "test".to_string(),
-    ));
+    config
+        .targets
+        .push(Target::new(source_dir, Priority::High, "test".to_string()));
 
     // 並列バックアップ実行
     let runner = backup_suite::BackupRunner::new(config, false)
@@ -441,11 +433,9 @@ fn test_category_organization() -> Result<()> {
     config.backup.destination = backup_dir.clone();
 
     // カテゴリ別ターゲット追加
-    config.targets.push(Target::new(
-        work_file,
-        Priority::High,
-        "work".to_string(),
-    ));
+    config
+        .targets
+        .push(Target::new(work_file, Priority::High, "work".to_string()));
     config.targets.push(Target::new(
         personal_file,
         Priority::Medium,
@@ -483,11 +473,9 @@ fn test_large_file_backup_performance() -> Result<()> {
 
     let mut config = Config::default();
     config.backup.destination = backup_dir.clone();
-    config.targets.push(Target::new(
-        source_dir,
-        Priority::High,
-        "test".to_string(),
-    ));
+    config
+        .targets
+        .push(Target::new(source_dir, Priority::High, "test".to_string()));
 
     let start = std::time::Instant::now();
     let runner = backup_suite::BackupRunner::new(config, false)
@@ -498,7 +486,11 @@ fn test_large_file_backup_performance() -> Result<()> {
     assert_eq!(result.successful, 1);
 
     // パフォーマンス目標: 10MBを5秒以内でバックアップ
-    assert!(duration.as_secs() < 5, "バックアップに時間がかかりすぎています: {:?}", duration);
+    assert!(
+        duration.as_secs() < 5,
+        "バックアップに時間がかかりすぎています: {:?}",
+        duration
+    );
 
     Ok(())
 }

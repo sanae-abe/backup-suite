@@ -2,11 +2,14 @@
 //!
 //! 暗号化・圧縮・バックアップを統合した高性能処理パイプライン
 
+use crate::compression::{CompressedData, CompressionConfig, CompressionEngine, CompressionType};
+use crate::crypto::{EncryptedData, EncryptionConfig, EncryptionEngine, KeyManager, MasterKey};
+use crate::error::{BackupError, Result};
+use rayon::prelude::*;
+use rayon::ThreadPoolBuilder;
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
-use crate::error::{BackupError, Result};
-use crate::crypto::{EncryptionEngine, EncryptionConfig, EncryptedData, KeyManager, MasterKey};
-use crate::compression::{CompressionEngine, CompressionType, CompressionConfig, CompressedData};
+use std::sync::Arc;
 
 /// パイプライン処理設定
 #[derive(Debug, Clone)]
@@ -40,7 +43,11 @@ impl PipelineConfig {
     }
 
     /// 圧縮を設定する
-    pub fn with_compression(mut self, compression_type: CompressionType, config: CompressionConfig) -> Self {
+    pub fn with_compression(
+        mut self,
+        compression_type: CompressionType,
+        config: CompressionConfig,
+    ) -> Self {
         self.compression_type = compression_type;
         self.compression = config;
         self
@@ -70,14 +77,17 @@ pub struct PerformanceConfig {
     pub buffer_size: usize,
     /// メモリ制限（バイト）
     pub memory_limit: usize,
+    /// バッチサイズ（並列処理時の1バッチあたりのファイル数）
+    pub batch_size: usize,
 }
 
 impl Default for PerformanceConfig {
     fn default() -> Self {
         Self {
-            parallel_threads: num_cpus::get().min(8), // 最大8スレッド
-            buffer_size: 1024 * 1024,                 // 1MB
-            memory_limit: 512 * 1024 * 1024,          // 512MB
+            parallel_threads: optimal_parallelism(), // CPU コア数の75%
+            buffer_size: 1024 * 1024,                // 1MB
+            memory_limit: 512 * 1024 * 1024,         // 512MB
+            batch_size: 32,                          // デフォルト32ファイル/バッチ
         }
     }
 }
@@ -86,20 +96,74 @@ impl PerformanceConfig {
     /// 高速設定
     pub fn fast() -> Self {
         Self {
-            parallel_threads: num_cpus::get(),
-            buffer_size: 2 * 1024 * 1024,     // 2MB
-            memory_limit: 1024 * 1024 * 1024, // 1GB
+            parallel_threads: num_cpus::get(), // 全コア使用
+            buffer_size: 2 * 1024 * 1024,      // 2MB
+            memory_limit: 1024 * 1024 * 1024,  // 1GB
+            batch_size: 64,                    // 大きめのバッチサイズ
         }
     }
 
     /// 品質重視設定
     pub fn quality() -> Self {
         Self {
-            parallel_threads: (num_cpus::get() / 2).max(1),
-            buffer_size: 512 * 1024,          // 512KB
-            memory_limit: 256 * 1024 * 1024,  // 256MB
+            parallel_threads: (num_cpus::get() / 2).max(1), // コア数の半分
+            buffer_size: 512 * 1024,                        // 512KB
+            memory_limit: 256 * 1024 * 1024,                // 256MB
+            batch_size: 16,                                 // 小さめのバッチサイズ
         }
     }
+
+    /// カスタム並列度設定
+    pub fn with_parallelism(mut self, threads: usize) -> Self {
+        self.parallel_threads = threads.max(1);
+        self
+    }
+
+    /// カスタムバッチサイズ設定
+    pub fn with_batch_size(mut self, size: usize) -> Self {
+        self.batch_size = size.max(1);
+        self
+    }
+}
+
+/// 最適な並列度を計算
+///
+/// CPU コア数の75%を使用し、システムリソースを確保する。
+/// 最小1スレッド、最大32スレッドに制限。
+pub fn optimal_parallelism() -> usize {
+    let cpus = num_cpus::get();
+    (cpus * 3 / 4).clamp(1, 32)
+}
+
+/// 動的並列度計算
+///
+/// ファイル数とファイルサイズに基づいて最適なスレッド数を計算する。
+///
+/// # Arguments
+///
+/// * `file_count` - 処理対象のファイル数
+/// * `avg_file_size` - 平均ファイルサイズ（バイト）
+pub fn dynamic_parallelism(file_count: usize, avg_file_size: u64) -> usize {
+    let base_parallelism = optimal_parallelism();
+
+    // ファイル数が少ない場合は並列度を抑える
+    if file_count < base_parallelism {
+        return file_count.max(1);
+    }
+
+    // 小さいファイルの場合はオーバーヘッドを考慮して並列度を抑える
+    if avg_file_size < 1024 * 1024 {
+        // 1MB未満
+        return (base_parallelism / 2).max(1);
+    }
+
+    // 大きいファイルの場合は並列度を増やす
+    if avg_file_size > 100 * 1024 * 1024 {
+        // 100MB超
+        return (base_parallelism * 4 / 3).min(32);
+    }
+
+    base_parallelism
 }
 
 /// 処理されたデータ
@@ -137,45 +201,60 @@ pub struct ProcessingMetadata {
 /// 統合処理パイプライン
 pub struct ProcessingPipeline {
     config: PipelineConfig,
-    encryption_engine: Option<EncryptionEngine>,
-    compression_engine: CompressionEngine,
-    key_manager: Option<KeyManager>,
+    encryption_engine: Option<Arc<EncryptionEngine>>,
+    compression_engine: Arc<CompressionEngine>,
+    key_manager: Option<Arc<KeyManager>>,
+    thread_pool: Option<rayon::ThreadPool>,
 }
 
 impl ProcessingPipeline {
     /// 新しいパイプラインを作成
     pub fn new(config: PipelineConfig) -> Self {
-        let encryption_engine = config.encryption.as_ref().map(|cfg| {
-            EncryptionEngine::new(cfg.clone())
-        });
+        let encryption_engine = config
+            .encryption
+            .as_ref()
+            .map(|cfg| Arc::new(EncryptionEngine::new(cfg.clone())));
 
-        let compression_engine = CompressionEngine::new(
+        let compression_engine = Arc::new(CompressionEngine::new(
             config.compression_type,
             config.compression.clone(),
-        );
+        ));
 
-        let key_manager = encryption_engine.as_ref().map(|_| {
-            KeyManager::default()
-        });
+        let key_manager = encryption_engine
+            .as_ref()
+            .map(|_| Arc::new(KeyManager::default()));
+
+        // カスタムThreadPoolの作成
+        let thread_pool = Self::create_thread_pool(&config.performance).ok();
 
         Self {
             config,
             encryption_engine,
             compression_engine,
             key_manager,
+            thread_pool,
         }
+    }
+
+    /// 最適化されたThreadPoolを作成
+    fn create_thread_pool(performance: &PerformanceConfig) -> Result<rayon::ThreadPool> {
+        ThreadPoolBuilder::new()
+            .num_threads(performance.parallel_threads)
+            .thread_name(|i| format!("backup-worker-{}", i))
+            .stack_size(8 * 1024 * 1024) // 8MBスタックサイズ
+            .build()
+            .map_err(|e| BackupError::Other(anyhow::anyhow!("ThreadPool作成エラー: {}", e)))
     }
 
     /// 暗号化有効でパイプラインを作成
     pub fn with_encryption(password: &str) -> Result<(Self, [u8; 16])> {
-        let config = PipelineConfig::default()
-            .with_encryption(EncryptionConfig::default());
+        let config = PipelineConfig::default().with_encryption(EncryptionConfig::default());
         let mut pipeline = Self::new(config);
 
         let key_manager = KeyManager::default();
         let (_master_key, salt) = key_manager.create_master_key(password)?;
 
-        pipeline.key_manager = Some(key_manager);
+        pipeline.key_manager = Some(Arc::new(key_manager));
         // Note: In a real implementation, we'd store the master key securely
         // For now, we'll need to pass it to process methods
 
@@ -197,18 +276,21 @@ impl ProcessingPipeline {
         let original_size = original_data.len() as u64;
 
         // Step 1: 圧縮
-        let (compressed_data, compression_info) = if self.config.compression_type != CompressionType::None {
-            let compressed = self.compression_engine.compress(&original_data)?;
-            let _compression_ratio = compressed.compression_percentage();
-            (compressed.data.clone(), Some(compressed))
-        } else {
-            (original_data, None)
-        };
+        let (compressed_data, compression_info) =
+            if self.config.compression_type != CompressionType::None {
+                let compressed = self.compression_engine.compress(&original_data)?;
+                let _compression_ratio = compressed.compression_percentage();
+                (compressed.data.clone(), Some(compressed))
+            } else {
+                (original_data, None)
+            };
 
         let compressed_size = compressed_data.len() as u64;
 
         // Step 2: 暗号化
-        let (final_data, encryption_info) = if let (Some(engine), Some(key), Some(s)) = (&self.encryption_engine, master_key, salt) {
+        let (final_data, encryption_info) = if let (Some(engine), Some(key), Some(s)) =
+            (&self.encryption_engine, master_key, salt)
+        {
             let encrypted = engine.encrypt(&compressed_data, key, s)?;
             (encrypted.to_bytes(), Some(encrypted))
         } else {
@@ -224,7 +306,8 @@ impl ProcessingPipeline {
             final_size,
             processing_time_ms: processing_time,
             compression_ratio: if original_size > 0 {
-                (original_size.saturating_sub(compressed_size) as f64 / original_size as f64) * 100.0
+                (original_size.saturating_sub(compressed_size) as f64 / original_size as f64)
+                    * 100.0
             } else {
                 0.0
             },
@@ -254,7 +337,7 @@ impl ProcessingPipeline {
                 data = engine.decrypt(encryption_info, key)?;
             } else {
                 return Err(BackupError::EncryptionError(
-                    "復号化にはマスターキーが必要です".to_string()
+                    "復号化にはマスターキーが必要です".to_string(),
                 ));
             }
         }
@@ -300,7 +383,9 @@ impl ProcessingPipeline {
         let compressed_size = compressed.compressed_size;
 
         // 暗号化
-        let final_data = if let (Some(engine), Some(key), Some(s)) = (&self.encryption_engine, master_key, salt) {
+        let final_data = if let (Some(engine), Some(key), Some(s)) =
+            (&self.encryption_engine, master_key, salt)
+        {
             let encrypted = engine.encrypt(&compressed.data, key, s)?;
             encrypted.to_bytes()
         } else {
@@ -318,12 +403,100 @@ impl ProcessingPipeline {
             final_size,
             processing_time_ms: processing_time,
             compression_ratio: if original_size > 0 {
-                (original_size.saturating_sub(compressed_size) as f64 / original_size as f64) * 100.0
+                (original_size.saturating_sub(compressed_size) as f64 / original_size as f64)
+                    * 100.0
             } else {
                 0.0
             },
             memory_usage: original_size + compressed_size + final_size,
         })
+    }
+
+    /// 複数ファイルを並列処理
+    ///
+    /// # Arguments
+    ///
+    /// * `files` - 処理対象のファイルパスのスライス
+    /// * `master_key` - マスターキー（暗号化時のみ必要）
+    /// * `salt` - ソルト（暗号化時のみ必要）
+    ///
+    /// # Returns
+    ///
+    /// 各ファイルの処理結果を含むベクター
+    pub fn process_files_parallel<P: AsRef<Path> + Send + Sync>(
+        &self,
+        files: &[P],
+        master_key: Option<&MasterKey>,
+        salt: Option<[u8; 16]>,
+    ) -> Vec<Result<ProcessedData>> {
+        if files.is_empty() {
+            return Vec::new();
+        }
+
+        // ThreadPoolが利用可能な場合はそれを使用、なければグローバルプールを使用
+        if let Some(pool) = &self.thread_pool {
+            pool.install(|| self.process_files_parallel_internal(files, master_key, salt))
+        } else {
+            self.process_files_parallel_internal(files, master_key, salt)
+        }
+    }
+
+    /// 内部並列処理実装
+    fn process_files_parallel_internal<P: AsRef<Path> + Send + Sync>(
+        &self,
+        files: &[P],
+        master_key: Option<&MasterKey>,
+        salt: Option<[u8; 16]>,
+    ) -> Vec<Result<ProcessedData>> {
+        let batch_size = self.config.performance.batch_size;
+
+        // バッチ処理による並列実行
+        files
+            .par_chunks(batch_size)
+            .flat_map(|batch| {
+                batch
+                    .par_iter()
+                    .map(|file| self.process_file(file, master_key, salt))
+                    .collect::<Vec<_>>()
+            })
+            .collect()
+    }
+
+    /// 複数ファイルを並列処理（進捗コールバック付き）
+    ///
+    /// # Arguments
+    ///
+    /// * `files` - 処理対象のファイルパスのスライス
+    /// * `master_key` - マスターキー（暗号化時のみ必要）
+    /// * `salt` - ソルト（暗号化時のみ必要）
+    /// * `progress_callback` - 進捗コールバック関数（完了ファイル数、総ファイル数）
+    pub fn process_files_with_progress<P, F>(
+        &self,
+        files: &[P],
+        master_key: Option<&MasterKey>,
+        salt: Option<[u8; 16]>,
+        progress_callback: F,
+    ) -> Vec<Result<ProcessedData>>
+    where
+        P: AsRef<Path> + Send + Sync,
+        F: Fn(usize, usize) + Send + Sync,
+    {
+        if files.is_empty() {
+            return Vec::new();
+        }
+
+        let total = files.len();
+        let progress_callback = Arc::new(progress_callback);
+
+        files
+            .par_iter()
+            .enumerate()
+            .map(|(idx, file)| {
+                let result = self.process_file(file, master_key, salt);
+                progress_callback(idx + 1, total);
+                result
+            })
+            .collect()
     }
 
     /// 設定を取得
@@ -340,6 +513,19 @@ impl ProcessingPipeline {
             encryption_enabled: self.encryption_engine.is_some(),
             compression_type: self.config.compression_type,
         }
+    }
+
+    /// ThreadPoolが正常に作成されているか確認
+    pub fn is_parallel_ready(&self) -> bool {
+        self.thread_pool.is_some()
+    }
+
+    /// 現在の並列度を取得
+    pub fn current_parallelism(&self) -> usize {
+        self.thread_pool
+            .as_ref()
+            .map(|pool| pool.current_num_threads())
+            .unwrap_or(1)
     }
 }
 
@@ -359,13 +545,13 @@ pub struct PerformanceStats {
     pub compression_type: CompressionType,
 }
 
-// num_cpuクレートを使用するためのプレースホルダー
-// 実際の実装では num_cpus クレートを依存関係に追加する必要があります
+/// CPU コア数を取得
+///
+/// num_cpusクレートを使用して論理コア数を取得する。
+/// フォールバック時は4コアを仮定。
 mod num_cpus {
     pub fn get() -> usize {
-        std::thread::available_parallelism()
-            .map(|n| n.get())
-            .unwrap_or(4)
+        ::num_cpus::get()
     }
 }
 
@@ -415,7 +601,9 @@ mod tests {
         let temp_file = std::env::temp_dir().join("test_encrypted.txt");
         std::fs::write(&temp_file, &test_data).unwrap();
 
-        let processed = pipeline.process_file(&temp_file, Some(&master_key), Some(salt)).unwrap();
+        let processed = pipeline
+            .process_file(&temp_file, Some(&master_key), Some(salt))
+            .unwrap();
 
         // 暗号化と圧縮が適用されていることを確認
         assert!(processed.compression_info.is_some());
@@ -423,7 +611,9 @@ mod tests {
         assert!(processed.metadata.final_size > 0);
 
         // 復元テスト
-        let restored = pipeline.restore_data(&processed, Some(&master_key)).unwrap();
+        let restored = pipeline
+            .restore_data(&processed, Some(&master_key))
+            .unwrap();
         assert_eq!(test_data, restored);
 
         // 間違ったキーでは復元できないことを確認
@@ -443,7 +633,9 @@ mod tests {
         let reader = Cursor::new(&test_data);
         let mut output = Vec::new();
 
-        let metadata = pipeline.process_stream(reader, &mut output, None, None).unwrap();
+        let metadata = pipeline
+            .process_stream(reader, &mut output, None, None)
+            .unwrap();
 
         assert_eq!(metadata.original_size, test_data.len() as u64);
         assert!(!output.is_empty());
@@ -463,5 +655,124 @@ mod tests {
         assert!(stats.available_threads >= 1);
         assert!(stats.buffer_size > 0);
         assert_eq!(stats.compression_type, CompressionType::Zstd);
+    }
+
+    #[test]
+    fn test_optimal_parallelism() {
+        let parallelism = optimal_parallelism();
+        let cpus = num_cpus::get();
+
+        // CPU コア数の75%以下で、最小1、最大32の範囲内
+        assert!(parallelism >= 1);
+        assert!(parallelism <= 32);
+        assert!(parallelism <= cpus);
+    }
+
+    #[test]
+    fn test_dynamic_parallelism() {
+        // 少数ファイルの場合
+        let parallelism = dynamic_parallelism(2, 1024 * 1024);
+        assert!(parallelism <= 2);
+
+        // 小さいファイルの場合
+        let parallelism = dynamic_parallelism(100, 512 * 1024);
+        assert!(parallelism >= 1);
+
+        // 大きいファイルの場合
+        let parallelism = dynamic_parallelism(100, 200 * 1024 * 1024);
+        assert!(parallelism >= optimal_parallelism());
+    }
+
+    #[test]
+    fn test_parallel_processing() {
+        let config = PipelineConfig::default().fast();
+        let pipeline = ProcessingPipeline::new(config);
+
+        // 複数のテストファイルを作成
+        let temp_dir = std::env::temp_dir();
+        let test_files: Vec<PathBuf> = (0..10)
+            .map(|i| {
+                let path = temp_dir.join(format!("test_parallel_{}.txt", i));
+                let data = format!("Test data for file {}", i).repeat(100);
+                std::fs::write(&path, data).unwrap();
+                path
+            })
+            .collect();
+
+        // 並列処理実行
+        let results = pipeline.process_files_parallel(&test_files, None, None);
+
+        // 全ファイルが処理されたことを確認
+        assert_eq!(results.len(), test_files.len());
+        assert!(results.iter().all(|r| r.is_ok()));
+
+        // ThreadPoolが作成されていることを確認
+        assert!(pipeline.is_parallel_ready());
+        assert!(pipeline.current_parallelism() >= 1);
+
+        // クリーンアップ
+        for file in test_files {
+            let _ = std::fs::remove_file(file);
+        }
+    }
+
+    #[test]
+    fn test_parallel_with_progress() {
+        let config = PipelineConfig::default().fast();
+        let pipeline = ProcessingPipeline::new(config);
+
+        let temp_dir = std::env::temp_dir();
+        let test_files: Vec<PathBuf> = (0..5)
+            .map(|i| {
+                let path = temp_dir.join(format!("test_progress_{}.txt", i));
+                let data = format!("Progress test {}", i).repeat(50);
+                std::fs::write(&path, data).unwrap();
+                path
+            })
+            .collect();
+
+        // 進捗カウンター
+        let progress_count = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let progress_count_clone = Arc::clone(&progress_count);
+
+        // 進捗コールバック付き並列処理
+        let results =
+            pipeline.process_files_with_progress(&test_files, None, None, move |current, total| {
+                progress_count_clone.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                assert!(current <= total);
+            });
+
+        assert_eq!(results.len(), test_files.len());
+        assert!(results.iter().all(|r| r.is_ok()));
+
+        // 進捗コールバックが呼ばれたことを確認
+        assert_eq!(
+            progress_count.load(std::sync::atomic::Ordering::SeqCst),
+            test_files.len()
+        );
+
+        // クリーンアップ
+        for file in test_files {
+            let _ = std::fs::remove_file(file);
+        }
+    }
+
+    #[test]
+    fn test_custom_parallelism() {
+        let perf_config = PerformanceConfig::default()
+            .with_parallelism(4)
+            .with_batch_size(8);
+
+        assert_eq!(perf_config.parallel_threads, 4);
+        assert_eq!(perf_config.batch_size, 8);
+
+        // PipelineConfigでカスタム設定を使用
+        let pipeline_config = PipelineConfig {
+            performance: perf_config,
+            ..Default::default()
+        };
+
+        let pipeline = ProcessingPipeline::new(pipeline_config);
+        assert_eq!(pipeline.current_parallelism(), 4);
     }
 }

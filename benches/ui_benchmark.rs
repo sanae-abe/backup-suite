@@ -63,7 +63,8 @@ fn colorize_text(text: &str, color: &str) -> String {
 }
 
 fn format_table_row(columns: &[&str], widths: &[usize]) -> String {
-    columns.iter()
+    columns
+        .iter()
         .zip(widths.iter())
         .map(|(col, width)| format!("{:width$}", col, width = width))
         .collect::<Vec<_>>()
@@ -113,13 +114,9 @@ fn bench_format_file_size(c: &mut Criterion) {
     let mut group = c.benchmark_group("format_file_size");
 
     for (bytes, name) in test_cases {
-        group.bench_with_input(
-            BenchmarkId::from_parameter(name),
-            &bytes,
-            |b, &bytes| {
-                b.iter(|| format_file_size(black_box(bytes)));
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(name), &bytes, |b, &bytes| {
+            b.iter(|| format_file_size(black_box(bytes)));
+        });
     }
 
     group.finish();
@@ -155,13 +152,9 @@ fn bench_colorize_text(c: &mut Criterion) {
     let mut group = c.benchmark_group("colorize_text");
 
     for color in colors {
-        group.bench_with_input(
-            BenchmarkId::from_parameter(color),
-            &color,
-            |b, &color| {
-                b.iter(|| colorize_text(black_box(text), black_box(color)));
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(color), &color, |b, &color| {
+            b.iter(|| colorize_text(black_box(text), black_box(color)));
+        });
     }
 
     group.finish();
@@ -198,7 +191,12 @@ fn bench_ui_full_render(c: &mut Criterion) {
             let mut output = Vec::new();
 
             // ヘッダー
-            writeln!(output, "{}", colorize_text("=== バックアップ状況 ===", "cyan")).unwrap();
+            writeln!(
+                output,
+                "{}",
+                colorize_text("=== バックアップ状況 ===", "cyan")
+            )
+            .unwrap();
 
             // プログレスバー
             let progress = format_progress_bar(500, 1000, 40);
@@ -231,12 +229,7 @@ fn bench_large_table_render(c: &mut Criterion) {
             for i in 0..rows {
                 let filename = format!("file_{}.txt", i);
                 let filesize = format_file_size(i * 1024);
-                let row_data = vec![
-                    &filename,
-                    &filesize,
-                    "完了",
-                    "2025-11-05 10:00:00",
-                ];
+                let row_data = vec![&filename, &filesize, "完了", "2025-11-05 10:00:00"];
                 writeln!(output, "{}", format_table_row(&row_data, &widths)).unwrap();
             }
 
@@ -279,10 +272,25 @@ fn bench_interactive_prompt_render(c: &mut Criterion) {
 
             writeln!(output, "{}", colorize_text("🎯 バックアップ設定", "cyan")).unwrap();
             writeln!(output).unwrap();
-            writeln!(output, "対象ディレクトリ: {}", colorize_text("/home/user/documents", "green")).unwrap();
-            writeln!(output, "バックアップ先: {}", colorize_text("/backup/dest", "green")).unwrap();
+            writeln!(
+                output,
+                "対象ディレクトリ: {}",
+                colorize_text("/home/user/documents", "green")
+            )
+            .unwrap();
+            writeln!(
+                output,
+                "バックアップ先: {}",
+                colorize_text("/backup/dest", "green")
+            )
+            .unwrap();
             writeln!(output).unwrap();
-            writeln!(output, "{}", colorize_text("実行しますか? [Y/n]:", "yellow")).unwrap();
+            writeln!(
+                output,
+                "{}",
+                colorize_text("実行しますか? [Y/n]:", "yellow")
+            )
+            .unwrap();
 
             black_box(output);
         });
@@ -300,20 +308,19 @@ fn bench_error_message_formatting(c: &mut Criterion) {
     let mut group = c.benchmark_group("error_message_formatting");
 
     for error in errors {
-        group.bench_with_input(
-            BenchmarkId::from_parameter(error),
-            &error,
-            |b, &error| {
-                b.iter(|| {
-                    let mut output = Vec::new();
-                    writeln!(output, "{} {}",
-                        colorize_text("❌", "red"),
-                        colorize_text(error, "red")
-                    ).unwrap();
-                    black_box(output);
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(error), &error, |b, &error| {
+            b.iter(|| {
+                let mut output = Vec::new();
+                writeln!(
+                    output,
+                    "{} {}",
+                    colorize_text("❌", "red"),
+                    colorize_text(error, "red")
+                )
+                .unwrap();
+                black_box(output);
+            });
+        });
     }
 
     group.finish();

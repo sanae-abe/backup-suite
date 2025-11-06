@@ -276,7 +276,9 @@ impl MessageKey {
         match self {
             // Version and title
             MessageKey::AppVersion => "Backup Suite v1.0.0",
-            MessageKey::AppTitle => "Fast Local Backup Tool - Written in Rust, Type-safe, High-performance",
+            MessageKey::AppTitle => {
+                "Fast Local Backup Tool - Written in Rust, Type-safe, High-performance"
+            }
             MessageKey::AppDescription => "Backup Suite - Fast Local Backup Tool",
 
             // Command categories
@@ -341,7 +343,9 @@ impl MessageKey {
             MessageKey::DetailedInfo => "Detailed Information:",
             MessageKey::DetailCommand => "Command details: backup-suite <command> --help",
             MessageKey::ConfigFile => "Configuration file: ~/.config/backup-suite/config.toml",
-            MessageKey::BackupDestination => "Backup destination: ~/.local/share/backup-suite/backups/",
+            MessageKey::BackupDestination => {
+                "Backup destination: ~/.local/share/backup-suite/backups/"
+            }
 
             // Status messages
             MessageKey::Added => "Added",
@@ -371,14 +375,26 @@ impl MessageKey {
 
             // Config help
             MessageKey::ConfigTitle => "⚙️  Backup Suite Configuration Management",
-            MessageKey::ConfigDescription => "Command to manage backup destination, retention period and other settings",
+            MessageKey::ConfigDescription => {
+                "Command to manage backup destination, retention period and other settings"
+            }
             MessageKey::ConfigUsage => "Usage:",
             MessageKey::ConfigMgmtCommands => "📋 Configuration Management Commands",
-            MessageKey::ConfigSetDestination => "set-destination <path>  Change backup destination directory",
-            MessageKey::ConfigGetDestination => "get-destination        Display current backup destination",
-            MessageKey::ConfigSetKeepDays => "set-keep-days <days>   Change backup retention period (1-3650 days)",
-            MessageKey::ConfigGetKeepDays => "get-keep-days          Display current backup retention period",
-            MessageKey::ConfigOpen => "open                   Open configuration file in default editor",
+            MessageKey::ConfigSetDestination => {
+                "set-destination <path>  Change backup destination directory"
+            }
+            MessageKey::ConfigGetDestination => {
+                "get-destination        Display current backup destination"
+            }
+            MessageKey::ConfigSetKeepDays => {
+                "set-keep-days <days>   Change backup retention period (1-3650 days)"
+            }
+            MessageKey::ConfigGetKeepDays => {
+                "get-keep-days          Display current backup retention period"
+            }
+            MessageKey::ConfigOpen => {
+                "open                   Open configuration file in default editor"
+            }
             MessageKey::ConfigHelp => "help                   Display this help",
 
             // Schedule detailed options
@@ -391,7 +407,9 @@ impl MessageKey {
             MessageKey::ScheduleWeekly => "weekly  - Every Sunday at 2:00 AM",
             MessageKey::ScheduleMonthly => "monthly - First day of month at 2:00 AM",
             MessageKey::ScheduleTips => "💡 Tips:",
-            MessageKey::ScheduleTip1 => "  • After enabling schedule, it runs automatically via macOS launchctl",
+            MessageKey::ScheduleTip1 => {
+                "  • After enabling schedule, it runs automatically via macOS launchctl"
+            }
             MessageKey::ScheduleTip2 => "  • Use 'status' command to check actual operation status",
             MessageKey::ScheduleTip3 => "  • Each priority setting is managed independently",
 
@@ -403,7 +421,9 @@ impl MessageKey {
             MessageKey::ConfigExampleTilde => "# Tilde expansion is supported",
             MessageKey::ConfigTip1 => "  • Non-existent directories are automatically created",
             MessageKey::ConfigTip2 => "  • Write permissions are automatically checked",
-            MessageKey::ConfigTip3 => "  • Backups older than retention period can be deleted with cleanup command",
+            MessageKey::ConfigTip3 => {
+                "  • Backups older than retention period can be deleted with cleanup command"
+            }
 
             // Runtime messages
             MessageKey::NoTargetsRegistered => "No backup targets registered",
@@ -445,7 +465,9 @@ impl MessageKey {
             MessageKey::Disabled => "Disabled",
             MessageKey::ScheduleSettings => "Schedule Settings",
             MessageKey::ScheduleUpdated => "Schedule updated and applied",
-            MessageKey::ScheduleUpdatedEnableLater => "Schedule settings updated (enable with 'schedule enable')",
+            MessageKey::ScheduleUpdatedEnableLater => {
+                "Schedule settings updated (enable with 'schedule enable')"
+            }
             MessageKey::HighPriority => "High priority",
             MessageKey::MediumPriority => "Medium priority",
             MessageKey::LowPriority => "Low priority",
@@ -466,9 +488,13 @@ impl MessageKey {
             MessageKey::ConfigArgsPlaceholder => "[args]",
             MessageKey::MainHelp => "Main help",
             MessageKey::ConfigFileLabel => "Configuration file",
-            MessageKey::EnableOnlySpecifiedPriority => "Enable only specified priority (high/medium/low)",
+            MessageKey::EnableOnlySpecifiedPriority => {
+                "Enable only specified priority (high/medium/low)"
+            }
             MessageKey::DisableOnlySpecifiedPriority => "Disable only specified priority",
-            MessageKey::SetExecutionFrequency => "Set execution frequency for each priority (daily/weekly/monthly)",
+            MessageKey::SetExecutionFrequency => {
+                "Set execution frequency for each priority (daily/weekly/monthly)"
+            }
             MessageKey::EnableAllAutoBackups => "# Enable all automatic backups",
             MessageKey::EnableHighOnly => "# Enable high priority only",
             MessageKey::SetupScheduleFreq => "# Setup schedule frequency",
@@ -583,14 +609,26 @@ impl MessageKey {
 
             // Config help
             MessageKey::ConfigTitle => "⚙️  Backup Suite 設定管理",
-            MessageKey::ConfigDescription => "バックアップの保存先や保持期間などの設定を管理するコマンド",
+            MessageKey::ConfigDescription => {
+                "バックアップの保存先や保持期間などの設定を管理するコマンド"
+            }
             MessageKey::ConfigUsage => "使用方法:",
             MessageKey::ConfigMgmtCommands => "📋 設定管理コマンド",
-            MessageKey::ConfigSetDestination => "set-destination <パス>  バックアップ保存先ディレクトリを変更",
-            MessageKey::ConfigGetDestination => "get-destination        現在のバックアップ保存先を表示",
-            MessageKey::ConfigSetKeepDays => "set-keep-days <日数>   バックアップ保持期間を変更 (1-3650日)",
-            MessageKey::ConfigGetKeepDays => "get-keep-days          現在のバックアップ保持期間を表示",
-            MessageKey::ConfigOpen => "open                   設定ファイルをデフォルトエディタで開く",
+            MessageKey::ConfigSetDestination => {
+                "set-destination <パス>  バックアップ保存先ディレクトリを変更"
+            }
+            MessageKey::ConfigGetDestination => {
+                "get-destination        現在のバックアップ保存先を表示"
+            }
+            MessageKey::ConfigSetKeepDays => {
+                "set-keep-days <日数>   バックアップ保持期間を変更 (1-3650日)"
+            }
+            MessageKey::ConfigGetKeepDays => {
+                "get-keep-days          現在のバックアップ保持期間を表示"
+            }
+            MessageKey::ConfigOpen => {
+                "open                   設定ファイルをデフォルトエディタで開く"
+            }
             MessageKey::ConfigHelp => "help                   このヘルプを表示",
 
             // Schedule detailed options
@@ -603,7 +641,9 @@ impl MessageKey {
             MessageKey::ScheduleWeekly => "weekly  - 毎週日曜 2:00 AM",
             MessageKey::ScheduleMonthly => "monthly - 毎月1日 2:00 AM",
             MessageKey::ScheduleTips => "💡 ヒント:",
-            MessageKey::ScheduleTip1 => "  • スケジュール有効化後、macOSのlaunchctlで自動実行されます",
+            MessageKey::ScheduleTip1 => {
+                "  • スケジュール有効化後、macOSのlaunchctlで自動実行されます"
+            }
             MessageKey::ScheduleTip2 => "  • 'status'コマンドで実際の動作状況を確認できます",
             MessageKey::ScheduleTip3 => "  • 各優先度の設定は独立して管理できます",
 
@@ -615,7 +655,9 @@ impl MessageKey {
             MessageKey::ConfigExampleTilde => "# チルダ展開も対応",
             MessageKey::ConfigTip1 => "  • 存在しないディレクトリは自動的に作成されます",
             MessageKey::ConfigTip2 => "  • 書き込み権限のチェックが自動で行われます",
-            MessageKey::ConfigTip3 => "  • 保持期間を過ぎたバックアップは cleanup コマンドで削除できます",
+            MessageKey::ConfigTip3 => {
+                "  • 保持期間を過ぎたバックアップは cleanup コマンドで削除できます"
+            }
 
             // Runtime messages
             MessageKey::NoTargetsRegistered => "バックアップ対象が登録されていません",
@@ -657,7 +699,9 @@ impl MessageKey {
             MessageKey::Disabled => "無効",
             MessageKey::ScheduleSettings => "スケジュール設定",
             MessageKey::ScheduleUpdated => "スケジュール更新・適用完了",
-            MessageKey::ScheduleUpdatedEnableLater => "スケジュール設定更新（有効化は 'schedule enable' で）",
+            MessageKey::ScheduleUpdatedEnableLater => {
+                "スケジュール設定更新（有効化は 'schedule enable' で）"
+            }
             MessageKey::HighPriority => "高優先度",
             MessageKey::MediumPriority => "中優先度",
             MessageKey::LowPriority => "低優先度",
@@ -667,7 +711,9 @@ impl MessageKey {
             MessageKey::Before => "変更前",
             MessageKey::After => "変更後",
             MessageKey::CurrentDestination => "現在のバックアップ先",
-            MessageKey::KeepDaysOutOfRange => "keep_days は 1-3650 の範囲で指定してください（指定値:",
+            MessageKey::KeepDaysOutOfRange => {
+                "keep_days は 1-3650 の範囲で指定してください（指定値:"
+            }
             MessageKey::KeepDaysChanged => "バックアップ保持期間を変更しました",
             MessageKey::CurrentKeepDays => "現在のバックアップ保持期間",
             MessageKey::OpeningConfigFile => "設定ファイルを開きます",

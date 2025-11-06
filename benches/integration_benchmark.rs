@@ -32,27 +32,23 @@ fn bench_small_files_backup(c: &mut Criterion) {
 
     for count in file_counts {
         group.throughput(Throughput::Elements(count as u64));
-        group.bench_with_input(
-            BenchmarkId::from_parameter(count),
-            &count,
-            |b, &count| {
-                let temp_dir = TempDir::new().unwrap();
-                let source = temp_dir.path().join("source");
-                let dest = temp_dir.path().join("dest");
-                fs::create_dir_all(&source).unwrap();
-                fs::create_dir_all(&dest).unwrap();
+        group.bench_with_input(BenchmarkId::from_parameter(count), &count, |b, &count| {
+            let temp_dir = TempDir::new().unwrap();
+            let source = temp_dir.path().join("source");
+            let dest = temp_dir.path().join("dest");
+            fs::create_dir_all(&source).unwrap();
+            fs::create_dir_all(&dest).unwrap();
 
-                create_test_files(&source, count, 1024); // 1KB each
+            create_test_files(&source, count, 1024); // 1KB each
 
-                b.iter(|| {
-                    for entry in fs::read_dir(&source).unwrap() {
-                        let entry = entry.unwrap();
-                        let dest_path = dest.join(entry.file_name());
-                        fs::copy(entry.path(), black_box(dest_path)).unwrap();
-                    }
-                });
-            },
-        );
+            b.iter(|| {
+                for entry in fs::read_dir(&source).unwrap() {
+                    let entry = entry.unwrap();
+                    let dest_path = dest.join(entry.file_name());
+                    fs::copy(entry.path(), black_box(dest_path)).unwrap();
+                }
+            });
+        });
     }
 
     group.finish();
@@ -258,7 +254,8 @@ fn bench_parallel_backup(c: &mut Criterion) {
 
     group.bench_function("parallel", |b| {
         b.iter(|| {
-            let entries: Vec<_> = fs::read_dir(&source).unwrap()
+            let entries: Vec<_> = fs::read_dir(&source)
+                .unwrap()
                 .filter_map(|e| e.ok())
                 .collect();
 
@@ -294,7 +291,8 @@ fn bench_filtering_performance(c: &mut Criterion) {
 
     group.bench_function("with_filter", |b| {
         b.iter(|| {
-            let entries: Vec<_> = fs::read_dir(&source).unwrap()
+            let entries: Vec<_> = fs::read_dir(&source)
+                .unwrap()
                 .filter_map(|e| e.ok())
                 .filter(|entry| {
                     let path = entry.path();
@@ -308,7 +306,8 @@ fn bench_filtering_performance(c: &mut Criterion) {
 
     group.bench_function("without_filter", |b| {
         b.iter(|| {
-            let entries: Vec<_> = fs::read_dir(&source).unwrap()
+            let entries: Vec<_> = fs::read_dir(&source)
+                .unwrap()
                 .filter_map(|e| e.ok())
                 .collect();
             black_box(entries);
@@ -330,12 +329,13 @@ fn bench_metadata_collection(c: &mut Criterion) {
 
     group.bench_function("basic_metadata", |b| {
         b.iter(|| {
-            let metadata: Vec<_> = fs::read_dir(&source).unwrap()
+            let metadata: Vec<_> = fs::read_dir(&source)
+                .unwrap()
                 .filter_map(|e| e.ok())
                 .filter_map(|entry| {
-                    fs::metadata(entry.path()).ok().map(|meta| {
-                        (entry.file_name(), meta.len())
-                    })
+                    fs::metadata(entry.path())
+                        .ok()
+                        .map(|meta| (entry.file_name(), meta.len()))
                 })
                 .collect();
             black_box(metadata);
@@ -344,7 +344,8 @@ fn bench_metadata_collection(c: &mut Criterion) {
 
     group.bench_function("full_metadata", |b| {
         b.iter(|| {
-            let metadata: Vec<_> = fs::read_dir(&source).unwrap()
+            let metadata: Vec<_> = fs::read_dir(&source)
+                .unwrap()
                 .filter_map(|e| e.ok())
                 .filter_map(|entry| {
                     fs::metadata(entry.path()).ok().map(|meta| {

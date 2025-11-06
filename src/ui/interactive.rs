@@ -1,5 +1,5 @@
-use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 use anyhow::Result;
+use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 
 /// インタラクティブな確認プロンプト
 ///
@@ -186,8 +186,7 @@ pub fn select_with_default(message: &str, items: &[&str], default: usize) -> Res
 /// ```
 pub fn input(message: &str, default: Option<&str>) -> Result<String> {
     let theme = ColorfulTheme::default();
-    let mut input_builder = Input::<String>::with_theme(&theme)
-        .with_prompt(message);
+    let mut input_builder = Input::<String>::with_theme(&theme).with_prompt(message);
 
     if let Some(default_value) = default {
         input_builder = input_builder.default(default_value.to_string());

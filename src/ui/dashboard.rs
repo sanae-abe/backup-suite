@@ -13,9 +13,24 @@ use crate::core::{BackupHistory, Config, Priority};
 pub fn display_dashboard() -> Result<()> {
     let theme = ColorTheme::auto();
 
-    println!("\n{}", theme.header().apply_to("═══════════════════════════════════════════════════════════════"));
-    println!("{}", theme.header().apply_to("                    📊 Backup Suite Dashboard"));
-    println!("{}", theme.header().apply_to("═══════════════════════════════════════════════════════════════\n"));
+    println!(
+        "\n{}",
+        theme
+            .header()
+            .apply_to("═══════════════════════════════════════════════════════════════")
+    );
+    println!(
+        "{}",
+        theme
+            .header()
+            .apply_to("                    📊 Backup Suite Dashboard")
+    );
+    println!(
+        "{}",
+        theme
+            .header()
+            .apply_to("═══════════════════════════════════════════════════════════════\n")
+    );
 
     // 統計情報表示
     display_statistics(&theme)?;
@@ -168,14 +183,20 @@ fn display_recent_backups(theme: &ColorTheme) -> Result<()> {
     let history = BackupHistory::load_all()?;
 
     if history.is_empty() {
-        println!("{}", theme.warning().apply_to("バックアップ履歴がありません"));
+        println!(
+            "{}",
+            theme.warning().apply_to("バックアップ履歴がありません")
+        );
         return Ok(());
     }
 
     // 最新5件を取得
     let recent: Vec<_> = history.iter().rev().take(5).cloned().collect();
 
-    println!("{}", theme.header().apply_to("🕒 最近のバックアップ（直近5件）"));
+    println!(
+        "{}",
+        theme.header().apply_to("🕒 最近のバックアップ（直近5件）")
+    );
     display_history(&recent, theme);
 
     Ok(())
@@ -199,9 +220,7 @@ fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
     // 最近のバックアップがない場合の警告
     let history = BackupHistory::load_all()?;
     if let Some(last) = history.last() {
-        let days_since = Utc::now()
-            .signed_duration_since(last.timestamp)
-            .num_days();
+        let days_since = Utc::now().signed_duration_since(last.timestamp).num_days();
 
         if days_since > 7 {
             warnings.push(format!(
@@ -216,10 +235,7 @@ fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
     // 失敗したバックアップの警告
     let failed_count = history.iter().filter(|h| !h.success).count();
     if failed_count > 0 {
-        warnings.push(format!(
-            "失敗したバックアップが{}件あります",
-            failed_count
-        ));
+        warnings.push(format!("失敗したバックアップが{}件あります", failed_count));
     }
 
     // 警告表示
@@ -244,7 +260,12 @@ fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
         }
 
         println!("{}", table);
-        println!("\n{}", theme.info().apply_to("💡 ヒント: 'backup-suite run' でバックアップを実行できます"));
+        println!(
+            "\n{}",
+            theme
+                .info()
+                .apply_to("💡 ヒント: 'backup-suite run' でバックアップを実行できます")
+        );
     }
 
     Ok(())

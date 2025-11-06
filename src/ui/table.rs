@@ -1,14 +1,19 @@
+use super::colors::ColorTheme;
+use crate::core::{BackupHistory, Priority, Target, TargetType};
 /// テーブル表示モジュール
 ///
 /// comfy-tableを使用した美しい表形式の出力
 use comfy_table::{presets::UTF8_FULL, Cell, CellAlignment, Color, ContentArrangement, Table};
-use super::colors::ColorTheme;
-use crate::core::{BackupHistory, Priority, Target, TargetType};
 
 /// バックアップ対象一覧をテーブル表示
 pub fn display_targets(targets: &[Target], theme: &ColorTheme) {
     if targets.is_empty() {
-        println!("{}", theme.warning().apply_to("バックアップ対象が登録されていません"));
+        println!(
+            "{}",
+            theme
+                .warning()
+                .apply_to("バックアップ対象が登録されていません")
+        );
         return;
     }
 
@@ -64,7 +69,10 @@ pub fn display_targets(targets: &[Target], theme: &ColorTheme) {
 /// バックアップ履歴をテーブル表示
 pub fn display_history(history: &[BackupHistory], theme: &ColorTheme) {
     if history.is_empty() {
-        println!("{}", theme.warning().apply_to("バックアップ履歴がありません"));
+        println!(
+            "{}",
+            theme.warning().apply_to("バックアップ履歴がありません")
+        );
         return;
     }
 
@@ -82,7 +90,8 @@ pub fn display_history(history: &[BackupHistory], theme: &ColorTheme) {
         ]);
 
     for (idx, entry) in history.iter().enumerate() {
-        let timestamp = entry.timestamp
+        let timestamp = entry
+            .timestamp
             .with_timezone(&chrono::Local)
             .format("%Y-%m-%d %H:%M")
             .to_string();

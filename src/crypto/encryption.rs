@@ -2,13 +2,13 @@
 //!
 //! 認証付き暗号化を提供する高セキュリティ暗号化システム
 
-use aes_gcm::{Aes256Gcm, Key, Nonce, KeyInit};
-use aes_gcm::aead::Aead;
-use rand::RngCore;
-use rand::rngs::OsRng;
-use std::io::{Read, Write};
-use crate::error::{BackupError, Result};
 use super::key_management::MasterKey;
+use crate::error::{BackupError, Result};
+use aes_gcm::aead::Aead;
+use aes_gcm::{Aes256Gcm, Key, KeyInit, Nonce};
+use rand::rngs::OsRng;
+use rand::RngCore;
+use std::io::{Read, Write};
 
 /// 暗号化設定
 #[derive(Debug, Clone)]
@@ -22,8 +22,8 @@ pub struct EncryptionConfig {
 impl Default for EncryptionConfig {
     fn default() -> Self {
         Self {
-            chunk_size: 1024 * 1024,    // 1MB チャンク
-            buffer_size: 64 * 1024,     // 64KB バッファ
+            chunk_size: 1024 * 1024, // 1MB チャンク
+            buffer_size: 64 * 1024,  // 64KB バッファ
         }
     }
 }
@@ -45,11 +45,11 @@ impl EncryptedData {
     /// バイナリ形式にシリアライズ
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(44 + self.ciphertext.len());
-        result.extend_from_slice(&self.nonce);              // 12バイト
-        result.extend_from_slice(&self.salt);               // 16バイト
+        result.extend_from_slice(&self.nonce); // 12バイト
+        result.extend_from_slice(&self.salt); // 16バイト
         result.extend_from_slice(&self.original_size.to_le_bytes()); // 8バイト
         result.extend_from_slice(&(self.ciphertext.len() as u64).to_le_bytes()); // 8バイト
-        result.extend_from_slice(&self.ciphertext);         // 可変長
+        result.extend_from_slice(&self.ciphertext); // 可変長
         result
     }
 
@@ -57,7 +57,7 @@ impl EncryptedData {
     pub fn from_bytes(data: &[u8]) -> Result<Self> {
         if data.len() < 44 {
             return Err(BackupError::EncryptionError(
-                "暗号化データが短すぎます".to_string()
+                "暗号化データが短すぎます".to_string(),
             ));
         }
 
@@ -68,18 +68,16 @@ impl EncryptedData {
         salt.copy_from_slice(&data[12..28]);
 
         let original_size = u64::from_le_bytes([
-            data[28], data[29], data[30], data[31],
-            data[32], data[33], data[34], data[35],
+            data[28], data[29], data[30], data[31], data[32], data[33], data[34], data[35],
         ]);
 
         let ciphertext_len = u64::from_le_bytes([
-            data[36], data[37], data[38], data[39],
-            data[40], data[41], data[42], data[43],
+            data[36], data[37], data[38], data[39], data[40], data[41], data[42], data[43],
         ]) as usize;
 
         if data.len() != 44 + ciphertext_len {
             return Err(BackupError::EncryptionError(
-                "暗号化データの長さが一致しません".to_string()
+                "暗号化データの長さが一致しません".to_string(),
             ));
         }
 
@@ -114,7 +112,12 @@ impl EncryptionEngine {
 
     /// データを暗号化
     #[allow(deprecated)]
-    pub fn encrypt(&self, data: &[u8], master_key: &MasterKey, salt: [u8; 16]) -> Result<EncryptedData> {
+    pub fn encrypt(
+        &self,
+        data: &[u8],
+        master_key: &MasterKey,
+        salt: [u8; 16],
+    ) -> Result<EncryptedData> {
         let nonce_bytes = Self::generate_nonce();
 
         // AES-256-GCM 暗号化
@@ -128,7 +131,7 @@ impl EncryptionEngine {
 
         Ok(EncryptedData {
             nonce: nonce_bytes,
-            salt,  // 渡されたsaltを使用（新しく生成しない）
+            salt, // 渡されたsaltを使用（新しく生成しない）
             ciphertext,
             original_size: data.len() as u64,
         })
@@ -136,7 +139,11 @@ impl EncryptionEngine {
 
     /// データを復号化
     #[allow(deprecated)]
-    pub fn decrypt(&self, encrypted_data: &EncryptedData, master_key: &MasterKey) -> Result<Vec<u8>> {
+    pub fn decrypt(
+        &self,
+        encrypted_data: &EncryptedData,
+        master_key: &MasterKey,
+    ) -> Result<Vec<u8>> {
         let key = Key::<Aes256Gcm>::from_slice(master_key.as_bytes());
         let cipher = Aes256Gcm::new(key);
         let nonce = Nonce::from_slice(&encrypted_data.nonce);
@@ -178,15 +185,16 @@ impl EncryptionEngine {
 
             total_size += bytes_read as u64;
 
-            // チャンク毎に異なるナンスを使用
+            // チャンク毎に異なるナンスを使用（u64カウンター）
             let mut chunk_nonce = nonce_bytes;
-            chunk_nonce[8..12].copy_from_slice(&(encrypted_chunks.len() as u32).to_le_bytes());
+            let chunk_index = encrypted_chunks.len() as u64;
+            chunk_nonce[4..12].copy_from_slice(&chunk_index.to_le_bytes());
 
             #[allow(deprecated)]
             let nonce = Nonce::from_slice(&chunk_nonce);
-            let chunk_ciphertext = cipher
-                .encrypt(nonce, &buffer[..bytes_read])
-                .map_err(|e| BackupError::EncryptionError(format!("チャンク暗号化エラー: {}", e)))?;
+            let chunk_ciphertext = cipher.encrypt(nonce, &buffer[..bytes_read]).map_err(|e| {
+                BackupError::EncryptionError(format!("チャンク暗号化エラー: {}", e))
+            })?;
 
             // チャンクサイズと暗号化データを書き込み
             writer.write_all(&(chunk_ciphertext.len() as u32).to_le_bytes())?;
@@ -221,13 +229,13 @@ impl EncryptionEngine {
         let cipher = Aes256Gcm::new(key);
 
         let mut total_decrypted = 0u64;
-        let mut chunk_index = 0u32;
+        let mut chunk_index = 0u64;
 
         loop {
             // チャンクサイズを読み取り
             let mut chunk_size_bytes = [0u8; 4];
             match reader.read_exact(&mut chunk_size_bytes) {
-                Ok(_) => {},
+                Ok(_) => {}
                 Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => break,
                 Err(e) => return Err(BackupError::IoError(e)),
             }
@@ -236,15 +244,15 @@ impl EncryptionEngine {
             let mut chunk_data = vec![0u8; chunk_size];
             reader.read_exact(&mut chunk_data)?;
 
-            // チャンク毎のナンスを再生成
+            // チャンク毎のナンスを再生成（u64カウンター）
             let mut chunk_nonce = nonce_bytes;
-            chunk_nonce[8..12].copy_from_slice(&chunk_index.to_le_bytes());
+            chunk_nonce[4..12].copy_from_slice(&chunk_index.to_le_bytes());
 
             #[allow(deprecated)]
             let nonce = Nonce::from_slice(&chunk_nonce);
-            let plaintext = cipher
-                .decrypt(nonce, chunk_data.as_ref())
-                .map_err(|e| BackupError::EncryptionError(format!("チャンク復号化エラー: {}", e)))?;
+            let plaintext = cipher.decrypt(nonce, chunk_data.as_ref()).map_err(|e| {
+                BackupError::EncryptionError(format!("チャンク復号化エラー: {}", e))
+            })?;
 
             writer.write_all(&plaintext)?;
             total_decrypted += plaintext.len() as u64;
@@ -318,21 +326,17 @@ mod tests {
 
         let reader = Cursor::new(&original_data);
         let mut encrypted_buffer = Vec::new();
-        let encrypted_meta = engine.encrypt_stream(
-            reader,
-            &mut encrypted_buffer,
-            &master_key
-        ).unwrap();
+        let encrypted_meta = engine
+            .encrypt_stream(reader, &mut encrypted_buffer, &master_key)
+            .unwrap();
 
         assert_eq!(encrypted_meta.original_size, original_data.len() as u64);
 
         let encrypted_reader = Cursor::new(&encrypted_buffer);
         let mut decrypted_buffer = Vec::new();
-        let decrypted_size = engine.decrypt_stream(
-            encrypted_reader,
-            &mut decrypted_buffer,
-            &master_key
-        ).unwrap();
+        let decrypted_size = engine
+            .decrypt_stream(encrypted_reader, &mut decrypted_buffer, &master_key)
+            .unwrap();
 
         assert_eq!(decrypted_size, original_data.len() as u64);
         assert_eq!(original_data, decrypted_buffer);

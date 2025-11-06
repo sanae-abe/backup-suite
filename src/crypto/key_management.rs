@@ -2,11 +2,11 @@
 //!
 //! パスワードからの安全な鍵導出とマスターキー管理を提供します。
 
-use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+use crate::error::{BackupError, Result};
 use argon2::password_hash::{rand_core::OsRng, SaltString};
+use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use rand::RngCore;
 use zeroize::{Zeroize, ZeroizeOnDrop};
-use crate::error::{BackupError, Result};
 
 /// マスターキー（32バイト）
 #[derive(Clone, Zeroize, ZeroizeOnDrop)]
@@ -47,9 +47,9 @@ pub struct KeyDerivationConfig {
 impl Default for KeyDerivationConfig {
     fn default() -> Self {
         Self {
-            memory_cost: 65536, // 64MB
-            time_cost: 3,       // 3回反復
-            parallelism: 1,     // シングルスレッド
+            memory_cost: 131072, // 128MB（OWASP推奨）
+            time_cost: 4,        // 4回反復（OWASP推奨）
+            parallelism: 2,      // 並列度2（セキュリティと性能のバランス）
         }
     }
 }
@@ -75,7 +75,8 @@ impl KeyDerivation {
                 self.config.time_cost,
                 self.config.parallelism,
                 Some(32),
-            ).map_err(|e| BackupError::EncryptionError(format!("Argon2パラメータエラー: {}", e)))?,
+            )
+            .map_err(|e| BackupError::EncryptionError(format!("Argon2パラメータエラー: {}", e)))?,
         );
 
         let salt_string = SaltString::encode_b64(salt)
@@ -83,17 +84,17 @@ impl KeyDerivation {
 
         let password_hash = argon2
             .hash_password(password.as_bytes(), &salt_string)
-            .map_err(|e| BackupError::EncryptionError(format!("パスワードハッシュエラー: {}", e)))?;
+            .map_err(|e| {
+                BackupError::EncryptionError(format!("パスワードハッシュエラー: {}", e))
+            })?;
 
-        let hash = password_hash.hash.ok_or_else(|| {
-            BackupError::EncryptionError("ハッシュ生成に失敗".to_string())
-        })?;
+        let hash = password_hash
+            .hash
+            .ok_or_else(|| BackupError::EncryptionError("ハッシュ生成に失敗".to_string()))?;
         let hash_bytes = hash.as_bytes();
 
         if hash_bytes.len() != 32 {
-            return Err(BackupError::EncryptionError(
-                "無効なキー長".to_string()
-            ));
+            return Err(BackupError::EncryptionError("無効なキー長".to_string()));
         }
 
         let mut key = [0u8; 32];
@@ -114,7 +115,9 @@ impl KeyDerivation {
             .map_err(|e| BackupError::EncryptionError(format!("ハッシュ解析エラー: {}", e)))?;
 
         let argon2 = Argon2::default();
-        Ok(argon2.verify_password(password.as_bytes(), &parsed_hash).is_ok())
+        Ok(argon2
+            .verify_password(password.as_bytes(), &parsed_hash)
+            .is_ok())
     }
 }
 

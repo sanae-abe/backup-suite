@@ -3,10 +3,8 @@ use std::path::PathBuf;
 use std::time::Instant;
 
 fn main() {
-    let source_dir = PathBuf::from(std::env::var("HOME").unwrap())
-        .join("backup-test/files");
-    let dest_dir = PathBuf::from(std::env::var("HOME").unwrap())
-        .join("backup-test/rust-backup");
+    let source_dir = PathBuf::from(std::env::var("HOME").unwrap()).join("backup-test/files");
+    let dest_dir = PathBuf::from(std::env::var("HOME").unwrap()).join("backup-test/rust-backup");
 
     // 前回の結果を削除
     let _ = std::fs::remove_dir_all(&dest_dir);
@@ -26,7 +24,8 @@ fn main() {
     let start = Instant::now();
 
     // 並列コピー
-    let results: Vec<_> = files.par_iter()
+    let results: Vec<_> = files
+        .par_iter()
         .map(|file| {
             let filename = file.file_name().unwrap();
             let dest = dest_dir.join(filename);

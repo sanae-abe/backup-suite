@@ -409,14 +409,12 @@ fn test_copy_time_scales_linearly() -> Result<(), proptest::test_runner::TestCas
 
 /// 安全なファイル名生成ストラテジー
 fn safe_filename() -> impl Strategy<Value = String> {
-    r"[a-zA-Z0-9_-]{1,20}\.(txt|md|rs|toml|json)"
-        .prop_map(|s| s.to_string())
+    r"[a-zA-Z0-9_-]{1,20}\.(txt|md|rs|toml|json)".prop_map(|s| s.to_string())
 }
 
 /// 安全なディレクトリパス生成ストラテジー
 fn safe_directory_path() -> impl Strategy<Value = String> {
-    prop::collection::vec(r"[a-zA-Z0-9_-]{1,10}", 1..5)
-        .prop_map(|segments| segments.join("/"))
+    prop::collection::vec(r"[a-zA-Z0-9_-]{1,10}", 1..5).prop_map(|segments| segments.join("/"))
 }
 
 /// 優先度ストラテジー

@@ -54,7 +54,7 @@ impl CopyEngine {
     /// ```
     pub fn new() -> Self {
         Self {
-            buffer_size: 64 * 1024,        // 64KB
+            buffer_size: 64 * 1024,               // 64KB
             parallel_threshold: 10 * 1024 * 1024, // 10MB
         }
     }

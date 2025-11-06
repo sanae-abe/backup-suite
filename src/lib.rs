@@ -238,23 +238,31 @@
 //! ```
 
 // モジュール宣言
+pub mod compression;
 pub mod core;
 pub mod crypto;
-pub mod compression;
 pub mod error;
 pub mod i18n;
 pub mod security;
 pub mod ui;
 
 // 主要な型を再エクスポート
-pub use core::{BackupHistory, BackupResult, BackupRunner, Config, CopyEngine, Priority, Target, TargetType,
-               ProcessingPipeline, PipelineConfig, ProcessedData, ProcessingMetadata, PerformanceConfig};
-pub use crypto::{EncryptionEngine, EncryptionConfig, EncryptedData, KeyManager, KeyDerivation, MasterKey};
-pub use compression::{CompressionEngine, CompressionType, CompressionConfig, CompressedData};
+pub use compression::{CompressedData, CompressionConfig, CompressionEngine, CompressionType};
+pub use core::{
+    BackupHistory, BackupResult, BackupRunner, Config, CopyEngine, PerformanceConfig,
+    PipelineConfig, Priority, ProcessedData, ProcessingMetadata, ProcessingPipeline, Target,
+    TargetType,
+};
+pub use crypto::{
+    EncryptedData, EncryptionConfig, EncryptionEngine, KeyDerivation, KeyManager, MasterKey,
+};
 pub use error::{BackupError, Result};
-pub use i18n::{Language, MessageKey, get_message};
+pub use i18n::{get_message, Language, MessageKey};
 pub use security::{check_read_permission, check_write_permission, safe_join};
-pub use ui::{display_dashboard, display_targets, display_history, display_backup_result, ColorTheme, ColorScheme};
+pub use ui::{
+    display_backup_result, display_dashboard, display_history, display_targets, ColorScheme,
+    ColorTheme,
+};
 
 #[cfg(unix)]
 pub use security::check_execute_permission;

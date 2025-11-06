@@ -2,11 +2,11 @@
 //!
 //! zstd と gzip アルゴリズムによる高性能データ圧縮システム
 
+use crate::error::{BackupError, Result};
+use flate2::{read::GzDecoder, write::GzEncoder, Compression};
 use std::io::{Read, Write};
 use std::str::FromStr;
-use flate2::{Compression, read::GzDecoder, write::GzEncoder};
-use zstd::{Encoder as ZstdEncoder, Decoder as ZstdDecoder};
-use crate::error::{BackupError, Result};
+use zstd::{Decoder as ZstdDecoder, Encoder as ZstdEncoder};
 
 /// 圧縮アルゴリズムタイプ
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -27,7 +27,10 @@ impl FromStr for CompressionType {
             "zstd" => Ok(Self::Zstd),
             "gzip" => Ok(Self::Gzip),
             "none" => Ok(Self::None),
-            _ => Err(BackupError::CompressionError(format!("不明な圧縮タイプ: {}", s))),
+            _ => Err(BackupError::CompressionError(format!(
+                "不明な圧縮タイプ: {}",
+                s
+            ))),
         }
     }
 }
@@ -64,21 +67,40 @@ pub struct CompressionConfig {
 }
 
 impl CompressionConfig {
-    /// zstd用のデフォルト設定
+    /// zstd用のデフォルト設定（最適化版）
     pub fn zstd_default() -> Self {
         Self {
-            level: 3,                    // バランスの良いレベル
-            chunk_size: 1024 * 1024,     // 1MB チャンク
-            buffer_size: 64 * 1024,      // 64KB バッファ
+            level: 5,                    // 速度と圧縮率のバランス（3→5に最適化）
+            chunk_size: 2 * 1024 * 1024, // 2MB チャンク（キャッシュ効率向上）
+            buffer_size: 128 * 1024,     // 128KB バッファ（I/O効率向上）
+        }
+    }
+
+    /// zstd用の適応的設定（CPU数に基づく動的調整）
+    pub fn zstd_adaptive() -> Self {
+        let cpu_count = std::thread::available_parallelism()
+            .map(|n| n.get())
+            .unwrap_or(4);
+
+        Self {
+            level: if cpu_count >= 8 {
+                7
+            } else if cpu_count >= 4 {
+                5
+            } else {
+                3
+            },
+            chunk_size: 2 * 1024 * 1024,
+            buffer_size: 128 * 1024,
         }
     }
 
     /// gzip用のデフォルト設定
     pub fn gzip_default() -> Self {
         Self {
-            level: 6,                    // デフォルトレベル
-            chunk_size: 1024 * 1024,     // 1MB チャンク
-            buffer_size: 64 * 1024,      // 64KB バッファ
+            level: 6,                // デフォルトレベル
+            chunk_size: 1024 * 1024, // 1MB チャンク
+            buffer_size: 64 * 1024,  // 64KB バッファ
         }
     }
 
@@ -88,7 +110,7 @@ impl CompressionConfig {
             CompressionType::Zstd => Self {
                 level: 1,
                 chunk_size: 2 * 1024 * 1024, // 2MB チャンク（高速化）
-                buffer_size: 128 * 1024,      // 128KB バッファ
+                buffer_size: 128 * 1024,     // 128KB バッファ
             },
             CompressionType::Gzip => Self {
                 level: 1,
@@ -103,9 +125,9 @@ impl CompressionConfig {
     pub fn best(compression_type: CompressionType) -> Self {
         match compression_type {
             CompressionType::Zstd => Self {
-                level: 19,                   // 高圧縮率
-                chunk_size: 512 * 1024,      // 512KB チャンク（圧縮率重視）
-                buffer_size: 32 * 1024,      // 32KB バッファ
+                level: 19,              // 高圧縮率
+                chunk_size: 512 * 1024, // 512KB チャンク（圧縮率重視）
+                buffer_size: 32 * 1024, // 32KB バッファ
             },
             CompressionType::Gzip => Self {
                 level: 9,
@@ -178,7 +200,7 @@ impl CompressedData {
     pub fn from_bytes(data: &[u8]) -> Result<Self> {
         if data.len() < 25 {
             return Err(BackupError::CompressionError(
-                "圧縮データが短すぎます".to_string()
+                "圧縮データが短すぎます".to_string(),
             ));
         }
 
@@ -186,24 +208,24 @@ impl CompressedData {
             1 => CompressionType::Zstd,
             2 => CompressionType::Gzip,
             0 => CompressionType::None,
-            _ => return Err(BackupError::CompressionError(
-                "不明な圧縮タイプ".to_string()
-            )),
+            _ => {
+                return Err(BackupError::CompressionError(
+                    "不明な圧縮タイプ".to_string(),
+                ))
+            }
         };
 
         let compression_level = u32::from_le_bytes([data[1], data[2], data[3], data[4]]) as i32;
         let original_size = u64::from_le_bytes([
-            data[5], data[6], data[7], data[8],
-            data[9], data[10], data[11], data[12],
+            data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12],
         ]);
         let compressed_size = u64::from_le_bytes([
-            data[13], data[14], data[15], data[16],
-            data[17], data[18], data[19], data[20],
+            data[13], data[14], data[15], data[16], data[17], data[18], data[19], data[20],
         ]);
 
         if data.len() != 21 + compressed_size as usize {
             return Err(BackupError::CompressionError(
-                "圧縮データの長さが一致しません".to_string()
+                "圧縮データの長さが一致しません".to_string(),
             ));
         }
 
@@ -295,7 +317,9 @@ impl CompressionEngine {
         match self.compression_type {
             CompressionType::Zstd => {
                 let mut encoder = ZstdEncoder::new(&mut compressed_buffer, self.config.level)
-                    .map_err(|e| BackupError::CompressionError(format!("Zstdエンコーダ作成エラー: {}", e)))?;
+                    .map_err(|e| {
+                        BackupError::CompressionError(format!("Zstdエンコーダ作成エラー: {}", e))
+                    })?;
 
                 let mut buffer = vec![0u8; self.config.buffer_size];
                 loop {
@@ -304,15 +328,20 @@ impl CompressionEngine {
                         break;
                     }
                     original_size += bytes_read as u64;
-                    encoder.write_all(&buffer[..bytes_read])
-                        .map_err(|e| BackupError::CompressionError(format!("Zstd圧縮エラー: {}", e)))?;
+                    encoder.write_all(&buffer[..bytes_read]).map_err(|e| {
+                        BackupError::CompressionError(format!("Zstd圧縮エラー: {}", e))
+                    })?;
                 }
 
-                encoder.finish()
+                encoder
+                    .finish()
                     .map_err(|e| BackupError::CompressionError(format!("Zstd完了エラー: {}", e)))?;
             }
             CompressionType::Gzip => {
-                let mut encoder = GzEncoder::new(&mut compressed_buffer, Compression::new(self.config.level as u32));
+                let mut encoder = GzEncoder::new(
+                    &mut compressed_buffer,
+                    Compression::new(self.config.level as u32),
+                );
 
                 let mut buffer = vec![0u8; self.config.buffer_size];
                 loop {
@@ -361,13 +390,15 @@ impl CompressionEngine {
 
         match compression_type {
             CompressionType::Zstd => {
-                let mut decoder = ZstdDecoder::new(reader)
-                    .map_err(|e| BackupError::CompressionError(format!("Zstdデコーダ作成エラー: {}", e)))?;
+                let mut decoder = ZstdDecoder::new(reader).map_err(|e| {
+                    BackupError::CompressionError(format!("Zstdデコーダ作成エラー: {}", e))
+                })?;
 
                 let mut buffer = vec![0u8; self.config.buffer_size];
                 loop {
-                    let bytes_read = decoder.read(&mut buffer)
-                        .map_err(|e| BackupError::CompressionError(format!("Zstd展開エラー: {}", e)))?;
+                    let bytes_read = decoder.read(&mut buffer).map_err(|e| {
+                        BackupError::CompressionError(format!("Zstd展開エラー: {}", e))
+                    })?;
                     if bytes_read == 0 {
                         break;
                     }
@@ -418,10 +449,11 @@ impl CompressionEngine {
     }
 
     fn compress_gzip(&self, data: &[u8]) -> Result<Vec<u8>> {
-        
         let mut encoder = GzEncoder::new(Vec::new(), Compression::new(self.config.level as u32));
         encoder.write_all(data)?;
-        encoder.finish().map_err(|e| BackupError::CompressionError(format!("Gzip圧縮エラー: {}", e)))
+        encoder
+            .finish()
+            .map_err(|e| BackupError::CompressionError(format!("Gzip圧縮エラー: {}", e)))
     }
 
     fn decompress_gzip(&self, data: &[u8]) -> Result<Vec<u8>> {
@@ -440,9 +472,18 @@ mod tests {
 
     #[test]
     fn test_compression_types() {
-        assert_eq!(CompressionType::from_str("zstd").unwrap(), CompressionType::Zstd);
-        assert_eq!(CompressionType::from_str("gzip").unwrap(), CompressionType::Gzip);
-        assert_eq!(CompressionType::from_str("none").unwrap(), CompressionType::None);
+        assert_eq!(
+            CompressionType::from_str("zstd").unwrap(),
+            CompressionType::Zstd
+        );
+        assert_eq!(
+            CompressionType::from_str("gzip").unwrap(),
+            CompressionType::Gzip
+        );
+        assert_eq!(
+            CompressionType::from_str("none").unwrap(),
+            CompressionType::None
+        );
 
         assert_eq!(CompressionType::Zstd.to_str(), "zstd");
         assert_eq!(CompressionType::Gzip.file_extension(), ".gz");
@@ -506,17 +547,21 @@ mod tests {
 
         let reader = Cursor::new(&original_data);
         let mut compressed_buffer = Vec::new();
-        let compressed_meta = engine.compress_stream(reader, &mut compressed_buffer).unwrap();
+        let compressed_meta = engine
+            .compress_stream(reader, &mut compressed_buffer)
+            .unwrap();
 
         assert_eq!(compressed_meta.original_size, original_data.len() as u64);
 
         let compressed_reader = Cursor::new(&compressed_buffer);
         let mut decompressed_buffer = Vec::new();
-        let decompressed_size = engine.decompress_stream(
-            compressed_reader,
-            &mut decompressed_buffer,
-            CompressionType::Zstd,
-        ).unwrap();
+        let decompressed_size = engine
+            .decompress_stream(
+                compressed_reader,
+                &mut decompressed_buffer,
+                CompressionType::Zstd,
+            )
+            .unwrap();
 
         assert_eq!(decompressed_size, original_data.len() as u64);
         assert_eq!(original_data, decompressed_buffer);

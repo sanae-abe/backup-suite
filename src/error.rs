@@ -120,11 +120,9 @@ impl BackupError {
     /// エラーの詳細と推奨される対処法を含むメッセージ
     pub fn user_friendly_message(&self) -> String {
         match self {
-            BackupError::HomeDirectoryNotFound => {
-                "ホームディレクトリが見つかりません。\n\
+            BackupError::HomeDirectoryNotFound => "ホームディレクトリが見つかりません。\n\
                  対処法: 環境変数 $HOME が設定されているか確認してください。"
-                    .to_string()
-            }
+                .to_string(),
             BackupError::TargetNotFound { path } => {
                 format!(
                     "バックアップ対象が存在しません: {:?}\n\

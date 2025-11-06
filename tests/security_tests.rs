@@ -53,8 +53,8 @@ mod path_traversal_tests {
 
         // Unicode path traversal attempts
         let unicode_attacks = vec![
-            "..%2F..%2F..%2Fetc%2Fpasswd",  // URL encoded
-            "..\u{2044}..\u{2044}etc",       // Unicode slash
+            "..%2F..%2F..%2Fetc%2Fpasswd", // URL encoded
+            "..\u{2044}..\u{2044}etc",     // Unicode slash
         ];
 
         for attack in unicode_attacks {
@@ -237,12 +237,7 @@ mod permission_tests {
     #[test]
     #[ignore]
     fn test_system_directory_access_denial() {
-        let protected_dirs = vec![
-            "/etc",
-            "/sys",
-            "/proc",
-            "/dev",
-        ];
+        let protected_dirs = vec!["/etc", "/sys", "/proc", "/dev"];
 
         for dir in protected_dirs {
             let path = PathBuf::from(dir);
@@ -275,7 +270,6 @@ mod resource_exhaustion_tests {
         // Create 11GB sparse file (exceeds 10GB limit)
         #[cfg(unix)]
         {
-            
             let file = std::fs::File::create(&huge_file).unwrap();
             file.set_len(11 * 1024 * 1024 * 1024).unwrap();
         }
@@ -332,16 +326,15 @@ mod resource_exhaustion_tests {
 /// Test Suite 6: Input Validation Tests
 #[cfg(test)]
 mod input_validation_tests {
-    
 
     #[test]
     #[ignore]
     fn test_invalid_path_characters() {
         let invalid_paths = vec![
-            "file\0name.txt",           // Null byte
-            "file\r\nname.txt",         // CRLF injection
-            "file<>|name.txt",          // Shell metacharacters
-            "file`command`.txt",        // Command injection
+            "file\0name.txt",    // Null byte
+            "file\r\nname.txt",  // CRLF injection
+            "file<>|name.txt",   // Shell metacharacters
+            "file`command`.txt", // Command injection
         ];
 
         for path in invalid_paths {
@@ -359,11 +352,7 @@ mod input_validation_tests {
     #[test]
     #[ignore]
     fn test_empty_and_whitespace_paths() {
-        let invalid_paths = vec![
-            "",
-            "   ",
-            "\t\n\r",
-        ];
+        let invalid_paths = vec!["", "   ", "\t\n\r"];
 
         for _path in invalid_paths {
             // Uncomment after validation implementation
@@ -420,7 +409,6 @@ mod error_handling_tests {
 /// Test Suite 8: Cryptography Tests
 #[cfg(test)]
 mod crypto_tests {
-    
 
     #[test]
     #[ignore]
@@ -498,7 +486,6 @@ mod integrity_tests {
 /// Test Suite 10: Audit Logging
 #[cfg(test)]
 mod audit_log_tests {
-    
 
     #[test]
     #[ignore]

@@ -51,6 +51,10 @@ zeroize = { version = "1.7", features = ["derive"] }
 zstd = "0.13"
 flate2 = "1.0"
 
+# Unix限定のセキュリティ機能
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
 [dev-dependencies]
 proptest = "1.4"
 tempfile = "3.10"

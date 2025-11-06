@@ -119,11 +119,10 @@ pub fn check_write_permission(path: &Path) -> Result<()> {
     let target_dir = if path.is_dir() {
         path
     } else {
-        path.parent().ok_or_else(|| {
-            BackupError::ParentDirectoryNotFound {
+        path.parent()
+            .ok_or_else(|| BackupError::ParentDirectoryNotFound {
                 path: path.to_path_buf(),
-            }
-        })?
+            })?
     };
 
     // ディレクトリが存在しない場合は作成を試みる

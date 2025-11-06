@@ -55,9 +55,7 @@ impl BackupProgress {
         let main_bar = multi.add(ProgressBar::new(total_files));
         main_bar.set_style(
             ProgressStyle::default_bar()
-                .template(
-                    "[{elapsed_precise}] {bar:40.cyan/blue} {pos}/{len} ファイル {msg}"
-                )
+                .template("[{elapsed_precise}] {bar:40.cyan/blue} {pos}/{len} ファイル {msg}")
                 .unwrap()
                 .progress_chars("█▉▊▋▌▍▎▏  "),
         );

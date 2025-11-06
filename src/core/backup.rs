@@ -7,7 +7,7 @@ use walkdir::WalkDir;
 
 use super::copy_engine::CopyEngine;
 use super::filter::FileFilter;
-use super::pipeline::{ProcessingPipeline, PipelineConfig};
+use super::pipeline::{PipelineConfig, ProcessingPipeline};
 use super::{Config, Priority, Target, TargetType};
 use crate::compression::CompressionType;
 use crate::crypto::{EncryptionConfig, KeyManager};
@@ -209,7 +209,11 @@ impl BackupRunner {
     /// let runner = BackupRunner::new(config, false);
     /// let result = runner.run(Some(&Priority::High), None).unwrap();
     /// ```
-    pub fn run(&self, priority_filter: Option<&Priority>, category_filter: Option<&str>) -> Result<BackupResult> {
+    pub fn run(
+        &self,
+        priority_filter: Option<&Priority>,
+        category_filter: Option<&str>,
+    ) -> Result<BackupResult> {
         // バックアップ対象をフィルタ（優先度 → カテゴリの順）
         let mut targets: Vec<&Target> = if let Some(priority) = priority_filter {
             self.config.filter_by_priority(priority)
@@ -234,15 +238,17 @@ impl BackupRunner {
         let backup_base = dest_base.join(&backup_name);
 
         // 暗号化が有効な場合、KeyManagerとmaster keyを準備
-        let (_key_manager, master_key, encryption_salt) = if self.enable_encryption && self.password.is_some() {
-            let km = KeyManager::default();
-            let password = self.password.as_ref().unwrap();
-            let (mk, salt) = km.create_master_key(password)
-                .context("マスターキー生成失敗")?;
-            (Some(km), Some(Arc::new(mk)), Some(salt))
-        } else {
-            (None, None, None)
-        };
+        let (_key_manager, master_key, encryption_salt) =
+            if self.enable_encryption && self.password.is_some() {
+                let km = KeyManager::default();
+                let password = self.password.as_ref().unwrap();
+                let (mk, salt) = km
+                    .create_master_key(password)
+                    .context("マスターキー生成失敗")?;
+                (Some(km), Some(Arc::new(mk)), Some(salt))
+            } else {
+                (None, None, None)
+            };
 
         // 各ターゲットからファイルリストを収集
         let mut all_files: Vec<(PathBuf, PathBuf)> = Vec::new();
@@ -263,8 +269,10 @@ impl BackupRunner {
             let backup_dir = backup_base.join(&category);
 
             // カテゴリディレクトリを作成
-            std::fs::create_dir_all(&backup_dir)
-                .context(format!("バックアップディレクトリ作成失敗: {:?}", backup_dir))?;
+            std::fs::create_dir_all(&backup_dir).context(format!(
+                "バックアップディレクトリ作成失敗: {:?}",
+                backup_dir
+            ))?;
 
             // FileFilterの準備
             let filter = if !target.exclude_patterns.is_empty() {
@@ -320,7 +328,9 @@ impl BackupRunner {
                                     // safe_joinを使用してディレクトリトラバーサル対策
                                     match safe_join(&backup_dir, relative) {
                                         Ok(dest) => all_files.push((source, dest)),
-                                        Err(e) => eprintln!("警告: パストラバーサル検出、スキップ: {}", e),
+                                        Err(e) => {
+                                            eprintln!("警告: パストラバーサル検出、スキップ: {}", e)
+                                        }
                                     }
                                 }
                                 Err(e) => {
@@ -341,7 +351,10 @@ impl BackupRunner {
         let total_files = all_files.len();
 
         if self.dry_run {
-            println!("📋 ドライランモード: {} ファイルをバックアップ対象として検出", total_files);
+            println!(
+                "📋 ドライランモード: {} ファイルをバックアップ対象として検出",
+                total_files
+            );
             for (source, dest) in &all_files {
                 println!("  {:?} → {:?}", source, dest);
             }
@@ -392,7 +405,8 @@ impl BackupRunner {
         let failed_count = AtomicUsize::new(0);
         let total_bytes = AtomicUsize::new(0);
 
-        let errors: Vec<String> = all_files.par_iter()
+        let errors: Vec<String> = all_files
+            .par_iter()
             .filter_map(|(source, dest)| {
                 // 進捗表示更新
                 if let Some(ref pb) = progress {
@@ -415,13 +429,20 @@ impl BackupRunner {
                 // ProcessingPipelineまたはCopyEngineでファイル処理
                 if let Some(ref pipeline) = pipeline {
                     // 暗号化・圧縮パイプライン使用
-                    match pipeline.process_file(source, master_key.as_ref().map(|k| k.as_ref()), encryption_salt) {
+                    match pipeline.process_file(
+                        source,
+                        master_key.as_ref().map(|k| k.as_ref()),
+                        encryption_salt,
+                    ) {
                         Ok(processed) => {
                             // 処理後のデータをファイルに書き込み
                             match std::fs::write(dest, &processed.data) {
                                 Ok(_) => {
                                     success_count.fetch_add(1, Ordering::Relaxed);
-                                    total_bytes.fetch_add(processed.metadata.final_size as usize, Ordering::Relaxed);
+                                    total_bytes.fetch_add(
+                                        processed.metadata.final_size as usize,
+                                        Ordering::Relaxed,
+                                    );
                                     if let Some(ref pb) = progress {
                                         pb.inc(1);
                                     }

@@ -136,22 +136,34 @@ impl ColorTheme {
 
 /// ヘルパー関数: 成功メッセージ
 pub fn success(msg: &str) -> String {
-    ColorTheme::auto().success().apply_to(format!("✓ {}", msg)).to_string()
+    ColorTheme::auto()
+        .success()
+        .apply_to(format!("✓ {}", msg))
+        .to_string()
 }
 
 /// ヘルパー関数: エラーメッセージ
 pub fn error(msg: &str) -> String {
-    ColorTheme::auto().error().apply_to(format!("✗ {}", msg)).to_string()
+    ColorTheme::auto()
+        .error()
+        .apply_to(format!("✗ {}", msg))
+        .to_string()
 }
 
 /// ヘルパー関数: 警告メッセージ
 pub fn warning(msg: &str) -> String {
-    ColorTheme::auto().warning().apply_to(format!("⚠ {}", msg)).to_string()
+    ColorTheme::auto()
+        .warning()
+        .apply_to(format!("⚠ {}", msg))
+        .to_string()
 }
 
 /// ヘルパー関数: 情報メッセージ
 pub fn info(msg: &str) -> String {
-    ColorTheme::auto().info().apply_to(format!("ℹ {}", msg)).to_string()
+    ColorTheme::auto()
+        .info()
+        .apply_to(format!("ℹ {}", msg))
+        .to_string()
 }
 
 #[cfg(test)]
@@ -162,7 +174,10 @@ mod tests {
     fn test_color_scheme_detection() {
         let scheme = ColorScheme::detect();
         // 環境に依存するのでパニックしないことだけ確認
-        assert!(matches!(scheme, ColorScheme::Auto | ColorScheme::HighContrast));
+        assert!(matches!(
+            scheme,
+            ColorScheme::Auto | ColorScheme::HighContrast
+        ));
     }
 
     #[test]

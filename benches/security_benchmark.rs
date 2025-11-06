@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use std::fs;
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;
-use std::fs;
 
 // セキュリティ関連の関数（実装を想定）
 fn safe_join(base: &Path, child: &Path) -> Result<PathBuf, String> {
@@ -16,18 +16,17 @@ fn safe_join(base: &Path, child: &Path) -> Result<PathBuf, String> {
     let result = base.join(&normalized);
 
     // 結果がベースディレクトリ配下にあることを確認
-    result.canonicalize()
+    result
+        .canonicalize()
         .ok()
         .and_then(|canonical| {
-            base.canonicalize()
-                .ok()
-                .and_then(|base_canonical| {
-                    if canonical.starts_with(&base_canonical) {
-                        Some(result)
-                    } else {
-                        None
-                    }
-                })
+            base.canonicalize().ok().and_then(|base_canonical| {
+                if canonical.starts_with(&base_canonical) {
+                    Some(result)
+                } else {
+                    None
+                }
+            })
         })
         .ok_or_else(|| format!("不正なパス: {:?}", child))
 }
@@ -39,8 +38,7 @@ fn sanitize_path_component(name: &str) -> String {
 }
 
 fn check_read_permission(path: &Path) -> Result<(), String> {
-    let metadata = std::fs::metadata(path)
-        .map_err(|e| format!("メタデータ取得失敗: {}", e))?;
+    let metadata = std::fs::metadata(path).map_err(|e| format!("メタデータ取得失敗: {}", e))?;
 
     #[cfg(unix)]
     {
@@ -59,13 +57,7 @@ fn validate_path_security(path: &Path) -> Result<(), String> {
     let path_str = path.to_string_lossy();
 
     // 危険なパターンをチェック
-    let dangerous_patterns = [
-        "..",
-        "~",
-        "/etc/",
-        "/root/",
-        "C:\\Windows\\",
-    ];
+    let dangerous_patterns = ["..", "~", "/etc/", "/root/", "C:\\Windows\\"];
 
     for pattern in &dangerous_patterns {
         if path_str.contains(pattern) {
@@ -92,16 +84,12 @@ fn bench_safe_join(c: &mut Criterion) {
     let mut group = c.benchmark_group("safe_join");
 
     for (child, name) in test_cases {
-        group.bench_with_input(
-            BenchmarkId::from_parameter(name),
-            &child,
-            |b, child| {
-                b.iter(|| {
-                    let child_path = PathBuf::from(child);
-                    safe_join(black_box(base), black_box(&child_path))
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(name), &child, |b, child| {
+            b.iter(|| {
+                let child_path = PathBuf::from(child);
+                safe_join(black_box(base), black_box(&child_path))
+            });
+        });
     }
 
     group.finish();
@@ -121,16 +109,12 @@ fn bench_safe_join_malicious(c: &mut Criterion) {
     let mut group = c.benchmark_group("safe_join_malicious");
 
     for (child, name) in malicious_cases {
-        group.bench_with_input(
-            BenchmarkId::from_parameter(name),
-            &child,
-            |b, child| {
-                b.iter(|| {
-                    let child_path = PathBuf::from(child);
-                    let _ = safe_join(black_box(base), black_box(&child_path));
-                });
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(name), &child, |b, child| {
+            b.iter(|| {
+                let child_path = PathBuf::from(child);
+                let _ = safe_join(black_box(base), black_box(&child_path));
+            });
+        });
     }
 
     group.finish();
@@ -142,20 +126,19 @@ fn bench_sanitize_path_component(c: &mut Criterion) {
         ("file_with_spaces   .txt", "スペース含む"),
         ("file@#$%^&*().txt", "特殊記号含む"),
         ("日本語ファイル名.txt", "日本語含む"),
-        ("very-long-filename-with-many-characters-to-test-performance.txt", "長いファイル名"),
+        (
+            "very-long-filename-with-many-characters-to-test-performance.txt",
+            "長いファイル名",
+        ),
     ];
 
     let mut group = c.benchmark_group("sanitize_path_component");
 
     for (input, name) in test_cases {
         group.throughput(Throughput::Bytes(input.len() as u64));
-        group.bench_with_input(
-            BenchmarkId::from_parameter(name),
-            &input,
-            |b, input| {
-                b.iter(|| sanitize_path_component(black_box(input)));
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(name), &input, |b, input| {
+            b.iter(|| sanitize_path_component(black_box(input)));
+        });
     }
 
     group.finish();
@@ -181,13 +164,9 @@ fn bench_validate_path_security(c: &mut Criterion) {
     let mut group = c.benchmark_group("validate_path_security");
 
     for (path, name) in test_paths {
-        group.bench_with_input(
-            BenchmarkId::from_parameter(name),
-            &path,
-            |b, path| {
-                b.iter(|| validate_path_security(black_box(path)));
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(name), &path, |b, path| {
+            b.iter(|| validate_path_security(black_box(path)));
+        });
     }
 
     group.finish();
@@ -290,13 +269,9 @@ fn bench_regex_pattern_matching(c: &mut Criterion) {
     let mut group = c.benchmark_group("regex_pattern_matching");
 
     for (path, name) in test_cases {
-        group.bench_with_input(
-            BenchmarkId::from_parameter(name),
-            &path,
-            |b, path| {
-                b.iter(|| dangerous_pattern.is_match(black_box(path)));
-            },
-        );
+        group.bench_with_input(BenchmarkId::from_parameter(name), &path, |b, path| {
+            b.iter(|| dangerous_pattern.is_match(black_box(path)));
+        });
     }
 
     group.finish();

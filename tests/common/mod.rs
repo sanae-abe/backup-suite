@@ -78,11 +78,9 @@ impl TestEnvironment {
         category: &str,
     ) -> Config {
         let mut config = self.create_config();
-        config.targets.push(Target::new(
-            path.into(),
-            priority,
-            category.to_string(),
-        ));
+        config
+            .targets
+            .push(Target::new(path.into(), priority, category.to_string()));
         config
     }
 
@@ -123,20 +121,14 @@ impl TestEnvironment {
     /// バックアップディレクトリ内に特定のファイルが存在するか確認
     #[allow(dead_code)]
     pub fn backup_file_exists(&self, backup_name: &str, relative_path: &str) -> bool {
-        let full_path = self
-            .backup_dir
-            .join(backup_name)
-            .join(relative_path);
+        let full_path = self.backup_dir.join(backup_name).join(relative_path);
         full_path.exists()
     }
 
     /// バックアップファイルの内容を読み取る
     #[allow(dead_code)]
     pub fn read_backup_file(&self, backup_name: &str, relative_path: &str) -> Result<String> {
-        let full_path = self
-            .backup_dir
-            .join(backup_name)
-            .join(relative_path);
+        let full_path = self.backup_dir.join(backup_name).join(relative_path);
         Ok(fs::read_to_string(full_path)?)
     }
 
@@ -174,10 +166,7 @@ pub fn create_sample_directory_structure(env: &TestEnvironment) -> Result<()> {
 #[allow(dead_code)]
 pub fn create_large_directory(env: &TestEnvironment, num_files: usize) -> Result<()> {
     for i in 0..num_files {
-        env.create_file(
-            format!("file_{:04}.txt", i),
-            &format!("content {}", i),
-        )?;
+        env.create_file(format!("file_{:04}.txt", i), &format!("content {}", i))?;
     }
     Ok(())
 }
