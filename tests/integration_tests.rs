@@ -52,10 +52,10 @@ fn test_full_backup_workflow_single_file() -> Result<()> {
     assert_eq!(result.successful, 1);
     assert_eq!(result.failed, 0);
 
-    // バックアップファイルが存在することを確認
+    // バックアップファイルが存在することを確認（カテゴリディレクトリ使用）
     let backed_up_file = backup_dir
         .join(&result.backup_name)
-        .join("all")
+        .join("test")
         .join("test.txt");
     assert!(backed_up_file.exists());
 
@@ -87,7 +87,7 @@ fn test_full_backup_workflow_directory() -> Result<()> {
     config.targets.push(Target::new(
         source_dir.clone(),
         Priority::High,
-        "test".to_string(),
+        "documents".to_string(),
     ));
 
     let runner = backup_suite::BackupRunner::new(config, false)
@@ -98,8 +98,8 @@ fn test_full_backup_workflow_directory() -> Result<()> {
     assert_eq!(result.total_files, 3);
     assert_eq!(result.successful, 3);
 
-    // バックアップディレクトリの構造を確認
-    let backup_root = backup_dir.join(&result.backup_name).join("all");
+    // バックアップディレクトリの構造を確認（カテゴリディレクトリ使用）
+    let backup_root = backup_dir.join(&result.backup_name).join("documents");
     assert!(backup_root.join("file1.txt").exists());
     assert!(backup_root.join("file2.txt").exists());
     assert!(backup_root.join("subdir/file3.txt").exists());
@@ -126,7 +126,7 @@ fn test_exclude_patterns_simple() -> Result<()> {
     let mut target = Target::new(
         source_dir.clone(),
         Priority::High,
-        "test".to_string(),
+        "files".to_string(),
     );
     target.exclude_patterns = vec![r".*\.tmp$".to_string()];
 
@@ -141,7 +141,7 @@ fn test_exclude_patterns_simple() -> Result<()> {
     // .tmpファイルが除外され、2ファイルのみバックアップされる
     assert_eq!(result.total_files, 2);
 
-    let backup_root = backup_dir.join(&result.backup_name).join("all");
+    let backup_root = backup_dir.join(&result.backup_name).join("files");
     assert!(backup_root.join("include.txt").exists());
     assert!(backup_root.join("include2.md").exists());
     assert!(!backup_root.join("exclude.tmp").exists());
@@ -216,17 +216,17 @@ fn test_priority_filtering() -> Result<()> {
     config.targets.push(Target::new(
         high_file,
         Priority::High,
-        "test".to_string(),
+        "priority".to_string(),
     ));
     config.targets.push(Target::new(
         medium_file,
         Priority::Medium,
-        "test".to_string(),
+        "priority".to_string(),
     ));
     config.targets.push(Target::new(
         low_file,
         Priority::Low,
-        "test".to_string(),
+        "priority".to_string(),
     ));
 
     // 高優先度のみバックアップ
@@ -237,7 +237,7 @@ fn test_priority_filtering() -> Result<()> {
     // 1ファイルのみバックアップされる
     assert_eq!(result.total_files, 1);
 
-    let backup_root = backup_dir.join(&result.backup_name).join("all");
+    let backup_root = backup_dir.join(&result.backup_name).join("priority");
     assert!(backup_root.join("high.txt").exists());
     assert!(!backup_root.join("medium.txt").exists());
     assert!(!backup_root.join("low.txt").exists());
@@ -459,9 +459,9 @@ fn test_category_organization() -> Result<()> {
     assert_eq!(result.total_files, 2);
 
     // カテゴリ別に整理されているか確認
-    let backup_root = backup_dir.join(&result.backup_name).join("all");
-    assert!(backup_root.join("work.txt").exists());
-    assert!(backup_root.join("personal.txt").exists());
+    let backup_root = backup_dir.join(&result.backup_name);
+    assert!(backup_root.join("work/work.txt").exists());
+    assert!(backup_root.join("personal/personal.txt").exists());
 
     Ok(())
 }

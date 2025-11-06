@@ -231,15 +231,7 @@ impl BackupRunner {
         let now = chrono::Local::now();
         let timestamp = now.format("%Y%m%d_%H%M%S");
         let backup_name = format!("backup_{}", timestamp);
-        let category_folder = category_filter.unwrap_or("all");
-        let backup_dir = dest_base
-            .join(&backup_name)
-            .join(category_folder);
-
-        // ドライランモードでもバックアップ先ディレクトリを作成
-        // （safe_joinの検証のため）
-        std::fs::create_dir_all(&backup_dir)
-            .context(format!("バックアップディレクトリ作成失敗: {:?}", backup_dir))?;
+        let backup_base = dest_base.join(&backup_name);
 
         // 暗号化が有効な場合、KeyManagerとmaster keyを準備
         let (_key_manager, master_key, encryption_salt) = if self.enable_encryption && self.password.is_some() {
@@ -265,6 +257,15 @@ impl BackupRunner {
         };
 
         for target in &targets {
+            // 各ターゲットのカテゴリをディレクトリ名に使用
+            // （カテゴリフィルタは221-223行で既に適用済み）
+            let category = target.category.clone();
+            let backup_dir = backup_base.join(&category);
+
+            // カテゴリディレクトリを作成
+            std::fs::create_dir_all(&backup_dir)
+                .context(format!("バックアップディレクトリ作成失敗: {:?}", backup_dir))?;
+
             // FileFilterの準備
             let filter = if !target.exclude_patterns.is_empty() {
                 match FileFilter::new(&target.exclude_patterns) {
@@ -485,10 +486,10 @@ impl BackupRunner {
             backup_name,
         };
 
-        // 履歴保存
+        // 履歴保存（バックアップ全体のベースディレクトリを使用）
         let success = result.failed == 0;
         if let Err(e) = super::BackupHistory::save(&super::BackupHistory::new(
-            backup_dir.clone(),
+            backup_base.clone(),
             result.total_files,
             result.total_bytes,
             success,
