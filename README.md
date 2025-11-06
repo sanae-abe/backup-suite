@@ -104,42 +104,6 @@ sudo bash install.sh
 backup-suite --version
 ```
 
-### 方法3: ソースからビルド
-
-#### システム要件
-
-- **オペレーティングシステム**: Linux、macOS
-- **Rust**: 1.75以上（MSRV）
-
-#### Rustツールチェーンのインストール
-
-```bash
-# 1. Rustup（Rustインストーラー）をダウンロード・実行
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# 2. 環境変数を読み込み
-source ~/.cargo/env
-
-# 3. インストール確認
-rustc --version
-cargo --version
-```
-
-#### backup-suiteのビルド&インストール
-
-```bash
-# 1. リポジトリをクローン
-git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
-cd backup-suite
-
-# 2. ビルド&インストール
-cargo install --path .
-
-# 3. 動作確認
-backup-suite --version
-backup-suite --help
-```
-
 ## クイックスタート
 
 ### 1. 基本セットアップ
@@ -257,73 +221,24 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ### アップデート
 
 ```bash
-# 1. 最新ソースを取得
-cd backup-suite  # プロジェクトディレクトリ
-git pull
-
-# 2. 再ビルド&インストール
-cargo install --path . --force
-
-# 3. バージョン確認
+# 新しいバージョンを手動インストール（推奨）
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.1.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
+tar -xzf backup-suite-*.tar.gz
+sudo mv backup-suite /usr/local/bin/
 backup-suite --version
 ```
 
 ### アンインストール
 
 ```bash
-# 1. backup-suiteを削除
-cargo uninstall backup-suite
+# 1. バイナリを削除
+sudo rm /usr/local/bin/backup-suite
 
 # 2. 設定ファイル削除（オプション）
 rm -rf ~/.config/backup-suite/
 
 # 3. ログファイル削除（オプション）
 rm -rf ~/.local/share/backup-suite/
-
-# 4. プロジェクトディレクトリ削除（オプション）
-rm -rf ~/backup-suite  # クローンしたディレクトリ
-```
-
-## よくある問題と解決策
-
-**問題1**: `rustc` または `cargo` コマンドが見つからない
-```bash
-# 解決策: Rustツールチェーンをインストール
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source ~/.cargo/env
-
-# 確認
-rustc --version
-cargo --version
-```
-
-**問題2**: `git clone` でアクセス拒否エラー
-```bash
-# 解決策: SSH鍵設定またはHTTPS認証
-# SSH鍵が設定済みの場合
-git clone git@rendezvous.m3.com:sanae-abe/backup-suite.git
-
-# または、GitLabにログインしてHTTPSでクローン
-git clone https://rendezvous.m3.com/sanae-abe/backup-suite.git
-```
-
-**問題3**: コンパイルエラーが発生する
-```bash
-# 解決策: Rustを最新版に更新
-rustup update stable
-cargo clean  # キャッシュクリア
-cargo build  # 再ビルド
-```
-
-**問題4**: `backup-suite` コマンドが見つからない
-```bash
-# 解決策: PATHの確認と追加
-echo $PATH | grep -q "$HOME/.cargo/bin" || echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-
-# 確認
-which backup-suite
-backup-suite --version
 ```
 
 ## セキュリティ・品質

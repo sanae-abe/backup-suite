@@ -105,42 +105,6 @@ sudo bash install.sh
 backup-suite --version
 ```
 
-### Method 3: Build from Source
-
-#### System Requirements
-
-- **Operating System**: Linux, macOS
-- **Rust**: 1.75 or later (MSRV)
-
-#### Rust Toolchain Installation
-
-```bash
-# 1. Download and run Rustup (Rust installer)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# 2. Load environment variables
-source ~/.cargo/env
-
-# 3. Verify installation
-rustc --version
-cargo --version
-```
-
-#### Build & Install backup-suite
-
-```bash
-# 1. Clone repository
-git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
-cd backup-suite
-
-# 2. Build & install
-cargo install --path .
-
-# 3. Verify operation
-backup-suite --version
-backup-suite --help
-```
-
 ## Quick Start
 
 ### 1. Basic Setup
@@ -258,73 +222,24 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ### Update
 
 ```bash
-# 1. Get latest source
-cd backup-suite  # Project directory
-git pull
-
-# 2. Rebuild & install
-cargo install --path . --force
-
-# 3. Verify version
+# Manual installation of new version (recommended)
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.1.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
+tar -xzf backup-suite-*.tar.gz
+sudo mv backup-suite /usr/local/bin/
 backup-suite --version
 ```
 
 ### Uninstall
 
 ```bash
-# 1. Remove backup-suite
-cargo uninstall backup-suite
+# 1. Remove binary
+sudo rm /usr/local/bin/backup-suite
 
 # 2. Delete configuration files (optional)
 rm -rf ~/.config/backup-suite/
 
 # 3. Delete log files (optional)
 rm -rf ~/.local/share/backup-suite/
-
-# 4. Delete project directory (optional)
-rm -rf ~/backup-suite  # Cloned directory
-```
-
-## Troubleshooting
-
-**Issue 1**: `rustc` or `cargo` command not found
-```bash
-# Solution: Install Rust toolchain
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source ~/.cargo/env
-
-# Verify
-rustc --version
-cargo --version
-```
-
-**Issue 2**: Access denied error during `git clone`
-```bash
-# Solution: SSH key setup or HTTPS authentication
-# If SSH key is already configured
-git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
-
-# Or login to GitLab and clone with HTTPS
-git clone https://rendezvous.m3.com/sanae-abe/backup-suite.git
-```
-
-**Issue 3**: Compilation errors occur
-```bash
-# Solution: Update Rust to latest version
-rustup update stable
-cargo clean  # Clear cache
-cargo build  # Rebuild
-```
-
-**Issue 4**: `backup-suite` command not found
-```bash
-# Solution: Check and add PATH
-echo $PATH | grep -q "$HOME/.cargo/bin" || echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-
-# Verify
-which backup-suite
-backup-suite --version
 ```
 
 ## Security & Quality
