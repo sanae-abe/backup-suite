@@ -61,21 +61,14 @@
 ```bash
 # 最新版を自動インストール
 curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/install.sh | bash
-
-# システム全体にインストール（/usr/local/bin）
-curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/install.sh | sudo bash
 ```
 
 #### 手動インストール
 
 ```bash
-# 1. プラットフォーム別バイナリをダウンロード
-
-# Linux x64
-curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz"
-
-# Linux ARM64
-curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-arm64.tar.gz"
+# 1. バイナリをダウンロード
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-
+  complete-package.tar.gz?job=package:create-distributions"
 
 # 2. 解凍
 tar -xzf backup-suite-*.tar.gz

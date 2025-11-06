@@ -52,7 +52,44 @@
 
 ## Installation
 
-### Prerequisites: Rust Toolchain Installation
+### Method 1: Pre-built Binary (Recommended)
+
+The easiest and fastest method. No Rust installation required.
+
+#### Automatic Installation Script (Recommended)
+
+```bash
+# Install latest version automatically
+curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/install.sh | bash
+```
+
+#### Manual Installation
+
+```bash
+# 1. Download binary
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-
+  complete-package.tar.gz?job=package:create-distributions"
+
+# 2. Extract
+tar -xzf backup-suite-*.tar.gz
+
+# 3. Move binary to appropriate location
+sudo mv backup-suite /usr/local/bin/
+
+# 4. Verify operation
+backup-suite --version
+```
+
+Or download directly from the [release page](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0).
+
+### Method 2: Build from Source
+
+#### System Requirements
+
+- **Operating System**: Linux, macOS
+- **Rust**: 1.75 or later (MSRV)
+
+#### Rust Toolchain Installation
 
 ```bash
 # 1. Download and run Rustup (Rust installer)
@@ -61,23 +98,16 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 # 2. Load environment variables
 source ~/.cargo/env
 
-# Open a new terminal or run:
-# bash users
-source ~/.bashrc
-
-# zsh users (macOS default)
-source ~/.zshrc
-
 # 3. Verify installation
 rustc --version
 cargo --version
 ```
 
-### Installation Steps
+#### Build & Install backup-suite
 
 ```bash
 # 1. Clone repository
-git clone git@rendezvous.m3.com:sanae-abe/backup-suite.git
+git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
 cd backup-suite
 
 # 2. Build & install
@@ -249,7 +279,7 @@ cargo --version
 ```bash
 # Solution: SSH key setup or HTTPS authentication
 # If SSH key is already configured
-git clone git@rendezvous.m3.com:sanae-abe/backup-suite.git
+git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
 
 # Or login to GitLab and clone with HTTPS
 git clone https://rendezvous.m3.com/sanae-abe/backup-suite.git
