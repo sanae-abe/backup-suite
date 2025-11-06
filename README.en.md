@@ -110,11 +110,8 @@ Clone the repository and run the installation script.
 git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
 cd backup-suite
 
-# 2. Run installation script
+# 2. Run installation script (installs to ~/.local/bin)
 bash install.sh
-
-# Or install system-wide (/usr/local/bin)
-sudo bash install.sh
 
 # 3. Verify operation
 backup-suite --version
@@ -257,7 +254,7 @@ backup-suite --version
 
 ```bash
 # 1. Remove binary
-sudo rm /usr/local/bin/backup-suite
+rm ~/.local/bin/backup-suite
 
 # 2. Delete configuration files (optional)
 rm -rf ~/.config/backup-suite/
