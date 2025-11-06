@@ -4,6 +4,22 @@
 
 > **M3 Corporate Backup Solution**
 
+## Table of Contents
+- [backup-suite](#backup-suite)
+- [Table of Contents](#table-of-contents)
+- [Key Features](#key-features)
+- [Screenshots](#screenshots)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Basic Usage](#basic-usage)
+- [Configuration File](#configuration-file)
+- [Command Reference](#command-reference)
+- [Update & Uninstall](#update--uninstall)
+- [Troubleshooting](#troubleshooting)
+- [Security & Quality](#security--quality)
+- [Technology Stack](#technology-stack)
+- [Supported Platforms](#supported-platforms)
+
 ## Key Features
 
 ### 🎯 Priority-Based Backup Management
@@ -52,7 +68,25 @@
 
 ## Installation
 
-### Method 1: Local Installation (Recommended)
+### Method 1: Manual Installation (Recommended)
+
+Download directly from the [release page](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0).
+
+```bash
+# 1. Download binary
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
+
+# 2. Extract
+tar -xzf backup-suite-*.tar.gz
+
+# 3. Move binary to appropriate location
+sudo mv backup-suite /usr/local/bin/
+
+# 4. Verify operation
+backup-suite --version
+```
+
+### Method 2: Local Installation
 
 Clone the repository and run the installation script.
 
@@ -68,29 +102,6 @@ bash install.sh
 sudo bash install.sh
 
 # 3. Verify operation
-backup-suite --version
-```
-
-### Method 2: Manual Installation
-
-Download directly from the [release page](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0).
-
-```bash
-# 1. Download platform-specific binary
-
-# Linux x64
-curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz"
-
-# Linux ARM64
-curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-arm64.tar.gz"
-
-# 2. Extract
-tar -xzf backup-suite-*.tar.gz
-
-# 3. Move binary to appropriate location
-sudo mv backup-suite /usr/local/bin/
-
-# 4. Verify operation
 backup-suite --version
 ```
 

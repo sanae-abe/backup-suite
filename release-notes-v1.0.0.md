@@ -21,7 +21,22 @@
 
 ## 🚀 クイックインストール
 
-### ローカルインストール（推奨）
+### 手動インストール（推奨）
+```bash
+# 1. バイナリをダウンロード
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
+
+# 2. 解凍
+tar -xzf backup-suite-*.tar.gz
+
+# 3. バイナリを適切な場所に移動
+sudo mv backup-suite /usr/local/bin/
+
+# 4. 動作確認
+backup-suite --version
+```
+
+### ローカルインストール
 ```bash
 # 1. リポジトリをクローン
 git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
@@ -34,21 +49,6 @@ bash install.sh
 sudo bash install.sh
 
 # 3. 動作確認
-backup-suite --version
-```
-
-### 手動インストール
-```bash
-# 1. プラットフォーム別バイナリをダウンロード（Linux x64の例）
-curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz"
-
-# 2. 解凍
-tar -xzf backup-suite-linux-x64.tar.gz
-
-# 3. バイナリを適切な場所に移動
-sudo mv backup-suite /usr/local/bin/
-
-# 4. 動作確認
 backup-suite --version
 ```
 
