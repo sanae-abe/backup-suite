@@ -14,10 +14,9 @@
 
 | プラットフォーム | バイナリ | SHA256 |
 |----------------|---------|--------|
-| Linux x64 | [backup-suite-linux-x64.tar.gz](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz) | [SHA256](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz.sha256) |
-| Linux ARM64 | [backup-suite-linux-arm64.tar.gz](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-arm64.tar.gz) | [SHA256](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-arm64.tar.gz.sha256) |
+| macOS x64 | [backup-suite-macos-x64.tar.gz](https://github.com/sanae-abe/backup-suite/releases/download/v1.0.0/backup-suite-macos-x64.tar.gz) | - |
+| macOS ARM64 | [backup-suite-macos-arm64.tar.gz](https://github.com/sanae-abe/backup-suite/releases/download/v1.0.0/backup-suite-macos-arm64.tar.gz) | - |
 
-**注**: macOS版は手動ビルドが必要です。CI/CDパイプラインで `build:macos-universal` ジョブを手動実行してください。
 
 ## 🚀 インストール
 
@@ -25,7 +24,7 @@ Rustをインストールして、自分の環境で直接ビルドします。
 
 ```bash
 # 1. リポジトリをクローン
-git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
+git clone git@github.com:sanae-abe/backup-suite.git
 cd backup-suite
 
 # 2. Rustインストール（未インストールの場合）
@@ -70,9 +69,9 @@ backup-suite --version
 
 ## 🔗 関連リンク
 
-- [ドキュメント](https://rendezvous.m3.com/sanae-abe/backup-suite/-/blob/main/README.md)
-- [インストールガイド](https://rendezvous.m3.com/sanae-abe/backup-suite/-/blob/main/README.md#インストール)
-- [使用方法](https://rendezvous.m3.com/sanae-abe/backup-suite/-/blob/main/README.md#基本的な使用方法)
+- [ドキュメント](https://github.com/sanae-abe/backup-suite/blob/main/README.md)
+- [インストールガイド](https://github.com/sanae-abe/backup-suite/blob/main/README.md#インストール)
+- [使用方法](https://github.com/sanae-abe/backup-suite/blob/main/README.md#基本的な使用方法)
 
 ---
 

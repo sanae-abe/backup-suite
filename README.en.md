@@ -82,7 +82,7 @@ Install Rust and build directly in your environment.
 
 ```bash
 # 1. Clone repository
-git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
+git clone git@github.com:sanae-abe/backup-suite.git
 cd backup-suite
 
 # 2. Install Rust (if not already installed)

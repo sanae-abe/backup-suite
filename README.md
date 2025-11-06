@@ -82,7 +82,7 @@ Rustをインストールして、自分の環境で直接ビルドします。
 
 ```bash
 # 1. リポジトリをクローン
-git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
+git clone git@github.com:sanae-abe/backup-suite.git
 cd backup-suite
 
 # 2. Rustインストール（未インストールの場合）
