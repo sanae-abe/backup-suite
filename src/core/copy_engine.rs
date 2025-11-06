@@ -141,6 +141,7 @@ impl CopyEngine {
     /// # 戻り値
     ///
     /// コピーしたバイト数
+    #[allow(clippy::indexing_slicing)] // read() guarantees bytes_read <= buffer.len()
     fn buffered_copy(&self, source: &Path, dest: &Path) -> Result<u64> {
         let mut reader = BufReader::with_capacity(self.buffer_size, File::open(source)?);
         let mut writer = BufWriter::with_capacity(self.buffer_size, File::create(dest)?);

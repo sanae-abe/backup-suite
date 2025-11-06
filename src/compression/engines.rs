@@ -204,7 +204,10 @@ impl CompressedData {
             ));
         }
 
-        let compression_type = match data[0] {
+        // SAFETY: Length check above ensures data has at least 25 bytes
+        let compression_type = match *data.first().ok_or_else(|| {
+            BackupError::CompressionError("データが空です".to_string())
+        })? {
             1 => CompressionType::Zstd,
             2 => CompressionType::Gzip,
             0 => CompressionType::None,
@@ -215,13 +218,27 @@ impl CompressedData {
             }
         };
 
-        let compression_level = u32::from_le_bytes([data[1], data[2], data[3], data[4]]) as i32;
-        let original_size = u64::from_le_bytes([
-            data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12],
-        ]);
-        let compressed_size = u64::from_le_bytes([
-            data[13], data[14], data[15], data[16], data[17], data[18], data[19], data[20],
-        ]);
+        let compression_level = u32::from_le_bytes(
+            data.get(1..5)
+                .and_then(|s| s.try_into().ok())
+                .ok_or_else(|| {
+                    BackupError::CompressionError("圧縮レベルの読み取りに失敗".to_string())
+                })?,
+        ) as i32;
+        let original_size = u64::from_le_bytes(
+            data.get(5..13)
+                .and_then(|s| s.try_into().ok())
+                .ok_or_else(|| {
+                    BackupError::CompressionError("元のサイズの読み取りに失敗".to_string())
+                })?,
+        );
+        let compressed_size = u64::from_le_bytes(
+            data.get(13..21)
+                .and_then(|s| s.try_into().ok())
+                .ok_or_else(|| {
+                    BackupError::CompressionError("圧縮後サイズの読み取りに失敗".to_string())
+                })?,
+        );
 
         if data.len() != 21 + compressed_size as usize {
             return Err(BackupError::CompressionError(
@@ -234,7 +251,12 @@ impl CompressedData {
             compression_level,
             original_size,
             compressed_size,
-            data: data[21..].to_vec(),
+            data: data
+                .get(21..)
+                .ok_or_else(|| {
+                    BackupError::CompressionError("データの読み取りに失敗".to_string())
+                })?
+                .to_vec(),
         })
     }
 }
@@ -306,6 +328,7 @@ impl CompressionEngine {
     }
 
     /// ストリーミング圧縮
+    #[allow(clippy::indexing_slicing)] // read() guarantees bytes_read <= buffer.len()
     pub fn compress_stream<R: Read, W: Write>(
         &self,
         mut reader: R,
@@ -328,9 +351,9 @@ impl CompressionEngine {
                         break;
                     }
                     original_size += bytes_read as u64;
-                    encoder.write_all(&buffer[..bytes_read]).map_err(|e| {
-                        BackupError::CompressionError(format!("Zstd圧縮エラー: {}", e))
-                    })?;
+                    encoder
+                        .write_all(&buffer[..bytes_read])
+                        .map_err(|e| BackupError::CompressionError(format!("Zstd圧縮エラー: {}", e)))?;
                 }
 
                 encoder
@@ -380,6 +403,7 @@ impl CompressionEngine {
     }
 
     /// ストリーミング展開
+    #[allow(clippy::indexing_slicing)] // read() guarantees bytes_read <= buffer.len()
     pub fn decompress_stream<R: Read, W: Write>(
         &self,
         reader: R,
@@ -466,6 +490,7 @@ impl CompressionEngine {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used)] // Tests can use unwrap
 mod tests {
     use super::*;
     use std::io::Cursor;

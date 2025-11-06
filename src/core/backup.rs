@@ -241,6 +241,8 @@ impl BackupRunner {
         let (_key_manager, master_key, encryption_salt) =
             if self.enable_encryption && self.password.is_some() {
                 let km = KeyManager::default();
+                // SAFETY: Checked by is_some() above
+                #[allow(clippy::unwrap_used)]
                 let password = self.password.as_ref().unwrap();
                 let (mk, salt) = km
                     .create_master_key(password)
