@@ -74,7 +74,7 @@
 
 ### Method 1: Manual Installation (Recommended)
 
-Download directly from the [release page](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0).
+Download directly from the [release page](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0).
 
 ```bash
 # 1. Download binary
@@ -227,7 +227,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 
 ```bash
 # Manual installation of new version (recommended)
-curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.1.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
+curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.1.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
 tar -xzf backup-suite-*.tar.gz
 sudo mv backup-suite /usr/local/bin/
 backup-suite --version

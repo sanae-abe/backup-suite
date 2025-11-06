@@ -74,7 +74,7 @@
 
 ### 方法1: 手動インストール（推奨）
 
-[リリースページ](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0)から直接ダウンロード。
+[リリースページ](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0)から直接ダウンロード。
 
 ```bash
 # 1. バイナリをダウンロード
@@ -227,7 +227,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 
 ```bash
 # 新しいバージョンを手動インストール（推奨）
-curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.1.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
+curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.1.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
 tar -xzf backup-suite-*.tar.gz
 sudo mv backup-suite /usr/local/bin/
 backup-suite --version
