@@ -75,4 +75,4 @@ backup-suite --version
 
 ---
 
-**開発者**: sanae-abe@m3.com
+**Developer**: sanae.a.sunny@gmail.com
