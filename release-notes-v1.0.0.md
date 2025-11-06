@@ -14,8 +14,8 @@
 
 | プラットフォーム | バイナリ | SHA256 |
 |----------------|---------|--------|
-| Linux x64 | [backup-suite-linux-x64.tar.gz](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz) | [SHA256](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz.sha256) |
-| Linux ARM64 | [backup-suite-linux-arm64.tar.gz](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-arm64.tar.gz) | [SHA256](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-arm64.tar.gz.sha256) |
+| Linux x64 | [backup-suite-linux-x64.tar.gz](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz) | [SHA256](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz.sha256) |
+| Linux ARM64 | [backup-suite-linux-arm64.tar.gz](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-arm64.tar.gz) | [SHA256](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-arm64.tar.gz.sha256) |
 
 **注**: macOS版は手動ビルドが必要です。CI/CDパイプラインで `build:macos-universal` ジョブを手動実行してください。
 
@@ -24,7 +24,7 @@
 ### 手動インストール（推奨）
 ```bash
 # 1. バイナリをダウンロード
-curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
+curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
 
 # 2. 解凍
 tar -xzf backup-suite-*.tar.gz
@@ -91,9 +91,9 @@ backup-suite --help
 
 ## 🔗 関連リンク
 
-- [ドキュメント](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/blob/main/README.md)
-- [インストールガイド](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/blob/main/README.md#インストール)
-- [使用方法](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/blob/main/README.md#基本的な使用方法)
+- [ドキュメント](https://rendezvous.m3.com/sanae-abe/backup-suite/-/blob/main/README.md)
+- [インストールガイド](https://rendezvous.m3.com/sanae-abe/backup-suite/-/blob/main/README.md#インストール)
+- [使用方法](https://rendezvous.m3.com/sanae-abe/backup-suite/-/blob/main/README.md#基本的な使用方法)
 
 ---
 
