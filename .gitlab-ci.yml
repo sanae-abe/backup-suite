@@ -312,9 +312,9 @@ release:create-github-style-release:
     # パフォーマンスレポート取得
     - |
       if [ -d "target/criterion" ]; then
-        PERF_SUMMARY=$(find target/criterion -name "*.json" | head -1)
-        if [ -f "$PERF_SUMMARY" ]; then
-          BACKUP_SPEED=$(jq -r '.mean.estimate' "$PERF_SUMMARY" || echo "N/A")
+        PERF_SUMMARY=$(find target/criterion -name "*.json" 2>/dev/null | head -1 || true)
+        if [ -n "$PERF_SUMMARY" ] && [ -f "$PERF_SUMMARY" ]; then
+          BACKUP_SPEED=$(jq -r '.mean.estimate' "$PERF_SUMMARY" 2>/dev/null || echo "N/A")
         else
           BACKUP_SPEED="N/A"
         fi
