@@ -165,7 +165,7 @@ jobs:
           cat RELEASE_NOTES.md
 
       - name: Upload release notes
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-notes
           path: RELEASE_NOTES.md
@@ -285,7 +285,7 @@ jobs:
           fi
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.target }}
           path: |

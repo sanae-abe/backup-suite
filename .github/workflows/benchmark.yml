@@ -63,7 +63,7 @@ jobs:
         fail-on-alert: false
 
     - name: Upload benchmark results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: benchmark-results
         path: |
@@ -127,7 +127,7 @@ jobs:
         fi
 
     - name: Upload performance metrics
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: performance-metrics
         path: perf-metrics.txt
@@ -172,7 +172,7 @@ jobs:
         fi
 
     - name: Upload valgrind output
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: valgrind-output
         path: valgrind-output.txt
@@ -210,7 +210,7 @@ jobs:
         cargo flamegraph --bin backup-suite -- --help || true
 
     - name: Upload flamegraph
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: flamegraph

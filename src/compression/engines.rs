@@ -205,9 +205,10 @@ impl CompressedData {
         }
 
         // SAFETY: Length check above ensures data has at least 25 bytes
-        let compression_type = match *data.first().ok_or_else(|| {
-            BackupError::CompressionError("データが空です".to_string())
-        })? {
+        let compression_type = match *data
+            .first()
+            .ok_or_else(|| BackupError::CompressionError("データが空です".to_string()))?
+        {
             1 => CompressionType::Zstd,
             2 => CompressionType::Gzip,
             0 => CompressionType::None,
@@ -225,13 +226,10 @@ impl CompressedData {
                     BackupError::CompressionError("圧縮レベルの読み取りに失敗".to_string())
                 })?,
         ) as i32;
-        let original_size = u64::from_le_bytes(
-            data.get(5..13)
-                .and_then(|s| s.try_into().ok())
-                .ok_or_else(|| {
-                    BackupError::CompressionError("元のサイズの読み取りに失敗".to_string())
-                })?,
-        );
+        let original_size =
+            u64::from_le_bytes(data.get(5..13).and_then(|s| s.try_into().ok()).ok_or_else(
+                || BackupError::CompressionError("元のサイズの読み取りに失敗".to_string()),
+            )?);
         let compressed_size = u64::from_le_bytes(
             data.get(13..21)
                 .and_then(|s| s.try_into().ok())
@@ -253,9 +251,7 @@ impl CompressedData {
             compressed_size,
             data: data
                 .get(21..)
-                .ok_or_else(|| {
-                    BackupError::CompressionError("データの読み取りに失敗".to_string())
-                })?
+                .ok_or_else(|| BackupError::CompressionError("データの読み取りに失敗".to_string()))?
                 .to_vec(),
         })
     }
@@ -351,9 +347,9 @@ impl CompressionEngine {
                         break;
                     }
                     original_size += bytes_read as u64;
-                    encoder
-                        .write_all(&buffer[..bytes_read])
-                        .map_err(|e| BackupError::CompressionError(format!("Zstd圧縮エラー: {}", e)))?;
+                    encoder.write_all(&buffer[..bytes_read]).map_err(|e| {
+                        BackupError::CompressionError(format!("Zstd圧縮エラー: {}", e))
+                    })?;
                 }
 
                 encoder
