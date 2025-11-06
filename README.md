@@ -89,10 +89,15 @@ curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.0
 # 2. 解凍
 tar -xzf backup-suite-*.tar.gz
 
-# 3. バイナリを適切な場所に移動
-sudo mv backup-suite /usr/local/bin/
+# 3. バイナリを適切な場所に移動（sudo不要）
+mkdir -p ~/.local/bin
+mv backup-suite ~/.local/bin/
 
-# 4. 動作確認
+# 4. PATHに追加（初回のみ）
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# 5. 動作確認
 backup-suite --version
 ```
 
@@ -105,11 +110,8 @@ backup-suite --version
 git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
 cd backup-suite
 
-# 2. インストールスクリプトを実行
+# 2. インストールスクリプトを実行（~/.local/binにインストール）
 bash install.sh
-
-# または、システム全体にインストール（/usr/local/bin）
-sudo bash install.sh
 
 # 3. 動作確認
 backup-suite --version
@@ -244,7 +246,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 # 新しいバージョンを手動インストール（推奨）
 curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.1.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
 tar -xzf backup-suite-*.tar.gz
-sudo mv backup-suite /usr/local/bin/
+mv backup-suite ~/.local/bin/
 backup-suite --version
 ```
 
@@ -252,7 +254,7 @@ backup-suite --version
 
 ```bash
 # 1. バイナリを削除
-sudo rm /usr/local/bin/backup-suite
+rm ~/.local/bin/backup-suite
 
 # 2. 設定ファイル削除（オプション）
 rm -rf ~/.config/backup-suite/

@@ -89,10 +89,15 @@ curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.0
 # 2. Extract
 tar -xzf backup-suite-*.tar.gz
 
-# 3. Move binary to appropriate location
-sudo mv backup-suite /usr/local/bin/
+# 3. Move binary to appropriate location (no sudo required)
+mkdir -p ~/.local/bin
+mv backup-suite ~/.local/bin/
 
-# 4. Verify operation
+# 4. Add to PATH (first time only)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# 5. Verify operation
 backup-suite --version
 ```
 
@@ -244,7 +249,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 # Manual installation of new version (recommended)
 curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.1.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
 tar -xzf backup-suite-*.tar.gz
-sudo mv backup-suite /usr/local/bin/
+mv backup-suite ~/.local/bin/
 backup-suite --version
 ```
 
