@@ -868,6 +868,15 @@ fn main() -> Result<()> {
             let config = Config::load()?;
             let theme = ColorTheme::auto();
 
+            // 圧縮タイプを変換（表示用に先に実行）
+            use backup_suite::compression::CompressionType;
+            let compression_type = match compress.as_str() {
+                "zstd" => CompressionType::Zstd,
+                "gzip" => CompressionType::Gzip,
+                "none" => CompressionType::None,
+                _ => CompressionType::Zstd,
+            };
+
             // 暗号化・圧縮オプションの表示
             let mut options_info: Vec<String> = Vec::new();
             if dry_run {
@@ -879,8 +888,11 @@ fn main() -> Result<()> {
             if encrypt {
                 options_info.push(get_message(MessageKey::Encryption, lang).to_string());
             }
-            if compress != "none" {
-                options_info.push(format!("{}: {}", get_message(MessageKey::Compression, lang), compress));
+            // 実際の圧縮タイプに基づいて表示
+            match compression_type {
+                CompressionType::Zstd => options_info.push(format!("{}: zstd", get_message(MessageKey::Compression, lang))),
+                CompressionType::Gzip => options_info.push(format!("{}: gzip", get_message(MessageKey::Compression, lang))),
+                CompressionType::None => {}, // 無圧縮の場合は表示しない
             }
 
             let options_str = if options_info.is_empty() {
@@ -894,15 +906,6 @@ fn main() -> Result<()> {
                 get_message(MessageKey::BackupRunning, lang),
                 options_str,
                 get_color("reset"));
-
-            // 圧縮タイプを変換
-            use backup_suite::compression::CompressionType;
-            let compression_type = match compress.as_str() {
-                "zstd" => CompressionType::Zstd,
-                "gzip" => CompressionType::Gzip,
-                "none" => CompressionType::None,
-                _ => CompressionType::Zstd,
-            };
 
             // BackupRunnerを構築
             let mut runner = BackupRunner::new(config, dry_run);
