@@ -4,16 +4,16 @@
 //! Criterionを使用して、継続的な性能監視と回帰検出を行います。
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use std::fs::{File, create_dir_all};
+use std::fs::{create_dir_all, File};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;
 
 use backup_suite::{
-    BackupRunner, Config, Target, Priority,
-    security::{safe_join, validate_path_safety},
     core::{CopyEngine, FileFilter},
+    security::{safe_join, validate_path_safety},
     ui::BackupProgress,
+    BackupRunner, Config, Priority, Target,
 };
 
 /// テストファイル作成ヘルパー
@@ -77,10 +77,11 @@ fn bench_file_copy(c: &mut Criterion) {
                     // 前回のコピー結果を削除
                     let _ = std::fs::remove_file(&dest);
 
-                    black_box(copy_engine.copy_file(
-                        black_box(&source),
-                        black_box(&dest)
-                    ).unwrap())
+                    black_box(
+                        copy_engine
+                            .copy_file(black_box(&source), black_box(&dest))
+                            .unwrap(),
+                    )
                 });
             },
         );
@@ -114,19 +115,12 @@ fn bench_parallel_backup(c: &mut Criterion) {
                 let mut config = Config::default();
                 config.backup.destination = backup_dir;
 
-                let target = Target::new(
-                    source_dir,
-                    Priority::High,
-                    "test".to_string()
-                );
+                let target = Target::new(source_dir, Priority::High, "test".to_string());
                 config.add_target(target);
 
-                let runner = BackupRunner::new(config, false)
-                    .with_progress(false); // ベンチマーク中はプログレス無効
+                let runner = BackupRunner::new(config, false).with_progress(false); // ベンチマーク中はプログレス無効
 
-                b.iter(|| {
-                    black_box(runner.run(None, None).unwrap())
-                });
+                b.iter(|| black_box(runner.run(None, None).unwrap()));
             },
         );
     }
@@ -143,12 +137,7 @@ fn bench_security_features(c: &mut Criterion) {
         let base = Path::new("/safe/backup/dir");
         let child = Path::new("documents/file.txt");
 
-        b.iter(|| {
-            black_box(safe_join(
-                black_box(base),
-                black_box(child)
-            ).unwrap())
-        });
+        b.iter(|| black_box(safe_join(black_box(base), black_box(child)).unwrap()));
     });
 
     // 複雑なパスでのsafe_join
@@ -156,21 +145,14 @@ fn bench_security_features(c: &mut Criterion) {
         let base = Path::new("/very/long/base/directory/path/for/backup/storage");
         let child = Path::new("deeply/nested/subdirectory/structure/with/many/levels/file.txt");
 
-        b.iter(|| {
-            black_box(safe_join(
-                black_box(base),
-                black_box(child)
-            ).unwrap())
-        });
+        b.iter(|| black_box(safe_join(black_box(base), black_box(child)).unwrap()));
     });
 
     // パス検証性能
     group.bench_function("validate_path_safety", |b| {
         let safe_path = Path::new("documents/projects/backup-suite/file.txt");
 
-        b.iter(|| {
-            validate_path_safety(black_box(safe_path)).unwrap()
-        });
+        b.iter(|| validate_path_safety(black_box(safe_path)).unwrap());
     });
 
     group.finish();
@@ -193,9 +175,7 @@ fn bench_file_filtering(c: &mut Criterion) {
                 let filter = FileFilter::new(&patterns).unwrap();
                 let test_file = Path::new("/path/to/document.txt");
 
-                b.iter(|| {
-                    black_box(filter.should_exclude(black_box(test_file)))
-                });
+                b.iter(|| black_box(filter.should_exclude(black_box(test_file))));
             },
         );
     }
@@ -218,15 +198,13 @@ fn bench_config_operations(c: &mut Criterion) {
             let target = Target::new(
                 PathBuf::from(format!("/test/path/{}", i)),
                 Priority::Medium,
-                format!("category_{}", i)
+                format!("category_{}", i),
             );
             config.add_target(target);
         }
         config.save().unwrap();
 
-        b.iter(|| {
-            black_box(Config::load().unwrap())
-        });
+        b.iter(|| black_box(Config::load().unwrap()));
     });
 
     // 設定保存性能
@@ -239,14 +217,12 @@ fn bench_config_operations(c: &mut Criterion) {
             let target = Target::new(
                 PathBuf::from(format!("/test/path/{}", i)),
                 Priority::Medium,
-                format!("category_{}", i)
+                format!("category_{}", i),
             );
             config.add_target(target);
         }
 
-        b.iter(|| {
-            config.save().unwrap()
-        });
+        b.iter(|| config.save().unwrap());
     });
 
     group.finish();
@@ -259,7 +235,10 @@ fn bench_directory_traversal(c: &mut Criterion) {
     // 異なる深度・ファイル数での走査性能
     for (depth, files_per_dir) in [(3, 10), (4, 5), (5, 3)].iter() {
         group.bench_with_input(
-            BenchmarkId::new("walkdir", format!("depth_{}_files_{}", depth, files_per_dir)),
+            BenchmarkId::new(
+                "walkdir",
+                format!("depth_{}_files_{}", depth, files_per_dir),
+            ),
             &(depth, files_per_dir),
             |b, &(depth, files_per_dir)| {
                 let temp_dir = TempDir::new().unwrap();
@@ -272,7 +251,10 @@ fn bench_directory_traversal(c: &mut Criterion) {
                 b.iter(|| {
                     use walkdir::WalkDir;
                     let mut count = 0;
-                    for entry in WalkDir::new(black_box(&test_dir)).into_iter().filter_map(|e| e.ok()) {
+                    for entry in WalkDir::new(black_box(&test_dir))
+                        .into_iter()
+                        .filter_map(|e| e.ok())
+                    {
                         if entry.file_type().is_file() {
                             count += 1;
                         }
@@ -294,9 +276,7 @@ fn bench_progress_display(c: &mut Criterion) {
     group.bench_function("progress_update", |b| {
         let progress = BackupProgress::new(1000);
 
-        b.iter(|| {
-            progress.inc(black_box(1))
-        });
+        b.iter(|| progress.inc(black_box(1)));
     });
 
     // メッセージ付きプログレス更新
@@ -336,19 +316,12 @@ fn bench_end_to_end(c: &mut Criterion) {
         let mut config = Config::default();
         config.backup.destination = backup_dir;
 
-        let target = Target::new(
-            source_dir,
-            Priority::High,
-            "documents".to_string()
-        );
+        let target = Target::new(source_dir, Priority::High, "documents".to_string());
         config.add_target(target);
 
-        let runner = BackupRunner::new(config, false)
-            .with_progress(false);
+        let runner = BackupRunner::new(config, false).with_progress(false);
 
-        b.iter(|| {
-            black_box(runner.run(None, None).unwrap())
-        });
+        b.iter(|| black_box(runner.run(None, None).unwrap()));
     });
 
     group.finish();
@@ -373,19 +346,12 @@ fn bench_memory_usage(c: &mut Criterion) {
         let mut config = Config::default();
         config.backup.destination = backup_dir;
 
-        let target = Target::new(
-            source_dir,
-            Priority::High,
-            "large_set".to_string()
-        );
+        let target = Target::new(source_dir, Priority::High, "large_set".to_string());
         config.add_target(target);
 
-        let runner = BackupRunner::new(config, false)
-            .with_progress(false);
+        let runner = BackupRunner::new(config, false).with_progress(false);
 
-        b.iter(|| {
-            black_box(runner.run(None, None).unwrap())
-        });
+        b.iter(|| black_box(runner.run(None, None).unwrap()));
     });
 
     group.finish();

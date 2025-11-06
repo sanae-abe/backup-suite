@@ -2,9 +2,9 @@
 //!
 //! backup-suiteの暗号化・圧縮機能の性能を測定します。
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use backup_suite::compression::{CompressionConfig, CompressionEngine, CompressionType};
 use backup_suite::crypto::{EncryptionEngine, KeyManager};
-use backup_suite::compression::{CompressionEngine, CompressionType, CompressionConfig};
+use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 
 /// 暗号化性能ベンチマーク
 fn bench_encryption(c: &mut Criterion) {
@@ -23,7 +23,11 @@ fn bench_encryption(c: &mut Criterion) {
                 let engine = EncryptionEngine::default();
 
                 b.iter(|| {
-                    black_box(engine.encrypt(black_box(&data), black_box(&master_key), black_box(salt)).unwrap())
+                    black_box(
+                        engine
+                            .encrypt(black_box(&data), black_box(&master_key), black_box(salt))
+                            .unwrap(),
+                    )
                 });
             },
         );
@@ -50,7 +54,11 @@ fn bench_decryption(c: &mut Criterion) {
                 let encrypted_data = engine.encrypt(&data, &master_key, salt).unwrap();
 
                 b.iter(|| {
-                    black_box(engine.decrypt(black_box(&encrypted_data), black_box(&master_key)).unwrap())
+                    black_box(
+                        engine
+                            .decrypt(black_box(&encrypted_data), black_box(&master_key))
+                            .unwrap(),
+                    )
                 });
             },
         );
@@ -79,9 +87,7 @@ fn bench_compression(c: &mut Criterion) {
                     };
                     let engine = CompressionEngine::new(comp_type, config);
 
-                    b.iter(|| {
-                        black_box(engine.compress(black_box(&data)).unwrap())
-                    });
+                    b.iter(|| black_box(engine.compress(black_box(&data)).unwrap()));
                 },
             );
         }
@@ -111,9 +117,7 @@ fn bench_decompression(c: &mut Criterion) {
                     let engine = CompressionEngine::new(comp_type, config);
                     let compressed_data = engine.compress(&data).unwrap();
 
-                    b.iter(|| {
-                        black_box(engine.decompress(black_box(&compressed_data)).unwrap())
-                    });
+                    b.iter(|| black_box(engine.decompress(black_box(&compressed_data)).unwrap()));
                 },
             );
         }
@@ -126,7 +130,11 @@ fn bench_decompression(c: &mut Criterion) {
 fn bench_key_derivation(c: &mut Criterion) {
     let mut group = c.benchmark_group("key_derivation");
 
-    let passwords = ["short", "medium_length_password", "very_long_password_with_many_characters_for_testing"];
+    let passwords = [
+        "short",
+        "medium_length_password",
+        "very_long_password_with_many_characters_for_testing",
+    ];
 
     for password in passwords {
         group.bench_with_input(
@@ -135,9 +143,7 @@ fn bench_key_derivation(c: &mut Criterion) {
             |b, &password| {
                 let key_manager = KeyManager::default();
 
-                b.iter(|| {
-                    black_box(key_manager.create_master_key(black_box(password)).unwrap())
-                });
+                b.iter(|| black_box(key_manager.create_master_key(black_box(password)).unwrap()));
             },
         );
     }
