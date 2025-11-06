@@ -46,23 +46,28 @@
 ## スクリーンショット
 
 ### ヘルプ画面
-![backup-suite help](docs/screenshots/help.webp)
+<img src="docs/screenshots/help.webp" alt="backup-suite help" width="600">
+
 *コマンド一覧とオプションを日本語で表示*
 
 ### バックアップ対象一覧
-![backup-suite list](docs/screenshots/list.webp)
+<img src="docs/screenshots/list.webp" alt="backup-suite list" width="600">
+
 *登録されたバックアップ対象をテーブル形式で表示*
 
 ### バックアップ実行
-![backup-suite run](docs/screenshots/run.webp)
+<img src="docs/screenshots/run.webp" alt="backup-suite run" width="600">
+
 *実際のバックアップ実行画面*
 
 ### バックアップ実行（ドライラン）
-![backup-suite dry-run](docs/screenshots/dry-run.webp)
+<img src="docs/screenshots/dry-run.webp" alt="backup-suite dry-run" width="600">
+
 *実際にファイルをコピーせずに実行内容を確認*
 
 ### バックアップ履歴
-![backup-suite history](docs/screenshots/history.webp)
+<img src="docs/screenshots/history.webp" alt="backup-suite history" width="600">
+
 *過去のバックアップ実行履歴を確認*
 
 ## インストール

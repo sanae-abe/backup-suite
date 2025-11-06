@@ -46,23 +46,28 @@
 ## Screenshots
 
 ### Help Screen
-![backup-suite help](docs/screenshots/help.webp)
+<img src="docs/screenshots/help.webp" alt="backup-suite help" width="600">
+
 *Display command list and options in Japanese*
 
 ### Backup Target List
-![backup-suite list](docs/screenshots/list.webp)
+<img src="docs/screenshots/list.webp" alt="backup-suite list" width="600">
+
 *Display registered backup targets in table format*
 
 ### Backup Execution
-![backup-suite run](docs/screenshots/run.webp)
+<img src="docs/screenshots/run.webp" alt="backup-suite run" width="600">
+
 *Actual backup execution screen*
 
 ### Backup Execution (Dry Run)
-![backup-suite dry-run](docs/screenshots/dry-run.webp)
+<img src="docs/screenshots/dry-run.webp" alt="backup-suite dry-run" width="600">
+
 *Check execution content without actually copying files*
 
 ### Backup History
-![backup-suite history](docs/screenshots/history.webp)
+<img src="docs/screenshots/history.webp" alt="backup-suite history" width="600">
+
 *Check past backup execution history*
 
 ## Installation
