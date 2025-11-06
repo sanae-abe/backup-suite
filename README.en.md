@@ -52,23 +52,37 @@
 
 ## Installation
 
-### Method 1: Pre-built Binary (Recommended)
+### Method 1: Local Installation (Recommended)
 
-The easiest and fastest method. No Rust installation required.
-
-#### Automatic Installation Script (Recommended)
+Clone the repository and run the installation script.
 
 ```bash
-# Install latest version automatically
-curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/install.sh | bash
+# 1. Clone repository
+git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
+cd backup-suite
+
+# 2. Run installation script
+bash install.sh
+
+# Or install system-wide (/usr/local/bin)
+sudo bash install.sh
+
+# 3. Verify operation
+backup-suite --version
 ```
 
-#### Manual Installation
+### Method 2: Manual Installation
+
+Download directly from the [release page](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0).
 
 ```bash
-# 1. Download binary
-curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-
-  complete-package.tar.gz?job=package:create-distributions"
+# 1. Download platform-specific binary
+
+# Linux x64
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz"
+
+# Linux ARM64
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-arm64.tar.gz"
 
 # 2. Extract
 tar -xzf backup-suite-*.tar.gz
@@ -80,9 +94,7 @@ sudo mv backup-suite /usr/local/bin/
 backup-suite --version
 ```
 
-Or download directly from the [release page](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0).
-
-### Method 2: Build from Source
+### Method 3: Build from Source
 
 #### System Requirements
 

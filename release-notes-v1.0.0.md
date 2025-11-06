@@ -21,13 +21,20 @@
 
 ## 🚀 クイックインストール
 
-### 自動インストール（推奨）
+### ローカルインストール（推奨）
 ```bash
-# 最新版を自動インストール
-curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/install.sh | bash
+# 1. リポジトリをクローン
+git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
+cd backup-suite
 
-# システム全体にインストール（/usr/local/bin）
-curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/install.sh | sudo bash
+# 2. インストールスクリプトを実行
+bash install.sh
+
+# または、システム全体にインストール（/usr/local/bin）
+sudo bash install.sh
+
+# 3. 動作確認
+backup-suite --version
 ```
 
 ### 手動インストール

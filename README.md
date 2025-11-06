@@ -52,23 +52,37 @@
 
 ## インストール
 
-### 方法1: ビルド済みバイナリ（推奨）
+### 方法1: ローカルインストール（推奨）
 
-最も簡単で高速な方法です。Rustのインストール不要。
-
-#### 自動インストールスクリプト（推奨）
+リポジトリをクローンして、インストールスクリプトを実行します。
 
 ```bash
-# 最新版を自動インストール
-curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/install.sh | bash
+# 1. リポジトリをクローン
+git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
+cd backup-suite
+
+# 2. インストールスクリプトを実行
+bash install.sh
+
+# または、システム全体にインストール（/usr/local/bin）
+sudo bash install.sh
+
+# 3. 動作確認
+backup-suite --version
 ```
 
-#### 手動インストール
+### 方法2: 手動インストール
+
+[リリースページ](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0)から直接ダウンロード。
 
 ```bash
-# 1. バイナリをダウンロード
-curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-
-  complete-package.tar.gz?job=package:create-distributions"
+# 1. プラットフォーム別バイナリをダウンロード
+
+# Linux x64
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz"
+
+# Linux ARM64
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-arm64.tar.gz"
 
 # 2. 解凍
 tar -xzf backup-suite-*.tar.gz
@@ -80,9 +94,7 @@ sudo mv backup-suite /usr/local/bin/
 backup-suite --version
 ```
 
-または、[リリースページ](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0)から直接ダウンロード。
-
-### 方法2: ソースからビルド
+### 方法3: ソースからビルド
 
 #### システム要件
 
