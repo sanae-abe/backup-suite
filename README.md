@@ -78,7 +78,7 @@
 
 ```bash
 # 1. バイナリをダウンロード
-curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
+curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
 
 # 2. 解凍
 tar -xzf backup-suite-*.tar.gz
