@@ -78,7 +78,7 @@
 
 ## Installation
 
-Install Rust and build directly in your environment. **This is the most reliable and secure method.**
+Install Rust and build directly in your environment.
 
 ```bash
 # 1. Clone repository
@@ -228,10 +228,11 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ### Update
 
 ```bash
-# Manual installation of new version (recommended)
-curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.1.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
-tar -xzf backup-suite-*.tar.gz
-mv backup-suite ~/.local/bin/
+# Update repository and rebuild
+cd backup-suite
+git pull origin main
+cargo build --release
+cp target/release/backup-suite ~/.local/bin/
 backup-suite --version
 ```
 

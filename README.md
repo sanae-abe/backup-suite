@@ -78,7 +78,7 @@
 
 ## インストール
 
-Rustをインストールして、自分の環境で直接ビルドします。**最も確実で安全な方法です。**
+Rustをインストールして、自分の環境で直接ビルドします。
 
 ```bash
 # 1. リポジトリをクローン
@@ -228,10 +228,11 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ### アップデート
 
 ```bash
-# 新しいバージョンを手動インストール（推奨）
-curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.1.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
-tar -xzf backup-suite-*.tar.gz
-mv backup-suite ~/.local/bin/
+# リポジトリを更新して再ビルド
+cd backup-suite
+git pull origin main
+cargo build --release
+cp target/release/backup-suite ~/.local/bin/
 backup-suite --version
 ```
 
