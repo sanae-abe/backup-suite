@@ -15,10 +15,10 @@
 - [Configuration File](#configuration-file)
 - [Command Reference](#command-reference)
 - [Update & Uninstall](#update--uninstall)
-- [Troubleshooting](#troubleshooting)
 - [Security & Quality](#security--quality)
 - [Technology Stack](#technology-stack)
 - [Supported Platforms](#supported-platforms)
+- [License](#license)
 
 ## Key Features
 
@@ -271,6 +271,10 @@ rm -rf ~/.local/share/backup-suite/
 | 🐧 Linux | aarch64       | ✅ Full support |
 | 🍎 macOS | x86_64        | ✅ Full support |
 | 🍎 macOS | Apple Silicon | ✅ Full support |
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 **Developer**: sanae-abe@m3.com
