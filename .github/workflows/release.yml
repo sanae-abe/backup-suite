@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  release:
+  build-release:
     runs-on: macos-latest
     permissions:
       contents: write
@@ -14,13 +14,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - run: |
-          rustup target add x86_64-apple-darwin
-          rustup target add aarch64-apple-darwin
+          rustup target add x86_64-apple-darwin aarch64-apple-darwin
           cargo build --release --target x86_64-apple-darwin
           cargo build --release --target aarch64-apple-darwin
           mkdir -p dist
           tar -czf dist/backup-suite-macos-x64.tar.gz -C target/x86_64-apple-darwin/release backup-suite
           tar -czf dist/backup-suite-macos-arm64.tar.gz -C target/aarch64-apple-darwin/release backup-suite
+          shasum -a 256 dist/*.tar.gz > dist/checksums.txt
       - uses: softprops/action-gh-release@v1
         with:
           files: dist/*
+          generate_release_notes: true

@@ -78,7 +78,20 @@
 
 ## Installation
 
-Install Rust and build directly in your environment.
+### Install via Homebrew (macOS)
+
+```bash
+brew tap sanae-abe/backup-suite
+brew install backup-suite
+```
+
+### Install via Cargo
+
+```bash
+cargo install backup-suite
+```
+
+### Build from Source
 
 ```bash
 # 1. Clone repository
@@ -91,14 +104,9 @@ source ~/.cargo/env
 
 # 3. Build & Install
 cargo build --release
-mkdir -p ~/.local/bin
-cp target/release/backup-suite ~/.local/bin/
+cargo install --path .
 
-# 4. Add to PATH (first time only)
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-
-# 5. Verify operation
+# 4. Verify operation
 backup-suite --version
 ```
 
@@ -228,12 +236,16 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ### Update
 
 ```bash
-# Update repository and rebuild
+# Homebrew
+brew upgrade backup-suite
+
+# Cargo
+cargo install backup-suite --force
+
+# From source
 cd backup-suite
 git pull origin main
-cargo build --release
-cp target/release/backup-suite ~/.local/bin/
-backup-suite --version
+cargo install --path . --force
 ```
 
 ### Uninstall

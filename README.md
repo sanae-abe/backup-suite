@@ -78,7 +78,20 @@
 
 ## インストール
 
-Rustをインストールして、自分の環境で直接ビルドします。
+### Homebrewでインストール（macOS）
+
+```bash
+brew tap sanae-abe/backup-suite
+brew install backup-suite
+```
+
+### Cargoでインストール
+
+```bash
+cargo install backup-suite
+```
+
+### ソースからビルド
 
 ```bash
 # 1. リポジトリをクローン
@@ -91,14 +104,9 @@ source ~/.cargo/env
 
 # 3. ビルド＆インストール
 cargo build --release
-mkdir -p ~/.local/bin
-cp target/release/backup-suite ~/.local/bin/
+cargo install --path .
 
-# 4. PATHに追加（初回のみ）
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-
-# 5. 動作確認
+# 4. 動作確認
 backup-suite --version
 ```
 
@@ -228,12 +236,16 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ### アップデート
 
 ```bash
-# リポジトリを更新して再ビルド
+# Homebrew
+brew upgrade backup-suite
+
+# Cargo
+cargo install backup-suite --force
+
+# ソースから
 cd backup-suite
 git pull origin main
-cargo build --release
-cp target/release/backup-suite ~/.local/bin/
-backup-suite --version
+cargo install --path . --force
 ```
 
 ### アンインストール
