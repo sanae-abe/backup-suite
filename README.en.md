@@ -1,8 +1,8 @@
 # backup-suite
 
-[日本語](README.md) | [English](README.en.md) 
+[日本語](README.md) | [English](README.en.md)
 
-> **M3 Corporate Backup Solution**
+> **Fast, Secure & Intelligent Local Backup Tool**
 
 ## Table of Contents
 
@@ -285,6 +285,10 @@ rm -rf ~/.local/share/backup-suite/
 This project is licensed under the [MIT License](LICENSE).
 
 ---
-**Developer**: sanae-abe@m3.com
+
+## Contributing
+
+Bug reports, feature requests, and pull requests are welcome!
+Feel free to contact us via GitHub Issues or PRs.
 
 

@@ -1,8 +1,8 @@
 # backup-suite
 
-[日本語](README.md) | [English](README.en.md) 
+[日本語](README.md) | [English](README.en.md)
 
-> **M3社内向バックアップソリューション**
+> **高速・安全・インテリジェントなローカルバックアップツール**
 
 ## 目次
 
@@ -285,4 +285,8 @@ rm -rf ~/.local/share/backup-suite/
 このプロジェクトは[MITライセンス](LICENSE)の下で公開されています。
 
 ---
-**開発者**: sanae-abe@m3.com
+
+## コントリビューション
+
+バグレポート・機能要望・プルリクエストを歓迎します。
+GitHubのIssue・PRからお気軽にご連絡ください。
