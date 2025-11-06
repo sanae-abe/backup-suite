@@ -78,42 +78,27 @@
 
 ## Installation
 
-### Method 1: Manual Installation (Recommended)
-
-Download directly from the [release page](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0).
-
-```bash
-# 1. Download binary
-curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
-
-# 2. Extract
-tar -xzf backup-suite-*.tar.gz
-
-# 3. Move binary to appropriate location (no sudo required)
-mkdir -p ~/.local/bin
-mv backup-suite ~/.local/bin/
-
-# 4. Add to PATH (first time only)
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-
-# 5. Verify operation
-backup-suite --version
-```
-
-### Method 2: Local Installation
-
-Clone the repository and run the installation script.
+Install Rust and build directly in your environment. **This is the most reliable and secure method.**
 
 ```bash
 # 1. Clone repository
 git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
 cd backup-suite
 
-# 2. Run installation script (installs to ~/.local/bin)
-bash install.sh
+# 2. Install Rust (if not already installed)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
 
-# 3. Verify operation
+# 3. Build & Install
+cargo build --release
+mkdir -p ~/.local/bin
+cp target/release/backup-suite ~/.local/bin/
+
+# 4. Add to PATH (first time only)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# 5. Verify operation
 backup-suite --version
 ```
 

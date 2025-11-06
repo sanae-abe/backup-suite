@@ -78,42 +78,27 @@
 
 ## インストール
 
-### 方法1: 手動インストール（推奨）
-
-[リリースページ](https://rendezvous.m3.com/sanae-abe/backup-suite/-/releases/v1.0.0)から直接ダウンロード。
-
-```bash
-# 1. バイナリをダウンロード
-curl -LO "https://rendezvous.m3.com/sanae-abe/backup-suite/-/jobs/artifacts/v1.0.0/raw/backup-suite-complete-package.tar.gz?job=package:create-distributions"
-
-# 2. 解凍
-tar -xzf backup-suite-*.tar.gz
-
-# 3. バイナリを適切な場所に移動（sudo不要）
-mkdir -p ~/.local/bin
-mv backup-suite ~/.local/bin/
-
-# 4. PATHに追加（初回のみ）
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-source ~/.zshrc
-
-# 5. 動作確認
-backup-suite --version
-```
-
-### 方法2: ローカルインストール
-
-リポジトリをクローンして、インストールスクリプトを実行します。
+Rustをインストールして、自分の環境で直接ビルドします。**最も確実で安全な方法です。**
 
 ```bash
 # 1. リポジトリをクローン
 git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
 cd backup-suite
 
-# 2. インストールスクリプトを実行（~/.local/binにインストール）
-bash install.sh
+# 2. Rustインストール（未インストールの場合）
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
 
-# 3. 動作確認
+# 3. ビルド＆インストール
+cargo build --release
+mkdir -p ~/.local/bin
+cp target/release/backup-suite ~/.local/bin/
+
+# 4. PATHに追加（初回のみ）
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# 5. 動作確認
 backup-suite --version
 ```
 
