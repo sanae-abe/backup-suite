@@ -165,15 +165,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - 環境変数 $EDITOR, $VISUAL の検出
     - プラットフォーム別デフォルトエディタ（macOS: open, Linux: nano, Windows: notepad）
 
-### Known Issues
+### Fixed
 
-- ⚠️ ストリーム暗号化テスト失敗（1/75）
-  - 影響範囲: 大容量ファイルのストリーム暗号化のみ
-  - 回避策: 通常の暗号化機能（`encrypt`/`decrypt`）を使用
-  - 優先度: 中（v1.0.1で修正予定）
-- ⚠️ generic-array deprecation警告（8箇所）
-  - 影響: なし（機能は正常動作）
-  - 優先度: 低（v1.1.0で更新予定）
+- ✅ ストリーム暗号化テスト問題を解決（全テスト合格）
+- ✅ 全79単体テスト・16統合テスト・68 doctest合格
 
 ### Future Considerations
 
