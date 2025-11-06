@@ -5,8 +5,7 @@
 > **M3 Corporate Backup Solution**
 
 ## Table of Contents
-- [backup-suite](#backup-suite)
-- [Table of Contents](#table-of-contents)
+
 - [Key Features](#key-features)
 - [Screenshots](#screenshots)
 - [Installation](#installation)
