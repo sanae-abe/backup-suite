@@ -52,7 +52,51 @@
 
 ## インストール
 
-### 前提条件：Rustツールチェーンのインストール
+### 方法1: ビルド済みバイナリ（推奨）
+
+最も簡単で高速な方法です。Rustのインストール不要。
+
+#### 自動インストールスクリプト（推奨）
+
+```bash
+# 最新版を自動インストール
+curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/install.sh | bash
+
+# システム全体にインストール（/usr/local/bin）
+curl -sSL https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/raw/main/install.sh | sudo bash
+```
+
+#### 手動インストール
+
+```bash
+# 1. プラットフォーム別バイナリをダウンロード
+
+# Linux x64
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-x64.tar.gz"
+
+# Linux ARM64
+curl -LO "https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0/downloads/backup-suite-linux-arm64.tar.gz"
+
+# 2. 解凍
+tar -xzf backup-suite-*.tar.gz
+
+# 3. バイナリを適切な場所に移動
+sudo mv backup-suite /usr/local/bin/
+
+# 4. 動作確認
+backup-suite --version
+```
+
+または、[リリースページ](https://rendezvous.m3.com:3789/sanae-abe/backup-suite/-/releases/v1.0.0)から直接ダウンロード。
+
+### 方法2: ソースからビルド
+
+#### システム要件
+
+- **オペレーティングシステム**: Linux、macOS
+- **Rust**: 1.75以上（MSRV）
+
+#### Rustツールチェーンのインストール
 
 ```bash
 # 1. Rustup（Rustインストーラー）をダウンロード・実行
@@ -61,23 +105,16 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 # 2. 環境変数を読み込み
 source ~/.cargo/env
 
-# 新しいターミナルを開くか、以下を実行
-# bash使用時
-source ~/.bashrc
-
-# zsh使用時（macOS標準）
-source ~/.zshrc
-
 # 3. インストール確認
 rustc --version
 cargo --version
 ```
 
-### インストール手順
+#### backup-suiteのビルド&インストール
 
 ```bash
 # 1. リポジトリをクローン
-git clone git@rendezvous.m3.com:sanae-abe/backup-suite.git
+git clone ssh://git@rendezvous.m3.com:3789/sanae-abe/backup-suite.git
 cd backup-suite
 
 # 2. ビルド&インストール
