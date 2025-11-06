@@ -59,13 +59,12 @@ backup-suite --version
 - rayon（並列処理）
 - zstd/flate2（圧縮）
 - aes-gcm（暗号化）
-- GitLab CI/CD
+- GitHub Actions
 
 ## 📦 対応プラットフォーム
 
-- Linux x64
-- Linux ARM64
-- macOS Universal (Intel + Apple Silicon、手動ビルド)
+- macOS x64 (Intel)
+- macOS ARM64 (Apple Silicon)
 
 ## 🔗 関連リンク
 
