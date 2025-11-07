@@ -431,12 +431,26 @@ impl BackupRunner {
                     (BackupType::Incremental, parent_name, changed_files)
                 }
                 Err(e) => {
-                    eprintln!("警告: 前回のメタデータ読み込みに失敗しました。フルバックアップにフォールバックします: {}", e);
+                    // エラーメッセージの内容で初回実行時か実際のエラーかを判別
+                    let error_msg = e.to_string();
+                    if error_msg.contains("前回のバックアップが見つかりません")
+                        || error_msg.contains("前回のバックアップメタデータ読み込み失敗") {
+                        // 初回実行時: 情報レベルのメッセージ
+                        println!("ℹ️  前回のバックアップが見つかりません。フルバックアップを実行します。");
+                    } else {
+                        // 実際のエラー時（メタデータ破損など）: 警告レベルのメッセージ
+                        eprintln!("⚠️  前回のメタデータ読み込みに失敗しました。フルバックアップにフォールバックします。");
+                        eprintln!("   詳細: {}", e);
+                    }
                     println!("📦 フルバックアップモード（全ファイル）");
                     (BackupType::Full, None, all_files.clone())
                 }
             }
         } else {
+            // --incremental フラグが指定されているが、前回のバックアップがない場合
+            if self.incremental {
+                println!("ℹ️  前回のバックアップが見つかりません。フルバックアップを実行します。");
+            }
             println!("📦 フルバックアップモード（全ファイル）");
             (BackupType::Full, None, all_files.clone())
         };
@@ -626,6 +640,21 @@ impl BackupRunner {
                     .iter()
                     .filter_map(|(_, dest)| dest.strip_prefix(&backup_base).ok().map(|p| p.to_path_buf()))
                     .collect();
+
+                // 増分バックアップの場合、変更されなかったファイルのハッシュも保存
+                // （次回の増分バックアップで正しく比較できるようにするため）
+                if actual_backup_type == BackupType::Incremental {
+                    for (source, dest) in &all_files {
+                        if let Some(rel_path) = dest.strip_prefix(&backup_base).ok() {
+                            // 既にハッシュが保存されているファイルはスキップ
+                            if !guard.metadata.file_hashes.contains_key(rel_path) {
+                                if let Ok(hash) = guard.compute_hash(source) {
+                                    guard.add_file_hash(rel_path.to_path_buf(), hash);
+                                }
+                            }
+                        }
+                    }
+                }
 
                 if let Err(e) = guard.save_metadata(&backup_base) {
                     eprintln!("警告: 整合性メタデータの保存に失敗しました: {}", e);

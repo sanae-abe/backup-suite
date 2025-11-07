@@ -134,9 +134,35 @@ pub enum MessageKey {
 
     // Encryption and compression
     EncryptionPassword,
+    SavePasswordSecurely,
     EncryptOption,
     CompressOption,
     CompressLevel,
+
+    // Run command options
+    IncrementalOption,
+    GeneratePasswordOption,
+    PasswordOption,
+    DryRunOption,
+    PriorityOption,
+    CategoryOption,
+
+    // Restore command options
+    FromOption,
+    ToOption,
+    RestorePasswordOption,
+
+    // Cleanup command options
+    DaysOption,
+    CleanupDryRunOption,
+
+    // Add command options
+    AddPriorityOption,
+    AddCategoryOption,
+    InteractiveOption,
+
+    // List command options
+    ListPriorityOption,
 
     // Schedule help
     ScheduleTitle,
@@ -358,9 +384,35 @@ impl MessageKey {
 
             // Encryption and compression
             MessageKey::EncryptionPassword => "Encryption password",
+            MessageKey::SavePasswordSecurely => "⚠️  Please save this password securely!",
             MessageKey::EncryptOption => "--encrypt: AES-256-GCM encryption",
             MessageKey::CompressOption => "--compress zstd/gzip: Compression",
             MessageKey::CompressLevel => "--compress-level 1-22: Compression level",
+
+            // Run command options
+            MessageKey::IncrementalOption => "--incremental: Incremental backup (changed files only)",
+            MessageKey::GeneratePasswordOption => "--generate-password: Generate secure password",
+            MessageKey::PasswordOption => "--password <PASSWORD>: Specify encryption password",
+            MessageKey::DryRunOption => "--dry-run: Dry run mode (no actual backup)",
+            MessageKey::PriorityOption => "--priority <PRIORITY>: Filter by priority (high/medium/low)",
+            MessageKey::CategoryOption => "--category <CATEGORY>: Filter by category",
+
+            // Restore command options
+            MessageKey::FromOption => "--from <BACKUP_NAME>: Backup to restore",
+            MessageKey::ToOption => "--to <DESTINATION>: Restore destination",
+            MessageKey::RestorePasswordOption => "--password <PASSWORD>: Decryption password (if encrypted)",
+
+            // Cleanup command options
+            MessageKey::DaysOption => "--days <DAYS>: Delete backups older than specified days",
+            MessageKey::CleanupDryRunOption => "--dry-run: Dry run mode (show what would be deleted)",
+
+            // Add command options
+            MessageKey::AddPriorityOption => "--priority <PRIORITY>: Set priority (high/medium/low)",
+            MessageKey::AddCategoryOption => "--category <CATEGORY>: Set category",
+            MessageKey::InteractiveOption => "--interactive: Interactive selection mode",
+
+            // List command options
+            MessageKey::ListPriorityOption => "--priority <PRIORITY>: Filter by priority",
 
             // Schedule help
             MessageKey::ScheduleTitle => "📅 Backup Suite Schedule Management",
@@ -592,9 +644,35 @@ impl MessageKey {
 
             // Encryption and compression
             MessageKey::EncryptionPassword => "暗号化パスワード",
+            MessageKey::SavePasswordSecurely => "⚠️  このパスワードを安全に保管してください！",
             MessageKey::EncryptOption => "--encrypt: AES-256-GCM暗号化",
             MessageKey::CompressOption => "--compress zstd/gzip: 圧縮",
             MessageKey::CompressLevel => "--compress-level 1-22: 圧縮レベル",
+
+            // Run command options
+            MessageKey::IncrementalOption => "--incremental: 増分バックアップ（変更ファイルのみ）",
+            MessageKey::GeneratePasswordOption => "--generate-password: 安全なパスワードを自動生成",
+            MessageKey::PasswordOption => "--password <パスワード>: 暗号化パスワード指定",
+            MessageKey::DryRunOption => "--dry-run: ドライランモード（実際のバックアップなし）",
+            MessageKey::PriorityOption => "--priority <優先度>: 優先度でフィルタ (high/medium/low)",
+            MessageKey::CategoryOption => "--category <カテゴリ>: カテゴリでフィルタ",
+
+            // Restore command options
+            MessageKey::FromOption => "--from <バックアップ名>: 復元するバックアップ",
+            MessageKey::ToOption => "--to <復元先>: 復元先ディレクトリ",
+            MessageKey::RestorePasswordOption => "--password <パスワード>: 復号化パスワード（暗号化時）",
+
+            // Cleanup command options
+            MessageKey::DaysOption => "--days <日数>: 指定日数より古いバックアップを削除",
+            MessageKey::CleanupDryRunOption => "--dry-run: ドライランモード（削除対象を表示）",
+
+            // Add command options
+            MessageKey::AddPriorityOption => "--priority <優先度>: 優先度を設定 (high/medium/low)",
+            MessageKey::AddCategoryOption => "--category <カテゴリ>: カテゴリを設定",
+            MessageKey::InteractiveOption => "--interactive: インタラクティブ選択モード",
+
+            // List command options
+            MessageKey::ListPriorityOption => "--priority <優先度>: 優先度でフィルタ",
 
             // Schedule help
             MessageKey::ScheduleTitle => "📅 Backup Suite スケジュール管理",

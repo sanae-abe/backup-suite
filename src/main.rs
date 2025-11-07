@@ -422,11 +422,27 @@ fn print_help(lang: Language) {
         get_message(MessageKey::DescAdd, lang)
     );
     println!(
+        "                 {}",
+        get_message(MessageKey::AddPriorityOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::AddCategoryOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::InteractiveOption, lang)
+    );
+    println!(
         "  {}{}{}     {}",
         yellow,
         get_message(MessageKey::CmdList, lang),
         reset,
         get_message(MessageKey::DescList, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::ListPriorityOption, lang)
     );
     println!(
         "  {}{}{}       {}",
@@ -470,6 +486,30 @@ fn print_help(lang: Language) {
         get_message(MessageKey::CompressLevel, lang)
     );
     println!(
+        "                 {}",
+        get_message(MessageKey::IncrementalOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::GeneratePasswordOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::PasswordOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::DryRunOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::PriorityOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::CategoryOption, lang)
+    );
+    println!(
         "  {}{}{}      {}",
         yellow,
         get_message(MessageKey::CmdRestore, lang),
@@ -477,11 +517,31 @@ fn print_help(lang: Language) {
         get_message(MessageKey::DescRestore, lang)
     );
     println!(
+        "                 {}",
+        get_message(MessageKey::FromOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::ToOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::RestorePasswordOption, lang)
+    );
+    println!(
         "  {}{}{}      {}",
         yellow,
         get_message(MessageKey::CmdCleanup, lang),
         reset,
         get_message(MessageKey::DescCleanup, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::DaysOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::CleanupDryRunOption, lang)
     );
     println!();
 
@@ -1363,8 +1423,9 @@ fn main() -> Result<()> {
                         pwd_str
                     );
                     println!(
-                        "{}⚠️  Please save this password securely!{}",
+                        "{}{}{}",
                         get_color("yellow"),
+                        get_message(MessageKey::SavePasswordSecurely, lang),
                         get_color("reset")
                     );
 

@@ -146,6 +146,8 @@ impl IncrementalBackupEngine {
                     .starts_with("backup_")
             })
             .map(|entry| entry.path())
+            // dry-runで作成された空のディレクトリ（.integrityなし）を除外
+            .filter(|path| path.join(".integrity").exists())
             .collect();
 
         if backups.is_empty() {
