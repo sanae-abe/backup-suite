@@ -18,7 +18,6 @@ mod path_traversal_tests {
     use super::*;
 
     #[test]
-    #[ignore] // Remove #[ignore] after security module implementation
     fn test_basic_path_traversal() {
         let temp = TempDir::new().unwrap();
         let base = temp.path().join("backup");
@@ -46,7 +45,6 @@ mod path_traversal_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_path_traversal_with_unicode() {
         let temp = TempDir::new().unwrap();
         let _base = temp.path();
@@ -66,7 +64,6 @@ mod path_traversal_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_legitimate_paths_allowed() {
         let temp = TempDir::new().unwrap();
         let base = temp.path().join("backup");
@@ -93,7 +90,6 @@ mod symlink_attack_tests {
     use super::*;
 
     #[test]
-    #[ignore]
     #[cfg(unix)]
     fn test_symlink_to_system_file() {
         let temp = TempDir::new().unwrap();
@@ -112,7 +108,6 @@ mod symlink_attack_tests {
     }
 
     #[test]
-    #[ignore]
     #[cfg(unix)]
     fn test_symlink_traversal_attack() {
         let temp = TempDir::new().unwrap();
@@ -134,7 +129,6 @@ mod symlink_attack_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_regular_file_allowed() {
         let temp = TempDir::new().unwrap();
         let file = temp.path().join("regular_file.txt");
@@ -156,7 +150,6 @@ mod toctou_tests {
     use std::time::Duration;
 
     #[test]
-    #[ignore]
     fn test_concurrent_file_modification() {
         let temp = TempDir::new().unwrap();
         let target_file = Arc::new(temp.path().join("target.txt"));
@@ -188,7 +181,6 @@ mod toctou_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_file_replacement_attack() {
         let temp = TempDir::new().unwrap();
         let target = temp.path().join("target.txt");
@@ -214,7 +206,6 @@ mod permission_tests {
     use super::*;
 
     #[test]
-    #[ignore]
     #[cfg(unix)]
     fn test_unreadable_file_rejection() {
         use std::os::unix::fs::PermissionsExt;
@@ -235,7 +226,6 @@ mod permission_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_system_directory_access_denial() {
         let protected_dirs = vec!["/etc", "/sys", "/proc", "/dev"];
 
@@ -262,7 +252,6 @@ mod resource_exhaustion_tests {
     use super::*;
 
     #[test]
-    #[ignore]
     fn test_huge_file_rejection() {
         let temp = TempDir::new().unwrap();
         let huge_file = temp.path().join("huge.bin");
@@ -285,7 +274,6 @@ mod resource_exhaustion_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_deep_directory_nesting() {
         let temp = TempDir::new().unwrap();
         let mut current = temp.path().to_path_buf();
@@ -307,7 +295,6 @@ mod resource_exhaustion_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_disk_space_check() {
         let _temp = TempDir::new().unwrap();
 
@@ -328,7 +315,6 @@ mod resource_exhaustion_tests {
 mod input_validation_tests {
 
     #[test]
-    #[ignore]
     fn test_invalid_path_characters() {
         let invalid_paths = vec![
             "file\0name.txt",    // Null byte
@@ -350,7 +336,6 @@ mod input_validation_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_empty_and_whitespace_paths() {
         let invalid_paths = vec!["", "   ", "\t\n\r"];
 
@@ -369,7 +354,6 @@ mod error_handling_tests {
     use super::*;
 
     #[test]
-    #[ignore]
     fn test_error_messages_no_info_leakage() {
         // Errors should not reveal sensitive paths or internal details
 
@@ -389,7 +373,6 @@ mod error_handling_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_panic_free_operation() {
         // Ensure no panics in error conditions
 
@@ -411,7 +394,6 @@ mod error_handling_tests {
 mod crypto_tests {
 
     #[test]
-    #[ignore]
     fn test_encryption_decryption_roundtrip() {
         // Uncomment after encryption implementation
         // let encryption = BackupEncryption::new();
@@ -426,7 +408,6 @@ mod crypto_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_password_based_key_derivation() {
         // Uncomment after implementation
         // let password = "secure_password_123";
@@ -451,7 +432,6 @@ mod integrity_tests {
     use super::*;
 
     #[test]
-    #[ignore]
     fn test_file_integrity_computation() {
         let temp = TempDir::new().unwrap();
         let file = temp.path().join("test.txt");
@@ -465,7 +445,6 @@ mod integrity_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_tampered_file_detection() {
         let temp = TempDir::new().unwrap();
         let file = temp.path().join("test.txt");
@@ -488,7 +467,6 @@ mod integrity_tests {
 mod audit_log_tests {
 
     #[test]
-    #[ignore]
     fn test_security_event_logging() {
         // Uncomment after implementation
         // let logger = AuditLogger::new().unwrap();
@@ -504,7 +482,6 @@ mod audit_log_tests {
     }
 
     #[test]
-    #[ignore]
     fn test_backup_operation_logging() {
         // Uncomment after implementation
         // let logger = AuditLogger::new().unwrap();

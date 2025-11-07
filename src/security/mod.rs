@@ -44,10 +44,12 @@
 //! - **A04:2021 – Insecure Design**: 安全なデフォルト設計で対応
 //! - **A05:2021 – Security Misconfiguration**: 設定検証機能で対応
 
+pub mod audit;
 pub mod path;
 pub mod permissions;
 
 // 再エクスポート：頻繁に使用される機能を簡単にアクセス可能にする
+pub use audit::{AuditEvent, AuditLog, EventType};
 pub use path::{safe_join, safe_open, sanitize_path_component, validate_path_safety};
 pub use permissions::{check_permissions, check_read_permission, check_write_permission};
 

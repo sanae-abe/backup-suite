@@ -5,24 +5,40 @@ use std::fs;
 use std::path::PathBuf;
 use walkdir::WalkDir;
 
-use super::Config;
+use super::{Config, Priority};
 
-/// バックアップ履歴エントリ
+/// バックアップステータス
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum BackupStatus {
+    Success,
+    Failed,
+    Partial,
+}
+
+/// バックアップ履歴エントリ（Phase 2拡張版）
 ///
-/// 1回のバックアップ実行の記録を保持します。
+/// 1回のバックアップ実行の詳細な記録を保持します。
 ///
 /// # フィールド
 ///
 /// * `timestamp` - バックアップ実行日時
 /// * `backup_dir` - バックアップディレクトリのパス
+/// * `category` - カテゴリ（Optional）
+/// * `priority` - 優先度（Optional）
+/// * `status` - バックアップステータス（Success/Failed/Partial）
 /// * `total_files` - バックアップしたファイル数
 /// * `total_bytes` - バックアップした総バイト数
-/// * `success` - バックアップが成功したかどうか
+/// * `compressed` - 圧縮されているか
+/// * `encrypted` - 暗号化されているか
+/// * `duration_ms` - 処理時間（ミリ秒）
+/// * `error_message` - エラーメッセージ（失敗時）
+/// * `success` - 後方互換性のための成功フラグ
 ///
 /// # 使用例
 ///
 /// ```no_run
-/// use backup_suite::BackupHistory;
+/// use backup_suite::{BackupHistory, core::history::BackupStatus, Priority};
 /// use std::path::PathBuf;
 ///
 /// let history = BackupHistory::new(
@@ -37,9 +53,28 @@ use super::Config;
 pub struct BackupHistory {
     pub timestamp: DateTime<Utc>,
     pub backup_dir: PathBuf,
+    #[serde(default)]
+    pub category: Option<String>,
+    #[serde(default)]
+    pub priority: Option<Priority>,
+    #[serde(default = "default_status")]
+    pub status: BackupStatus,
     pub total_files: usize,
     pub total_bytes: u64,
+    #[serde(default)]
+    pub compressed: bool,
+    #[serde(default)]
+    pub encrypted: bool,
+    #[serde(default)]
+    pub duration_ms: u64,
+    #[serde(default)]
+    pub error_message: Option<String>,
+    // 後方互換性のため残す
     pub success: bool,
+}
+
+fn default_status() -> BackupStatus {
+    BackupStatus::Success
 }
 
 impl BackupHistory {
@@ -73,8 +108,15 @@ impl BackupHistory {
         Self {
             timestamp: Utc::now(),
             backup_dir,
+            category: None,
+            priority: None,
+            status: if success { BackupStatus::Success } else { BackupStatus::Failed },
             total_files,
             total_bytes,
+            compressed: false,
+            encrypted: false,
+            duration_ms: 0,
+            error_message: None,
             success,
         }
     }
@@ -200,6 +242,91 @@ impl BackupHistory {
         let all = Self::load_all()?;
         let cutoff = Utc::now() - chrono::Duration::days(days as i64);
         Ok(all.into_iter().filter(|h| h.timestamp > cutoff).collect())
+    }
+
+    /// 優先度でフィルタリング
+    ///
+    /// 指定された優先度のバックアップ履歴のみを取得します。
+    ///
+    /// # 引数
+    ///
+    /// * `priority` - フィルタリングする優先度
+    ///
+    /// # 戻り値
+    ///
+    /// 指定された優先度の履歴エントリのベクター
+    ///
+    /// # 使用例
+    ///
+    /// ```no_run
+    /// use backup_suite::{BackupHistory, Priority};
+    ///
+    /// let history = BackupHistory::load_all().unwrap();
+    /// let high_priority = BackupHistory::filter_by_priority(&history, &Priority::High);
+    /// println!("高優先度のバックアップ: {}件", high_priority.len());
+    /// ```
+    pub fn filter_by_priority<'a>(entries: &'a [BackupHistory], priority: &Priority) -> Vec<&'a BackupHistory> {
+        entries
+            .iter()
+            .filter(|h| h.priority.as_ref() == Some(priority))
+            .collect()
+    }
+
+    /// カテゴリでフィルタリング
+    ///
+    /// 指定されたカテゴリのバックアップ履歴のみを取得します。
+    ///
+    /// # 引数
+    ///
+    /// * `category` - フィルタリングするカテゴリ名
+    ///
+    /// # 戻り値
+    ///
+    /// 指定されたカテゴリの履歴エントリのベクター
+    ///
+    /// # 使用例
+    ///
+    /// ```no_run
+    /// use backup_suite::BackupHistory;
+    ///
+    /// let history = BackupHistory::load_all().unwrap();
+    /// let docs = BackupHistory::filter_by_category(&history, "documents");
+    /// println!("ドキュメントカテゴリのバックアップ: {}件", docs.len());
+    /// ```
+    pub fn filter_by_category<'a>(entries: &'a [BackupHistory], category: &str) -> Vec<&'a BackupHistory> {
+        entries
+            .iter()
+            .filter(|h| h.category.as_deref() == Some(category))
+            .collect()
+    }
+
+    /// 最近のエントリを取得
+    ///
+    /// 指定された件数の最近のバックアップ履歴を取得します。
+    ///
+    /// # 引数
+    ///
+    /// * `count` - 取得する件数
+    ///
+    /// # 戻り値
+    ///
+    /// 最新のエントリから指定件数分の履歴エントリのベクター
+    ///
+    /// # 使用例
+    ///
+    /// ```no_run
+    /// use backup_suite::BackupHistory;
+    ///
+    /// // 最新10件を取得
+    /// let recent = BackupHistory::get_recent_entries(10).unwrap();
+    /// for entry in recent {
+    ///     println!("{}: {:?}", entry.timestamp, entry.backup_dir);
+    /// }
+    /// ```
+    pub fn get_recent_entries(count: usize) -> Result<Vec<BackupHistory>> {
+        let mut all = Self::load_all()?;
+        all.sort_by(|a, b| b.timestamp.cmp(&a.timestamp)); // 新しい順
+        Ok(all.into_iter().take(count).collect())
     }
 
     /// バックアップディレクトリのリストを取得

@@ -43,7 +43,7 @@ fn test_full_backup_workflow_single_file() -> Result<()> {
     ));
 
     // バックアップ実行
-    let runner = backup_suite::BackupRunner::new(config, false)
+    let mut runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
@@ -90,7 +90,7 @@ fn test_full_backup_workflow_directory() -> Result<()> {
         "documents".to_string(),
     ));
 
-    let runner = backup_suite::BackupRunner::new(config, false)
+    let mut runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
@@ -130,7 +130,7 @@ fn test_exclude_patterns_simple() -> Result<()> {
     config.backup.destination = backup_dir.clone();
     config.targets.push(target);
 
-    let runner = backup_suite::BackupRunner::new(config, false)
+    let mut runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
@@ -172,7 +172,7 @@ fn test_exclude_patterns_complex() -> Result<()> {
     config.backup.destination = backup_dir.clone();
     config.targets.push(target);
 
-    let runner = backup_suite::BackupRunner::new(config, false)
+    let mut runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
@@ -220,7 +220,7 @@ fn test_priority_filtering() -> Result<()> {
         .push(Target::new(low_file, Priority::Low, "priority".to_string()));
 
     // 高優先度のみバックアップ
-    let runner = backup_suite::BackupRunner::new(config, false)
+    let mut runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(Some(&Priority::High), None)?;
 
@@ -267,7 +267,7 @@ fn test_priority_filtering_medium_and_high() -> Result<()> {
         .push(Target::new(low_file, Priority::Low, "test".to_string()));
 
     // Medium優先度でバックアップ (Medium以上が対象)
-    let runner = backup_suite::BackupRunner::new(config, false)
+    let mut runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(Some(&Priority::Medium), None)?;
 
@@ -339,7 +339,7 @@ fn test_nonexistent_source_handling() {
         .push(Target::new(nonexistent, Priority::High, "test".to_string()));
 
     // 存在しないファイルはスキップされ、バックアップ件数が0になることを確認
-    let runner = backup_suite::BackupRunner::new(config, false)
+    let mut runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None).unwrap();
     assert_eq!(result.total_files, 0);
@@ -370,7 +370,7 @@ fn test_invalid_destination_handling() {
         .push(Target::new(source_file, Priority::High, "test".to_string()));
 
     // エラーが返されることを確認
-    let runner = backup_suite::BackupRunner::new(config, false)
+    let mut runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None);
     assert!(result.is_err());
@@ -401,7 +401,7 @@ fn test_parallel_backup_large_directory() -> Result<()> {
         .push(Target::new(source_dir, Priority::High, "test".to_string()));
 
     // 並列バックアップ実行
-    let runner = backup_suite::BackupRunner::new(config, false)
+    let mut runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
@@ -442,7 +442,7 @@ fn test_category_organization() -> Result<()> {
         "personal".to_string(),
     ));
 
-    let runner = backup_suite::BackupRunner::new(config, false)
+    let mut runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
@@ -478,7 +478,7 @@ fn test_large_file_backup_performance() -> Result<()> {
         .push(Target::new(source_dir, Priority::High, "test".to_string()));
 
     let start = std::time::Instant::now();
-    let runner = backup_suite::BackupRunner::new(config, false)
+    let mut runner = backup_suite::BackupRunner::new(config, false)
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
     let duration = start.elapsed();

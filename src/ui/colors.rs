@@ -45,64 +45,53 @@ impl ColorTheme {
         Self::new(ColorScheme::detect())
     }
 
-    /// 成功メッセージ用スタイル（緑）
+    /// 成功メッセージ用スタイル（緑 - 落ち着いた色調）
     pub fn success(&self) -> Style {
         match self.scheme {
-            ColorScheme::Dark => Style::new().green().bright(),
+            ColorScheme::Dark | ColorScheme::Auto => Style::new().green(),
             ColorScheme::Light => Style::new().green(),
-            ColorScheme::Auto => Style::new().green(),
             ColorScheme::HighContrast => Style::new().bold(),
         }
     }
 
-    /// エラーメッセージ用スタイル（赤）
+    /// エラーメッセージ用スタイル（赤 - 落ち着いた色調）
     pub fn error(&self) -> Style {
         match self.scheme {
-            ColorScheme::Dark => Style::new().red().bright(),
+            ColorScheme::Dark | ColorScheme::Auto => Style::new().red(),
             ColorScheme::Light => Style::new().red(),
-            ColorScheme::Auto => Style::new().red().bold(),
-            ColorScheme::HighContrast => Style::new().bold().underlined(),
-        }
-    }
-
-    /// 警告メッセージ用スタイル（黄）
-    pub fn warning(&self) -> Style {
-        match self.scheme {
-            ColorScheme::Dark => Style::new().yellow().bright(),
-            ColorScheme::Light => Style::new().yellow(),
-            ColorScheme::Auto => Style::new().yellow(),
             ColorScheme::HighContrast => Style::new().bold(),
         }
     }
 
-    /// 情報メッセージ用スタイル（青）
+    /// 警告メッセージ用スタイル（黄 - 落ち着いた色調）
+    pub fn warning(&self) -> Style {
+        match self.scheme {
+            ColorScheme::Dark | ColorScheme::Auto => Style::new().yellow(),
+            ColorScheme::Light => Style::new().yellow(),
+            ColorScheme::HighContrast => Style::new().bold(),
+        }
+    }
+
+    /// 情報メッセージ用スタイル（青 - 落ち着いた色調）
     pub fn info(&self) -> Style {
         match self.scheme {
-            ColorScheme::Dark => Style::new().cyan().bright(),
+            ColorScheme::Dark | ColorScheme::Auto => Style::new().blue(),
             ColorScheme::Light => Style::new().blue(),
-            ColorScheme::Auto => Style::new().cyan(),
             ColorScheme::HighContrast => Style::new(),
         }
     }
 
-    /// 見出し用スタイル
+    /// 見出し用スタイル（シンプル）
     pub fn header(&self) -> Style {
         match self.scheme {
-            ColorScheme::Dark => Style::new().magenta().bright().bold(),
-            ColorScheme::Light => Style::new().magenta().bold(),
-            ColorScheme::Auto => Style::new().magenta().bold(),
-            ColorScheme::HighContrast => Style::new().bold().underlined(),
+            ColorScheme::Dark | ColorScheme::Auto | ColorScheme::Light => Style::new().bold(),
+            ColorScheme::HighContrast => Style::new().bold(),
         }
     }
 
-    /// 強調表示用スタイル
+    /// 強調表示用スタイル（シンプル）
     pub fn highlight(&self) -> Style {
-        match self.scheme {
-            ColorScheme::Dark => Style::new().white().bright().bold(),
-            ColorScheme::Light => Style::new().black().bold(),
-            ColorScheme::Auto => Style::new().white().bold(),
-            ColorScheme::HighContrast => Style::new().bold(),
-        }
+        Style::new().bold()
     }
 
     /// 通常テキスト用スタイル
@@ -134,35 +123,35 @@ impl ColorTheme {
     }
 }
 
-/// ヘルパー関数: 成功メッセージ
+/// ヘルパー関数: 成功メッセージ（絵文字なし・シンプル）
 pub fn success(msg: &str) -> String {
     ColorTheme::auto()
         .success()
-        .apply_to(format!("✓ {}", msg))
+        .apply_to(format!("[OK] {}", msg))
         .to_string()
 }
 
-/// ヘルパー関数: エラーメッセージ
+/// ヘルパー関数: エラーメッセージ（絵文字なし・シンプル）
 pub fn error(msg: &str) -> String {
     ColorTheme::auto()
         .error()
-        .apply_to(format!("✗ {}", msg))
+        .apply_to(format!("[ERROR] {}", msg))
         .to_string()
 }
 
-/// ヘルパー関数: 警告メッセージ
+/// ヘルパー関数: 警告メッセージ（絵文字なし・シンプル）
 pub fn warning(msg: &str) -> String {
     ColorTheme::auto()
         .warning()
-        .apply_to(format!("⚠ {}", msg))
+        .apply_to(format!("[WARN] {}", msg))
         .to_string()
 }
 
-/// ヘルパー関数: 情報メッセージ
+/// ヘルパー関数: 情報メッセージ（絵文字なし・シンプル）
 pub fn info(msg: &str) -> String {
     ColorTheme::auto()
         .info()
-        .apply_to(format!("ℹ {}", msg))
+        .apply_to(format!("[INFO] {}", msg))
         .to_string()
 }
 

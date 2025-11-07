@@ -1,9 +1,10 @@
 /// ダッシュボードUI モジュール
 ///
-/// 統計情報、バックアップ履歴、エラー・警告サマリーの統合ビュー
+/// 統計情報、バックアップ履歴、エラー・警告サマリー、ディスク使用量の統合ビュー
 use anyhow::Result;
 use chrono::Utc;
 use comfy_table::{presets::UTF8_FULL, Cell, CellAlignment, Color, ContentArrangement, Table};
+use std::fs;
 
 use super::colors::ColorTheme;
 use super::table::display_history;
@@ -34,6 +35,11 @@ pub fn display_dashboard() -> Result<()> {
 
     // 統計情報表示
     display_statistics(&theme)?;
+
+    println!();
+
+    // ディスク使用量グラフ
+    display_disk_usage(&theme)?;
 
     println!();
 
@@ -68,6 +74,10 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
     let total_files: usize = history.iter().map(|h| h.total_files).sum();
     let total_bytes: u64 = history.iter().map(|h| h.total_bytes).sum();
 
+    // 暗号化・圧縮統計
+    let encrypted_backups = history.iter().filter(|h| h.encrypted).count();
+    let compressed_backups = history.iter().filter(|h| h.compressed).count();
+
     // 最新バックアップ情報
     let last_backup = history.last();
     let last_backup_str = if let Some(backup) = last_backup {
@@ -84,12 +94,6 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
     } else {
         "未実施".to_string()
     };
-
-    // テーブル作成
-    let mut table = Table::new();
-    table
-        .load_preset(UTF8_FULL)
-        .set_content_arrangement(ContentArrangement::Dynamic);
 
     println!("{}", theme.header().apply_to("📈 統計情報"));
     println!();
@@ -174,8 +178,214 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
     ]);
 
     println!("{}", history_table);
+    println!();
+
+    // セキュリティ統計
+    let mut security_table = Table::new();
+    security_table
+        .load_preset(UTF8_FULL)
+        .set_content_arrangement(ContentArrangement::Dynamic);
+
+    let encryption_rate = if total_backups > 0 {
+        (encrypted_backups as f64 / total_backups as f64) * 100.0
+    } else {
+        0.0
+    };
+
+    let compression_rate = if total_backups > 0 {
+        (compressed_backups as f64 / total_backups as f64) * 100.0
+    } else {
+        0.0
+    };
+
+    security_table.add_row(vec![
+        Cell::new("暗号化バックアップ"),
+        Cell::new(format!("{} ({:.1}%)", encrypted_backups, encryption_rate))
+            .fg(Color::Green)
+            .set_alignment(CellAlignment::Right),
+    ]);
+    security_table.add_row(vec![
+        Cell::new("圧縮バックアップ"),
+        Cell::new(format!("{} ({:.1}%)", compressed_backups, compression_rate))
+            .fg(Color::Cyan)
+            .set_alignment(CellAlignment::Right),
+    ]);
+
+    println!("{}", security_table);
 
     Ok(())
+}
+
+/// ディスク使用量表示
+fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
+    let config = Config::load()?;
+    let backup_dir = &config.backup.destination;
+
+    println!("{}", theme.header().apply_to("💾 ディスク使用量"));
+    println!();
+
+    // バックアップディレクトリのサイズを計算
+    let (used_bytes, file_count) = calculate_directory_size(backup_dir)?;
+
+    // ディスク全体の容量を取得（macOS/Linuxのみ）
+    #[cfg(unix)]
+    let disk_info = get_disk_info(backup_dir)?;
+
+    #[cfg(not(unix))]
+    let disk_info = None;
+
+    let mut disk_table = Table::new();
+    disk_table
+        .load_preset(UTF8_FULL)
+        .set_content_arrangement(ContentArrangement::Dynamic);
+
+    disk_table.add_row(vec![
+        Cell::new("バックアップディレクトリ"),
+        Cell::new(format!("{:?}", backup_dir))
+            .fg(Color::Cyan)
+            .set_alignment(CellAlignment::Left),
+    ]);
+
+    disk_table.add_row(vec![
+        Cell::new("使用容量"),
+        Cell::new(format_bytes(used_bytes))
+            .fg(Color::Yellow)
+            .set_alignment(CellAlignment::Right),
+    ]);
+
+    disk_table.add_row(vec![
+        Cell::new("ファイル数"),
+        Cell::new(file_count.to_string())
+            .fg(Color::Cyan)
+            .set_alignment(CellAlignment::Right),
+    ]);
+
+    #[cfg(unix)]
+    if let Some((total, available)) = disk_info {
+        let used_percent = ((total - available) as f64 / total as f64) * 100.0;
+
+        disk_table.add_row(vec![
+            Cell::new("ディスク総容量"),
+            Cell::new(format_bytes(total))
+                .fg(Color::Cyan)
+                .set_alignment(CellAlignment::Right),
+        ]);
+
+        disk_table.add_row(vec![
+            Cell::new("ディスク空き容量"),
+            Cell::new(format_bytes(available))
+                .fg(if available < total / 10 {
+                    Color::Red
+                } else {
+                    Color::Green
+                })
+                .set_alignment(CellAlignment::Right),
+        ]);
+
+        disk_table.add_row(vec![
+            Cell::new("ディスク使用率"),
+            Cell::new(format!("{:.1}%", used_percent))
+                .fg(if used_percent > 90.0 {
+                    Color::Red
+                } else if used_percent > 75.0 {
+                    Color::Yellow
+                } else {
+                    Color::Green
+                })
+                .set_alignment(CellAlignment::Right),
+        ]);
+
+        // ディスク使用率のグラフ表示
+        let graph = create_usage_graph(used_percent);
+        disk_table.add_row(vec![
+            Cell::new("使用状況"),
+            Cell::new(graph)
+                .fg(Color::Cyan)
+                .set_alignment(CellAlignment::Left),
+        ]);
+    }
+
+    println!("{}", disk_table);
+
+    Ok(())
+}
+
+/// ディレクトリサイズを計算
+fn calculate_directory_size(dir: &std::path::Path) -> Result<(u64, usize)> {
+    let mut total_size = 0u64;
+    let mut file_count = 0usize;
+
+    if !dir.exists() {
+        return Ok((0, 0));
+    }
+
+    for entry in walkdir::WalkDir::new(dir)
+        .into_iter()
+        .filter_map(|e| e.ok())
+    {
+        if entry.file_type().is_file() {
+            if let Ok(metadata) = entry.metadata() {
+                total_size += metadata.len();
+                file_count += 1;
+            }
+        }
+    }
+
+    Ok((total_size, file_count))
+}
+
+/// ディスク情報を取得（Unix系のみ）
+#[cfg(unix)]
+fn get_disk_info(path: &std::path::Path) -> Result<Option<(u64, u64)>> {
+    // ディレクトリが存在しない場合はNoneを返す
+    if !path.exists() {
+        return Ok(None);
+    }
+
+    use std::os::unix::fs::MetadataExt;
+
+    let metadata = fs::metadata(path).ok();
+    if metadata.is_none() {
+        return Ok(None);
+    }
+    let _dev = metadata.unwrap().dev();
+
+    // statfs を使ってディスク情報を取得
+    use std::ffi::CString;
+    use std::mem;
+
+    let path_cstr = match CString::new(path.to_str().unwrap_or("/")) {
+        Ok(cstr) => cstr,
+        Err(_) => return Ok(None),
+    };
+    let mut stat: libc::statfs = unsafe { mem::zeroed() };
+
+    let result = unsafe { libc::statfs(path_cstr.as_ptr(), &mut stat) };
+
+    if result == 0 {
+        let block_size = stat.f_bsize as u64;
+        let total_blocks = stat.f_blocks as u64;
+        let available_blocks = stat.f_bavail as u64;
+
+        let total_bytes = total_blocks * block_size;
+        let available_bytes = available_blocks * block_size;
+
+        Ok(Some((total_bytes, available_bytes)))
+    } else {
+        Ok(None)
+    }
+}
+
+/// 使用率グラフを作成
+fn create_usage_graph(percent: f64) -> String {
+    let total_bars = 40;
+    let filled_bars = ((percent / 100.0) * total_bars as f64) as usize;
+    let empty_bars = total_bars - filled_bars;
+
+    let filled = "█".repeat(filled_bars);
+    let empty = "░".repeat(empty_bars);
+
+    format!("[{}{}] {:.1}%", filled, empty, percent)
 }
 
 /// 最近のバックアップ一覧（直近5件）
@@ -238,6 +448,20 @@ fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
         warnings.push(format!("失敗したバックアップが{}件あります", failed_count));
     }
 
+    // ディスク容量警告
+    #[cfg(unix)]
+    {
+        if let Ok(Some((total, available))) = get_disk_info(&config.backup.destination) {
+            let available_percent = (available as f64 / total as f64) * 100.0;
+            if available_percent < 10.0 {
+                warnings.push(format!(
+                    "ディスク空き容量が少なくなっています ({:.1}%)",
+                    available_percent
+                ));
+            }
+        }
+    }
+
     // 警告表示
     if warnings.is_empty() {
         println!("{}", theme.success().apply_to("⚡ すべて正常です"));
@@ -298,5 +522,14 @@ mod tests {
         assert_eq!(format_bytes(0), "0 B");
         assert_eq!(format_bytes(1024), "1.00 KB");
         assert_eq!(format_bytes(1048576), "1.00 MB");
+        assert_eq!(format_bytes(1073741824), "1.00 GB");
+    }
+
+    #[test]
+    fn test_create_usage_graph() {
+        let graph = create_usage_graph(50.0);
+        assert!(graph.contains("50.0%"));
+        assert!(graph.contains("█"));
+        assert!(graph.contains("░"));
     }
 }

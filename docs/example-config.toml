@@ -1,0 +1,161 @@
+# backup-suite 設定ファイル例
+# パス: ~/.config/backup-suite/config.toml
+
+version = "1.0.0"
+
+# バックアップ基本設定
+[backup]
+# バックアップ先ディレクトリ（必須）
+# macOS例: "/Volumes/ExternalHDD/backups"
+# Linux例: "/backup/storage" または "/mnt/backup"
+destination = "/path/to/backup/storage"
+
+# 古いバックアップの自動削除
+auto_cleanup = true
+
+# バックアップを保持する日数（1-3650日）
+keep_days = 30
+
+# スケジュール設定
+[schedule]
+# スケジューリング機能を有効化
+enabled = true
+
+# High優先度のバックアップ頻度
+# オプション: "daily", "weekly", "monthly", "hourly"
+high_frequency = "daily"
+
+# Medium優先度のバックアップ頻度
+medium_frequency = "weekly"
+
+# Low優先度のバックアップ頻度
+low_frequency = "monthly"
+
+# バックアップ対象の定義
+# 複数のターゲットを追加できます
+
+# 例1: 重要ドキュメント（高優先度）
+[[targets]]
+path = "/Users/username/Documents"  # macOS
+# path = "/home/username/documents"  # Linux
+priority = "High"
+category = "重要ドキュメント"
+# 除外パターン（正規表現）
+exclude_patterns = [
+    ".*\\.tmp$",      # 一時ファイル
+    ".*\\.log$",      # ログファイル
+    ".*\\.bak$",      # バックアップファイル
+    ".*~$"            # エディタ一時ファイル
+]
+
+# 例2: プロジェクトファイル（中優先度）
+[[targets]]
+path = "/Users/username/Projects"  # macOS
+# path = "/home/username/projects"  # Linux
+priority = "Medium"
+category = "プロジェクト"
+exclude_patterns = [
+    "\\.git/.*",           # Git履歴
+    "node_modules/.*",     # Node.js依存
+    "target/.*",           # Rustビルド出力
+    "__pycache__/.*",      # Python キャッシュ
+    "\\.venv/.*",          # Python仮想環境
+    "venv/.*",
+    "dist/.*",             # ビルド出力
+    "build/.*"
+]
+
+# 例3: 写真・メディア（中優先度）
+[[targets]]
+path = "/Users/username/Pictures"  # macOS
+# path = "/home/username/pictures"  # Linux
+priority = "Medium"
+category = "写真"
+exclude_patterns = [
+    ".*\\.cache$",
+    ".*\\.thumbnail$"
+]
+
+# 例4: アーカイブ（低優先度）
+[[targets]]
+path = "/Users/username/Archive"  # macOS
+# path = "/home/username/archive"  # Linux
+priority = "Low"
+category = "アーカイブ"
+exclude_patterns = []
+
+# 例5: 設定ファイル（高優先度）
+[[targets]]
+path = "/Users/username/.config"  # macOS/Linux
+priority = "High"
+category = "システム設定"
+exclude_patterns = [
+    ".*\\.cache/.*",
+    "chromium/.*",
+    "google-chrome/.*",
+    "Code/Cache/.*"
+]
+
+# 例6: データベース（高優先度・暗号化推奨）
+[[targets]]
+path = "/Users/username/databases"  # macOS
+# path = "/home/username/databases"  # Linux
+priority = "High"
+category = "データベース"
+exclude_patterns = []
+
+# 除外パターンの例と説明
+
+# 正規表現パターン:
+# - ".*\\.tmp$"          : .tmpで終わるすべてのファイル
+# - "\\.git/.*"          : .gitディレクトリ内のすべて
+# - "node_modules/.*"    : node_modulesディレクトリ内のすべて
+# - "^temp_"             : temp_で始まるファイル
+# - "test.*\\.txt$"      : testで始まり.txtで終わるファイル
+
+# よく使う除外パターン集:
+
+# 開発環境
+# - "\\.git/.*"           # Git
+# - "\\.svn/.*"           # Subversion
+# - "node_modules/.*"     # Node.js
+# - "target/.*"           # Rust
+# - "build/.*"            # 一般的なビルド出力
+# - "dist/.*"             # 配布用ビルド
+# - "__pycache__/.*"      # Python
+# - "\\.venv/.*"          # Python仮想環境
+# - "venv/.*"
+
+# IDE/エディタ
+# - "\\.vscode/.*"        # VS Code
+# - "\\.idea/.*"          # IntelliJ IDEA
+# - ".*\\.swp$"           # Vim
+# - ".*~$"                # エディタバックアップ
+
+# OS固有
+# - "\\.DS_Store$"        # macOS
+# - "Thumbs\\.db$"        # Windows
+# - "\\.Trash-.*"         # Linux
+
+# 一時ファイル
+# - ".*\\.tmp$"
+# - ".*\\.temp$"
+# - ".*\\.cache$"
+# - ".*\\.log$"
+
+# キャッシュ
+# - "cache/.*"
+# - "\\.cache/.*"
+# - "Cache/.*"
+
+# 使用例: 特定のカテゴリのバックアップ実行
+# backup-suite run --category "重要ドキュメント"
+
+# 使用例: 特定の優先度のバックアップ実行
+# backup-suite run --priority high
+
+# 使用例: 暗号化バックアップ
+# backup-suite run --encrypt --password "your-password"
+
+# 使用例: 圧縮レベル指定
+# backup-suite run --compress zstd --compress-level 5
