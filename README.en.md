@@ -30,7 +30,8 @@
 - **AES-256-GCM encryption** virtually impossible to decrypt
 - **Data completely safe** even if computer is stolen
 - **Third parties cannot access** when stored in cloud
-- **Password required** - nobody can open without it
+- **Strong password auto-generation** ensures security
+- **Argon2 key derivation** securely generates encryption keys from passwords
 
 ### 📦 High-Speed Compression for Storage Savings
 - **Zstd compression** for fast and high compression ratio
