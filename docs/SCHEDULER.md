@@ -170,7 +170,17 @@ backup-suite schedule enable --priority high
 - **ログファイル**: `/tmp/backup-suite-{priority}.log`
 - **管理コマンド**: `launchctl`
 
-詳細: [schedule-setup-macos.md](./schedule-setup-macos.md)
+**手動確認方法**:
+```bash
+# 設定ファイル確認
+cat ~/Library/LaunchAgents/com.backup-suite.high.plist
+
+# launchd状態確認
+launchctl list | grep backup-suite
+
+# ログ確認
+tail -f /tmp/backup-suite-high.log
+```
 
 ### Linux
 
@@ -178,7 +188,18 @@ backup-suite schedule enable --priority high
 - **ログ**: `journalctl --user -u backup-suite-{priority}.service`
 - **管理コマンド**: `systemctl --user`
 
-詳細: [schedule-setup-linux.md](./schedule-setup-linux.md)
+**手動確認方法**:
+```bash
+# 設定ファイル確認
+cat ~/.config/systemd/user/backup-suite-high.timer
+cat ~/.config/systemd/user/backup-suite-high.service
+
+# systemd状態確認
+systemctl --user status backup-suite-high.timer
+
+# ログ確認
+journalctl --user -u backup-suite-high.service -f
+```
 
 ## トラブルシューティング
 
