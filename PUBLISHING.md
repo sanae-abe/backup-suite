@@ -1,13 +1,57 @@
-# パッケージ公開ガイド
+# パッケージ公開ガイド（v1.0.0+）
 
-## crates.io への公開
+## 📋 事前準備
 
-### 1. 事前準備
+### 必須チェックリスト
+
+- [ ] 全テスト合格（343 tests passed）
+- [ ] リリースビルド成功（警告0件）
+- [ ] README.md / README.en.md 更新完了
+- [ ] CHANGELOG.md / CHANGELOG.en.md 更新完了
+- [ ] Cargo.toml のバージョン更新
+
+## 🚀 GitHub Release 作成
+
+### 1. タグ作成・push
 
 ```bash
-# crates.io アカウント作成
-# https://crates.io/ でGitHubアカウントでログイン
+# Cargo.toml のバージョン確認
+grep "^version" Cargo.toml
 
+# ビルド・テスト確認
+cargo build --release
+cargo test
+
+# Git commit & tag
+git add Cargo.toml Cargo.lock
+git commit -m "chore: bump version to v1.1.0"
+git tag -a v1.1.0 -m "backup-suite v1.1.0
+
+主要機能:
+- ...
+
+🤖 Generated with Claude Code"
+
+git push origin main --tags
+```
+
+### 2. GitHub Release作成（gh コマンド推奨）
+
+```bash
+# GitHub CLI でリリース作成
+gh release create v1.1.0 \
+  --title "v1.1.0 - リリースタイトル" \
+  --notes-file CHANGELOG.md
+
+# または Web UI で作成
+# https://github.com/sanae-abe/backup-suite/releases/new
+```
+
+## 📦 crates.io 公開
+
+### 1. crates.io ログイン（初回のみ）
+
+```bash
 # APIトークン取得
 # https://crates.io/settings/tokens
 
@@ -18,14 +62,8 @@ cargo login <YOUR_API_TOKEN>
 ### 2. 公開前チェック
 
 ```bash
-# ビルド確認
-cargo build --release
-
-# テスト実行
-cargo test
-
 # パッケージング確認
-cargo package --allow-dirty
+cargo package
 
 # ドライラン
 cargo publish --dry-run
@@ -40,7 +78,10 @@ cargo publish
 ### 4. インストール確認
 
 ```bash
+# crates.io から直接インストール
 cargo install backup-suite
+
+# バージョン確認
 backup-suite --version
 ```
 

@@ -28,10 +28,10 @@
 
 ### 🔐 軍事レベルの暗号化保護
 - **AES-256-GCM暗号化**で解読は事実上不可能
+- **Argon2鍵導出**でパスワードから安全な暗号鍵を生成
 - **パソコン盗難時**でもデータは完全に安全
 - **クラウド保存時**も第三者は絶対に見れない
 - **強力なパスワード自動生成**で安全性を確保
-- **Argon2鍵導出**でパスワードから安全に暗号化鍵を生成
 
 ### 📦 高速圧縮によるストレージ節約
 - **Zstd圧縮**で高速かつ高圧縮率を実現
@@ -168,6 +168,9 @@ backup-suite run                   # 全対象実行
 backup-suite run --priority high   # 高優先度のみ
 backup-suite run --category work   # 特定カテゴリのみ
 backup-suite run --dry-run         # ドライラン（確認のみ）
+
+# 増分バックアップ
+backup-suite run --incremental      # 変更分のみバックアップ（2回目以降推奨）
 
 # 圧縮オプション
 backup-suite run --compress zstd   # Zstd圧縮（高速・高圧縮率・推奨）
