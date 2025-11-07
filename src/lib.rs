@@ -46,7 +46,7 @@
 //! config.save()?;
 //!
 //! // 3. バックアップ実行
-//! let runner = BackupRunner::new(config, false); // false = 実際に実行
+//! let mut runner = BackupRunner::new(config, false); // false = 実際に実行
 //! let result = runner.run(None, None)?; // None = 全優先度対象
 //!
 //! // 4. 結果確認
@@ -87,7 +87,7 @@
 //! config.add_target(project_target);
 //!
 //! // 重要ファイルのみ（高優先度）
-//! let runner = BackupRunner::new(config, false)
+//! let mut runner = BackupRunner::new(config, false)
 //!     .with_progress(true); // プログレスバー表示
 //!
 //! let result = runner.run(Some(&Priority::High), None)?;
@@ -204,7 +204,7 @@
 //!
 //! # fn main() -> backup_suite::Result<()> {
 //! let config = Config::load()?;
-//! let runner = BackupRunner::new(config, false)
+//! let mut runner = BackupRunner::new(config, false)
 //!     .with_progress(true);  // プログレス表示有効
 //!
 //! // CPU集約的環境での実行
@@ -249,16 +249,21 @@ pub mod ui;
 // 主要な型を再エクスポート
 pub use compression::{CompressedData, CompressionConfig, CompressionEngine, CompressionType};
 pub use core::{
-    BackupHistory, BackupResult, BackupRunner, Config, CopyEngine, PerformanceConfig,
-    PipelineConfig, Priority, ProcessedData, ProcessingMetadata, ProcessingPipeline, Target,
-    TargetType,
+    BackupHistory, BackupResult, BackupRunner, CleanupEngine, CleanupPolicy, CleanupResult,
+    Config, CopyEngine, Frequency, PerformanceConfig, PipelineConfig, Platform, Priority,
+    ProcessedData, ProcessingMetadata, ProcessingPipeline, RestoreEngine, RestoreResult,
+    ScheduleStatus, Scheduler, Target, TargetType,
 };
+// Phase 2: 履歴管理の拡張型をエクスポート
+pub use core::history::BackupStatus;
 pub use crypto::{
     EncryptedData, EncryptionConfig, EncryptionEngine, KeyDerivation, KeyManager, MasterKey,
 };
 pub use error::{BackupError, Result};
 pub use i18n::{get_message, Language, MessageKey};
-pub use security::{check_read_permission, check_write_permission, safe_join};
+pub use security::{
+    check_read_permission, check_write_permission, safe_join, AuditEvent, AuditLog, EventType,
+};
 pub use ui::{
     display_backup_result, display_dashboard, display_history, display_targets, ColorScheme,
     ColorTheme,

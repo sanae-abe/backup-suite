@@ -138,19 +138,32 @@ pub fn check_write_permission(path: &Path) -> Result<()> {
         })?;
     }
 
-    // 一時ファイルを作成して書き込み権限をテスト
-    let temp_file = target_dir.join(".backup_suite_permission_test");
+    // プロセスIDを含む一意な一時ファイル名（TOCTOU対策）
+    let temp_file = target_dir.join(format!(
+        ".backup_suite_perm_{}.tmp",
+        std::process::id()
+    ));
 
-    // ファイル書き込みテスト
-    std::fs::write(&temp_file, b"test").map_err(|e| {
-        if e.kind() == std::io::ErrorKind::PermissionDenied {
-            BackupError::PermissionDenied {
-                path: target_dir.to_path_buf(),
+    // create_new()で原子的にファイル作成（存在時エラー・競合状態対策）
+    use std::fs::OpenOptions;
+    OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&temp_file)
+        .map_err(|e| {
+            if e.kind() == std::io::ErrorKind::PermissionDenied {
+                BackupError::PermissionDenied {
+                    path: target_dir.to_path_buf(),
+                }
+            } else if e.kind() == std::io::ErrorKind::AlreadyExists {
+                BackupError::IoError(std::io::Error::new(
+                    std::io::ErrorKind::AlreadyExists,
+                    "権限テスト用の一時ファイルが既に存在します",
+                ))
+            } else {
+                BackupError::IoError(e)
             }
-        } else {
-            BackupError::IoError(e)
-        }
-    })?;
+        })?;
 
     // ファイル削除テスト
     std::fs::remove_file(&temp_file).map_err(BackupError::IoError)?;

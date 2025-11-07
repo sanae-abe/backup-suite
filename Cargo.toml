@@ -36,6 +36,7 @@ num_cpus = "1.0"
 rayon = "1.11.0"
 regex = "1.12"
 serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0"
 skim = "0.20.5"
 thiserror = "1.0"
 toml = "0.9.8"
@@ -45,15 +46,23 @@ walkdir = "2.5.0"
 aes-gcm = "0.10"
 argon2 = "0.5"
 rand = "0.8"
-zeroize = { version = "1.7", features = ["derive"] }
+zeroize = { version = "1.8", features = ["derive"] }
+unicode-normalization = "0.1"
 
 # 圧縮関連
 zstd = "0.13"
 flate2 = "1.0"
 
+# ファイル整合性検証
+sha2 = "0.10"
+
 # Unix限定のセキュリティ機能
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
+
+# Windows限定のセキュリティ機能
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winbase", "fileapi"] }
 
 [dev-dependencies]
 proptest = "1.4"

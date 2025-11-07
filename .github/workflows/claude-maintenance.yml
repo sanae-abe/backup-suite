@@ -1,0 +1,164 @@
+name: Claude環境月次メンテナンス
+
+on:
+  schedule:
+    # 毎月1日 10:00 (UTC) に実行 = JST 19:00
+    - cron: '0 10 1 * *'
+  workflow_dispatch:  # 手動実行も可能
+
+jobs:
+  monthly-maintenance:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Claude environment
+        run: |
+          mkdir -p ~/.claude/{scripts,logs,reports,backups,docs}
+
+          # .claudeディレクトリが存在する場合はコピー
+          if [ -d ".claude" ]; then
+            cp -r .claude/* ~/.claude/ || true
+          fi
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq ripgrep fd-find
+
+      - name: Verify script exists
+        run: |
+          if [ ! -f ~/.claude/scripts/monthly-maintenance.sh ]; then
+            echo "Error: monthly-maintenance.sh not found"
+            exit 1
+          fi
+          chmod +x ~/.claude/scripts/*.sh
+
+      - name: Run monthly maintenance
+        id: maintenance
+        run: |
+          cd ~/.claude/scripts
+          ./monthly-maintenance.sh --quiet --no-cleanup
+        continue-on-error: true
+
+      - name: Check maintenance result
+        id: check_result
+        run: |
+          if [ ${{ steps.maintenance.outcome }} == 'success' ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload maintenance report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: monthly-maintenance-report-${{ github.run_number }}
+          path: ~/.claude/reports/monthly-*.md
+          retention-days: 90
+          if-no-files-found: warn
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: monthly-maintenance-logs-${{ github.run_number }}
+          path: ~/.claude/logs/monthly-*.log
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Generate summary
+        if: always()
+        run: |
+          echo "## Claude環境月次メンテナンス結果" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**実行日時**: $(date '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "**ステータス**: ${{ steps.check_result.outputs.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # レポート存在確認
+          if [ -f ~/.claude/reports/monthly-*.md ]; then
+            REPORT_FILE=$(ls -t ~/.claude/reports/monthly-*.md | head -1)
+            echo "### 📊 メンテナンスサマリー" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            head -50 "$REPORT_FILE" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ レポートファイルが生成されませんでした" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Create issue on failure
+        if: failure() && steps.maintenance.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().split('T')[0];
+            const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+
+            const body = `## Claude環境月次メンテナンス失敗 🚨
+
+**実行日時**: ${date}
+**実行ID**: ${{ github.run_id }}
+**ワークフロー**: [実行ログを確認](${runUrl})
+
+### 推奨アクション
+
+1. **ログ確認**: Artifactsからログをダウンロードして詳細確認
+2. **ローカル実行**: \`~/.claude/scripts/monthly-maintenance.sh\` を手動実行
+3. **問題修正**: 検出された問題を修正
+4. **再実行**: GitHub Actionsで手動再実行
+
+### チェック項目
+
+- [ ] ログファイル確認
+- [ ] 設定ファイル検証（validate-all.sh）
+- [ ] 依存関係確認
+- [ ] セキュリティ監査結果確認
+
+---
+
+**自動生成**: Claude月次メンテナンスワークフロー
+`;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `[自動] Claude月次メンテナンス失敗 (${date})`,
+              body: body,
+              labels: ['maintenance', 'alert', 'automated']
+            });
+
+      - name: Comment on success
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().split('T')[0];
+            console.log(`✅ Claude月次メンテナンス成功: ${date}`);
+
+  # 依存関係脆弱性スキャン（四半期ごと）
+  security-audit:
+    runs-on: ubuntu-latest
+    # 1月、4月、7月、10月の1日に実行
+    if: github.event.schedule == '0 10 1 * *' && (github.event.repository.pushed_at == null || contains(fromJSON('["01", "04", "07", "10"]'), format('{0:MM}', github.event.repository.pushed_at)))
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Security audit notification
+        run: |
+          echo "🔒 四半期セキュリティ監査の時期です" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "以下の監査を実施してください:" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] 依存関係脆弱性スキャン" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] ファイルパーミッション監査" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] 機密情報スキャン" >> $GITHUB_STEP_SUMMARY
+          echo "- [ ] セキュリティ設定レビュー" >> $GITHUB_STEP_SUMMARY

@@ -9,7 +9,9 @@
 //! - **[`copy_engine`]**: 最適化されたファイルコピー
 //! - **[`filter`]**: ファイル除外パターン
 //! - **[`history`]**: バックアップ履歴管理
+//! - **[`logging`]**: ログファイル管理
 //! - **[`pipeline`]**: 処理パイプライン（暗号化・圧縮）
+//! - **[`scheduler`]**: スケジューリング機能（macOS/Linux）
 //! - **[`target`]**: バックアップ対象定義
 //!
 //! # 使用例
@@ -30,26 +32,38 @@
 //! config.add_target(target);
 //!
 //! // バックアップを実行
-//! let runner = BackupRunner::new(config, false);
+//! let mut runner = BackupRunner::new(config, false);
 //! let result = runner.run(None, None).unwrap();
 //!
 //! println!("成功: {}件, 失敗: {}件", result.successful, result.failed);
 //! ```
 
 pub mod backup;
+pub mod cleanup;
 pub mod config;
 pub mod copy_engine;
 pub mod filter;
 pub mod history;
+pub mod incremental;
+pub mod integrity;
+pub mod logging;
 pub mod pipeline;
+pub mod restore;
+pub mod scheduler;
 pub mod target;
 
 pub use backup::{BackupResult, BackupRunner};
+pub use cleanup::{CleanupEngine, CleanupPolicy, CleanupResult};
 pub use config::Config;
 pub use copy_engine::CopyEngine;
 pub use filter::{default_exclude_patterns, FileFilter};
 pub use history::BackupHistory;
+pub use incremental::{resolve_backup_chain, BackupType, IncrementalBackupEngine};
+pub use integrity::{BackupMetadata, IntegrityChecker};
+pub use logging::{LogEntry, LogFormat, LogLevel, Logger};
 pub use pipeline::{
     PerformanceConfig, PipelineConfig, ProcessedData, ProcessingMetadata, ProcessingPipeline,
 };
+pub use restore::{RestoreEngine, RestoreResult};
+pub use scheduler::{Frequency, Platform, ScheduleStatus, Scheduler};
 pub use target::{Priority, Target, TargetType};

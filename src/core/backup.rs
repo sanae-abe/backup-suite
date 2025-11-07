@@ -7,11 +7,13 @@ use walkdir::WalkDir;
 
 use super::copy_engine::CopyEngine;
 use super::filter::FileFilter;
+use super::incremental::{BackupType, IncrementalBackupEngine};
+use super::integrity::IntegrityChecker;
 use super::pipeline::{PipelineConfig, ProcessingPipeline};
 use super::{Config, Priority, Target, TargetType};
 use crate::compression::CompressionType;
 use crate::crypto::{EncryptionConfig, KeyManager};
-use crate::security::safe_join;
+use crate::security::{safe_join, AuditEvent, AuditLog};
 use crate::ui::progress::BackupProgress;
 
 /// バックアップ実行結果
@@ -33,7 +35,7 @@ use crate::ui::progress::BackupProgress;
 /// use backup_suite::{Config, BackupRunner};
 ///
 /// let config = Config::load().unwrap();
-/// let runner = BackupRunner::new(config, false);
+/// let mut runner = BackupRunner::new(config, false);
 /// let result = runner.run(None, None).unwrap();
 ///
 /// if result.failed > 0 {
@@ -85,12 +87,12 @@ impl BackupResult {
 ///
 /// // 基本的なバックアップ実行
 /// let config = Config::load().unwrap();
-/// let runner = BackupRunner::new(config, false);
+/// let mut runner = BackupRunner::new(config, false);
 /// let result = runner.run(None, None).unwrap();
 ///
 /// // 高優先度のみ実行
 /// let config = Config::load().unwrap();
-/// let runner = BackupRunner::new(config, false)
+/// let mut runner = BackupRunner::new(config, false)
 ///     .with_progress(true);
 /// let result = runner.run(Some(&Priority::High), None).unwrap();
 /// ```
@@ -102,6 +104,9 @@ pub struct BackupRunner {
     password: Option<String>,
     compression_type: CompressionType,
     compression_level: i32,
+    verify_integrity: bool,
+    audit_log: Option<AuditLog>,
+    incremental: bool,
 }
 
 impl BackupRunner {
@@ -122,9 +127,14 @@ impl BackupRunner {
     /// use backup_suite::{Config, BackupRunner};
     ///
     /// let config = Config::load().unwrap();
-    /// let runner = BackupRunner::new(config, false);
+    /// let mut runner = BackupRunner::new(config, false);
     /// ```
     pub fn new(config: Config, dry_run: bool) -> Self {
+        // 監査ログの初期化（失敗してもバックアップ処理は継続）
+        let audit_log = AuditLog::new()
+            .map_err(|e| eprintln!("警告: 監査ログの初期化に失敗しました: {}", e))
+            .ok();
+
         Self {
             config,
             dry_run,
@@ -133,6 +143,9 @@ impl BackupRunner {
             password: None,
             compression_type: CompressionType::Zstd,
             compression_level: 3,
+            verify_integrity: true, // デフォルトで整合性検証を有効化
+            audit_log,
+            incremental: false,
         }
     }
 
@@ -152,7 +165,7 @@ impl BackupRunner {
     /// use backup_suite::{Config, BackupRunner};
     ///
     /// let config = Config::load().unwrap();
-    /// let runner = BackupRunner::new(config, false)
+    /// let mut runner = BackupRunner::new(config, false)
     ///     .with_progress(false); // 進捗表示を無効化
     /// ```
     pub fn with_progress(mut self, show_progress: bool) -> Self {
@@ -171,6 +184,18 @@ impl BackupRunner {
     pub fn with_compression(mut self, compression_type: CompressionType, level: i32) -> Self {
         self.compression_type = compression_type;
         self.compression_level = level;
+        self
+    }
+
+    /// 整合性検証の有効/無効を設定
+    pub fn with_verification(mut self, verify: bool) -> Self {
+        self.verify_integrity = verify;
+        self
+    }
+
+    /// 増分バックアップを有効化
+    pub fn with_incremental(mut self, incremental: bool) -> Self {
+        self.incremental = incremental;
         self
     }
 
@@ -199,21 +224,34 @@ impl BackupRunner {
     /// use backup_suite::{Config, BackupRunner, Priority};
     ///
     /// let config = Config::load().unwrap();
-    /// let runner = BackupRunner::new(config, false);
+    /// let mut runner = BackupRunner::new(config, false);
     ///
     /// // 全ファイルをバックアップ
     /// let result = runner.run(None, None).unwrap();
     ///
     /// // 高優先度のみバックアップ
     /// let config = Config::load().unwrap();
-    /// let runner = BackupRunner::new(config, false);
+    /// let mut runner = BackupRunner::new(config, false);
     /// let result = runner.run(Some(&Priority::High), None).unwrap();
     /// ```
     pub fn run(
-        &self,
+        &mut self,
         priority_filter: Option<&Priority>,
         category_filter: Option<&str>,
     ) -> Result<BackupResult> {
+        let user = AuditLog::current_user();
+        let target_desc = format!(
+            "priority={:?}, category={:?}",
+            priority_filter, category_filter
+        );
+
+        // 監査ログ: バックアップ開始
+        if let Some(ref mut audit_log) = self.audit_log {
+            let _ = audit_log
+                .log(AuditEvent::backup_started(&target_desc, &user))
+                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {}", e));
+        }
+
         // バックアップ対象をフィルタ（優先度 → カテゴリの順）
         let mut targets: Vec<&Target> = if let Some(priority) = priority_filter {
             self.config.filter_by_priority(priority)
@@ -350,14 +388,81 @@ impl BackupRunner {
             spinner.finish(&format!("{}ファイルを検出", all_files.len()));
         }
 
-        let total_files = all_files.len();
+        // 増分バックアップ処理
+        let inc_engine = IncrementalBackupEngine::new(dest_base.clone());
+        let backup_type = if self.incremental {
+            inc_engine.determine_backup_type()?
+        } else {
+            BackupType::Full
+        };
+
+        // 増分バックアップの場合、前回のメタデータを読み込み（失敗した場合はフルバックアップにフォールバック）
+        let (actual_backup_type, parent_backup_name, files_to_backup) = if backup_type == BackupType::Incremental {
+            match inc_engine.load_previous_metadata() {
+                Ok(previous_metadata) => {
+                    println!("📦 増分バックアップモード（変更ファイルのみ）");
+
+                    // バックアップディレクトリからの相対パスを計算
+                    let files_with_relative: Vec<(PathBuf, PathBuf)> = all_files
+                        .iter()
+                        .filter_map(|(source, dest)| {
+                            dest.strip_prefix(&backup_base)
+                                .ok()
+                                .map(|rel| (rel.to_path_buf(), source.clone()))
+                        })
+                        .collect();
+
+                    let changed_files_relative = inc_engine.detect_changed_files(&files_with_relative, &previous_metadata)?;
+
+                    // 元のall_files形式に戻す（source, dest）
+                    let changed_files: Vec<(PathBuf, PathBuf)> = changed_files_relative
+                        .iter()
+                        .filter_map(|(_relative_path, source_path)| {
+                            all_files.iter()
+                                .find(|(src, _)| src == source_path)
+                                .cloned()
+                        })
+                        .collect();
+
+                    let parent_name = inc_engine.get_previous_backup_name()?;
+                    println!("  前回バックアップ: {:?}", parent_name);
+                    println!("  変更ファイル数: {}/{}", changed_files.len(), all_files.len());
+
+                    (BackupType::Incremental, parent_name, changed_files)
+                }
+                Err(e) => {
+                    // エラーメッセージの内容で初回実行時か実際のエラーかを判別
+                    let error_msg = e.to_string();
+                    if error_msg.contains("前回のバックアップが見つかりません")
+                        || error_msg.contains("前回のバックアップメタデータ読み込み失敗") {
+                        // 初回実行時: 情報レベルのメッセージ
+                        println!("ℹ️  前回のバックアップが見つかりません。フルバックアップを実行します。");
+                    } else {
+                        // 実際のエラー時（メタデータ破損など）: 警告レベルのメッセージ
+                        eprintln!("⚠️  前回のメタデータ読み込みに失敗しました。フルバックアップにフォールバックします。");
+                        eprintln!("   詳細: {}", e);
+                    }
+                    println!("📦 フルバックアップモード（全ファイル）");
+                    (BackupType::Full, None, all_files.clone())
+                }
+            }
+        } else {
+            // --incremental フラグが指定されているが、前回のバックアップがない場合
+            if self.incremental {
+                println!("ℹ️  前回のバックアップが見つかりません。フルバックアップを実行します。");
+            }
+            println!("📦 フルバックアップモード（全ファイル）");
+            (BackupType::Full, None, all_files.clone())
+        };
+
+        let total_files = files_to_backup.len();
 
         if self.dry_run {
             println!(
                 "📋 ドライランモード: {} ファイルをバックアップ対象として検出",
                 total_files
             );
-            for (source, dest) in &all_files {
+            for (source, dest) in &files_to_backup {
                 println!("  {:?} → {:?}", source, dest);
             }
             return Ok(BackupResult {
@@ -402,12 +507,19 @@ impl BackupRunner {
         // CopyEngineの初期化（I/O最適化）
         let copy_engine = Arc::new(CopyEngine::new());
 
+        // 整合性検証チェッカーの初期化
+        let integrity_checker = if self.verify_integrity {
+            Some(Arc::new(std::sync::Mutex::new(IntegrityChecker::new())))
+        } else {
+            None
+        };
+
         // 並列バックアップ処理
         let success_count = AtomicUsize::new(0);
         let failed_count = AtomicUsize::new(0);
         let total_bytes = AtomicUsize::new(0);
 
-        let errors: Vec<String> = all_files
+        let errors: Vec<String> = files_to_backup
             .par_iter()
             .filter_map(|(source, dest)| {
                 // 進捗表示更新
@@ -416,6 +528,9 @@ impl BackupRunner {
                         pb.set_message(&format!("処理中: {:?}", file_name));
                     }
                 }
+
+                // バックアップディレクトリからの相対パスを計算（整合性検証用）
+                let relative_path = dest.strip_prefix(&backup_base).ok();
 
                 // バックアップ先のディレクトリを作成
                 if let Some(parent) = dest.parent() {
@@ -429,7 +544,7 @@ impl BackupRunner {
                 }
 
                 // ProcessingPipelineまたはCopyEngineでファイル処理
-                if let Some(ref pipeline) = pipeline {
+                let copy_result = if let Some(ref pipeline) = pipeline {
                     // 暗号化・圧縮パイプライン使用
                     match pipeline.process_file(
                         source,
@@ -448,14 +563,14 @@ impl BackupRunner {
                                     if let Some(ref pb) = progress {
                                         pb.inc(1);
                                     }
-                                    None
+                                    Ok(())
                                 }
                                 Err(e) => {
                                     failed_count.fetch_add(1, Ordering::Relaxed);
                                     if let Some(ref pb) = progress {
                                         pb.inc(1);
                                     }
-                                    Some(format!("書き込み失敗 {:?}: {}", dest, e))
+                                    Err(format!("書き込み失敗 {:?}: {}", dest, e))
                                 }
                             }
                         }
@@ -464,7 +579,7 @@ impl BackupRunner {
                             if let Some(ref pb) = progress {
                                 pb.inc(1);
                             }
-                            Some(format!("処理失敗 {:?}: {}", source, e))
+                            Err(format!("処理失敗 {:?}: {}", source, e))
                         }
                     }
                 } else {
@@ -476,27 +591,74 @@ impl BackupRunner {
                             if let Some(ref pb) = progress {
                                 pb.inc(1);
                             }
-                            None
+                            Ok(())
                         }
                         Err(e) => {
                             failed_count.fetch_add(1, Ordering::Relaxed);
                             if let Some(ref pb) = progress {
                                 pb.inc(1);
                             }
-                            Some(format!("コピー失敗 {:?}: {}", source, e))
+                            Err(format!("コピー失敗 {:?}: {}", source, e))
+                        }
+                    }
+                };
+
+                // 整合性検証：元ファイルのハッシュを計算して保存
+                if copy_result.is_ok() {
+                    if let Some(ref checker) = integrity_checker {
+                        if let Some(rel_path) = relative_path {
+                            if let Ok(mut guard) = checker.lock() {
+                                if let Ok(hash) = guard.compute_hash(source) {
+                                    guard.add_file_hash(rel_path.to_path_buf(), hash);
+                                }
+                            }
                         }
                     }
                 }
+
+                copy_result.err()
             })
             .collect();
 
         // プログレスバー完了
         if let Some(pb) = progress {
-            let success = failed_count.load(Ordering::Relaxed);
-            if success == 0 {
+            let failed = failed_count.load(Ordering::Relaxed);
+            if failed == 0 {
                 pb.finish("✓ バックアップ完了");
             } else {
-                pb.finish(&format!("⚠ バックアップ完了（{}件失敗）", success));
+                pb.finish(&format!("⚠ バックアップ完了（{}件失敗）", failed));
+            }
+        }
+
+        // 整合性メタデータを保存（増分情報を含む）
+        if let Some(ref checker) = integrity_checker {
+            if let Ok(mut guard) = checker.lock() {
+                // 増分バックアップ情報を追加
+                guard.metadata.backup_type = actual_backup_type;
+                guard.metadata.parent_backup = parent_backup_name;
+                guard.metadata.changed_files = files_to_backup
+                    .iter()
+                    .filter_map(|(_, dest)| dest.strip_prefix(&backup_base).ok().map(|p| p.to_path_buf()))
+                    .collect();
+
+                // 増分バックアップの場合、変更されなかったファイルのハッシュも保存
+                // （次回の増分バックアップで正しく比較できるようにするため）
+                if actual_backup_type == BackupType::Incremental {
+                    for (source, dest) in &all_files {
+                        if let Some(rel_path) = dest.strip_prefix(&backup_base).ok() {
+                            // 既にハッシュが保存されているファイルはスキップ
+                            if !guard.metadata.file_hashes.contains_key(rel_path) {
+                                if let Ok(hash) = guard.compute_hash(source) {
+                                    guard.add_file_hash(rel_path.to_path_buf(), hash);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if let Err(e) = guard.save_metadata(&backup_base) {
+                    eprintln!("警告: 整合性メタデータの保存に失敗しました: {}", e);
+                }
             }
         }
 
@@ -518,6 +680,31 @@ impl BackupRunner {
             success,
         )) {
             eprintln!("履歴保存失敗: {}", e);
+        }
+
+        // 監査ログ: バックアップ完了 or 失敗
+        if let Some(ref mut audit_log) = self.audit_log {
+            let metadata = serde_json::json!({
+                "total_files": result.total_files,
+                "successful": result.successful,
+                "failed": result.failed,
+                "total_bytes": result.total_bytes,
+                "backup_name": result.backup_name,
+            });
+
+            let event = if success {
+                AuditEvent::backup_completed(&target_desc, &user, metadata)
+            } else {
+                AuditEvent::backup_failed(
+                    &target_desc,
+                    &user,
+                    format!("{}件のファイルでエラーが発生しました", result.failed),
+                )
+            };
+
+            let _ = audit_log
+                .log(event)
+                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {}", e));
         }
 
         Ok(result)
@@ -543,7 +730,7 @@ mod tests {
         config.add_target(target);
         config.backup.destination = temp.path().join("backups");
 
-        let runner = BackupRunner::new(config, false);
+        let mut runner = BackupRunner::new(config, false);
         let result = runner.run(None, None).unwrap();
 
         assert_eq!(result.total_files, 1);
@@ -563,7 +750,7 @@ mod tests {
         config.add_target(target);
         config.backup.destination = temp.path().join("backups");
 
-        let runner = BackupRunner::new(config, true);
+        let mut runner = BackupRunner::new(config, true);
         let result = runner.run(None, None).unwrap();
 
         assert_eq!(result.total_files, 1);

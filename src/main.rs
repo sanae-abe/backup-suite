@@ -3,10 +3,10 @@ use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Generator, Shell};
 use is_terminal::IsTerminal;
 use skim::prelude::*;
-use std::io::{self, Read};
+use std::io::{self};
 use std::path::PathBuf;
 
-use backup_suite::core::{BackupHistory, BackupRunner};
+use backup_suite::core::{BackupHistory, BackupRunner, Scheduler};
 use backup_suite::i18n::{get_message, Language, MessageKey};
 use backup_suite::ui::{
     display_backup_result, display_dashboard, display_history, display_targets, ColorTheme,
@@ -73,6 +73,9 @@ enum Commands {
         #[arg(long)]
         /// Use interactive file selector
         interactive: bool,
+        #[arg(long = "exclude")]
+        /// Exclude patterns (regex or glob, can be specified multiple times)
+        exclude_patterns: Vec<String>,
     },
     #[command(alias = "ls")]
     List {
@@ -106,12 +109,18 @@ enum Commands {
         #[arg(long)]
         /// Password for encryption (will prompt if not provided)
         password: Option<String>,
+        #[arg(long)]
+        /// Generate a strong random password (use with --encrypt)
+        generate_password: bool,
         #[arg(long, default_value = "zstd")]
         /// Compression algorithm: zstd, gzip, none
         compress: String,
         #[arg(long, default_value = "3")]
         /// Compression level (1-22 for zstd, 1-9 for gzip)
         compress_level: i32,
+        #[arg(long)]
+        /// Enable incremental backup (only changed files)
+        incremental: bool,
     },
     Restore {
         #[arg(long)]
@@ -132,6 +141,13 @@ enum Commands {
     History {
         #[arg(long, default_value = "7")]
         days: u32,
+        #[arg(long)]
+        priority: Option<String>,
+        #[arg(long)]
+        category: Option<String>,
+        #[arg(long)]
+        /// Show detailed information
+        detailed: bool,
     },
     Enable {
         #[arg(long)]
@@ -352,245 +368,6 @@ fn parse_priority(s: &str) -> Result<Priority> {
     }
 }
 
-/// launchd plistのベースディレクトリを取得
-fn get_launchd_dir() -> Result<PathBuf> {
-    let home =
-        dirs::home_dir().ok_or_else(|| anyhow::anyhow!("ホームディレクトリが見つかりません"))?;
-    Ok(home.join("Library/LaunchAgents"))
-}
-
-/// 頻度を cron 形式に変換
-#[allow(dead_code)]
-fn frequency_to_schedule(frequency: &str) -> Result<String> {
-    match frequency {
-        "daily" => Ok("0 2 * * *".to_string()),   // 毎日2時
-        "weekly" => Ok("0 2 * * 0".to_string()),  // 毎週日曜2時
-        "monthly" => Ok("0 2 1 * *".to_string()), // 毎月1日2時
-        "hourly" => Ok("0 * * * *".to_string()),  // 毎時
-        _ => Err(anyhow::anyhow!("対応していない頻度: {}", frequency)),
-    }
-}
-
-/// backup-suiteのバイナリパスを取得
-fn get_backup_suite_path() -> Result<PathBuf> {
-    // 現在実行中のバイナリパスを使用
-    let current_exe = std::env::current_exe()?;
-    Ok(current_exe)
-}
-
-/// launchd plist ファイルを生成
-fn create_plist_content(priority: &str, frequency: &str) -> Result<String> {
-    let backup_suite_path = get_backup_suite_path()?;
-
-    let plist = format!(
-        r#"<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>Label</key>
-    <string>com.backup-suite.{priority}</string>
-
-    <key>ProgramArguments</key>
-    <array>
-        <string>{backup_suite_path}</string>
-        <string>run</string>
-        <string>--priority</string>
-        <string>{priority}</string>
-    </array>
-
-    <key>StartCalendarInterval</key>
-    <dict>
-        <key>Hour</key>
-        <integer>2</integer>
-        <key>Minute</key>
-        <integer>0</integer>
-        {weekday_or_day}
-    </dict>
-
-    <key>RunAtLoad</key>
-    <false/>
-
-    <key>StandardOutPath</key>
-    <string>/tmp/backup-suite-{priority}.log</string>
-
-    <key>StandardErrorPath</key>
-    <string>/tmp/backup-suite-{priority}.error.log</string>
-</dict>
-</plist>"#,
-        priority = priority,
-        backup_suite_path = backup_suite_path.display(),
-        weekday_or_day = match frequency {
-            "weekly" => "<key>Weekday</key>\n        <integer>0</integer>",
-            "monthly" => "<key>Day</key>\n        <integer>1</integer>",
-            _ => "",
-        }
-    );
-
-    Ok(plist)
-}
-
-/// 特定優先度のスケジュールを設定
-fn setup_launchd_schedule(priority: &str, config: &Config, lang: Language) -> Result<()> {
-    let frequency = match priority {
-        "high" => &config.schedule.high_frequency,
-        "medium" => &config.schedule.medium_frequency,
-        "low" => &config.schedule.low_frequency,
-        _ => return Err(anyhow::anyhow!("不明な優先度: {}", priority)),
-    };
-
-    let launchd_dir = get_launchd_dir()?;
-    std::fs::create_dir_all(&launchd_dir)?;
-
-    let plist_filename = format!("com.backup-suite.{}.plist", priority);
-    let plist_path = launchd_dir.join(&plist_filename);
-
-    // plistファイル作成
-    let plist_content = create_plist_content(priority, frequency)?;
-    std::fs::write(&plist_path, plist_content)?;
-
-    // launchctl load
-    let output = std::process::Command::new("launchctl")
-        .args(["load", &plist_path.to_string_lossy()])
-        .output()?;
-
-    if !output.status.success() {
-        let error = String::from_utf8_lossy(&output.stderr);
-        return Err(anyhow::anyhow!("launchctl load 失敗: {}", error));
-    }
-
-    println!(
-        "{}📅 {}{}: {}",
-        get_color("green"),
-        get_message(MessageKey::PriorityScheduleSetup, lang),
-        get_color("reset"),
-        frequency
-    );
-
-    Ok(())
-}
-
-/// 全優先度のスケジュールを設定
-fn setup_all_launchd_schedules(config: &Config, lang: Language) -> Result<()> {
-    let priorities = ["high", "medium", "low"];
-
-    for priority in &priorities {
-        if let Err(e) = setup_launchd_schedule(priority, config, lang) {
-            println!(
-                "{}⚠️ {}{}: {}",
-                get_color("yellow"),
-                get_message(MessageKey::ScheduleSetupFailed, lang),
-                get_color("reset"),
-                e
-            );
-        }
-    }
-
-    Ok(())
-}
-
-/// 特定優先度のスケジュールを削除
-fn remove_launchd_schedule(priority: &str, lang: Language) -> Result<()> {
-    let launchd_dir = get_launchd_dir()?;
-    let plist_filename = format!("com.backup-suite.{}.plist", priority);
-    let plist_path = launchd_dir.join(&plist_filename);
-
-    if plist_path.exists() {
-        // launchctl unload
-        let output = std::process::Command::new("launchctl")
-            .args(["unload", &plist_path.to_string_lossy()])
-            .output()?;
-
-        if !output.status.success() {
-            let error = String::from_utf8_lossy(&output.stderr);
-            // unloadは既に無効化されている場合エラーになることがあるが、続行
-            println!(
-                "{}⚠️ {}{}: {}",
-                get_color("yellow"),
-                get_message(MessageKey::LaunchctlUnloadWarning, lang),
-                get_color("reset"),
-                error
-            );
-        }
-
-        // plistファイル削除
-        std::fs::remove_file(&plist_path)?;
-        println!(
-            "{}✅ {}{}",
-            get_color("green"),
-            get_message(MessageKey::PriorityScheduleDeleted, lang),
-            get_color("reset")
-        );
-    } else {
-        println!(
-            "{}⚠️ {}{}",
-            get_color("yellow"),
-            get_message(MessageKey::ScheduleNotConfigured, lang),
-            get_color("reset")
-        );
-    }
-
-    Ok(())
-}
-
-/// 全優先度のスケジュールを削除
-fn remove_all_launchd_schedules(lang: Language) -> Result<()> {
-    let priorities = ["high", "medium", "low"];
-
-    for priority in &priorities {
-        if let Err(e) = remove_launchd_schedule(priority, lang) {
-            println!(
-                "{}⚠️ {}{}: {}",
-                get_color("yellow"),
-                get_message(MessageKey::ScheduleDeletionFailed, lang),
-                get_color("reset"),
-                e
-            );
-        }
-    }
-
-    Ok(())
-}
-
-/// launchd スケジュールの実際の状態を確認
-fn check_launchd_status(lang: Language) -> Result<()> {
-    println!();
-    println!(
-        "{}📋 {}{}",
-        get_color("magenta"),
-        get_message(MessageKey::ActualScheduleStatus, lang),
-        get_color("reset")
-    );
-
-    let priorities = ["high", "medium", "low"];
-
-    for priority in &priorities {
-        let label = format!("com.backup-suite.{}", priority);
-
-        let output = std::process::Command::new("launchctl")
-            .args(["list", &label])
-            .output()?;
-
-        if output.status.success() {
-            println!(
-                "  {}: {}✅ {}{}",
-                priority,
-                get_color("green"),
-                get_message(MessageKey::Enabled, lang),
-                get_color("reset")
-            );
-        } else {
-            println!(
-                "  {}: {}❌ {}{}",
-                priority,
-                get_color("red"),
-                get_message(MessageKey::Disabled, lang),
-                get_color("reset")
-            );
-        }
-    }
-
-    Ok(())
-}
 
 /// Detect language from CLI argument and environment
 fn detect_language(lang_arg: Option<&str>) -> Language {
@@ -645,11 +422,27 @@ fn print_help(lang: Language) {
         get_message(MessageKey::DescAdd, lang)
     );
     println!(
+        "                 {}",
+        get_message(MessageKey::AddPriorityOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::AddCategoryOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::InteractiveOption, lang)
+    );
+    println!(
         "  {}{}{}     {}",
         yellow,
         get_message(MessageKey::CmdList, lang),
         reset,
         get_message(MessageKey::DescList, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::ListPriorityOption, lang)
     );
     println!(
         "  {}{}{}       {}",
@@ -693,6 +486,30 @@ fn print_help(lang: Language) {
         get_message(MessageKey::CompressLevel, lang)
     );
     println!(
+        "                 {}",
+        get_message(MessageKey::IncrementalOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::GeneratePasswordOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::PasswordOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::DryRunOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::PriorityOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::CategoryOption, lang)
+    );
+    println!(
         "  {}{}{}      {}",
         yellow,
         get_message(MessageKey::CmdRestore, lang),
@@ -700,11 +517,31 @@ fn print_help(lang: Language) {
         get_message(MessageKey::DescRestore, lang)
     );
     println!(
+        "                 {}",
+        get_message(MessageKey::FromOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::ToOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::RestorePasswordOption, lang)
+    );
+    println!(
         "  {}{}{}      {}",
         yellow,
         get_message(MessageKey::CmdCleanup, lang),
         reset,
         get_message(MessageKey::DescCleanup, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::DaysOption, lang)
+    );
+    println!(
+        "                 {}",
+        get_message(MessageKey::CleanupDryRunOption, lang)
     );
     println!();
 
@@ -1317,6 +1154,7 @@ fn main() -> Result<()> {
             priority,
             category,
             interactive,
+            exclude_patterns,
         }) => {
             let priority = parse_priority(&priority)?;
 
@@ -1369,7 +1207,19 @@ fn main() -> Result<()> {
             }
 
             let mut config = Config::load()?;
-            let target = Target::new(target_path.clone(), priority, category);
+            let mut target = Target::new(target_path.clone(), priority, category);
+
+            // 除外パターンを追加
+            if !exclude_patterns.is_empty() {
+                target.exclude_patterns = exclude_patterns.clone();
+                println!(
+                    "{}📝 除外パターン: {}{}",
+                    get_color("gray"),
+                    exclude_patterns.join(", "),
+                    get_color("reset")
+                );
+            }
+
             config.add_target(target);
             config.save()?;
             println!(
@@ -1484,8 +1334,10 @@ fn main() -> Result<()> {
             dry_run,
             encrypt,
             password,
+            generate_password,
             compress,
             compress_level,
+            incremental,
         }) => {
             let priority = priority.as_ref().map(|s| parse_priority(s)).transpose()?;
             let config = Config::load()?;
@@ -1548,23 +1400,92 @@ fn main() -> Result<()> {
             // 圧縮設定
             runner = runner.with_compression(compression_type, compress_level);
 
+            // 増分バックアップ設定
+            if incremental {
+                runner = runner.with_incremental(true);
+            }
+
             // 暗号化設定
             if encrypt {
-                let pwd = if let Some(p) = password {
-                    p
-                } else {
-                    // パスワードプロンプト（簡易版：実際には隠し入力を使うべき）
-                    use std::io::{self, Write};
-                    print!(
-                        "{}{}{}: ",
-                        get_color("yellow"),
+                use backup_suite::crypto::{PasswordPolicy, PasswordStrength};
+
+                let pwd = if generate_password {
+                    // 強力なパスワードを自動生成
+                    let policy = PasswordPolicy::default();
+                    let generated = policy.generate_password(20);
+                    let pwd_str = generated.to_string();
+
+                    println!(
+                        "{}🔐 {}{}: {}",
+                        get_color("green"),
                         get_message(MessageKey::EncryptionPassword, lang),
+                        get_color("reset"),
+                        pwd_str
+                    );
+                    println!(
+                        "{}{}{}",
+                        get_color("yellow"),
+                        get_message(MessageKey::SavePasswordSecurely, lang),
                         get_color("reset")
                     );
-                    io::stdout().flush()?;
-                    let mut input = String::new();
-                    io::stdin().read_line(&mut input)?;
-                    input.trim().to_string()
+
+                    pwd_str
+                } else if let Some(p) = password {
+                    // コマンドラインから提供されたパスワードの強度チェック
+                    let policy = PasswordPolicy::default();
+                    let strength = policy.evaluate(&p);
+
+                    if !matches!(strength, PasswordStrength::Strong) {
+                        println!(
+                            "{}{}{}",
+                            get_color("yellow"),
+                            policy.display_report(&p),
+                            get_color("reset")
+                        );
+                    } else {
+                        println!(
+                            "{}✅ Password Strength: {}{}",
+                            get_color("green"),
+                            strength.display(),
+                            get_color("reset")
+                        );
+                    }
+
+                    p
+                } else {
+                    // パスワードプロンプト（dialoguerを使用して隠し入力）
+                    use dialoguer::Password;
+
+                    let input = Password::new()
+                        .with_prompt(format!(
+                            "{}{}{}",
+                            get_color("yellow"),
+                            get_message(MessageKey::EncryptionPassword, lang),
+                            get_color("reset")
+                        ))
+                        .interact()?;
+
+                    // パスワード強度チェック
+                    let policy = PasswordPolicy::default();
+                    let strength = policy.evaluate(&input);
+
+                    if !matches!(strength, PasswordStrength::Strong) {
+                        println!(
+                            "{}{}{}",
+                            get_color("yellow"),
+                            policy.display_report(&input),
+                            get_color("reset")
+                        );
+                    } else {
+                        println!(
+                            "{}✅ Password Strength: {}{}",
+                            get_color("green"),
+                            strength.display(),
+                            get_color("reset")
+                        );
+                    }
+
+                    input
                 };
                 runner = runner.with_encryption(pwd);
             }
@@ -1603,6 +1524,8 @@ fn main() -> Result<()> {
             }
         }
         Some(Commands::Restore { from, to, password }) => {
+            use backup_suite::RestoreEngine;
+
             let dirs = BackupHistory::list_backup_dirs()?;
             if dirs.is_empty() {
                 println!(
@@ -1641,108 +1564,9 @@ fn main() -> Result<()> {
                 dest
             );
 
-            std::fs::create_dir_all(&dest)?;
-
-            // バックアップディレクトリ内のファイルを走査して復元
-            use backup_suite::crypto::{EncryptedData, KeyManager};
-            use walkdir::WalkDir;
-
-            let mut files_restored = 0;
-            let mut encrypted_files = 0;
-            let mut master_key_opt: Option<std::sync::Arc<backup_suite::crypto::MasterKey>> = None;
-
-            for entry in WalkDir::new(backup_dir).into_iter().filter_map(|e| e.ok()) {
-                if !entry.file_type().is_file() {
-                    continue;
-                }
-
-                let source_path = entry.path();
-                let relative_path = source_path
-                    .strip_prefix(backup_dir)
-                    .context("相対パス取得失敗")?;
-                let dest_path = dest.join(relative_path);
-
-                // 親ディレクトリ作成
-                if let Some(parent) = dest_path.parent() {
-                    std::fs::create_dir_all(parent)?;
-                }
-
-                // ファイルを読み込み
-                let file_data = std::fs::read(source_path)?;
-
-                // 暗号化データかどうか判定
-                if let Ok(encrypted_data) = EncryptedData::from_bytes(&file_data) {
-                    // 暗号化されたファイル
-                    encrypted_files += 1;
-
-                    // マスターキーがまだ作成されていない場合
-                    if master_key_opt.is_none() {
-                        let pwd = if let Some(ref p) = password {
-                            p.clone()
-                        } else {
-                            // パスワードプロンプト
-                            use std::io::{self, Write};
-                            print!(
-                                "{}{}{}: ",
-                                get_color("yellow"),
-                                get_message(MessageKey::EncryptionPassword, lang),
-                                get_color("reset")
-                            );
-                            io::stdout().flush()?;
-                            let mut input = String::new();
-                            io::stdin().read_line(&mut input)?;
-                            input.trim().to_string()
-                        };
-
-                        // マスターキー生成
-                        let km = KeyManager::default();
-                        let mk = km.restore_master_key(&pwd, &encrypted_data.salt)?;
-                        master_key_opt = Some(std::sync::Arc::new(mk));
-                    }
-
-                    // EncryptedDataから直接復号化
-                    use backup_suite::crypto::EncryptionEngine;
-
-                    let encryption_engine = EncryptionEngine::default();
-                    let master_key = master_key_opt.as_ref().unwrap();
-
-                    let decrypted_data = encryption_engine.decrypt(&encrypted_data, master_key)?;
-
-                    // 復号化されたデータは生の圧縮バイト列
-                    // zstd → gzip → 無圧縮の順で試す
-                    let final_data = if let Ok(decompressed) = zstd::decode_all(&decrypted_data[..])
-                    {
-                        decompressed
-                    } else {
-                        let mut decoder = flate2::read::GzDecoder::new(&decrypted_data[..]);
-                        let mut decompressed = Vec::new();
-                        if decoder.read_to_end(&mut decompressed).is_ok() {
-                            decompressed
-                        } else {
-                            decrypted_data
-                        }
-                    };
-
-                    // 復号化＋展開されたデータを保存
-                    std::fs::write(&dest_path, final_data)?;
-                    files_restored += 1;
-
-                    if files_restored % 10 == 0 {
-                        println!(
-                            "  {}{} ({} {}){}",
-                            get_color("gray"),
-                            get_message(MessageKey::Restoring, lang),
-                            files_restored,
-                            get_message(MessageKey::Files, lang),
-                            get_color("reset")
-                        );
-                    }
-                } else {
-                    // 通常のファイル（暗号化されていない）
-                    std::fs::copy(source_path, &dest_path)?;
-                    files_restored += 1;
-                }
-            }
+            // RestoreEngineを使用して復元
+            let mut engine = RestoreEngine::new(false);
+            let result = engine.restore(backup_dir, &dest, password.as_deref())?;
 
             println!(
                 "\n{}✅ {} {:?}{}",
@@ -1754,45 +1578,36 @@ fn main() -> Result<()> {
             println!(
                 "  {}: {} ({} {} {})",
                 get_message(MessageKey::RestoredFileCount, lang),
-                files_restored,
+                result.restored,
                 get_message(MessageKey::EncryptedLabel, lang),
-                encrypted_files,
+                result.encrypted_files,
                 get_message(MessageKey::Files, lang)
             );
-        }
-        Some(Commands::Cleanup { days, dry_run }) => {
-            let _config = Config::load()?;
-            let cutoff = chrono::Utc::now() - chrono::Duration::days(days as i64);
-            let mut removed = 0;
 
-            for dir in BackupHistory::list_backup_dirs()? {
-                if let Ok(metadata) = std::fs::metadata(&dir) {
-                    if let Ok(modified) = metadata.modified() {
-                        let modified_time: chrono::DateTime<chrono::Utc> = modified.into();
-                        if modified_time < cutoff {
-                            println!(
-                                "{}🗑️  {}{}: {:?}",
-                                if dry_run {
-                                    get_color("gray")
-                                } else {
-                                    get_color("yellow")
-                                },
-                                get_message(MessageKey::Deleting, lang),
-                                get_color("reset"),
-                                dir
-                            );
-                            if !dry_run {
-                                std::fs::remove_dir_all(&dir)?;
-                            }
-                            removed += 1;
-                        }
-                    }
+            if result.failed > 0 {
+                println!(
+                    "{}⚠️ {} {}{}",
+                    get_color("yellow"),
+                    result.failed,
+                    get_message(MessageKey::CountDeleted, lang),
+                    get_color("reset")
+                );
+                for error in &result.errors {
+                    println!("  - {}", error);
                 }
             }
+        }
+        Some(Commands::Cleanup { days, dry_run }) => {
+            use backup_suite::{CleanupEngine, CleanupPolicy};
+
+            let policy = CleanupPolicy::retention_days(days);
+            let mut engine = CleanupEngine::new(policy, dry_run);
+            let result = engine.cleanup()?;
+
             println!(
                 "{}✅ {} {}{}{}",
                 get_color("green"),
-                removed,
+                result.deleted,
                 get_message(MessageKey::CountDeleted, lang),
                 if dry_run {
                     get_message(MessageKey::DryRunParens, lang)
@@ -1801,6 +1616,28 @@ fn main() -> Result<()> {
                 },
                 get_color("reset")
             );
+
+            if result.freed_bytes > 0 {
+                let freed_mb = result.freed_bytes as f64 / 1024.0 / 1024.0;
+                println!(
+                    "  {}解放容量: {:.2} MB{}",
+                    get_color("gray"),
+                    freed_mb,
+                    get_color("reset")
+                );
+            }
+
+            if !result.errors.is_empty() {
+                println!(
+                    "{}⚠️ エラー: {}件{}",
+                    get_color("yellow"),
+                    result.errors.len(),
+                    get_color("reset")
+                );
+                for error in &result.errors {
+                    println!("  - {}", error);
+                }
+            }
         }
         Some(Commands::Status) => {
             let config = Config::load()?;
@@ -1842,9 +1679,27 @@ fn main() -> Result<()> {
                 config.filter_by_priority(&Priority::Low).len()
             );
         }
-        Some(Commands::History { days }) => {
-            let history = BackupHistory::filter_by_days(days)?;
+        Some(Commands::History {
+            days,
+            priority,
+            category,
+            detailed,
+        }) => {
+            let mut history = BackupHistory::filter_by_days(days)?;
             let theme = ColorTheme::auto();
+
+            // 優先度フィルタ適用
+            if let Some(p_str) = priority {
+                let prio = parse_priority(&p_str)?;
+                let filtered = BackupHistory::filter_by_priority(&history, &prio);
+                history = filtered.into_iter().cloned().collect();
+            }
+
+            // カテゴリフィルタ適用
+            if let Some(ref cat) = category {
+                let filtered = BackupHistory::filter_by_category(&history, cat);
+                history = filtered.into_iter().cloned().collect();
+            }
 
             println!(
                 "\n{}📜 {}{}（{}{}）",
@@ -1855,7 +1710,38 @@ fn main() -> Result<()> {
                 get_message(MessageKey::Days, lang)
             );
 
-            display_history(&history, &theme);
+            if detailed {
+                // 詳細表示
+                for entry in &history {
+                    println!("\n{}{}{}", get_color("green"), "=".repeat(60), get_color("reset"));
+                    println!("🕒 {}: {}", get_message(MessageKey::StatusTitle, lang), entry.timestamp.format("%Y-%m-%d %H:%M:%S"));
+                    println!("📁 パス: {:?}", entry.backup_dir);
+                    if let Some(ref cat) = entry.category {
+                        println!("🏷️  カテゴリ: {}", cat);
+                    }
+                    if let Some(ref prio) = entry.priority {
+                        println!("⚡ 優先度: {:?}", prio);
+                    }
+                    println!("📊 ステータス: {:?}", entry.status);
+                    println!("📦 ファイル数: {}", entry.total_files);
+                    println!("💾 サイズ: {:.2} MB", entry.total_bytes as f64 / 1024.0 / 1024.0);
+                    if entry.compressed {
+                        println!("🗜️  圧縮: 有効");
+                    }
+                    if entry.encrypted {
+                        println!("🔒 暗号化: 有効");
+                    }
+                    if entry.duration_ms > 0 {
+                        println!("⏱️  処理時間: {:.2}秒", entry.duration_ms as f64 / 1000.0);
+                    }
+                    if let Some(ref err) = entry.error_message {
+                        println!("{}❌ エラー: {}{}", get_color("red"), err, get_color("reset"));
+                    }
+                }
+            } else {
+                // テーブル表示
+                display_history(&history, &theme);
+            }
         }
         Some(Commands::Enable { priority }) => {
             let mut config = Config::load()?;
@@ -1916,8 +1802,13 @@ fn main() -> Result<()> {
                 ScheduleAction::Enable { priority } => {
                     config.schedule.enabled = true;
                     config.save()?;
+
+                    let scheduler = Scheduler::new(config)?;
+
                     if let Some(p) = priority {
-                        setup_launchd_schedule(&p, &config, lang)?;
+                        let prio = parse_priority(&p)?;
+                        scheduler.setup_priority(&prio)?;
+                        scheduler.enable_priority(&prio)?;
                         println!(
                             "{}✅ {}{} ({})",
                             get_color("green"),
@@ -1926,7 +1817,8 @@ fn main() -> Result<()> {
                             p
                         );
                     } else {
-                        setup_all_launchd_schedules(&config, lang)?;
+                        scheduler.setup_all()?;
+                        scheduler.enable_all()?;
                         println!(
                             "{}✅ {}{}",
                             get_color("green"),
@@ -1936,8 +1828,11 @@ fn main() -> Result<()> {
                     }
                 }
                 ScheduleAction::Disable { priority } => {
+                    let scheduler = Scheduler::new(Config::load()?)?;
+
                     if let Some(p) = priority {
-                        remove_launchd_schedule(&p, lang)?;
+                        let prio = parse_priority(&p)?;
+                        scheduler.disable_priority(&prio)?;
                         println!(
                             "{}⏸️  {}{} ({})",
                             get_color("yellow"),
@@ -1948,7 +1843,7 @@ fn main() -> Result<()> {
                     } else {
                         config.schedule.enabled = false;
                         config.save()?;
-                        remove_all_launchd_schedules(lang)?;
+                        scheduler.disable_all()?;
                         println!(
                             "{}⏸️  {}{}",
                             get_color("yellow"),
@@ -1989,8 +1884,69 @@ fn main() -> Result<()> {
                         config.schedule.low_frequency
                     );
 
-                    // launchctlの実際の状態確認
-                    check_launchd_status(lang)?;
+                    // 実際の状態確認
+                    let scheduler = Scheduler::new(config)?;
+                    let status = scheduler.check_status()?;
+
+                    println!();
+                    println!(
+                        "{}📋 {}{}",
+                        get_color("magenta"),
+                        get_message(MessageKey::ActualScheduleStatus, lang),
+                        get_color("reset")
+                    );
+
+                    println!(
+                        "  high: {}{}{}",
+                        if status.high_enabled {
+                            get_color("green")
+                        } else {
+                            get_color("red")
+                        },
+                        if status.high_enabled { "✅ " } else { "❌ " },
+                        if status.high_enabled {
+                            get_message(MessageKey::Enabled, lang)
+                        } else {
+                            get_message(MessageKey::Disabled, lang)
+                        }
+                    );
+                    println!("{}", get_color("reset"));
+
+                    println!(
+                        "  medium: {}{}{}",
+                        if status.medium_enabled {
+                            get_color("green")
+                        } else {
+                            get_color("red")
+                        },
+                        if status.medium_enabled {
+                            "✅ "
+                        } else {
+                            "❌ "
+                        },
+                        if status.medium_enabled {
+                            get_message(MessageKey::Enabled, lang)
+                        } else {
+                            get_message(MessageKey::Disabled, lang)
+                        }
+                    );
+                    println!("{}", get_color("reset"));
+
+                    println!(
+                        "  low: {}{}{}",
+                        if status.low_enabled {
+                            get_color("green")
+                        } else {
+                            get_color("red")
+                        },
+                        if status.low_enabled { "✅ " } else { "❌ " },
+                        if status.low_enabled {
+                            get_message(MessageKey::Enabled, lang)
+                        } else {
+                            get_message(MessageKey::Disabled, lang)
+                        }
+                    );
+                    println!("{}", get_color("reset"));
                 }
                 ScheduleAction::Setup { high, medium, low } => {
                     config.schedule.high_frequency = high.clone();
@@ -1999,7 +1955,8 @@ fn main() -> Result<()> {
                     config.save()?;
 
                     if config.schedule.enabled {
-                        setup_all_launchd_schedules(&config, lang)?;
+                        let scheduler = Scheduler::new(config)?;
+                        scheduler.setup_all()?;
                         println!(
                             "{}✅ {}{}",
                             get_color("green"),

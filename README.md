@@ -42,6 +42,7 @@
 - **設定後は手動操作不要**で自動実行
 - **重要度別に頻度を調整**（毎日・週次・月次）
 - **バックアップ忘れ**を完全に防止
+- **macOS launchd/Linux systemd統合**で信頼性の高い自動実行
 
 ### 📊 わかりやすい管理とメンテナンス
 - **どれくらいバックアップしたか**統計で確認
@@ -212,6 +213,35 @@ name = "projects"
 path = "~/Projects"
 exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ```
+
+## スケジューリング機能
+
+### 自動バックアップの設定
+
+```bash
+# スケジュール頻度を設定
+backup-suite schedule setup --high daily --medium weekly --low monthly
+
+# スケジュールを有効化
+backup-suite schedule enable
+
+# 状態確認
+backup-suite schedule status
+```
+
+### プラットフォーム別の動作
+
+#### macOS (launchd)
+- 設定ファイル: `~/Library/LaunchAgents/com.backup-suite.{priority}.plist`
+- ログ: `/tmp/backup-suite-{priority}.log`
+- 確認: `launchctl list | grep backup-suite`
+
+#### Linux (systemd)
+- 設定ファイル: `~/.config/systemd/user/backup-suite-{priority}.{service,timer}`
+- ログ: `journalctl --user -u backup-suite-{priority}.service`
+- 確認: `systemctl --user list-timers backup-suite-*`
+
+詳細は[スケジューリングガイド](docs/SCHEDULER.md)を参照してください。
 
 ## コマンドリファレンス
 

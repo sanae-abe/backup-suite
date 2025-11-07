@@ -1,6 +1,7 @@
 use crate::error::{BackupError, Result};
 use std::fs::{File, OpenOptions};
 use std::path::{Component, Path, PathBuf};
+use unicode_normalization::UnicodeNormalization;
 
 /// 安全なパス結合（ディレクトリトラバーサル対策）
 ///
@@ -53,11 +54,27 @@ pub fn safe_join(base: &Path, child: &Path) -> Result<PathBuf> {
             path: child.to_path_buf(),
         })?;
 
-    if child_str.contains('\0') {
+    // Unicode正規化（NFKC: 互換性分解 + 正規合成）
+    let normalized_str: String = child_str.nfkc().collect();
+
+    // Null byte検出
+    if normalized_str.contains('\0') {
         return Err(BackupError::PathTraversalDetected {
             path: child.to_path_buf(),
         });
     }
+
+    // Unicode攻撃パターン検出
+    if normalized_str.contains('\u{2044}')  // Unicode Fraction Slash
+        || normalized_str.contains('\u{FF0E}')  // 全角ピリオド
+        || normalized_str.contains('\u{FF0F}')  // 全角スラッシュ
+    {
+        return Err(BackupError::PathTraversalDetected {
+            path: child.to_path_buf(),
+        });
+    }
+
+    let child = Path::new(&normalized_str);
 
     // 相対パスから .. を除去して正規化
     let normalized: PathBuf = child
@@ -170,22 +187,25 @@ pub fn sanitize_path_component(name: &str) -> String {
 ///
 /// * `BackupError::PathTraversalDetected` - 危険なパスパターンを検出
 pub fn validate_path_safety(path: &Path) -> Result<()> {
-    // .. を含むパスは危険
-    if path.components().any(|c| matches!(c, Component::ParentDir)) {
+    // 定数時間で全ての検証を実行（タイミング攻撃対策）
+    let mut has_parent_dir = false;
+    let mut is_shallow_absolute = false;
+
+    // 全コンポーネントをチェック（早期リターンなし）
+    for component in path.components() {
+        has_parent_dir |= matches!(component, Component::ParentDir);
+    }
+
+    if path.is_absolute() {
+        let components: Vec<_> = path.components().collect();
+        is_shallow_absolute = components.len() <= 2;
+    }
+
+    // 最後に一度だけ判定（定数時間性を保証）
+    if has_parent_dir || is_shallow_absolute {
         return Err(BackupError::PathTraversalDetected {
             path: path.to_path_buf(),
         });
-    }
-
-    // 絶対パスの場合、ルートディレクトリへのアクセスを防ぐ
-    if path.is_absolute() {
-        let components: Vec<_> = path.components().collect();
-        // ルート直下のシステムディレクトリへのアクセスを制限
-        if components.len() <= 2 {
-            return Err(BackupError::PathTraversalDetected {
-                path: path.to_path_buf(),
-            });
-        }
     }
 
     Ok(())
@@ -237,7 +257,34 @@ pub fn safe_open(path: &Path) -> Result<File> {
             .map_err(BackupError::IoError)
     }
 
-    #[cfg(not(unix))]
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::OpenOptionsExt;
+        const FILE_FLAG_OPEN_REPARSE_POINT: u32 = 0x00200000;
+        const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x400;
+
+        // FILE_FLAG_OPEN_REPARSE_POINTでシンボリックリンク検出
+        let file = OpenOptions::new()
+            .read(true)
+            .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT)
+            .open(path)
+            .map_err(BackupError::IoError)?;
+
+        // ファイルがリパースポイント（シンボリックリンク等）か確認
+        let metadata = file.metadata().map_err(BackupError::IoError)?;
+
+        use std::os::windows::fs::MetadataExt;
+        if metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
+            return Err(BackupError::IoError(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "シンボリックリンクは許可されていません",
+            )));
+        }
+
+        Ok(file)
+    }
+
+    #[cfg(not(any(unix, windows)))]
     {
         File::open(path).map_err(BackupError::IoError)
     }

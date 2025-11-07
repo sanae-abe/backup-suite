@@ -5,7 +5,9 @@
 
 pub mod encryption;
 pub mod key_management;
+pub mod password_policy;
 
 // 主要な型と関数を再エクスポート
 pub use encryption::{EncryptedData, EncryptionConfig, EncryptionEngine};
 pub use key_management::{KeyDerivation, KeyDerivationConfig, KeyManager, MasterKey};
+pub use password_policy::{PasswordPolicy, PasswordStrength};
