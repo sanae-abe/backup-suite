@@ -28,10 +28,10 @@
 
 ### 🔐 Military-Grade Encryption Protection
 - **AES-256-GCM encryption** virtually impossible to decrypt
+- **Argon2 key derivation** securely generates encryption keys from passwords
 - **Data completely safe** even if computer is stolen
 - **Third parties cannot access** when stored in cloud
 - **Strong password auto-generation** ensures security
-- **Argon2 key derivation** securely generates encryption keys from passwords
 
 ### 📦 High-Speed Compression for Storage Savings
 - **Zstd compression** for fast and high compression ratio
@@ -167,6 +167,9 @@ backup-suite run                   # Execute all targets
 backup-suite run --priority high   # High priority only
 backup-suite run --category work   # Specific category only
 backup-suite run --dry-run         # Dry run (verification only)
+
+# Incremental backup
+backup-suite run --incremental     # Backup only changed files (recommended from 2nd run)
 
 # Compression options
 backup-suite run --compress zstd   # Zstd compression (fast, high ratio, recommended)
