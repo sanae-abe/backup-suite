@@ -1,0 +1,59 @@
+# Dependabot configuration for backup-suite
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Security updates only (recommended for v1.0.x stable release)
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+
+    # Only create PRs for security updates
+    open-pull-requests-limit: 5
+
+    # Group security updates together to reduce PR noise
+    groups:
+      security-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+
+    # Custom labels for easy filtering
+    labels:
+      - "dependencies"
+      - "security"
+
+    # Commit message prefix
+    commit-message:
+      prefix: "security"
+      prefix-development: "chore"
+
+    # Reviewers (optional - add your GitHub username)
+    # reviewers:
+    #   - "sanae-abe"
+
+    # Ignore specific dependencies if needed
+    # ignore:
+    #   - dependency-name: "example-crate"
+    #     versions: ["1.x"]
+
+# Note: To enable regular version updates in the future (v1.1.0+), add:
+#
+# - package-ecosystem: "cargo"
+#   directory: "/"
+#   schedule:
+#     interval: "weekly"
+#   open-pull-requests-limit: 10
+#   groups:
+#     patch-updates:
+#       update-types:
+#         - "patch"
+#     minor-updates:
+#       update-types:
+#         - "minor"
