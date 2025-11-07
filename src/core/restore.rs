@@ -25,20 +25,7 @@ pub struct RestoreResult {
     pub errors: Vec<String>,
 }
 
-impl RestoreResult {
-    fn new() -> Self {
-        Self {
-            total_files: 0,
-            restored: 0,
-            failed: 0,
-            encrypted_files: 0,
-            verified_files: 0,
-            verification_failures: 0,
-            total_bytes: 0,
-            errors: Vec::new(),
-        }
-    }
-}
+// RestoreResult は直接構築されるため、new() メソッドは不要
 
 /// 復元エンジン
 ///
