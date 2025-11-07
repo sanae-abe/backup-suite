@@ -1,59 +1,45 @@
 # Dependabot configuration for backup-suite
 # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
+# Note: For security updates, enable "Dependabot security updates" in GitHub Settings.
+# This file configures version updates only.
+
 version: 2
 updates:
-  # Security updates only (recommended for v1.0.x stable release)
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "monthly"  # Conservative schedule for stable v1.0.x
       day: "monday"
       time: "09:00"
       timezone: "Asia/Tokyo"
 
-    # Only create PRs for security updates
-    open-pull-requests-limit: 5
+    # Limit PR volume
+    open-pull-requests-limit: 3
 
-    # Group security updates together to reduce PR noise
+    # Group minor and patch updates separately
     groups:
-      security-updates:
+      patch-updates:
         patterns:
           - "*"
         update-types:
           - "patch"
+      minor-updates:
+        patterns:
+          - "*"
+        update-types:
           - "minor"
 
-    # Custom labels for easy filtering
+    # Custom labels
     labels:
       - "dependencies"
-      - "security"
 
-    # Commit message prefix
+    # Commit message format
     commit-message:
-      prefix: "security"
+      prefix: "deps"
       prefix-development: "chore"
 
-    # Reviewers (optional - add your GitHub username)
-    # reviewers:
-    #   - "sanae-abe"
-
-    # Ignore specific dependencies if needed
-    # ignore:
-    #   - dependency-name: "example-crate"
-    #     versions: ["1.x"]
-
-# Note: To enable regular version updates in the future (v1.1.0+), add:
-#
-# - package-ecosystem: "cargo"
-#   directory: "/"
-#   schedule:
-#     interval: "weekly"
-#   open-pull-requests-limit: 10
-#   groups:
-#     patch-updates:
-#       update-types:
-#         - "patch"
-#     minor-updates:
-#       update-types:
-#         - "minor"
+    # Ignore major version updates (breaking changes)
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
