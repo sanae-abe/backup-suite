@@ -64,6 +64,7 @@ pub fn display_dashboard() -> Result<()> {
 }
 
 /// 統計情報表示
+#[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn display_statistics(theme: &ColorTheme) -> Result<()> {
     let config = Config::load()?;
     let history = BackupHistory::load_all()?;
@@ -224,6 +225,7 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
 }
 
 /// ディスク使用量表示
+#[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
     let config = Config::load()?;
     let backup_dir = &config.backup.destination;
@@ -390,6 +392,7 @@ fn get_disk_info(path: &std::path::Path) -> Result<Option<(u64, u64)>> {
 }
 
 /// 使用率グラフを作成
+#[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn create_usage_graph(percent: f64) -> String {
     let total_bars = 40;
     let filled_bars = ((percent / 100.0) * total_bars as f64) as usize;
@@ -426,6 +429,7 @@ fn display_recent_backups(theme: &ColorTheme) -> Result<()> {
 }
 
 /// エラー・警告サマリー
+#[allow(clippy::cast_precision_loss)]
 fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
     let config = Config::load()?;
     let mut warnings = Vec::new();
@@ -507,6 +511,7 @@ fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
 }
 
 /// バイト数を人間が読める形式に変換
+#[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn format_bytes(bytes: u64) -> String {
     const UNITS: &[&str] = &["B", "KB", "MB", "GB", "TB"];
     let mut size = bytes as f64;

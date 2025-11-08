@@ -161,6 +161,7 @@ pub fn display_backup_result(
 }
 
 /// バイト数を人間が読める形式に変換
+#[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn format_bytes(bytes: u64) -> String {
     const UNITS: &[&str] = &["B", "KB", "MB", "GB", "TB"];
     let mut size = bytes as f64;

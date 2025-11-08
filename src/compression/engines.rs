@@ -173,6 +173,7 @@ pub struct CompressedData {
 impl CompressedData {
     /// 圧縮率を計算
     #[must_use]
+    #[allow(clippy::cast_precision_loss)]
     pub fn compression_ratio(&self) -> f64 {
         if self.original_size == 0 {
             return 0.0;
@@ -197,6 +198,7 @@ impl CompressedData {
             CompressionType::Gzip => 2,
             CompressionType::None => 0,
         });
+        #[allow(clippy::cast_sign_loss)]
         result.extend_from_slice(&(self.compression_level as u32).to_le_bytes());
         result.extend_from_slice(&self.original_size.to_le_bytes());
         result.extend_from_slice(&self.compressed_size.to_le_bytes());
