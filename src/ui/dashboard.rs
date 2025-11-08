@@ -4,6 +4,7 @@
 use anyhow::Result;
 use chrono::Utc;
 use comfy_table::{presets::UTF8_FULL, Cell, CellAlignment, Color, ContentArrangement, Table};
+#[cfg(unix)]
 use std::fs;
 
 use super::colors::ColorTheme;
@@ -249,7 +250,7 @@ fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
     let disk_info = get_disk_info(backup_dir)?;
 
     #[cfg(not(unix))]
-    let disk_info = None;
+    let disk_info: Option<(u64, u64)> = None;
 
     let mut disk_table = Table::new();
     disk_table
