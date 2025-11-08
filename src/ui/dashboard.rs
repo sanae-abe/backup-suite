@@ -250,7 +250,7 @@ fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
 
     disk_table.add_row(vec![
         Cell::new("バックアップディレクトリ"),
-        Cell::new(format!("backup_dir.display()"))
+        Cell::new(backup_dir.display().to_string())
             .fg(Color::Cyan)
             .set_alignment(CellAlignment::Left),
     ]);

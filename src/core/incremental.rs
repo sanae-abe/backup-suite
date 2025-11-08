@@ -198,7 +198,7 @@ impl IncrementalBackupEngine {
 
             // 現在のハッシュを計算
             let current_hash = BackupMetadata::compute_file_hash(absolute_path)
-                .context(format!("ハッシュ計算失敗: absolute_path.display()"))?;
+                .context("ハッシュ計算失敗: absolute_path.display()".to_string())?;
 
             // ハッシュが異なる場合、または新規ファイルの場合は変更とみなす
             if previous_hash != Some(&current_hash) {

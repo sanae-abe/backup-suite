@@ -334,7 +334,7 @@ impl Scheduler {
 
         // ファイルに書き込み
         std::fs::write(&plist_path, plist_content)
-            .context(format!("plistファイル書き込み失敗: plist_path.display()"))?;
+            .context("plistファイル書き込み失敗: plist_path.display()".to_string())?;
 
         Ok(())
     }
@@ -430,7 +430,7 @@ impl Scheduler {
 
         if !plist_path.exists() {
             return Err(anyhow::anyhow!(
-                "plistファイルが存在しません。先にsetupを実行してください: plist_path.display()"
+                "plistファイルが存在しません。先にsetupを実行してください: plist_path.display()".to_string()
             ));
         }
 
@@ -465,7 +465,7 @@ impl Scheduler {
         // plistファイルを削除
         if plist_path.exists() {
             std::fs::remove_file(&plist_path)
-                .context(format!("plistファイル削除失敗: plist_path.display()"))?;
+                .context("plistファイル削除失敗: plist_path.display()".to_string())?;
         }
 
         Ok(())
@@ -515,12 +515,12 @@ impl Scheduler {
         // service ファイルを生成
         let service_content = self.generate_systemd_service_content(priority)?;
         std::fs::write(&service_path, service_content)
-            .context(format!("serviceファイル書き込み失敗: service_path.display()"))?;
+            .context("serviceファイル書き込み失敗: service_path.display()".to_string())?;
 
         // timer ファイルを生成
         let timer_content = self.generate_systemd_timer_content(priority, frequency)?;
         std::fs::write(&timer_path, timer_content)
-            .context(format!("timerファイル書き込み失敗: timer_path.display()"))?;
+            .context("timerファイル書き込み失敗: timer_path.display()".to_string())?;
 
         // systemd をリロード
         let _output = std::process::Command::new("systemctl")

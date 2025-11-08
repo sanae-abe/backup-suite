@@ -86,7 +86,7 @@ impl RestoreEngine {
         password: Option<&str>,
     ) -> Result<RestoreResult> {
         let user = AuditLog::current_user();
-        let target_desc = format!("backup_dir.display() → dest_dir.display()");
+        let target_desc = "backup_dir.display() → dest_dir.display()".to_string();
 
         // 監査ログ: 復元開始
         if let Some(ref mut audit_log) = self.audit_log {
@@ -108,7 +108,7 @@ impl RestoreEngine {
             }
 
             return Err(anyhow::anyhow!(
-                "バックアップディレクトリが存在しません: backup_dir.display()"
+                "バックアップディレクトリが存在しません: backup_dir.display()".to_string()
             ));
         }
 
@@ -128,7 +128,7 @@ impl RestoreEngine {
         // 復元先ディレクトリを作成
         if !self.dry_run {
             std::fs::create_dir_all(dest_dir)
-                .context(format!("復元先ディレクトリ作成失敗: dest_dir.display()"))?;
+                .context("復元先ディレクトリ作成失敗: dest_dir.display()".to_string())?;
         }
 
         // チェーン内のすべてのバックアップからファイル一覧を収集
@@ -290,9 +290,9 @@ impl RestoreEngine {
                     let pwd = match password {
                         Some(p) => p.to_string(),
                         None => {
-                            errors.push(format!(
-                                "暗号化されたファイルですがパスワードが未指定: relative_path.display()"
-                            ));
+                            errors.push(
+                                "暗号化されたファイルですがパスワードが未指定: relative_path.display()".to_string()
+                            );
                             failed_count.fetch_add(1, Ordering::Relaxed);
                             if let Some(ref pb) = progress {
                                 pb.inc(1);
@@ -356,9 +356,9 @@ impl RestoreEngine {
                             }
                             Ok(false) => {
                                 verification_failed_count.fetch_add(1, Ordering::Relaxed);
-                                errors.push(format!(
-                                    "⚠ 整合性検証失敗（ファイルが改ざんされています）: relative_path.display()"
-                                ));
+                                errors.push(
+                                    "⚠ 整合性検証失敗（ファイルが改ざんされています）: relative_path.display()".to_string()
+                                );
                             }
                             Err(e) => {
                                 eprintln!("警告: 整合性検証エラー: relative_path.display(): {e}");

@@ -324,7 +324,7 @@ impl Logger {
 
                 if modified_datetime < cutoff_date {
                     fs::remove_file(&path)
-                        .context(format!("古いログファイル削除エラー: path.display()"))?;
+                        .context("古いログファイル削除エラー: path.display()".to_string())?;
                 }
             }
         }
