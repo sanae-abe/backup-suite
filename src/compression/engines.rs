@@ -197,6 +197,13 @@ impl CompressedData {
     }
 
     /// バイナリ形式からデシリアライズ
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// - データが最小長（25バイト）未満の場合
+    /// - 不明な圧縮タイプの場合
+    /// - データの長さが一致しない場合
     pub fn from_bytes(data: &[u8]) -> Result<Self> {
         if data.len() < 25 {
             return Err(BackupError::CompressionError(
@@ -294,6 +301,10 @@ impl CompressionEngine {
     }
 
     /// データを圧縮
+    ///
+    /// # Errors
+    ///
+    /// 圧縮エンジンがデータの圧縮に失敗した場合にエラーを返します。
     pub fn compress(&self, data: &[u8]) -> Result<CompressedData> {
         let original_size = data.len() as u64;
 
@@ -315,6 +326,10 @@ impl CompressionEngine {
     }
 
     /// データを展開
+    ///
+    /// # Errors
+    ///
+    /// 圧縮エンジンがデータの展開に失敗した場合にエラーを返します。
     pub fn decompress(&self, compressed_data: &CompressedData) -> Result<Vec<u8>> {
         match compressed_data.compression_type {
             CompressionType::Zstd => self.decompress_zstd(&compressed_data.data),
@@ -324,6 +339,13 @@ impl CompressionEngine {
     }
 
     /// ストリーミング圧縮
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// - リーダーからの読み取りに失敗した場合
+    /// - 圧縮エンジンの作成・実行に失敗した場合
+    /// - ライターへの書き込みに失敗した場合
     #[allow(clippy::indexing_slicing)] // read() guarantees bytes_read <= buffer.len()
     pub fn compress_stream<R: Read, W: Write>(
         &self,
@@ -399,6 +421,13 @@ impl CompressionEngine {
     }
 
     /// ストリーミング展開
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// - デコーダーの作成に失敗した場合
+    /// - リーダーからの読み取りに失敗した場合
+    /// - ライターへの書き込みに失敗した場合
     #[allow(clippy::indexing_slicing)] // read() guarantees bytes_read <= buffer.len()
     pub fn decompress_stream<R: Read, W: Write>(
         &self,

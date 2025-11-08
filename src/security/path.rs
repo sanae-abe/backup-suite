@@ -24,10 +24,14 @@ use unicode_normalization::UnicodeNormalization;
 ///
 /// 安全に結合されたパス、またはセキュリティ違反時のエラー
 ///
-/// # エラー
+/// # Errors
 ///
-/// * `BackupError::PathTraversalDetected` - ディレクトリトラバーサル攻撃を検出
-/// * `BackupError::IoError` - パスの正規化に失敗
+/// * `BackupError::PathTraversalDetected` - ディレクトリトラバーサル攻撃を検出した場合
+///   - Null byte（`\0`）を含むパス
+///   - Unicode攻撃パターン（全角スラッシュ、全角ピリオド等）を含むパス
+///   - 正規化後のパスがベースディレクトリ配下にない場合
+/// * `BackupError::IoError` - パスの正規化（canonicalize）に失敗した場合
+///   - ベースパスの親ディレクトリがすべて存在しない場合
 ///
 /// # 使用例
 ///
@@ -183,9 +187,11 @@ pub fn sanitize_path_component(name: &str) -> String {
 ///
 /// パスが安全な場合は `Ok(())`、危険な場合はエラー
 ///
-/// # エラー
+/// # Errors
 ///
-/// * `BackupError::PathTraversalDetected` - 危険なパスパターンを検出
+/// * `BackupError::PathTraversalDetected` - 危険なパスパターンを検出した場合
+///   - 親ディレクトリ参照（`..`）を含むパス
+///   - 浅い絶対パス（ルート直下等、階層が2以下の絶対パス）
 pub fn validate_path_safety(path: &Path) -> Result<()> {
     // 定数時間で全ての検証を実行（タイミング攻撃対策）
     let mut has_parent_dir = false;
@@ -233,9 +239,13 @@ pub fn validate_path_safety(path: &Path) -> Result<()> {
 ///
 /// 開かれたファイルハンドル、またはエラー
 ///
-/// # エラー
+/// # Errors
 ///
-/// * `BackupError::IoError` - ファイルオープンに失敗、またはシンボリックリンク検出
+/// * `BackupError::IoError` - 以下の場合にエラーを返す
+///   - ファイルのオープンに失敗した場合
+///   - Unix系: シンボリックリンクを検出した場合（`O_NOFOLLOW`による拒否）
+///   - Windows: リパースポイント（シンボリックリンク等）を検出した場合
+///   - メタデータの取得に失敗した場合（Windows）
 ///
 /// # 使用例
 ///

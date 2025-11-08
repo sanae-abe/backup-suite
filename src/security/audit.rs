@@ -299,6 +299,12 @@ pub struct AuditLog {
 
 impl AuditLog {
     /// デフォルトのログパスを使用して監査ログを初期化
+    ///
+    /// # Errors
+    ///
+    /// * 設定ディレクトリが取得できない場合（`dirs::config_dir()`が`None`を返す）
+    /// * 設定ディレクトリ（`~/.config/backup-suite`等）の作成に失敗した場合
+    /// * 秘密鍵の読み込みまたは生成に失敗した場合
     pub fn new() -> Result<Self> {
         let config_dir = dirs::config_dir()
             .context("設定ディレクトリが取得できません")?
@@ -311,6 +317,12 @@ impl AuditLog {
     }
 
     /// カスタムパスで監査ログを初期化
+    ///
+    /// # Errors
+    ///
+    /// * 秘密鍵ファイルの読み込みに失敗した場合
+    /// * 秘密鍵の新規生成・保存に失敗した場合
+    /// * 秘密鍵ファイルのパーミッション設定に失敗した場合（Unix系）
     pub fn with_path(log_path: PathBuf) -> Result<Self> {
         // 秘密鍵の生成または読み込み
         let secret = Self::load_or_generate_secret(&log_path)?;
@@ -348,6 +360,14 @@ impl AuditLog {
     }
 
     /// 監査イベントをログに記録
+    ///
+    /// # Errors
+    ///
+    /// * ログファイルのメタデータ取得に失敗した場合（ローテーションチェック時）
+    /// * ログローテーション（ファイル名変更）に失敗した場合
+    /// * ログファイルのオープンに失敗した場合
+    /// * イベントのJSON形式へのシリアライズに失敗した場合
+    /// * ログファイルへの書き込みに失敗した場合
     pub fn log(&mut self, mut event: AuditEvent) -> Result<()> {
         // HMACを計算
         event.hmac = event.compute_hmac(&self.secret);
@@ -394,6 +414,12 @@ impl AuditLog {
     }
 
     /// すべてのログエントリを読み込み
+    ///
+    /// # Errors
+    ///
+    /// * ログファイルのオープンに失敗した場合
+    /// * ログファイルの行読み込みに失敗した場合
+    /// * ログエントリのJSON形式パースに失敗した場合（ログファイル破損時）
     pub fn read_all(&self) -> Result<Vec<AuditEvent>> {
         if !self.log_path.exists() {
             return Ok(Vec::new());
@@ -421,6 +447,16 @@ impl AuditLog {
     }
 
     /// すべてのログエントリのHMACを検証
+    ///
+    /// # Errors
+    ///
+    /// * ログファイルの読み込みに失敗した場合（`read_all()`のエラーを参照）
+    /// * ログエントリのパースに失敗した場合
+    ///
+    /// # 戻り値
+    ///
+    /// * `Ok(true)` - すべてのログエントリのHMAC検証が成功
+    /// * `Ok(false)` - 1つ以上のログエントリのHMAC検証が失敗（ログ改ざん検出）
     pub fn verify_all(&self) -> Result<bool> {
         let events = self.read_all()?;
 
@@ -438,6 +474,10 @@ impl AuditLog {
     }
 
     /// 特定の期間のログエントリを取得
+    ///
+    /// # Errors
+    ///
+    /// * ログファイルの読み込みに失敗した場合（`read_all()`のエラーを参照）
     pub fn get_events_since(&self, since: DateTime<Utc>) -> Result<Vec<AuditEvent>> {
         let all_events = self.read_all()?;
         Ok(all_events
@@ -447,6 +487,10 @@ impl AuditLog {
     }
 
     /// 特定の種類のイベントを取得
+    ///
+    /// # Errors
+    ///
+    /// * ログファイルの読み込みに失敗した場合（`read_all()`のエラーを参照）
     pub fn get_events_by_type(&self, event_type: &EventType) -> Result<Vec<AuditEvent>> {
         let all_events = self.read_all()?;
         Ok(all_events

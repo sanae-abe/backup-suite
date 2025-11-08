@@ -66,6 +66,15 @@ impl KeyDerivation {
     }
 
     /// パスワードからマスターキーを導出
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// - Argon2パラメータが無効な場合 (`BackupError::EncryptionError`)
+    /// - ソルトのBase64エンコードに失敗した場合 (`BackupError::EncryptionError`)
+    /// - パスワードハッシュ生成に失敗した場合 (`BackupError::EncryptionError`)
+    /// - ハッシュの生成に失敗した場合 (`BackupError::EncryptionError`)
+    /// - 生成されたキーの長さが32バイトでない場合 (`BackupError::EncryptionError`)
     pub fn derive_key(&self, password: &str, salt: &[u8]) -> Result<MasterKey> {
         let argon2 = Argon2::new(
             argon2::Algorithm::Argon2id,
@@ -110,6 +119,13 @@ impl KeyDerivation {
     }
 
     /// パスワードを検証
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// - ハッシュ文字列のパースに失敗した場合 (`BackupError::EncryptionError`)
+    ///   - 無効なPHC文字列形式の場合
+    ///   - 破損したハッシュデータの場合
     pub fn verify_password(&self, password: &str, hash: &str) -> Result<bool> {
         let parsed_hash = PasswordHash::new(hash)
             .map_err(|e| BackupError::EncryptionError(format!("ハッシュ解析エラー: {}", e)))?;
@@ -142,6 +158,14 @@ impl KeyManager {
     }
 
     /// パスワードからマスターキーを生成（新しいソルト付き）
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// - `derive_key` 関数内で発生するエラー（詳細は `KeyDerivation::derive_key` を参照）
+    ///   - Argon2パラメータエラー
+    ///   - パスワードハッシュ生成エラー
+    ///   - 無効なキー長エラー
     pub fn create_master_key(&self, password: &str) -> Result<(MasterKey, [u8; 16])> {
         let salt = KeyDerivation::generate_salt();
         let key = self.derivation.derive_key(password, &salt)?;
@@ -149,6 +173,14 @@ impl KeyManager {
     }
 
     /// 既存のソルトでマスターキーを復元
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// - `derive_key` 関数内で発生するエラー（詳細は `KeyDerivation::derive_key` を参照）
+    ///   - Argon2パラメータエラー
+    ///   - パスワードハッシュ生成エラー
+    ///   - 無効なキー長エラー
     pub fn restore_master_key(&self, password: &str, salt: &[u8]) -> Result<MasterKey> {
         self.derivation.derive_key(password, salt)
     }

@@ -150,8 +150,9 @@ impl Config {
     ///
     /// 成功時は設定ファイルのパス、失敗時はエラー
     ///
-    /// # エラー
+    /// # Errors
     ///
+    /// 以下の場合にエラーを返します:
     /// * ホームディレクトリが取得できない場合
     ///
     /// # 使用例
@@ -176,8 +177,10 @@ impl Config {
     ///
     /// 成功時は `Config` インスタンス、失敗時はエラー
     ///
-    /// # エラー
+    /// # Errors
     ///
+    /// 以下の場合にエラーを返します:
+    /// * 設定ファイルパスの取得に失敗した場合
     /// * 設定ファイルの読み込みに失敗した場合
     /// * TOML解析に失敗した場合
     ///
@@ -214,8 +217,10 @@ impl Config {
     ///
     /// 成功時は `Ok(())`、失敗時はエラー
     ///
-    /// # エラー
+    /// # Errors
     ///
+    /// 以下の場合にエラーを返します:
+    /// * 設定ファイルパスの取得に失敗した場合
     /// * 設定ディレクトリの作成に失敗した場合
     /// * TOML生成に失敗した場合
     /// * ファイル書き込みに失敗した場合
@@ -383,11 +388,14 @@ impl Config {
     ///
     /// すべての検証に成功した場合は `Ok(())`、失敗した場合はエラー
     ///
-    /// # エラー
+    /// # Errors
     ///
-    /// * `BackupError::ConfigValidationError` - 設定に問題がある
-    /// * `BackupError::PermissionDenied` - 権限不足
-    /// * `BackupError::RegexError` - 不正な正規表現パターン
+    /// 以下の場合にエラーを返します:
+    /// * `BackupError::BackupDirectoryCreationError` - バックアップ先ディレクトリの作成に失敗
+    /// * `BackupError::PermissionDenied` - バックアップ先に書き込み権限がない
+    /// * `BackupError::ConfigValidationError` - 保存期間（keep_days）が範囲外（1-3650日）
+    /// * `BackupError::PermissionDenied` - ターゲットに読み取り権限がない
+    /// * `BackupError::RegexError` - 不正な正規表現パターンが含まれている
     pub fn validate(&self) -> BackupResult<()> {
         // 1. バックアップ先の妥当性チェック
         if !self.backup.destination.exists() {

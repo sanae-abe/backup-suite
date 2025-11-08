@@ -39,9 +39,10 @@ impl FileFilter {
     ///
     /// 成功した場合は `Ok(FileFilter)`、正規表現のコンパイルに失敗した場合はエラー
     ///
-    /// # エラー
+    /// # Errors
     ///
-    /// * `BackupError::RegexError` - 不正な正規表現パターン
+    /// 以下の場合にエラーを返します:
+    /// * `BackupError::RegexError` - 不正な正規表現パターンが含まれている場合
     ///
     /// # 使用例
     ///

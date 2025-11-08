@@ -11,6 +11,13 @@ use super::table::display_history;
 use crate::core::{BackupHistory, Config, Priority};
 
 /// ダッシュボード表示
+///
+/// # Errors
+///
+/// 次の場合にエラーを返します:
+/// - 設定ファイルやバックアップ履歴の読み込みに失敗した場合
+/// - バックアップディレクトリの情報取得に失敗した場合
+/// - ディスク情報の取得に失敗した場合（Unix系のみ）
 pub fn display_dashboard() -> Result<()> {
     let theme = ColorTheme::auto();
 

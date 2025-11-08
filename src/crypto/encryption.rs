@@ -111,6 +111,11 @@ impl EncryptionEngine {
     }
 
     /// データを暗号化
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// - AES-256-GCM暗号化処理が失敗した場合 (`BackupError::EncryptionError`)
     #[allow(deprecated)]
     pub fn encrypt(
         &self,
@@ -138,6 +143,13 @@ impl EncryptionEngine {
     }
 
     /// データを復号化
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// - AES-256-GCM復号化処理が失敗した場合 (`BackupError::EncryptionError`)
+    ///   - 認証タグの検証に失敗した場合（データが改ざんされている可能性）
+    ///   - 不正なマスターキーが使用された場合
     #[allow(deprecated)]
     pub fn decrypt(
         &self,
@@ -156,6 +168,13 @@ impl EncryptionEngine {
     }
 
     /// ストリーミング暗号化（大容量ファイル用）
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// - ファイル読み込みエラー (`BackupError::IoError`)
+    /// - ファイル書き込みエラー (`BackupError::IoError`)
+    /// - チャンク毎のAES-256-GCM暗号化処理が失敗した場合 (`BackupError::EncryptionError`)
     #[allow(deprecated)]
     pub fn encrypt_stream<R: Read, W: Write>(
         &self,
@@ -212,6 +231,16 @@ impl EncryptionEngine {
     }
 
     /// ストリーミング復号化（大容量ファイル用）
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// - ヘッダー情報（ナンス・ソルト）の読み取りエラー (`BackupError::IoError`)
+    /// - チャンクサイズまたはチャンクデータの読み取りエラー (`BackupError::IoError`)
+    /// - ファイル書き込みエラー (`BackupError::IoError`)
+    /// - チャンク毎のAES-256-GCM復号化処理が失敗した場合 (`BackupError::EncryptionError`)
+    ///   - 認証タグの検証に失敗した場合（データが改ざんされている可能性）
+    ///   - 不正なマスターキーが使用された場合
     #[allow(deprecated)]
     pub fn decrypt_stream<R: Read, W: Write>(
         &self,

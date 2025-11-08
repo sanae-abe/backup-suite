@@ -96,9 +96,10 @@ impl IncrementalBackupEngine {
     ///
     /// 成功時は BackupType、失敗時はエラー
     ///
-    /// # エラー
+    /// # Errors
     ///
-    /// * バックアップディレクトリの読み込みに失敗した場合
+    /// 以下の場合にエラーを返します:
+    /// * 最新バックアップの検索に失敗した場合
     ///
     /// # 使用例
     ///
@@ -122,9 +123,10 @@ impl IncrementalBackupEngine {
     ///
     /// 成功時は最新バックアップのパス（存在しない場合はNone）、失敗時はエラー
     ///
-    /// # エラー
+    /// # Errors
     ///
-    /// * ディレクトリの読み込みに失敗した場合
+    /// 以下の場合にエラーを返します:
+    /// * バックアップディレクトリの読み込みに失敗した場合
     pub fn find_latest_backup(&self) -> Result<Option<PathBuf>> {
         if !self.backup_base.exists() {
             return Ok(None);
@@ -168,8 +170,9 @@ impl IncrementalBackupEngine {
     ///
     /// 変更されたファイルのリスト（相対パス、絶対パス）
     ///
-    /// # エラー
+    /// # Errors
     ///
+    /// 以下の場合にエラーを返します:
     /// * ファイルハッシュの計算に失敗した場合
     ///
     /// # 使用例
@@ -214,8 +217,9 @@ impl IncrementalBackupEngine {
     ///
     /// 成功時はメタデータ、失敗時はエラー
     ///
-    /// # エラー
+    /// # Errors
     ///
+    /// 以下の場合にエラーを返します:
     /// * 前回のバックアップが見つからない場合
     /// * メタデータの読み込みに失敗した場合
     pub fn load_previous_metadata(&self) -> Result<BackupMetadata> {
@@ -232,6 +236,12 @@ impl IncrementalBackupEngine {
     /// # 戻り値
     ///
     /// 成功時はバックアップ名、失敗時はエラー
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// * 最新バックアップの検索に失敗した場合
+    /// * バックアップ名の取得に失敗した場合
     pub fn get_previous_backup_name(&self) -> Result<Option<String>> {
         match self.find_latest_backup()? {
             Some(path) => {
@@ -260,10 +270,12 @@ impl IncrementalBackupEngine {
 ///
 /// バックアップディレクトリのリスト（フルバックアップ→増分1→増分2...の順）
 ///
-/// # エラー
+/// # Errors
 ///
+/// 以下の場合にエラーを返します:
 /// * メタデータの読み込みに失敗した場合
-/// * 親バックアップが見つからない場合
+/// * 親ディレクトリの取得に失敗した場合
+/// * 親バックアップディレクトリが見つからない場合
 ///
 /// # 使用例
 ///

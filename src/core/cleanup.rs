@@ -127,6 +127,15 @@ impl CleanupEngine {
     }
 
     /// クリーンアップを実行
+    ///
+    /// # Errors
+    ///
+    /// 以下の場合にエラーを返します:
+    /// * 設定ファイルの読み込みに失敗した場合
+    /// * バックアップディレクトリの列挙に失敗した場合
+    /// * ファイルメタデータの取得に失敗した場合
+    /// * 削除対象の決定に失敗した場合
+    /// * 対話的確認の入力処理に失敗した場合
     pub fn cleanup(&mut self) -> Result<CleanupResult> {
         let user = AuditLog::current_user();
         let days = self.policy.retention_days.unwrap_or(0);

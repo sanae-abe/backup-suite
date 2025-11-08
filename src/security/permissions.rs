@@ -21,10 +21,12 @@ use std::path::Path;
 ///
 /// 読み取り権限がある場合は `Ok(())`、ない場合はエラー
 ///
-/// # エラー
+/// # Errors
 ///
-/// * `BackupError::PermissionDenied` - 読み取り権限がない
-/// * `BackupError::IoError` - メタデータの取得に失敗
+/// * `BackupError::PermissionDenied` - 以下の場合にエラーを返す
+///   - メタデータ取得時にPermissionDeniedエラーが発生した場合
+///   - Unix系: 読み取り権限ビット（0o444）がすべて0の場合
+/// * `BackupError::IoError` - メタデータの取得に失敗した場合（権限以外のエラー）
 ///
 /// # 使用例
 ///
@@ -96,11 +98,16 @@ pub fn check_read_permission(path: &Path) -> Result<()> {
 ///
 /// 書き込み権限がある場合は `Ok(())`、ない場合はエラー
 ///
-/// # エラー
+/// # Errors
 ///
-/// * `BackupError::ParentDirectoryNotFound` - 親ディレクトリが見つからない
-/// * `BackupError::PermissionDenied` - 書き込み権限がない
-/// * `BackupError::IoError` - I/Oエラー
+/// * `BackupError::ParentDirectoryNotFound` - ファイルパスの親ディレクトリが見つからない場合
+/// * `BackupError::PermissionDenied` - 以下の場合にエラーを返す
+///   - ディレクトリ作成時にPermissionDeniedエラーが発生した場合
+///   - 一時ファイル作成時にPermissionDeniedエラーが発生した場合
+/// * `BackupError::IoError` - 以下の場合にエラーを返す
+///   - ディレクトリ作成に失敗した場合（権限以外のエラー）
+///   - 一時ファイルが既に存在する場合（TOCTOU対策により検出）
+///   - 一時ファイルの削除に失敗した場合
 ///
 /// # 使用例
 ///
@@ -184,10 +191,10 @@ pub fn check_write_permission(path: &Path) -> Result<()> {
 ///
 /// 実行権限がある場合は `Ok(())`、ない場合はエラー
 ///
-/// # エラー
+/// # Errors
 ///
-/// * `BackupError::PermissionDenied` - 実行権限がない
-/// * `BackupError::IoError` - メタデータの取得に失敗
+/// * `BackupError::IoError` - メタデータの取得に失敗した場合
+/// * `BackupError::PermissionDenied` - ディレクトリに実行権限ビット（0o111）がすべて0の場合
 #[cfg(unix)]
 pub fn check_execute_permission(path: &Path) -> Result<()> {
     use std::os::unix::fs::PermissionsExt;
@@ -223,6 +230,12 @@ pub fn check_execute_permission(path: &Path) -> Result<()> {
 /// # 戻り値
 ///
 /// すべての要求された権限がある場合は `Ok(())`、ない場合はエラー
+///
+/// # Errors
+///
+/// * `require_read`が`true`の場合、`check_read_permission()`のエラーを返す
+/// * `require_read`が`true`かつUnix系でディレクトリの場合、`check_execute_permission()`のエラーを返す
+/// * `require_write`が`true`の場合、`check_write_permission()`のエラーを返す
 pub fn check_permissions(path: &Path, require_read: bool, require_write: bool) -> Result<()> {
     if require_read {
         check_read_permission(path)?;
