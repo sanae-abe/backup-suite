@@ -407,7 +407,8 @@ jobs:
       - name: Check coverage threshold
         run: |
           # 既に生成されたJSONファイルから読み取る（再実行を避ける）
-          coverage=$(jq '.files | to_entries | map(.value.coverage) | add / length' tarpaulin-report.json || echo 0)
+          # null値を除外してから平均を計算
+          coverage=$(jq '[.files | to_entries | .[].value.coverage | select(. != null)] | add / length' tarpaulin-report.json || echo 0)
 
           echo "Current coverage: ${coverage}%"
           echo "Threshold: ${{ env.COVERAGE_THRESHOLD }}%"
