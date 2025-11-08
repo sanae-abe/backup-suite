@@ -392,6 +392,7 @@ jobs:
             --timeout 600 \
             --out xml \
             --out lcov \
+            --out json \
             --exclude-files 'benches/*' 'tests/*' 'examples/*'
 
       - name: Upload coverage to Codecov
@@ -405,8 +406,8 @@ jobs:
 
       - name: Check coverage threshold
         run: |
-          coverage=$(cargo tarpaulin --out json --all-features --workspace | \
-            jq '.files | to_entries | map(.value.coverage) | add / length' || echo 0)
+          # 既に生成されたJSONファイルから読み取る（再実行を避ける）
+          coverage=$(jq '.files | to_entries | map(.value.coverage) | add / length' tarpaulin-report.json || echo 0)
 
           echo "Current coverage: ${coverage}%"
           echo "Threshold: ${{ env.COVERAGE_THRESHOLD }}%"
