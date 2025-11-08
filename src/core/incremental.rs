@@ -83,6 +83,7 @@ impl IncrementalBackupEngine {
     ///
     /// let engine = IncrementalBackupEngine::new(PathBuf::from("./backups"));
     /// ```
+    #[must_use]
     pub fn new(backup_base: PathBuf) -> Self {
         Self { backup_base }
     }
@@ -110,6 +111,7 @@ impl IncrementalBackupEngine {
     /// let engine = IncrementalBackupEngine::new(PathBuf::from("./backups"));
     /// let backup_type = engine.determine_backup_type().unwrap();
     /// ```
+    #[must_use]
     pub fn determine_backup_type(&self) -> Result<BackupType> {
         match self.find_latest_backup()? {
             Some(_) => Ok(BackupType::Incremental),
@@ -127,6 +129,7 @@ impl IncrementalBackupEngine {
     ///
     /// 以下の場合にエラーを返します:
     /// * バックアップディレクトリの読み込みに失敗した場合
+    #[must_use]
     pub fn find_latest_backup(&self) -> Result<Option<PathBuf>> {
         if !self.backup_base.exists() {
             return Ok(None);
@@ -195,7 +198,7 @@ impl IncrementalBackupEngine {
 
             // 現在のハッシュを計算
             let current_hash = BackupMetadata::compute_file_hash(absolute_path)
-                .context(format!("ハッシュ計算失敗: {absolute_path:?}"))?;
+                .context(format!("ハッシュ計算失敗: absolute_path.display()"))?;
 
             // ハッシュが異なる場合、または新規ファイルの場合は変更とみなす
             if previous_hash != Some(&current_hash) {
@@ -217,6 +220,7 @@ impl IncrementalBackupEngine {
     /// 以下の場合にエラーを返します:
     /// * 前回のバックアップが見つからない場合
     /// * メタデータの読み込みに失敗した場合
+    #[must_use]
     pub fn load_previous_metadata(&self) -> Result<BackupMetadata> {
         let latest_backup = self
             .find_latest_backup()?
@@ -236,6 +240,7 @@ impl IncrementalBackupEngine {
     /// 以下の場合にエラーを返します:
     /// * 最新バックアップの検索に失敗した場合
     /// * バックアップ名の取得に失敗した場合
+    #[must_use]
     pub fn get_previous_backup_name(&self) -> Result<Option<String>> {
         match self.find_latest_backup()? {
             Some(path) => {
@@ -282,6 +287,7 @@ impl IncrementalBackupEngine {
 ///     println!("復元順: {:?}", backup);
 /// }
 /// ```
+    #[must_use]
 pub fn resolve_backup_chain(backup_dir: &Path) -> Result<Vec<PathBuf>> {
     let mut chain = Vec::new();
     let mut current_dir = backup_dir.to_path_buf();
@@ -310,7 +316,7 @@ pub fn resolve_backup_chain(backup_dir: &Path) -> Result<Vec<PathBuf>> {
 
                 if !parent_dir.exists() {
                     return Err(anyhow::anyhow!(
-                        "親バックアップが見つかりません: {parent_dir:?}"
+                        "親バックアップが見つかりません: parent_dir.display()"
                     ));
                 }
 

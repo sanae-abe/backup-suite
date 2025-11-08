@@ -50,6 +50,7 @@ impl BackupProgress {
     ///
     /// let progress = BackupProgress::new(100);
     /// ```
+    #[must_use]
     pub fn new(total_files: u64) -> Self {
         let multi = Arc::new(MultiProgress::new());
 
@@ -261,6 +262,7 @@ impl BackupProgress {
     /// // ... 処理 ...
     /// progress.finish("検索完了");
     /// ```
+    #[must_use]
     pub fn new_spinner() -> Self {
         let multi = Arc::new(MultiProgress::new());
 
@@ -353,6 +355,7 @@ impl BackupProgress {
 /// }
 /// pb.finish_with_message("完了");
 /// ```
+    #[must_use]
 pub fn create_progress_bar(total: u64, message: &str) -> ProgressBar {
     let pb = ProgressBar::new(total);
     pb.set_style(
@@ -387,6 +390,7 @@ pub fn create_progress_bar(total: u64, message: &str) -> ProgressBar {
 /// // ... 処理 ...
 /// spinner.finish_with_message("接続完了");
 /// ```
+    #[must_use]
 pub fn create_spinner(message: &str) -> ProgressBar {
     let spinner = ProgressBar::new_spinner();
     spinner.set_style(

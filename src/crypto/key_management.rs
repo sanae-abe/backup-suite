@@ -16,6 +16,7 @@ pub struct MasterKey {
 
 impl MasterKey {
     /// 新しいマスターキーを生成
+    #[must_use]
     pub fn generate() -> Self {
         let mut key = [0u8; 32];
         OsRng.fill_bytes(&mut key);
@@ -23,11 +24,13 @@ impl MasterKey {
     }
 
     /// バイト配列からマスターキーを作成
+    #[must_use]
     pub fn from_bytes(bytes: [u8; 32]) -> Self {
         Self { key: bytes }
     }
 
     /// キーのバイト配列を取得
+    #[must_use]
     pub fn as_bytes(&self) -> &[u8; 32] {
         &self.key
     }
@@ -61,6 +64,7 @@ pub struct KeyDerivation {
 
 impl KeyDerivation {
     /// 新しいキー導出エンジンを作成
+    #[must_use]
     pub fn new(config: KeyDerivationConfig) -> Self {
         Self { config }
     }
@@ -75,6 +79,7 @@ impl KeyDerivation {
     /// - パスワードハッシュ生成に失敗した場合 (`BackupError::EncryptionError`)
     /// - ハッシュの生成に失敗した場合 (`BackupError::EncryptionError`)
     /// - 生成されたキーの長さが32バイトでない場合 (`BackupError::EncryptionError`)
+    #[must_use]
     pub fn derive_key(&self, password: &str, salt: &[u8]) -> Result<MasterKey> {
         let argon2 = Argon2::new(
             argon2::Algorithm::Argon2id,
@@ -112,6 +117,7 @@ impl KeyDerivation {
     }
 
     /// ランダムなソルトを生成
+    #[must_use]
     pub fn generate_salt() -> [u8; 16] {
         let mut salt = [0u8; 16];
         OsRng.fill_bytes(&mut salt);
@@ -126,6 +132,7 @@ impl KeyDerivation {
     /// - ハッシュ文字列のパースに失敗した場合 (`BackupError::EncryptionError`)
     ///   - 無効なPHC文字列形式の場合
     ///   - 破損したハッシュデータの場合
+    #[must_use]
     pub fn verify_password(&self, password: &str, hash: &str) -> Result<bool> {
         let parsed_hash = PasswordHash::new(hash)
             .map_err(|e| BackupError::EncryptionError(format!("ハッシュ解析エラー: {e}")))?;
@@ -151,6 +158,7 @@ pub struct KeyManager {
 
 impl KeyManager {
     /// 新しいキーマネージャーを作成
+    #[must_use]
     pub fn new(config: KeyDerivationConfig) -> Self {
         Self {
             derivation: KeyDerivation::new(config),
@@ -166,6 +174,7 @@ impl KeyManager {
     ///   - Argon2パラメータエラー
     ///   - パスワードハッシュ生成エラー
     ///   - 無効なキー長エラー
+    #[must_use]
     pub fn create_master_key(&self, password: &str) -> Result<(MasterKey, [u8; 16])> {
         let salt = KeyDerivation::generate_salt();
         let key = self.derivation.derive_key(password, &salt)?;
@@ -181,6 +190,7 @@ impl KeyManager {
     ///   - Argon2パラメータエラー
     ///   - パスワードハッシュ生成エラー
     ///   - 無効なキー長エラー
+    #[must_use]
     pub fn restore_master_key(&self, password: &str, salt: &[u8]) -> Result<MasterKey> {
         self.derivation.derive_key(password, salt)
     }

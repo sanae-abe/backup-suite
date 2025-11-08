@@ -58,6 +58,7 @@ pub enum Platform {
 
 impl Platform {
     /// 現在のプラットフォームを検出
+    #[must_use]
     pub fn detect() -> Self {
         #[cfg(target_os = "macos")]
         {
@@ -74,6 +75,7 @@ impl Platform {
     }
 
     /// プラットフォームがサポートされているか
+    #[must_use]
     pub fn is_supported(&self) -> bool {
         !matches!(self, Platform::Unsupported)
     }
@@ -94,6 +96,7 @@ pub enum Frequency {
 
 impl Frequency {
     /// 文字列から頻度を解析
+    #[must_use]
     pub fn parse(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "daily" => Ok(Frequency::Daily),
@@ -105,6 +108,7 @@ impl Frequency {
     }
 
     /// 頻度を文字列に変換
+    #[must_use]
     pub fn as_str(&self) -> &'static str {
         match self {
             Frequency::Daily => "daily",
@@ -129,6 +133,7 @@ impl Scheduler {
     /// # エラー
     ///
     /// * プラットフォームがサポートされていない場合
+    #[must_use]
     pub fn new(config: Config) -> Result<Self> {
         let platform = Platform::detect();
         if !platform.is_supported() {
@@ -152,6 +157,7 @@ impl Scheduler {
     ///
     /// * launchd/systemd設定ファイルの作成に失敗した場合
     /// * 設定の妥当性検証に失敗した場合
+    #[must_use]
     pub fn setup_all(&self) -> Result<()> {
         let priorities = [Priority::High, Priority::Medium, Priority::Low];
 
@@ -173,6 +179,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 成功時は `Ok(())`、失敗時はエラー
+    #[must_use]
     pub fn setup_priority(&self, priority: &Priority) -> Result<()> {
         let frequency = self.get_frequency(priority)?;
 
@@ -188,6 +195,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 成功時は `Ok(())`、失敗時はエラー
+    #[must_use]
     pub fn enable_all(&self) -> Result<()> {
         let priorities = [Priority::High, Priority::Medium, Priority::Low];
 
@@ -209,6 +217,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 成功時は `Ok(())`、失敗時はエラー
+    #[must_use]
     pub fn enable_priority(&self, priority: &Priority) -> Result<()> {
         match self.platform {
             Platform::MacOS => self.enable_launchd(priority),
@@ -222,6 +231,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 成功時は `Ok(())`、失敗時はエラー
+    #[must_use]
     pub fn disable_all(&self) -> Result<()> {
         let priorities = [Priority::High, Priority::Medium, Priority::Low];
 
@@ -243,6 +253,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 成功時は `Ok(())`、失敗時はエラー
+    #[must_use]
     pub fn disable_priority(&self, priority: &Priority) -> Result<()> {
         match self.platform {
             Platform::MacOS => self.disable_launchd(priority),
@@ -256,6 +267,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 各優先度の有効/無効状態を返す
+    #[must_use]
     pub fn check_status(&self) -> Result<ScheduleStatus> {
         let mut status = ScheduleStatus::default();
 
@@ -322,7 +334,7 @@ impl Scheduler {
 
         // ファイルに書き込み
         std::fs::write(&plist_path, plist_content)
-            .context(format!("plistファイル書き込み失敗: {plist_path:?}"))?;
+            .context(format!("plistファイル書き込み失敗: plist_path.display()"))?;
 
         Ok(())
     }
@@ -418,7 +430,7 @@ impl Scheduler {
 
         if !plist_path.exists() {
             return Err(anyhow::anyhow!(
-                "plistファイルが存在しません。先にsetupを実行してください: {plist_path:?}"
+                "plistファイルが存在しません。先にsetupを実行してください: plist_path.display()"
             ));
         }
 
@@ -453,7 +465,7 @@ impl Scheduler {
         // plistファイルを削除
         if plist_path.exists() {
             std::fs::remove_file(&plist_path)
-                .context(format!("plistファイル削除失敗: {plist_path:?}"))?;
+                .context(format!("plistファイル削除失敗: plist_path.display()"))?;
         }
 
         Ok(())
@@ -503,12 +515,12 @@ impl Scheduler {
         // service ファイルを生成
         let service_content = self.generate_systemd_service_content(priority)?;
         std::fs::write(&service_path, service_content)
-            .context(format!("serviceファイル書き込み失敗: {service_path:?}"))?;
+            .context(format!("serviceファイル書き込み失敗: service_path.display()"))?;
 
         // timer ファイルを生成
         let timer_content = self.generate_systemd_timer_content(priority, frequency)?;
         std::fs::write(&timer_path, timer_content)
-            .context(format!("timerファイル書き込み失敗: {timer_path:?}"))?;
+            .context(format!("timerファイル書き込み失敗: timer_path.display()"))?;
 
         // systemd をリロード
         let _output = std::process::Command::new("systemctl")

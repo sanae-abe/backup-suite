@@ -42,6 +42,7 @@ pub enum LogLevel {
 
 impl LogLevel {
     /// 文字列から変換
+    #[must_use]
     pub fn parse(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "debug" => Ok(LogLevel::Debug),
@@ -53,6 +54,7 @@ impl LogLevel {
     }
 
     /// 文字列表現を取得
+    #[must_use]
     pub fn as_str(&self) -> &'static str {
         match self {
             LogLevel::Debug => "DEBUG",
@@ -74,6 +76,7 @@ pub enum LogFormat {
 
 impl LogFormat {
     /// 文字列から変換
+    #[must_use]
     pub fn parse(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "text" | "plain" => Ok(LogFormat::Text),
@@ -99,6 +102,7 @@ pub struct LogEntry {
 
 impl LogEntry {
     /// 新しいログエントリを作成
+    #[must_use]
     pub fn new(level: LogLevel, message: impl Into<String>) -> Self {
         Self {
             timestamp: Utc::now(),
@@ -109,12 +113,14 @@ impl LogEntry {
     }
 
     /// メタデータを追加
+    #[must_use]
     pub fn with_metadata(mut self, metadata: serde_json::Value) -> Self {
         self.metadata = Some(metadata);
         self
     }
 
     /// テキスト形式でフォーマット
+    #[must_use]
     pub fn format_text(&self) -> String {
         let timestamp = self.timestamp.format("%Y-%m-%d %H:%M:%S%.3f");
         if let Some(ref meta) = self.metadata {
@@ -131,6 +137,7 @@ impl LogEntry {
     }
 
     /// JSON形式でフォーマット
+    #[must_use]
     pub fn format_json(&self) -> Result<String> {
         serde_json::to_string(self).context("JSON変換エラー")
     }
@@ -172,6 +179,7 @@ impl Logger {
     /// let logger = Logger::new(LogLevel::Info, LogFormat::Text)?;
     /// # Ok::<(), anyhow::Error>(())
     /// ```
+    #[must_use]
     pub fn new(level: LogLevel, format: LogFormat) -> Result<Self> {
         let log_dir = Self::log_dir()?;
         fs::create_dir_all(&log_dir).context("ログディレクトリ作成エラー")?;
@@ -316,7 +324,7 @@ impl Logger {
 
                 if modified_datetime < cutoff_date {
                     fs::remove_file(&path)
-                        .context(format!("古いログファイル削除エラー: {path:?}"))?;
+                        .context(format!("古いログファイル削除エラー: path.display()"))?;
                 }
             }
         }
@@ -356,16 +364,19 @@ impl Logger {
     }
 
     /// ログファイルパスを取得
+    #[must_use]
     pub fn log_file_path(&self) -> &Path {
         &self.log_file
     }
 
     /// ログレベルを取得
+    #[must_use]
     pub fn level(&self) -> LogLevel {
         self.level
     }
 
     /// ログフォーマットを取得
+    #[must_use]
     pub fn format(&self) -> LogFormat {
         self.format
     }

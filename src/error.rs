@@ -93,6 +93,7 @@ impl BackupError {
     ///
     /// * `true` - リトライで回復可能な一時的エラー
     /// * `false` - 回復不可能な恒久的エラー
+    #[must_use]
     pub fn is_recoverable(&self) -> bool {
         matches!(
             self,
@@ -106,6 +107,7 @@ impl BackupError {
     ///
     /// * `true` - セキュリティに関連するエラー
     /// * `false` - 通常のエラー
+    #[must_use]
     pub fn is_security_related(&self) -> bool {
         matches!(
             self,
@@ -118,6 +120,7 @@ impl BackupError {
     /// # 戻り値
     ///
     /// エラーの詳細と推奨される対処法を含むメッセージ
+    #[must_use]
     pub fn user_friendly_message(&self) -> String {
         match self {
             BackupError::HomeDirectoryNotFound => "ホームディレクトリが見つかりません。\n\
@@ -125,19 +128,19 @@ impl BackupError {
                 .to_string(),
             BackupError::TargetNotFound { path } => {
                 format!(
-                    "バックアップ対象が存在しません: {path:?}\n\
+                    "バックアップ対象が存在しません: path.display()\n\
                      対処法: パスが正しいか、ファイル/ディレクトリが存在するか確認してください。"
                 )
             }
             BackupError::PermissionDenied { path } => {
                 format!(
-                    "読み取り権限がありません: {path:?}\n\
+                    "読み取り権限がありません: path.display()\n\
                      対処法: ファイル/ディレクトリの権限を確認するか、sudo で実行してください。"
                 )
             }
             BackupError::PathTraversalDetected { path } => {
                 format!(
-                    "不正なパスが検出されました: {path:?}\n\
+                    "不正なパスが検出されました: path.display()\n\
                      セキュリティ警告: ディレクトリトラバーサル攻撃の可能性があります。"
                 )
             }
@@ -150,9 +153,11 @@ impl BackupError {
             BackupError::FileCopyError { from, to } => {
                 format!(
                     "ファイルコピーに失敗しました:\n\
-                     元: {from:?}\n\
-                     先: {to:?}\n\
-                     対処法: ディスク容量と権限を確認してください。"
+                     元: {}\n\
+                     先: {}\n\
+                     対処法: ディスク容量と権限を確認してください。",
+                    from.display(),
+                    to.display()
                 )
             }
             _ => self.to_string(),

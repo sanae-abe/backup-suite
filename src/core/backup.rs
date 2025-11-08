@@ -319,7 +319,7 @@ impl BackupRunner {
 
             // カテゴリディレクトリを作成
             std::fs::create_dir_all(&backup_dir).context(format!(
-                "バックアップディレクトリ作成失敗: {backup_dir:?}"
+                "バックアップディレクトリ作成失敗: backup_dir.display()"
             ))?;
 
             // FileFilterの準備
@@ -479,7 +479,7 @@ impl BackupRunner {
                 "📋 ドライランモード: {total_files} ファイルをバックアップ対象として検出"
             );
             for (source, dest) in &files_to_backup {
-                println!("  {source:?} → {dest:?}");
+                println!("  source.display() → dest.display()");
             }
             return Ok(BackupResult {
                 total_files,
@@ -555,7 +555,7 @@ impl BackupRunner {
                         if let Some(ref pb) = progress {
                             pb.inc(1);
                         }
-                        return Some(format!("ディレクトリ作成失敗 {parent:?}: {e}"));
+                        return Some(format!("ディレクトリ作成失敗 parent.display(): {e}"));
                     }
                 }
 
@@ -586,7 +586,7 @@ impl BackupRunner {
                                     if let Some(ref pb) = progress {
                                         pb.inc(1);
                                     }
-                                    Err(format!("書き込み失敗 {dest:?}: {e}"))
+                                    Err(format!("書き込み失敗 dest.display(): {e}"))
                                 }
                             }
                         }
@@ -595,7 +595,7 @@ impl BackupRunner {
                             if let Some(ref pb) = progress {
                                 pb.inc(1);
                             }
-                            Err(format!("処理失敗 {source:?}: {e}"))
+                            Err(format!("処理失敗 source.display(): {e}"))
                         }
                     }
                 } else {
@@ -614,7 +614,7 @@ impl BackupRunner {
                             if let Some(ref pb) = progress {
                                 pb.inc(1);
                             }
-                            Err(format!("コピー失敗 {source:?}: {e}"))
+                            Err(format!("コピー失敗 source.display(): {e}"))
                         }
                     }
                 };

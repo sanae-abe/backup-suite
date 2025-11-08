@@ -115,6 +115,7 @@ pub struct AuditEvent {
 
 impl AuditEvent {
     /// バックアップ開始イベントを作成
+    #[must_use]
     pub fn backup_started(target: impl Into<String>, user: impl Into<String>) -> Self {
         Self::new(
             EventType::BackupStarted,
@@ -154,6 +155,7 @@ impl AuditEvent {
     }
 
     /// 復元開始イベントを作成
+    #[must_use]
     pub fn restore_started(target: impl Into<String>, user: impl Into<String>) -> Self {
         Self::new(
             EventType::RestoreStarted,
@@ -193,12 +195,14 @@ impl AuditEvent {
     }
 
     /// クリーンアップ開始イベントを作成
+    #[must_use]
     pub fn cleanup_started(user: impl Into<String>, days: u32) -> Self {
         let metadata = serde_json::json!({ "days": days });
         Self::new(EventType::CleanupStarted, user.into(), None, Some(metadata))
     }
 
     /// クリーンアップ完了イベントを作成
+    #[must_use]
     pub fn cleanup_completed(user: impl Into<String>, metadata: serde_json::Value) -> Self {
         Self::new(
             EventType::CleanupCompleted,
@@ -209,12 +213,14 @@ impl AuditEvent {
     }
 
     /// クリーンアップ失敗イベントを作成
+    #[must_use]
     pub fn cleanup_failed(user: impl Into<String>, error: impl Into<String>) -> Self {
         let metadata = serde_json::json!({ "error": error.into() });
         Self::new(EventType::CleanupFailed, user.into(), None, Some(metadata))
     }
 
     /// セキュリティ警告イベントを作成
+    #[must_use]
     pub fn security_warning(message: impl Into<String>, user: impl Into<String>) -> Self {
         let metadata = serde_json::json!({ "warning": message.into() });
         Self::new(
@@ -226,6 +232,7 @@ impl AuditEvent {
     }
 
     /// 権限拒否イベントを作成
+    #[must_use]
     pub fn permission_denied(path: impl Into<String>, user: impl Into<String>) -> Self {
         Self::new(
             EventType::PermissionDenied,
@@ -268,6 +275,7 @@ impl AuditEvent {
     }
 
     /// HMAC-SHA256を計算
+    #[must_use]
     pub fn compute_hmac(&self, secret: &[u8]) -> String {
         let payload = self.payload();
         let mut mac = hmac_sha256(secret, payload.as_bytes());
@@ -277,6 +285,7 @@ impl AuditEvent {
     }
 
     /// HMACを検証
+    #[must_use]
     pub fn verify_hmac(&self, secret: &[u8]) -> bool {
         let computed = self.compute_hmac(secret);
         // タイミング攻撃対策：定数時間比較
@@ -310,6 +319,7 @@ impl AuditLog {
     /// * 設定ディレクトリが取得できない場合（`dirs::config_dir()`が`None`を返す）
     /// * 設定ディレクトリ（`~/.config/backup-suite`等）の作成に失敗した場合
     /// * 秘密鍵の読み込みまたは生成に失敗した場合
+    #[must_use]
     pub fn new() -> Result<Self> {
         let config_dir = dirs::config_dir()
             .context("設定ディレクトリが取得できません")?
@@ -327,6 +337,7 @@ impl AuditLog {
     /// * 秘密鍵ファイルの読み込みに失敗した場合
     /// * 秘密鍵の新規生成・保存に失敗した場合
     /// * 秘密鍵ファイルのパーミッション設定に失敗した場合（Unix系）
+    #[must_use]
     pub fn with_path(log_path: PathBuf) -> Result<Self> {
         // 秘密鍵の生成または読み込み
         let secret = Self::load_or_generate_secret(&log_path)?;
@@ -372,6 +383,7 @@ impl AuditLog {
     /// * ログファイルのオープンに失敗した場合
     /// * イベントのJSON形式へのシリアライズに失敗した場合
     /// * ログファイルへの書き込みに失敗した場合
+    #[must_use]
     pub fn log(&mut self, mut event: AuditEvent) -> Result<()> {
         // HMACを計算
         event.hmac = event.compute_hmac(&self.secret);
@@ -424,6 +436,7 @@ impl AuditLog {
     /// * ログファイルのオープンに失敗した場合
     /// * ログファイルの行読み込みに失敗した場合
     /// * ログエントリのJSON形式パースに失敗した場合（ログファイル破損時）
+    #[must_use]
     pub fn read_all(&self) -> Result<Vec<AuditEvent>> {
         if !self.log_path.exists() {
             return Ok(Vec::new());
@@ -461,6 +474,7 @@ impl AuditLog {
     ///
     /// * `Ok(true)` - すべてのログエントリのHMAC検証が成功
     /// * `Ok(false)` - 1つ以上のログエントリのHMAC検証が失敗（ログ改ざん検出）
+    #[must_use]
     pub fn verify_all(&self) -> Result<bool> {
         let events = self.read_all()?;
 
@@ -479,6 +493,7 @@ impl AuditLog {
     /// # Errors
     ///
     /// * ログファイルの読み込みに失敗した場合（`read_all()`のエラーを参照）
+    #[must_use]
     pub fn get_events_since(&self, since: DateTime<Utc>) -> Result<Vec<AuditEvent>> {
         let all_events = self.read_all()?;
         Ok(all_events
@@ -492,6 +507,7 @@ impl AuditLog {
     /// # Errors
     ///
     /// * ログファイルの読み込みに失敗した場合（`read_all()`のエラーを参照）
+    #[must_use]
     pub fn get_events_by_type(&self, event_type: &EventType) -> Result<Vec<AuditEvent>> {
         let all_events = self.read_all()?;
         Ok(all_events
@@ -501,6 +517,7 @@ impl AuditLog {
     }
 
     /// 現在のユーザー名を取得（システム環境変数から）
+    #[must_use]
     pub fn current_user() -> String {
         std::env::var("USER")
             .or_else(|_| std::env::var("USERNAME"))
@@ -576,6 +593,7 @@ fn generate_random_bytes(len: usize) -> Vec<u8> {
 
 // hexエンコード用の簡易実装
 mod hex {
+    #[must_use]
     pub fn encode(data: &[u8]) -> String {
         data.iter()
             .map(|b| format!("{b:02x}"))

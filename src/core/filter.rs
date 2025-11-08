@@ -52,6 +52,7 @@ impl FileFilter {
     /// let patterns = vec![r"\.git$".to_string()];
     /// let filter = FileFilter::new(&patterns).unwrap();
     /// ```
+    #[must_use]
     pub fn new(exclude_patterns: &[String]) -> Result<Self> {
         let mut patterns = Vec::new();
 
@@ -100,7 +101,7 @@ impl FileFilter {
             Some(s) => s,
             None => {
                 // UTF-8ではないパス名は除外しない（警告のみ）
-                eprintln!("警告: UTF-8ではないパス名をスキップ: {path:?}");
+                eprintln!("警告: UTF-8ではないパス名をスキップ: path.display()");
                 return false;
             }
         };
@@ -137,6 +138,7 @@ impl FileFilter {
     /// assert!(filter.should_exclude_filename(Path::new("/any/path/.DS_Store")));
     /// assert!(!filter.should_exclude_filename(Path::new("/any/path/normal.txt")));
     /// ```
+    #[must_use]
     pub fn should_exclude_filename(&self, path: &Path) -> bool {
         // パターンが空の場合は何も除外しない
         if self.patterns.is_empty() {
@@ -167,6 +169,7 @@ impl FileFilter {
     /// # 戻り値
     ///
     /// 登録されているパターンの数
+    #[must_use]
     pub fn pattern_count(&self) -> usize {
         self.patterns.len()
     }
@@ -188,6 +191,7 @@ impl FileFilter {
 /// let patterns = default_exclude_patterns();
 /// println!("デフォルトパターン数: {}", patterns.len());
 /// ```
+    #[must_use]
 pub fn default_exclude_patterns() -> Vec<String> {
     vec![
         // バージョン管理

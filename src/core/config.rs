@@ -163,6 +163,7 @@ impl Config {
     /// let path = Config::config_path().unwrap();
     /// println!("設定ファイル: {:?}", path);
     /// ```
+    #[must_use]
     pub fn config_path() -> Result<PathBuf> {
         let home = dirs::home_dir().context("ホームディレクトリが見つかりません")?;
         Ok(home.join(".config/backup-suite/config.toml"))
@@ -192,6 +193,7 @@ impl Config {
     /// let config = Config::load().unwrap_or_default();
     /// println!("バックアップ先: {:?}", config.backup.destination);
     /// ```
+    #[must_use]
     pub fn load() -> Result<Self> {
         let config_path = Self::config_path()?;
 
@@ -201,7 +203,7 @@ impl Config {
         }
 
         let content = std::fs::read_to_string(&config_path)
-            .context(format!("設定ファイル読み込み失敗: {config_path:?}"))?;
+            .context(format!("設定ファイル読み込み失敗: config_path.display()"))?;
 
         let config: Config = toml::from_str(&content).context("TOML解析失敗")?;
 
@@ -240,6 +242,7 @@ impl Config {
     /// config.add_target(target);
     /// config.save().unwrap();
     /// ```
+    #[must_use]
     pub fn save(&self) -> Result<()> {
         let config_path = Self::config_path()?;
 
@@ -251,7 +254,7 @@ impl Config {
         let content = toml::to_string_pretty(self).context("TOML生成失敗")?;
 
         std::fs::write(&config_path, content)
-            .context(format!("設定ファイル書き込み失敗: {config_path:?}"))?;
+            .context(format!("設定ファイル書き込み失敗: config_path.display()"))?;
 
         Ok(())
     }
@@ -314,6 +317,7 @@ impl Config {
     ///     config.save().unwrap();
     /// }
     /// ```
+    #[must_use]
     pub fn remove_target(&mut self, path: &PathBuf) -> bool {
         let before_len = self.targets.len();
         self.targets.retain(|t| &t.path != path);
@@ -341,6 +345,7 @@ impl Config {
     /// let high_priority = config.filter_by_priority(&Priority::High);
     /// println!("高優先度のバックアップ対象: {}件", high_priority.len());
     /// ```
+    #[must_use]
     pub fn filter_by_priority(&self, priority: &super::target::Priority) -> Vec<&Target> {
         self.targets
             .iter()
@@ -369,6 +374,7 @@ impl Config {
     /// let system_targets = config.filter_by_category("system");
     /// println!("システムカテゴリのバックアップ対象: {}件", system_targets.len());
     /// ```
+    #[must_use]
     pub fn filter_by_category(&self, category: &str) -> Vec<&Target> {
         self.targets
             .iter()
@@ -399,6 +405,7 @@ impl Config {
     /// * `BackupError::ConfigValidationError` - 保存期間（keep_days）が範囲外（1-3650日）
     /// * `BackupError::PermissionDenied` - ターゲットに読み取り権限がない
     /// * `BackupError::RegexError` - 不正な正規表現パターンが含まれている
+    #[must_use]
     pub fn validate(&self) -> BackupResult<()> {
         // 1. バックアップ先の妥当性チェック
         if !self.backup.destination.exists() {

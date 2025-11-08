@@ -43,6 +43,7 @@ pub struct EncryptedData {
 
 impl EncryptedData {
     /// バイナリ形式にシリアライズ
+    #[must_use]
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(44 + self.ciphertext.len());
         result.extend_from_slice(&self.nonce); // 12バイト
@@ -54,6 +55,7 @@ impl EncryptedData {
     }
 
     /// バイナリ形式からデシリアライズ
+    #[must_use]
     pub fn from_bytes(data: &[u8]) -> Result<Self> {
         if data.len() < 44 {
             return Err(BackupError::EncryptionError(
@@ -99,6 +101,7 @@ pub struct EncryptionEngine {
 
 impl EncryptionEngine {
     /// 新しい暗号化エンジンを作成
+    #[must_use]
     pub fn new(config: EncryptionConfig) -> Self {
         Self { config }
     }

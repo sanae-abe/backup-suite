@@ -14,6 +14,7 @@ pub enum Language {
 impl Language {
     /// Detect language from environment and CLI arguments
     /// Priority: CLI flag > Environment variable > Default (English)
+    #[must_use]
     pub fn detect() -> Self {
         // Check LANG environment variable
         if let Ok(lang) = std::env::var("LANG") {
@@ -34,6 +35,7 @@ impl Language {
     }
 
     /// Parse language from string
+    #[must_use]
     pub fn parse(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "en" | "english" => Some(Language::English),
@@ -43,6 +45,7 @@ impl Language {
     }
 
     /// Convert to language code
+    #[must_use]
     pub fn code(&self) -> &'static str {
         match self {
             Language::English => "en",
@@ -290,6 +293,7 @@ pub enum MessageKey {
 
 impl MessageKey {
     /// Get translated message for the given language
+    #[must_use]
     pub fn get(&self, lang: Language) -> &'static str {
         match lang {
             Language::English => self.get_en(),
@@ -833,6 +837,7 @@ impl MessageKey {
 }
 
 /// Get message by key and language
+    #[must_use]
 pub fn get_message(key: MessageKey, lang: Language) -> &'static str {
     key.get(lang)
 }

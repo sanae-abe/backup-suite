@@ -40,6 +40,7 @@ pub struct RestoreEngine {
 
 impl RestoreEngine {
     /// 新しいRestoreEngineを作成
+    #[must_use]
     pub fn new(dry_run: bool) -> Self {
         let audit_log = AuditLog::new()
             .map_err(|e| eprintln!("警告: 監査ログの初期化に失敗しました: {e}"))
@@ -54,12 +55,14 @@ impl RestoreEngine {
     }
 
     /// 進捗表示の有効/無効を設定
+    #[must_use]
     pub fn with_progress(mut self, show_progress: bool) -> Self {
         self.show_progress = show_progress;
         self
     }
 
     /// 整合性検証の有効/無効を設定
+    #[must_use]
     pub fn with_verification(mut self, verify: bool) -> Self {
         self.verify_integrity = verify;
         self
@@ -83,7 +86,7 @@ impl RestoreEngine {
         password: Option<&str>,
     ) -> Result<RestoreResult> {
         let user = AuditLog::current_user();
-        let target_desc = format!("{backup_dir:?} → {dest_dir:?}");
+        let target_desc = format!("backup_dir.display() → dest_dir.display()");
 
         // 監査ログ: 復元開始
         if let Some(ref mut audit_log) = self.audit_log {
@@ -105,7 +108,7 @@ impl RestoreEngine {
             }
 
             return Err(anyhow::anyhow!(
-                "バックアップディレクトリが存在しません: {backup_dir:?}"
+                "バックアップディレクトリが存在しません: backup_dir.display()"
             ));
         }
 
@@ -125,7 +128,7 @@ impl RestoreEngine {
         // 復元先ディレクトリを作成
         if !self.dry_run {
             std::fs::create_dir_all(dest_dir)
-                .context(format!("復元先ディレクトリ作成失敗: {dest_dir:?}"))?;
+                .context(format!("復元先ディレクトリ作成失敗: dest_dir.display()"))?;
         }
 
         // チェーン内のすべてのバックアップからファイル一覧を収集
@@ -157,7 +160,7 @@ impl RestoreEngine {
             );
             for (backup_src, file) in &all_files {
                 if let Ok(relative) = file.strip_prefix(backup_src) {
-                    println!("  {relative:?}");
+                    println!("  {}", relative.display());
                 }
             }
             return Ok(RestoreResult {
@@ -202,7 +205,8 @@ impl RestoreEngine {
                     }
                     Err(e) => {
                         eprintln!(
-                            "警告: 整合性メタデータの読み込みに失敗しました ({backup:?}): {e}"
+                            "警告: 整合性メタデータの読み込みに失敗しました ({}): {e}",
+                            backup.display()
                         );
                     }
                 }
@@ -229,7 +233,7 @@ impl RestoreEngine {
             let relative_path = match source_path.strip_prefix(source_backup_dir) {
                 Ok(r) => r,
                 Err(e) => {
-                    errors.push(format!("相対パス取得失敗: {source_path:?}: {e}"));
+                    errors.push(format!("相対パス取得失敗: source_path.display(): {e}"));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                     if let Some(ref pb) = progress {
                         pb.inc(1);
@@ -242,7 +246,7 @@ impl RestoreEngine {
             let dest_path = match safe_join(dest_dir, relative_path) {
                 Ok(p) => p,
                 Err(e) => {
-                    errors.push(format!("パストラバーサル検出: {relative_path:?}: {e}"));
+                    errors.push(format!("パストラバーサル検出: relative_path.display(): {e}"));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                     if let Some(ref pb) = progress {
                         pb.inc(1);
@@ -254,7 +258,7 @@ impl RestoreEngine {
             // 親ディレクトリを作成
             if let Some(parent) = dest_path.parent() {
                 if let Err(e) = std::fs::create_dir_all(parent) {
-                    errors.push(format!("ディレクトリ作成失敗: {parent:?}: {e}"));
+                    errors.push(format!("ディレクトリ作成失敗: {}: {e}", parent.display()));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                     if let Some(ref pb) = progress {
                         pb.inc(1);
@@ -267,7 +271,7 @@ impl RestoreEngine {
             let file_data = match std::fs::read(source_path) {
                 Ok(d) => d,
                 Err(e) => {
-                    errors.push(format!("ファイル読み込み失敗: {source_path:?}: {e}"));
+                    errors.push(format!("ファイル読み込み失敗: source_path.display(): {e}"));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                     if let Some(ref pb) = progress {
                         pb.inc(1);
@@ -287,7 +291,7 @@ impl RestoreEngine {
                         Some(p) => p.to_string(),
                         None => {
                             errors.push(format!(
-                                "暗号化されたファイルですがパスワードが未指定: {relative_path:?}"
+                                "暗号化されたファイルですがパスワードが未指定: relative_path.display()"
                             ));
                             failed_count.fetch_add(1, Ordering::Relaxed);
                             if let Some(ref pb) = progress {
@@ -324,7 +328,7 @@ impl RestoreEngine {
                         self.decompress_if_needed(&decrypted_data)?
                     }
                     Err(e) => {
-                        errors.push(format!("復号化失敗: {relative_path:?}: {e}"));
+                        errors.push(format!("復号化失敗: relative_path.display(): {e}"));
                         failed_count.fetch_add(1, Ordering::Relaxed);
                         if let Some(ref pb) = progress {
                             pb.inc(1);
@@ -353,17 +357,17 @@ impl RestoreEngine {
                             Ok(false) => {
                                 verification_failed_count.fetch_add(1, Ordering::Relaxed);
                                 errors.push(format!(
-                                    "⚠ 整合性検証失敗（ファイルが改ざんされています）: {relative_path:?}"
+                                    "⚠ 整合性検証失敗（ファイルが改ざんされています）: relative_path.display()"
                                 ));
                             }
                             Err(e) => {
-                                eprintln!("警告: 整合性検証エラー: {relative_path:?}: {e}");
+                                eprintln!("警告: 整合性検証エラー: relative_path.display(): {e}");
                             }
                         }
                     }
                 }
                 Err(e) => {
-                    errors.push(format!("ファイル書き込み失敗: {dest_path:?}: {e}"));
+                    errors.push(format!("ファイル書き込み失敗: dest_path.display(): {e}"));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                 }
             }

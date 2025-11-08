@@ -214,6 +214,7 @@ impl CompressedData {
     /// - データが最小長（25バイト）未満の場合
     /// - 不明な圧縮タイプの場合
     /// - データの長さが一致しない場合
+    #[must_use]
     pub fn from_bytes(data: &[u8]) -> Result<Self> {
         if data.len() < 25 {
             return Err(BackupError::CompressionError(
@@ -282,6 +283,7 @@ pub struct CompressionEngine {
 
 impl CompressionEngine {
     /// 新しい圧縮エンジンを作成
+    #[must_use]
     pub fn new(compression_type: CompressionType, config: CompressionConfig) -> Self {
         Self {
             config,
@@ -290,6 +292,7 @@ impl CompressionEngine {
     }
 
     /// zstd圧縮エンジンを作成
+    #[must_use]
     pub fn zstd(config: Option<CompressionConfig>) -> Self {
         Self::new(
             CompressionType::Zstd,
@@ -298,6 +301,7 @@ impl CompressionEngine {
     }
 
     /// gzip圧縮エンジンを作成
+    #[must_use]
     pub fn gzip(config: Option<CompressionConfig>) -> Self {
         Self::new(
             CompressionType::Gzip,
@@ -306,6 +310,7 @@ impl CompressionEngine {
     }
 
     /// 圧縮なしエンジンを作成
+    #[must_use]
     pub fn none() -> Self {
         Self::new(CompressionType::None, CompressionConfig::none())
     }
@@ -315,6 +320,7 @@ impl CompressionEngine {
     /// # Errors
     ///
     /// 圧縮エンジンがデータの圧縮に失敗した場合にエラーを返します。
+    #[must_use]
     pub fn compress(&self, data: &[u8]) -> Result<CompressedData> {
         let original_size = data.len() as u64;
 
@@ -340,6 +346,7 @@ impl CompressionEngine {
     /// # Errors
     ///
     /// 圧縮エンジンがデータの展開に失敗した場合にエラーを返します。
+    #[must_use]
     pub fn decompress(&self, compressed_data: &CompressedData) -> Result<Vec<u8>> {
         match compressed_data.compression_type {
             CompressionType::Zstd => self.decompress_zstd(&compressed_data.data),

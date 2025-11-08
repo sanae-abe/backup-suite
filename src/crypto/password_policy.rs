@@ -15,6 +15,7 @@ pub enum PasswordStrength {
 
 impl PasswordStrength {
     /// Get color-coded display string
+    #[must_use]
     pub fn display(&self) -> &str {
         match self {
             PasswordStrength::Weak => "Weak",
@@ -24,6 +25,7 @@ impl PasswordStrength {
     }
 
     /// Get descriptive message for the strength level
+    #[must_use]
     pub fn message(&self) -> &str {
         match self {
             PasswordStrength::Weak => {
@@ -58,6 +60,7 @@ impl Default for PasswordPolicy {
 
 impl PasswordPolicy {
     /// Evaluate password strength (non-enforcing)
+    #[must_use]
     pub fn evaluate(&self, password: &str) -> PasswordStrength {
         let length = password.len();
 
@@ -131,6 +134,7 @@ impl PasswordPolicy {
     }
 
     /// Check if password contains common weak patterns
+    #[must_use]
     pub fn check_common_patterns(&self, password: &str) -> Vec<&'static str> {
         let mut warnings = Vec::new();
 
@@ -244,6 +248,7 @@ impl PasswordPolicy {
     }
 
     /// Generate a strong random password
+    #[must_use]
     pub fn generate_password(&self, length: usize) -> Zeroizing<String> {
         const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
                                   abcdefghijklmnopqrstuvwxyz\
@@ -262,6 +267,7 @@ impl PasswordPolicy {
     }
 
     /// Display password strength report (non-enforcing)
+    #[must_use]
     pub fn display_report(&self, password: &str) -> String {
         let strength = self.evaluate(password);
         let warnings = self.check_common_patterns(password);
