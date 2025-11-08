@@ -27,10 +27,10 @@ chrono = { version = "0.4.42", features = ["serde"] }
 clap = { version = "4.5.51", features = ["derive", "cargo"] }
 clap_complete = "4.5.60"
 comfy-table = "7.1"
-console = "0.15"
-dialoguer = "0.11"
+console = "0.16"
+dialoguer = "0.12"
 dirs = "6.0.0"
-indicatif = "0.17"
+indicatif = "0.18"
 is-terminal = "0.4"
 num_cpus = "1.0"
 rayon = "1.11.0"
@@ -45,7 +45,7 @@ walkdir = "2.5.0"
 # 暗号化関連
 aes-gcm = "0.10"
 argon2 = "0.5"
-rand = "0.8"
+rand = "0.9"
 zeroize = { version = "1.8", features = ["derive"] }
 unicode-normalization = "0.1"
 

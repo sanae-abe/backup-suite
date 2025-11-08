@@ -3,9 +3,9 @@
 //! パスワードからの安全な鍵導出とマスターキー管理を提供します。
 
 use crate::error::{BackupError, Result};
-use argon2::password_hash::{rand_core::OsRng, SaltString};
+use argon2::password_hash::rand_core::{OsRng, RngCore};
+use argon2::password_hash::SaltString;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use rand::RngCore;
 use zeroize::{Zeroize, ZeroizeOnDrop};
 
 /// マスターキー（32バイト）

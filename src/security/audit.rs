@@ -580,7 +580,7 @@ fn constant_time_eq(a: &[u8], b: &[u8]) -> bool {
 fn generate_random_bytes(len: usize) -> Vec<u8> {
     use rand::RngCore;
     let mut bytes = vec![0u8; len];
-    rand::thread_rng().fill_bytes(&mut bytes);
+    rand::rng().fill_bytes(&mut bytes);
     bytes
 }
 

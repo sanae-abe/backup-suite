@@ -6,7 +6,6 @@ use super::key_management::MasterKey;
 use crate::error::{BackupError, Result};
 use aes_gcm::aead::Aead;
 use aes_gcm::{Aes256Gcm, Key, KeyInit, Nonce};
-use rand::rngs::OsRng;
 use rand::RngCore;
 use std::io::{Read, Write};
 
@@ -108,7 +107,7 @@ impl EncryptionEngine {
     /// ランダムなナンスを生成
     fn generate_nonce() -> [u8; 12] {
         let mut nonce = [0u8; 12];
-        OsRng.fill_bytes(&mut nonce);
+        rand::rng().fill_bytes(&mut nonce);
         nonce
     }
 
