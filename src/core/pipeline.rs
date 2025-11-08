@@ -37,6 +37,7 @@ impl Default for PipelineConfig {
 
 impl PipelineConfig {
     /// 暗号化を有効にする
+    #[must_use]
     pub fn with_encryption(mut self, config: EncryptionConfig) -> Self {
         self.encryption = Some(config);
         self
@@ -54,6 +55,7 @@ impl PipelineConfig {
     }
 
     /// 高速設定に変更
+    #[must_use]
     pub fn fast(mut self) -> Self {
         self.compression = CompressionConfig::fast(self.compression_type);
         self.performance = PerformanceConfig::fast();
@@ -61,6 +63,7 @@ impl PipelineConfig {
     }
 
     /// 高圧縮率設定に変更
+    #[must_use]
     pub fn best_compression(mut self) -> Self {
         self.compression = CompressionConfig::best(self.compression_type);
         self.performance = PerformanceConfig::quality();
@@ -94,6 +97,7 @@ impl Default for PerformanceConfig {
 
 impl PerformanceConfig {
     /// 高速設定
+    #[must_use]
     pub fn fast() -> Self {
         Self {
             parallel_threads: num_cpus::get(), // 全コア使用
@@ -104,6 +108,7 @@ impl PerformanceConfig {
     }
 
     /// 品質重視設定
+    #[must_use]
     pub fn quality() -> Self {
         Self {
             parallel_threads: (num_cpus::get() / 2).max(1), // コア数の半分
@@ -114,12 +119,14 @@ impl PerformanceConfig {
     }
 
     /// カスタム並列度設定
+    #[must_use]
     pub fn with_parallelism(mut self, threads: usize) -> Self {
         self.parallel_threads = threads.max(1);
         self
     }
 
     /// カスタムバッチサイズ設定
+    #[must_use]
     pub fn with_batch_size(mut self, size: usize) -> Self {
         self.batch_size = size.max(1);
         self
@@ -130,6 +137,7 @@ impl PerformanceConfig {
 ///
 /// CPU コア数の75%を使用し、システムリソースを確保する。
 /// 最小1スレッド、最大32スレッドに制限。
+#[must_use]
 pub fn optimal_parallelism() -> usize {
     let cpus = num_cpus::get();
     (cpus * 3 / 4).clamp(1, 32)
@@ -143,6 +151,7 @@ pub fn optimal_parallelism() -> usize {
 ///
 /// * `file_count` - 処理対象のファイル数
 /// * `avg_file_size` - 平均ファイルサイズ（バイト）
+#[must_use]
 pub fn dynamic_parallelism(file_count: usize, avg_file_size: u64) -> usize {
     let base_parallelism = optimal_parallelism();
 
@@ -209,6 +218,7 @@ pub struct ProcessingPipeline {
 
 impl ProcessingPipeline {
     /// 新しいパイプラインを作成
+    #[must_use]
     pub fn new(config: PipelineConfig) -> Self {
         let encryption_engine = config
             .encryption
@@ -505,6 +515,7 @@ impl ProcessingPipeline {
     }
 
     /// パフォーマンス統計を取得
+    #[must_use]
     pub fn get_performance_stats(&self) -> PerformanceStats {
         PerformanceStats {
             available_threads: self.config.performance.parallel_threads,
@@ -521,6 +532,7 @@ impl ProcessingPipeline {
     }
 
     /// 現在の並列度を取得
+    #[must_use]
     pub fn current_parallelism(&self) -> usize {
         self.thread_pool
             .as_ref()
