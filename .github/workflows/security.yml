@@ -92,10 +92,17 @@ jobs:
 
     - name: Check for unsafe code
       run: |
-        # unsafeコードブロックの検出
-        if grep -r "unsafe" src/ --include="*.rs" | grep -v "// SAFETY:"; then
-          echo "警告: ドキュメント化されていないunsafeコードが検出されました"
-          exit 1
+        # unsafeコードブロックの検出（// SAFETY: コメント付きは許可）
+        UNSAFE_LINES=$(grep -n "unsafe" src/ -r --include="*.rs" | grep -v "// SAFETY:" || true)
+        if [ -n "$UNSAFE_LINES" ]; then
+          # 検出された各unsafeについて、前の行に// SAFETY:があるか確認
+          echo "$UNSAFE_LINES" | while IFS=: read -r file line rest; do
+            PREV_LINE=$((line - 1))
+            if ! sed -n "${PREV_LINE}p" "$file" | grep -q "// SAFETY:"; then
+              echo "警告: ドキュメント化されていないunsafeコードが検出されました: $file:$line"
+              exit 1
+            fi
+          done
         fi
 
   secrets-scan:

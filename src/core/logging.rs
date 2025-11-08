@@ -468,7 +468,7 @@ mod tests {
 
         let metadata = serde_json::json!({
             "file_count": 42,
-            "bytes": 1024000
+            "bytes": 1_024_000
         });
 
         logger.log_with_metadata(LogLevel::Info, "バックアップ完了", metadata);

@@ -311,7 +311,7 @@ impl BackupProgress {
     /// use backup_suite::ui::progress::BackupProgress;
     ///
     /// let progress = BackupProgress::new(100);
-    /// progress.update_stats(50, 52428800, 10.5); // 50ファイル, 50MB, 10.5秒
+    /// progress.update_stats(50, 52_428_800, 10.5); // 50ファイル, 50MB, 10.5秒
     /// ```
     #[allow(clippy::cast_precision_loss)]
     pub fn update_stats(&self, processed_files: u64, total_bytes: u64, elapsed_secs: f64) {
@@ -465,7 +465,7 @@ mod tests {
     #[test]
     fn test_update_stats() {
         let progress = BackupProgress::new(100);
-        progress.update_stats(50, 52428800, 10.5); // 50ファイル, 50MB, 10.5秒
+        progress.update_stats(50, 52_428_800, 10.5); // 50ファイル, 50MB, 10.5秒
         progress.finish_and_clear();
     }
 }
