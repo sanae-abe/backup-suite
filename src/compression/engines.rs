@@ -216,8 +216,7 @@ impl CompressedData {
     /// - データが最小長（25バイト）未満の場合
     /// - 不明な圧縮タイプの場合
     /// - データの長さが一致しない場合
-    #[must_use]
-    pub fn from_bytes(data: &[u8]) -> Result<Self> {
+        pub fn from_bytes(data: &[u8]) -> Result<Self> {
         if data.len() < 25 {
             return Err(BackupError::CompressionError(
                 "圧縮データが短すぎます".to_string(),
@@ -322,8 +321,7 @@ impl CompressionEngine {
     /// # Errors
     ///
     /// 圧縮エンジンがデータの圧縮に失敗した場合にエラーを返します。
-    #[must_use]
-    pub fn compress(&self, data: &[u8]) -> Result<CompressedData> {
+        pub fn compress(&self, data: &[u8]) -> Result<CompressedData> {
         let original_size = data.len() as u64;
 
         let compressed_data = match self.compression_type {
@@ -348,8 +346,7 @@ impl CompressionEngine {
     /// # Errors
     ///
     /// 圧縮エンジンがデータの展開に失敗した場合にエラーを返します。
-    #[must_use]
-    pub fn decompress(&self, compressed_data: &CompressedData) -> Result<Vec<u8>> {
+        pub fn decompress(&self, compressed_data: &CompressedData) -> Result<Vec<u8>> {
         match compressed_data.compression_type {
             CompressionType::Zstd => self.decompress_zstd(&compressed_data.data),
             CompressionType::Gzip => self.decompress_gzip(&compressed_data.data),

@@ -50,7 +50,6 @@ use unicode_normalization::UnicodeNormalization;
 /// let result = safe_join(base, malicious);
 /// assert!(result.is_err());
 /// ```
-    #[must_use]
 pub fn safe_join(base: &Path, child: &Path) -> Result<PathBuf> {
     // Null byte検出（パストラバーサル攻撃対策）
     let child_str = child
@@ -195,7 +194,6 @@ pub fn sanitize_path_component(name: &str) -> String {
 /// * `BackupError::PathTraversalDetected` - 危険なパスパターンを検出した場合
 ///   - 親ディレクトリ参照（`..`）を含むパス
 ///   - 浅い絶対パス（ルート直下等、階層が2以下の絶対パス）
-    #[must_use]
 pub fn validate_path_safety(path: &Path) -> Result<()> {
     // 定数時間で全ての検証を実行（タイミング攻撃対策）
     let mut has_parent_dir = false;
@@ -260,7 +258,6 @@ pub fn validate_path_safety(path: &Path) -> Result<()> {
 /// let path = Path::new("/home/user/backups/data.txt");
 /// let file = safe_open(path).unwrap();
 /// ```
-    #[must_use]
 pub fn safe_open(path: &Path) -> Result<File> {
     #[cfg(unix)]
     {

@@ -163,8 +163,7 @@ impl Config {
     /// let path = Config::config_path().unwrap();
     /// println!("設定ファイル: {:?}", path);
     /// ```
-    #[must_use]
-    pub fn config_path() -> Result<PathBuf> {
+        pub fn config_path() -> Result<PathBuf> {
         let home = dirs::home_dir().context("ホームディレクトリが見つかりません")?;
         Ok(home.join(".config/backup-suite/config.toml"))
     }
@@ -193,8 +192,7 @@ impl Config {
     /// let config = Config::load().unwrap_or_default();
     /// println!("バックアップ先: {:?}", config.backup.destination);
     /// ```
-    #[must_use]
-    pub fn load() -> Result<Self> {
+        pub fn load() -> Result<Self> {
         let config_path = Self::config_path()?;
 
         if !config_path.exists() {
@@ -242,8 +240,7 @@ impl Config {
     /// config.add_target(target);
     /// config.save().unwrap();
     /// ```
-    #[must_use]
-    pub fn save(&self) -> Result<()> {
+        pub fn save(&self) -> Result<()> {
         let config_path = Self::config_path()?;
 
         // ディレクトリが存在しない場合は作成
@@ -405,7 +402,6 @@ impl Config {
     /// * `BackupError::ConfigValidationError` - 保存期間（keep_days）が範囲外（1-3650日）
     /// * `BackupError::PermissionDenied` - ターゲットに読み取り権限がない
     /// * `BackupError::RegexError` - 不正な正規表現パターンが含まれている
-    #[must_use]
     pub fn validate(&self) -> BackupResult<()> {
         // 1. バックアップ先の妥当性チェック
         if !self.backup.destination.exists() {

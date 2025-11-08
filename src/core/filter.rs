@@ -52,8 +52,7 @@ impl FileFilter {
     /// let patterns = vec![r"\.git$".to_string()];
     /// let filter = `FileFilter`::new(&patterns).unwrap();
     /// ```
-    #[must_use]
-    pub fn new(exclude_patterns: &[String]) -> Result<Self> {
+        pub fn new(exclude_patterns: &[String]) -> Result<Self> {
         let mut patterns = Vec::new();
 
         for pattern in exclude_patterns {

@@ -55,8 +55,7 @@ impl EncryptedData {
     }
 
     /// バイナリ形式からデシリアライズ
-    #[must_use]
-    pub fn from_bytes(data: &[u8]) -> Result<Self> {
+        pub fn from_bytes(data: &[u8]) -> Result<Self> {
         if data.len() < 44 {
             return Err(BackupError::EncryptionError(
                 "暗号化データが短すぎます".to_string(),

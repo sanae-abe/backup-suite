@@ -111,8 +111,7 @@ impl IncrementalBackupEngine {
     /// let engine = IncrementalBackupEngine::new(PathBuf::from("./backups"));
     /// let backup_type = engine.determine_backup_type().unwrap();
     /// ```
-    #[must_use]
-    pub fn determine_backup_type(&self) -> Result<BackupType> {
+        pub fn determine_backup_type(&self) -> Result<BackupType> {
         match self.find_latest_backup()? {
             Some(_) => Ok(BackupType::Incremental),
             None => Ok(BackupType::Full),
@@ -129,8 +128,7 @@ impl IncrementalBackupEngine {
     ///
     /// 以下の場合にエラーを返します:
     /// * バックアップディレクトリの読み込みに失敗した場合
-    #[must_use]
-    pub fn find_latest_backup(&self) -> Result<Option<PathBuf>> {
+        pub fn find_latest_backup(&self) -> Result<Option<PathBuf>> {
         if !self.backup_base.exists() {
             return Ok(None);
         }
@@ -220,8 +218,7 @@ impl IncrementalBackupEngine {
     /// 以下の場合にエラーを返します:
     /// * 前回のバックアップが見つからない場合
     /// * メタデータの読み込みに失敗した場合
-    #[must_use]
-    pub fn load_previous_metadata(&self) -> Result<BackupMetadata> {
+        pub fn load_previous_metadata(&self) -> Result<BackupMetadata> {
         let latest_backup = self
             .find_latest_backup()?
             .ok_or_else(|| anyhow::anyhow!("前回のバックアップが見つかりません"))?;
@@ -240,8 +237,7 @@ impl IncrementalBackupEngine {
     /// 以下の場合にエラーを返します:
     /// * 最新バックアップの検索に失敗した場合
     /// * バックアップ名の取得に失敗した場合
-    #[must_use]
-    pub fn get_previous_backup_name(&self) -> Result<Option<String>> {
+        pub fn get_previous_backup_name(&self) -> Result<Option<String>> {
         match self.find_latest_backup()? {
             Some(path) => {
                 let name = path
@@ -287,7 +283,6 @@ impl IncrementalBackupEngine {
 ///     println!("復元順: {:?}", backup);
 /// }
 /// ```
-    #[must_use]
 pub fn resolve_backup_chain(backup_dir: &Path) -> Result<Vec<PathBuf>> {
     let mut chain = Vec::new();
     let mut current_dir = backup_dir.to_path_buf();
