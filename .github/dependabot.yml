@@ -1,43 +1,33 @@
 # Dependabot configuration for backup-suite
 # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
-# Note: For security updates, enable "Dependabot security updates" in GitHub Settings.
-# This file configures version updates only.
-
 version: 2
 updates:
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
-      interval: "monthly"  # Conservative schedule for stable v1.0.x
+      interval: "monthly"
       day: "monday"
       time: "09:00"
       timezone: "Asia/Tokyo"
 
-    # Limit PR volume
+    # Limit number of open PRs
     open-pull-requests-limit: 3
 
-    # Group minor and patch updates separately
+    # Group patch and minor updates together
     groups:
-      patch-updates:
-        patterns:
-          - "*"
+      dependencies:
         update-types:
           - "patch"
-      minor-updates:
-        patterns:
-          - "*"
-        update-types:
           - "minor"
 
-    # Custom labels
+    # Labels for PRs
     labels:
       - "dependencies"
 
-    # Commit message format
+    # Commit message configuration
     commit-message:
       prefix: "deps"
-      prefix-development: "chore"
 
     # Ignore major version updates (breaking changes)
     ignore:
