@@ -11,7 +11,7 @@ homepage = "https://github.com/sanae-abe/backup-suite"
 keywords = ["backup", "cli", "rust", "tool", "filesystem"]
 categories = ["command-line-utilities", "filesystem"]
 readme = "README.md"
-rust-version = "1.70"
+rust-version = "1.82.0"
 
 [lib]
 name = "backup_suite"

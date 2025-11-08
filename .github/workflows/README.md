@@ -642,13 +642,13 @@ skip = [
 
 ```bash
 # MSRV確認
-rustup install 1.70.0
-rustup default 1.70.0
+rustup install 1.82.0
+rustup default 1.82.0
 cargo build --all-features
 
 # Cargo.tomlでMSRV明示
 [package]
-rust-version = "1.70.0"
+rust-version = "1.82.0"
 
 # 依存関係のMSRV確認
 cargo tree --depth 1 | grep -v "backup-suite"
