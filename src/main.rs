@@ -290,7 +290,7 @@ fn select_file_with_fuzzy(prompt: &str) -> Result<Option<PathBuf>> {
 
     let paths: Vec<String> = std::io::BufReader::new(&output.stdout[..])
         .lines()
-        .filter_map(|line| line.ok())
+        .map_while(Result::ok)
         .filter(|line| !line.is_empty())
         .take(1000)
         .collect();
