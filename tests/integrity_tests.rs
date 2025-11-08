@@ -21,7 +21,7 @@ fn test_backup_and_restore_with_integrity_verification() {
     fs::create_dir_all(&source_dir).unwrap();
     let file1 = source_dir.join("test1.txt");
     let file2 = source_dir.join("subdir/test2.txt");
-    fs::create_dir_all(&source_dir.join("subdir")).unwrap();
+    fs::create_dir_all(source_dir.join("subdir")).unwrap();
 
     let mut f1 = fs::File::create(&file1).unwrap();
     f1.write_all(b"test content 1").unwrap();

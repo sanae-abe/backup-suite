@@ -36,16 +36,11 @@ use super::integrity::BackupMetadata;
 ///
 /// * `Full` - 全ファイルをバックアップ（初回または前回なし）
 /// * `Incremental` - 変更ファイルのみバックアップ（前回バックアップからの差分）
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum BackupType {
+    #[default]
     Full,
     Incremental,
-}
-
-impl Default for BackupType {
-    fn default() -> Self {
-        Self::Full
-    }
 }
 
 /// 増分バックアップエンジン
@@ -205,7 +200,7 @@ impl IncrementalBackupEngine {
                 .context(format!("ハッシュ計算失敗: {:?}", absolute_path))?;
 
             // ハッシュが異なる場合、または新規ファイルの場合は変更とみなす
-            if previous_hash.map_or(true, |prev| prev != &current_hash) {
+            if previous_hash != Some(&current_hash) {
                 changed_files.push((relative_path.clone(), absolute_path.clone()));
             }
         }

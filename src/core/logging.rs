@@ -42,7 +42,7 @@ pub enum LogLevel {
 
 impl LogLevel {
     /// 文字列から変換
-    pub fn from_str(s: &str) -> Result<Self> {
+    pub fn parse(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "debug" => Ok(LogLevel::Debug),
             "info" => Ok(LogLevel::Info),
@@ -74,7 +74,7 @@ pub enum LogFormat {
 
 impl LogFormat {
     /// 文字列から変換
-    pub fn from_str(s: &str) -> Result<Self> {
+    pub fn parse(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "text" | "plain" => Ok(LogFormat::Text),
             "json" => Ok(LogFormat::Json),
@@ -383,18 +383,18 @@ mod tests {
 
     #[test]
     fn test_log_level_from_str() {
-        assert_eq!(LogLevel::from_str("debug").unwrap(), LogLevel::Debug);
-        assert_eq!(LogLevel::from_str("INFO").unwrap(), LogLevel::Info);
-        assert_eq!(LogLevel::from_str("warn").unwrap(), LogLevel::Warn);
-        assert_eq!(LogLevel::from_str("ERROR").unwrap(), LogLevel::Error);
-        assert!(LogLevel::from_str("invalid").is_err());
+        assert_eq!(LogLevel::parse("debug").unwrap(), LogLevel::Debug);
+        assert_eq!(LogLevel::parse("INFO").unwrap(), LogLevel::Info);
+        assert_eq!(LogLevel::parse("warn").unwrap(), LogLevel::Warn);
+        assert_eq!(LogLevel::parse("ERROR").unwrap(), LogLevel::Error);
+        assert!(LogLevel::parse("invalid").is_err());
     }
 
     #[test]
     fn test_log_format_from_str() {
-        assert_eq!(LogFormat::from_str("text").unwrap(), LogFormat::Text);
-        assert_eq!(LogFormat::from_str("json").unwrap(), LogFormat::Json);
-        assert!(LogFormat::from_str("invalid").is_err());
+        assert_eq!(LogFormat::parse("text").unwrap(), LogFormat::Text);
+        assert_eq!(LogFormat::parse("json").unwrap(), LogFormat::Json);
+        assert!(LogFormat::parse("invalid").is_err());
     }
 
     #[test]

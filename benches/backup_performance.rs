@@ -118,7 +118,7 @@ fn bench_parallel_backup(c: &mut Criterion) {
                 let target = Target::new(source_dir, Priority::High, "test".to_string());
                 config.add_target(target);
 
-                let runner = BackupRunner::new(config, false).with_progress(false); // ベンチマーク中はプログレス無効
+                let mut runner = BackupRunner::new(config, false).with_progress(false); // ベンチマーク中はプログレス無効
 
                 b.iter(|| black_box(runner.run(None, None).unwrap()));
             },
@@ -319,7 +319,7 @@ fn bench_end_to_end(c: &mut Criterion) {
         let target = Target::new(source_dir, Priority::High, "documents".to_string());
         config.add_target(target);
 
-        let runner = BackupRunner::new(config, false).with_progress(false);
+        let mut runner = BackupRunner::new(config, false).with_progress(false);
 
         b.iter(|| black_box(runner.run(None, None).unwrap()));
     });
@@ -349,7 +349,7 @@ fn bench_memory_usage(c: &mut Criterion) {
         let target = Target::new(source_dir, Priority::High, "large_set".to_string());
         config.add_target(target);
 
-        let runner = BackupRunner::new(config, false).with_progress(false);
+        let mut runner = BackupRunner::new(config, false).with_progress(false);
 
         b.iter(|| black_box(runner.run(None, None).unwrap()));
     });

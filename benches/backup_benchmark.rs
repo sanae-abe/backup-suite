@@ -128,7 +128,7 @@ fn benchmark_small_files(c: &mut Criterion) {
                 b.iter_batched(
                     || setup_benchmark_env(num_files),
                     |(_temp_dir, config)| {
-                        let runner = BackupRunner::new(config, false);
+                        let mut runner = BackupRunner::new(config, false);
                         let result = runner.run(None, None).unwrap();
                         black_box(result)
                     },
@@ -157,7 +157,7 @@ fn benchmark_large_files(c: &mut Criterion) {
                 b.iter_batched(
                     || setup_large_files(1, size_mb),
                     |(_temp_dir, config)| {
-                        let runner = BackupRunner::new(config, false);
+                        let mut runner = BackupRunner::new(config, false);
                         let result = runner.run(None, None).unwrap();
                         black_box(result)
                     },
@@ -183,7 +183,7 @@ fn benchmark_nested_directories(c: &mut Criterion) {
                 b.iter_batched(
                     || setup_nested_structure(depth, 3),
                     |(_temp_dir, config)| {
-                        let runner = BackupRunner::new(config, false);
+                        let mut runner = BackupRunner::new(config, false);
                         let result = runner.run(None, None).unwrap();
                         black_box(result)
                     },
@@ -212,7 +212,7 @@ fn benchmark_parallel_processing(c: &mut Criterion) {
                 b.iter_batched(
                     || setup_benchmark_env(num_files),
                     |(_temp_dir, config)| {
-                        let runner = BackupRunner::new(config, false);
+                        let mut runner = BackupRunner::new(config, false);
                         let result = runner.run(None, None).unwrap();
                         black_box(result)
                     },
@@ -236,7 +236,7 @@ fn benchmark_priority_filtering(c: &mut Criterion) {
         b.iter_batched(
             || setup_benchmark_env(num_files),
             |(_temp_dir, config)| {
-                let runner = BackupRunner::new(config, false);
+                let mut runner = BackupRunner::new(config, false);
                 let result = runner.run(None, None).unwrap();
                 black_box(result)
             },
@@ -248,7 +248,7 @@ fn benchmark_priority_filtering(c: &mut Criterion) {
         b.iter_batched(
             || setup_benchmark_env(num_files),
             |(_temp_dir, config)| {
-                let runner = BackupRunner::new(config, false);
+                let mut runner = BackupRunner::new(config, false);
                 let result = runner.run(Some(&Priority::High), None).unwrap();
                 black_box(result)
             },

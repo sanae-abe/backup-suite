@@ -23,7 +23,7 @@ fn main() {
         // 統計情報の更新
         let elapsed = start.elapsed().as_secs_f64();
         let processed_files = i + 1;
-        let total_bytes = ((processed_files as u64) * 1024 * 1024) as u64; // 1MBずつ増加
+        let total_bytes = (processed_files as u64) * 1024 * 1024; // 1MBずつ増加
         progress.update_stats(processed_files as u64, total_bytes, elapsed);
 
         progress.inc(1);
@@ -61,7 +61,7 @@ fn main() {
         ));
 
         let elapsed = start.elapsed().as_secs_f64();
-        let total_bytes = ((i + 1) as u64 * 100 * 1024 * 1024) as u64; // 平均100MB
+        let total_bytes = (i + 1) as u64 * 100 * 1024 * 1024; // 平均100MB
         progress.update_stats((i + 1) as u64, total_bytes, elapsed);
 
         progress.inc(1);

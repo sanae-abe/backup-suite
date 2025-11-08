@@ -645,7 +645,7 @@ impl BackupRunner {
                 // （次回の増分バックアップで正しく比較できるようにするため）
                 if actual_backup_type == BackupType::Incremental {
                     for (source, dest) in &all_files {
-                        if let Some(rel_path) = dest.strip_prefix(&backup_base).ok() {
+                        if let Ok(rel_path) = dest.strip_prefix(&backup_base) {
                             // 既にハッシュが保存されているファイルはスキップ
                             if !guard.metadata.file_hashes.contains_key(rel_path) {
                                 if let Ok(hash) = guard.compute_hash(source) {
