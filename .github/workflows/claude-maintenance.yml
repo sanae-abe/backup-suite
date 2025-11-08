@@ -100,12 +100,13 @@ jobs:
         with:
           script: |
             const date = new Date().toISOString().split('T')[0];
-            const runUrl = `${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}`;
+            const runId = '${{ github.run_id }}';
+            const runUrl = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
 
             const body = `## Claude環境月次メンテナンス失敗 🚨
 
 **実行日時**: ${date}
-**実行ID**: ${{ github.run_id }}
+**実行ID**: ${runId}
 **ワークフロー**: [実行ログを確認](${runUrl})
 
 ### 推奨アクション
