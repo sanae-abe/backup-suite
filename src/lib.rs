@@ -290,14 +290,16 @@ mod tests {
     #[test]
     fn test_exports_available() {
         // 主要な型がエクスポートされていることを確認
-        let _config: Config = Config::default();
-        let _priority: Priority = Priority::Medium;
+        use std::hint::black_box;
+        black_box(Config::default());
+        black_box(Priority::Medium);
     }
 
     #[test]
     fn test_ui_exports() {
         // UI機能がエクスポートされていることを確認
-        let _theme = ColorTheme::auto();
-        let _scheme = ColorScheme::Auto;
+        use std::hint::black_box;
+        black_box(ColorTheme::auto());
+        black_box(ColorScheme::Auto);
     }
 }
