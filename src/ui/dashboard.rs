@@ -383,7 +383,7 @@ fn get_disk_info(path: &std::path::Path) -> Result<Option<(u64, u64)>> {
     // SAFETY: path_cstr は有効なCStringから取得したポインタで、
     // statはゼロ初期化された有効な構造体への可変参照。
     // libc::statfsはPOSIX標準のシステムコールで、正常なパラメータで呼び出している。
-    let result = unsafe { libc::statfs(path_cstr.as_ptr(), &mut stat) };
+    let result = unsafe { libc::statfs(path_cstr.as_ptr(), &raw mut stat) };
 
     if result == 0 {
         #[allow(clippy::unnecessary_cast)]
