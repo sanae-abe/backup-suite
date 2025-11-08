@@ -34,6 +34,7 @@ impl Default for CleanupPolicy {
 
 impl CleanupPolicy {
     /// 保持期間を指定してポリシーを作成
+    #[must_use]
     pub fn retention_days(days: u32) -> Self {
         Self {
             retention_days: Some(days),
@@ -42,6 +43,7 @@ impl CleanupPolicy {
     }
 
     /// 保持数を指定してポリシーを作成
+    #[must_use]
     pub fn keep_count(count: usize) -> Self {
         Self {
             keep_count: Some(count),
@@ -51,6 +53,7 @@ impl CleanupPolicy {
     }
 
     /// 最大サイズを指定してポリシーを作成
+    #[must_use]
     pub fn max_size(size_bytes: u64) -> Self {
         Self {
             max_total_size: Some(size_bytes),
@@ -60,6 +63,7 @@ impl CleanupPolicy {
     }
 
     /// 優先度別保持を有効化
+    #[must_use]
     pub fn with_priority_based(mut self) -> Self {
         self.priority_based = true;
         self

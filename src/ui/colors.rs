@@ -15,6 +15,7 @@ pub enum ColorScheme {
 
 impl ColorScheme {
     /// 環境変数から自動検出
+    #[must_use]
     pub fn detect() -> Self {
         if let Ok(term) = std::env::var("TERM") {
             if term.contains("256color") {
@@ -37,15 +38,18 @@ pub struct ColorTheme {
 }
 
 impl ColorTheme {
+    #[must_use]
     pub fn new(scheme: ColorScheme) -> Self {
         Self { scheme }
     }
 
+    #[must_use]
     pub fn auto() -> Self {
         Self::new(ColorScheme::detect())
     }
 
     /// 成功メッセージ用スタイル（緑 - 落ち着いた色調）
+    #[must_use]
     pub fn success(&self) -> Style {
         match self.scheme {
             ColorScheme::Dark | ColorScheme::Auto => Style::new().green(),
@@ -55,6 +59,7 @@ impl ColorTheme {
     }
 
     /// エラーメッセージ用スタイル（赤 - 落ち着いた色調）
+    #[must_use]
     pub fn error(&self) -> Style {
         match self.scheme {
             ColorScheme::Dark | ColorScheme::Auto => Style::new().red(),
@@ -64,6 +69,7 @@ impl ColorTheme {
     }
 
     /// 警告メッセージ用スタイル（黄 - 落ち着いた色調）
+    #[must_use]
     pub fn warning(&self) -> Style {
         match self.scheme {
             ColorScheme::Dark | ColorScheme::Auto => Style::new().yellow(),
@@ -73,6 +79,7 @@ impl ColorTheme {
     }
 
     /// 情報メッセージ用スタイル（青 - 落ち着いた色調）
+    #[must_use]
     pub fn info(&self) -> Style {
         match self.scheme {
             ColorScheme::Dark | ColorScheme::Auto => Style::new().blue(),
@@ -82,6 +89,7 @@ impl ColorTheme {
     }
 
     /// 見出し用スタイル（シンプル）
+    #[must_use]
     pub fn header(&self) -> Style {
         match self.scheme {
             ColorScheme::Dark | ColorScheme::Auto | ColorScheme::Light => Style::new().bold(),
@@ -90,16 +98,19 @@ impl ColorTheme {
     }
 
     /// 強調表示用スタイル（シンプル）
+    #[must_use]
     pub fn highlight(&self) -> Style {
         Style::new().bold()
     }
 
     /// 通常テキスト用スタイル
+    #[must_use]
     pub fn normal(&self) -> Style {
         Style::new()
     }
 
     /// 薄い色のテキスト（補助情報用）
+    #[must_use]
     pub fn dim(&self) -> Style {
         match self.scheme {
             ColorScheme::Dark => Style::new().dim(),
@@ -110,20 +121,24 @@ impl ColorTheme {
     }
 
     /// 優先度別カラー
+    #[must_use]
     pub fn priority_high(&self) -> Style {
         self.error() // 赤系
     }
 
+    #[must_use]
     pub fn priority_medium(&self) -> Style {
         self.warning() // 黄系
     }
 
+    #[must_use]
     pub fn priority_low(&self) -> Style {
         self.info() // 青系
     }
 }
 
 /// ヘルパー関数: 成功メッセージ（絵文字なし・シンプル）
+#[must_use]
 pub fn success(msg: &str) -> String {
     ColorTheme::auto()
         .success()
@@ -132,6 +147,7 @@ pub fn success(msg: &str) -> String {
 }
 
 /// ヘルパー関数: エラーメッセージ（絵文字なし・シンプル）
+#[must_use]
 pub fn error(msg: &str) -> String {
     ColorTheme::auto()
         .error()
@@ -140,6 +156,7 @@ pub fn error(msg: &str) -> String {
 }
 
 /// ヘルパー関数: 警告メッセージ（絵文字なし・シンプル）
+#[must_use]
 pub fn warning(msg: &str) -> String {
     ColorTheme::auto()
         .warning()
@@ -148,6 +165,7 @@ pub fn warning(msg: &str) -> String {
 }
 
 /// ヘルパー関数: 情報メッセージ（絵文字なし・シンプル）
+#[must_use]
 pub fn info(msg: &str) -> String {
     ColorTheme::auto()
         .info()

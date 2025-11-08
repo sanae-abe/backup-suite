@@ -36,6 +36,7 @@ impl FromStr for CompressionType {
 
 impl CompressionType {
     /// 圧縮タイプを文字列に変換
+    #[must_use]
     pub fn to_str(&self) -> &'static str {
         match self {
             Self::Zstd => "zstd",
@@ -45,6 +46,7 @@ impl CompressionType {
     }
 
     /// ファイル拡張子を取得
+    #[must_use]
     pub fn file_extension(&self) -> &'static str {
         match self {
             Self::Zstd => ".zst",
@@ -67,6 +69,7 @@ pub struct CompressionConfig {
 
 impl CompressionConfig {
     /// zstd用のデフォルト設定（最適化版）
+    #[must_use]
     pub fn zstd_default() -> Self {
         Self {
             level: 5,                    // 速度と圧縮率のバランス（3→5に最適化）
@@ -76,6 +79,7 @@ impl CompressionConfig {
     }
 
     /// zstd用の適応的設定（CPU数に基づく動的調整）
+    #[must_use]
     pub fn zstd_adaptive() -> Self {
         let cpu_count = std::thread::available_parallelism()
             .map(std::num::NonZero::get)
@@ -95,6 +99,7 @@ impl CompressionConfig {
     }
 
     /// gzip用のデフォルト設定
+    #[must_use]
     pub fn gzip_default() -> Self {
         Self {
             level: 6,                // デフォルトレベル
@@ -104,6 +109,7 @@ impl CompressionConfig {
     }
 
     /// 高速圧縮設定
+    #[must_use]
     pub fn fast(compression_type: CompressionType) -> Self {
         match compression_type {
             CompressionType::Zstd => Self {
@@ -121,6 +127,7 @@ impl CompressionConfig {
     }
 
     /// 高圧縮率設定
+    #[must_use]
     pub fn best(compression_type: CompressionType) -> Self {
         match compression_type {
             CompressionType::Zstd => Self {
@@ -138,6 +145,7 @@ impl CompressionConfig {
     }
 
     /// 圧縮なし設定
+    #[must_use]
     pub fn none() -> Self {
         Self {
             level: 0,
@@ -164,6 +172,7 @@ pub struct CompressedData {
 
 impl CompressedData {
     /// 圧縮率を計算
+    #[must_use]
     pub fn compression_ratio(&self) -> f64 {
         if self.original_size == 0 {
             return 0.0;
@@ -172,11 +181,13 @@ impl CompressedData {
     }
 
     /// 圧縮率をパーセンテージで取得
+    #[must_use]
     pub fn compression_percentage(&self) -> f64 {
         (1.0 - self.compression_ratio()) * 100.0
     }
 
     /// バイナリ形式にシリアライズ
+    #[must_use]
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut result = Vec::with_capacity(25 + self.data.len());
 
