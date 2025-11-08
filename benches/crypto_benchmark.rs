@@ -4,7 +4,8 @@
 
 use backup_suite::compression::{CompressionConfig, CompressionEngine, CompressionType};
 use backup_suite::crypto::{EncryptionEngine, KeyManager};
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use std::hint::black_box;
 
 /// 暗号化性能ベンチマーク
 fn bench_encryption(c: &mut Criterion) {

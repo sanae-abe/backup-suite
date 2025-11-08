@@ -155,9 +155,7 @@ impl RestoreEngine {
         let total_files = files.len();
 
         if self.dry_run {
-            println!(
-                "📋 ドライランモード: {total_files} ファイルを復元対象として検出"
-            );
+            println!("📋 ドライランモード: {total_files} ファイルを復元対象として検出");
             for (backup_src, file) in &all_files {
                 if let Ok(relative) = file.strip_prefix(backup_src) {
                     println!("  {}", relative.display());
@@ -246,7 +244,9 @@ impl RestoreEngine {
             let dest_path = match safe_join(dest_dir, relative_path) {
                 Ok(p) => p,
                 Err(e) => {
-                    errors.push(format!("パストラバーサル検出: relative_path.display(): {e}"));
+                    errors.push(format!(
+                        "パストラバーサル検出: relative_path.display(): {e}"
+                    ));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                     if let Some(ref pb) = progress {
                         pb.inc(1);

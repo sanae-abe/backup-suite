@@ -137,7 +137,7 @@ impl BackupHistory {
     /// 以下の場合にエラーを返します:
     /// * 設定ファイルパスの取得に失敗した場合
     /// * 設定ディレクトリの親ディレクトリが存在しない場合
-        pub fn log_path() -> Result<PathBuf> {
+    pub fn log_path() -> Result<PathBuf> {
         let config_dir = Config::config_path()?
             .parent()
             .context("設定ディレクトリ取得失敗")?
@@ -180,7 +180,7 @@ impl BackupHistory {
     /// );
     /// BackupHistory::save(&history).unwrap();
     /// ```
-        pub fn save(entry: &BackupHistory) -> Result<()> {
+    pub fn save(entry: &BackupHistory) -> Result<()> {
         let log_path = Self::log_path()?;
         let mut history = Self::load_all()?;
         history.push(entry.clone());
@@ -218,7 +218,7 @@ impl BackupHistory {
     /// let history = BackupHistory::load_all().unwrap();
     /// println!("過去のバックアップ数: {}", history.len());
     /// ```
-        pub fn load_all() -> Result<Vec<BackupHistory>> {
+    pub fn load_all() -> Result<Vec<BackupHistory>> {
         let log_path = Self::log_path()?;
         if !log_path.exists() {
             return Ok(Vec::new());
@@ -255,7 +255,7 @@ impl BackupHistory {
     /// let recent = BackupHistory::filter_by_days(7).unwrap();
     /// println!("過去7日間のバックアップ: {}件", recent.len());
     /// ```
-        pub fn filter_by_days(days: u32) -> Result<Vec<BackupHistory>> {
+    pub fn filter_by_days(days: u32) -> Result<Vec<BackupHistory>> {
         let all = Self::load_all()?;
         let cutoff = Utc::now() - chrono::Duration::days(days as i64);
         Ok(all.into_iter().filter(|h| h.timestamp > cutoff).collect())
@@ -353,7 +353,7 @@ impl BackupHistory {
     ///     println!("{}: {:?}", entry.timestamp, entry.backup_dir);
     /// }
     /// ```
-        pub fn get_recent_entries(count: usize) -> Result<Vec<BackupHistory>> {
+    pub fn get_recent_entries(count: usize) -> Result<Vec<BackupHistory>> {
         let mut all = Self::load_all()?;
         all.sort_by(|a, b| b.timestamp.cmp(&a.timestamp)); // 新しい順
         Ok(all.into_iter().take(count).collect())
@@ -385,7 +385,7 @@ impl BackupHistory {
     ///     println!("バックアップ: {:?}", dir);
     /// }
     /// ```
-        pub fn list_backup_dirs() -> Result<Vec<PathBuf>> {
+    pub fn list_backup_dirs() -> Result<Vec<PathBuf>> {
         let config = Config::load()?;
         let dest = &config.backup.destination;
 

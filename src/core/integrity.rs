@@ -138,7 +138,7 @@ impl BackupMetadata {
     /// let backup_dir = PathBuf::from("/backup/backup_20250107_120000");
     /// let metadata = BackupMetadata::load(&backup_dir).unwrap();
     /// ```
-        pub fn load(backup_dir: &Path) -> Result<Self> {
+    pub fn load(backup_dir: &Path) -> Result<Self> {
         let metadata_path = backup_dir.join(".integrity");
         if !metadata_path.exists() {
             return Err(anyhow::anyhow!(
@@ -184,7 +184,7 @@ impl BackupMetadata {
     /// let backup_dir = PathBuf::from("/backup/backup_20250107_120000");
     /// metadata.save(&backup_dir).unwrap();
     /// ```
-        pub fn save(&self, backup_dir: &Path) -> Result<()> {
+    pub fn save(&self, backup_dir: &Path) -> Result<()> {
         let metadata_path = backup_dir.join(".integrity");
         let content = serde_json::to_string_pretty(self).context("メタデータJSON生成失敗")?;
         fs::write(&metadata_path, content)
@@ -231,7 +231,7 @@ impl BackupMetadata {
     ///     eprintln!("⚠ ファイルが改ざんされています");
     /// }
     /// ```
-        pub fn verify_file(&self, relative_path: &Path, actual_file_path: &Path) -> Result<bool> {
+    pub fn verify_file(&self, relative_path: &Path, actual_file_path: &Path) -> Result<bool> {
         let expected_hash = match self.file_hashes.get(relative_path) {
             Some(h) => h,
             None => {
@@ -260,9 +260,9 @@ impl BackupMetadata {
     /// 以下の場合にエラーを返します:
     /// * ファイルのオープンに失敗した場合
     /// * ファイルの読み込みに失敗した場合
-        pub fn compute_file_hash(file_path: &Path) -> Result<String> {
-        let mut file =
-            fs::File::open(file_path).context("ファイル読み込み失敗: file_path.display()".to_string())?;
+    pub fn compute_file_hash(file_path: &Path) -> Result<String> {
+        let mut file = fs::File::open(file_path)
+            .context("ファイル読み込み失敗: file_path.display()".to_string())?;
 
         let mut hasher = Sha256::new();
         let mut buffer = vec![0u8; 8192]; // 8KB バッファ
@@ -358,7 +358,7 @@ impl IntegrityChecker {
     /// let hash = checker.compute_hash(&PathBuf::from("test.txt")).unwrap();
     /// println!("SHA-256: {}", hash);
     /// ```
-        pub fn compute_hash(&self, file_path: &Path) -> Result<String> {
+    pub fn compute_hash(&self, file_path: &Path) -> Result<String> {
         BackupMetadata::compute_file_hash(file_path)
     }
 
@@ -407,7 +407,7 @@ impl IntegrityChecker {
     /// checker.add_file_hash(PathBuf::from("test.txt"), "abc123...".to_string());
     /// checker.save_metadata(&PathBuf::from("/backup/backup_20250107_120000")).unwrap();
     /// ```
-        pub fn save_metadata(&self, backup_dir: &Path) -> Result<()> {
+    pub fn save_metadata(&self, backup_dir: &Path) -> Result<()> {
         self.metadata.save(backup_dir)
     }
 

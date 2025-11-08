@@ -203,10 +203,7 @@ fn test_audit_log_rotation() -> Result<()> {
 
     // 大量のイベントを記録してローテーションをトリガー
     for i in 0..100 {
-        audit_log.log(AuditEvent::backup_started(
-            format!("/path/{i}"),
-            "testuser",
-        ))?;
+        audit_log.log(AuditEvent::backup_started(format!("/path/{i}"), "testuser"))?;
     }
 
     // ローテーションされたファイルが存在することを確認

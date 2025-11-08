@@ -261,7 +261,10 @@ impl CleanupEngine {
     /// ディレクトリサイズを計算
     fn calculate_size(&self, dir: &Path) -> Result<u64> {
         let mut total = 0;
-        for entry in WalkDir::new(dir).into_iter().filter_map(std::result::Result::ok) {
+        for entry in WalkDir::new(dir)
+            .into_iter()
+            .filter_map(std::result::Result::ok)
+        {
             if entry.file_type().is_file() {
                 total += entry.metadata()?.len();
             }

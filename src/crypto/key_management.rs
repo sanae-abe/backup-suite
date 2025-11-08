@@ -79,7 +79,7 @@ impl KeyDerivation {
     /// - パスワードハッシュ生成に失敗した場合 (`BackupError::EncryptionError`)
     /// - ハッシュの生成に失敗した場合 (`BackupError::EncryptionError`)
     /// - 生成されたキーの長さが32バイトでない場合 (`BackupError::EncryptionError`)
-        pub fn derive_key(&self, password: &str, salt: &[u8]) -> Result<MasterKey> {
+    pub fn derive_key(&self, password: &str, salt: &[u8]) -> Result<MasterKey> {
         let argon2 = Argon2::new(
             argon2::Algorithm::Argon2id,
             argon2::Version::V0x13,
@@ -97,9 +97,7 @@ impl KeyDerivation {
 
         let password_hash = argon2
             .hash_password(password.as_bytes(), &salt_string)
-            .map_err(|e| {
-                BackupError::EncryptionError(format!("パスワードハッシュエラー: {e}"))
-            })?;
+            .map_err(|e| BackupError::EncryptionError(format!("パスワードハッシュエラー: {e}")))?;
 
         let hash = password_hash
             .hash
@@ -131,7 +129,7 @@ impl KeyDerivation {
     /// - ハッシュ文字列のパースに失敗した場合 (`BackupError::EncryptionError`)
     ///   - 無効なPHC文字列形式の場合
     ///   - 破損したハッシュデータの場合
-        pub fn verify_password(&self, password: &str, hash: &str) -> Result<bool> {
+    pub fn verify_password(&self, password: &str, hash: &str) -> Result<bool> {
         let parsed_hash = PasswordHash::new(hash)
             .map_err(|e| BackupError::EncryptionError(format!("ハッシュ解析エラー: {e}")))?;
 
@@ -172,7 +170,7 @@ impl KeyManager {
     ///   - Argon2パラメータエラー
     ///   - パスワードハッシュ生成エラー
     ///   - 無効なキー長エラー
-        pub fn create_master_key(&self, password: &str) -> Result<(MasterKey, [u8; 16])> {
+    pub fn create_master_key(&self, password: &str) -> Result<(MasterKey, [u8; 16])> {
         let salt = KeyDerivation::generate_salt();
         let key = self.derivation.derive_key(password, &salt)?;
         Ok((key, salt))
@@ -187,7 +185,7 @@ impl KeyManager {
     ///   - Argon2パラメータエラー
     ///   - パスワードハッシュ生成エラー
     ///   - 無効なキー長エラー
-        pub fn restore_master_key(&self, password: &str, salt: &[u8]) -> Result<MasterKey> {
+    pub fn restore_master_key(&self, password: &str, salt: &[u8]) -> Result<MasterKey> {
         self.derivation.derive_key(password, salt)
     }
 }

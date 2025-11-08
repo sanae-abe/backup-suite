@@ -54,7 +54,7 @@ impl EncryptedData {
     }
 
     /// バイナリ形式からデシリアライズ
-        pub fn from_bytes(data: &[u8]) -> Result<Self> {
+    pub fn from_bytes(data: &[u8]) -> Result<Self> {
         if data.len() < 44 {
             return Err(BackupError::EncryptionError(
                 "暗号化データが短すぎます".to_string(),
@@ -212,9 +212,9 @@ impl EncryptionEngine {
 
             #[allow(deprecated)]
             let nonce = Nonce::from_slice(&chunk_nonce);
-            let chunk_ciphertext = cipher.encrypt(nonce, &buffer[..bytes_read]).map_err(|e| {
-                BackupError::EncryptionError(format!("チャンク暗号化エラー: {e}"))
-            })?;
+            let chunk_ciphertext = cipher
+                .encrypt(nonce, &buffer[..bytes_read])
+                .map_err(|e| BackupError::EncryptionError(format!("チャンク暗号化エラー: {e}")))?;
 
             // チャンクサイズと暗号化データを書き込み
             writer.write_all(&(chunk_ciphertext.len() as u32).to_le_bytes())?;
@@ -280,9 +280,9 @@ impl EncryptionEngine {
 
             #[allow(deprecated)]
             let nonce = Nonce::from_slice(&chunk_nonce);
-            let plaintext = cipher.decrypt(nonce, chunk_data.as_ref()).map_err(|e| {
-                BackupError::EncryptionError(format!("チャンク復号化エラー: {e}"))
-            })?;
+            let plaintext = cipher
+                .decrypt(nonce, chunk_data.as_ref())
+                .map_err(|e| BackupError::EncryptionError(format!("チャンク復号化エラー: {e}")))?;
 
             writer.write_all(&plaintext)?;
             total_decrypted += plaintext.len() as u64;

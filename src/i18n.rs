@@ -837,7 +837,7 @@ impl MessageKey {
 }
 
 /// Get message by key and language
-    #[must_use]
+#[must_use]
 pub fn get_message(key: MessageKey, lang: Language) -> &'static str {
     key.get(lang)
 }

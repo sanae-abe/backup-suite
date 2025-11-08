@@ -250,9 +250,7 @@ impl BackupRunner {
         category_filter: Option<&str>,
     ) -> Result<BackupResult> {
         let user = AuditLog::current_user();
-        let target_desc = format!(
-            "priority={priority_filter:?}, category={category_filter:?}"
-        );
+        let target_desc = format!("priority={priority_filter:?}, category={category_filter:?}");
 
         // 監査ログ: バックアップ開始
         if let Some(ref mut audit_log) = self.audit_log {
@@ -318,9 +316,8 @@ impl BackupRunner {
             let backup_dir = backup_base.join(&category);
 
             // カテゴリディレクトリを作成
-            std::fs::create_dir_all(&backup_dir).context(
-                "バックアップディレクトリ作成失敗: backup_dir.display()".to_string()
-            )?;
+            std::fs::create_dir_all(&backup_dir)
+                .context("バックアップディレクトリ作成失敗: backup_dir.display()".to_string())?;
 
             // FileFilterの準備
             let filter = if !target.exclude_patterns.is_empty() {
@@ -475,9 +472,7 @@ impl BackupRunner {
         let total_files = files_to_backup.len();
 
         if self.dry_run {
-            println!(
-                "📋 ドライランモード: {total_files} ファイルをバックアップ対象として検出"
-            );
+            println!("📋 ドライランモード: {total_files} ファイルをバックアップ対象として検出");
             for (_source, _dest) in &files_to_backup {
                 println!("  _source.display() → _dest.display()");
             }

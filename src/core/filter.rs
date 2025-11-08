@@ -52,7 +52,7 @@ impl FileFilter {
     /// let patterns = vec![r"\.git$".to_string()];
     /// let filter = FileFilter::new(&patterns).unwrap();
     /// ```
-        pub fn new(exclude_patterns: &[String]) -> Result<Self> {
+    pub fn new(exclude_patterns: &[String]) -> Result<Self> {
         let mut patterns = Vec::new();
 
         for pattern in exclude_patterns {
@@ -190,7 +190,7 @@ impl FileFilter {
 /// let patterns = default_exclude_patterns();
 /// println!("デフォルトパターン数: {}", patterns.len());
 /// ```
-    #[must_use]
+#[must_use]
 pub fn default_exclude_patterns() -> Vec<String> {
     vec![
         // バージョン管理

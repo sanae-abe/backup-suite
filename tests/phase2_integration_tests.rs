@@ -26,8 +26,12 @@ fn test_history_with_filters() {
     history_entries.push(entry1);
 
     // 中優先度のエントリ
-    let mut entry2 =
-        BackupHistory::new(temp.path().join("backup_20251106_120000"), 50, 500_000, true);
+    let mut entry2 = BackupHistory::new(
+        temp.path().join("backup_20251106_120000"),
+        50,
+        500_000,
+        true,
+    );
     entry2.priority = Some(Priority::Medium);
     entry2.category = Some("photos".to_string());
     entry2.status = BackupStatus::Success;

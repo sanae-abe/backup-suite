@@ -96,7 +96,7 @@ pub enum Frequency {
 
 impl Frequency {
     /// 文字列から頻度を解析
-        pub fn parse(s: &str) -> Result<Self> {
+    pub fn parse(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "daily" => Ok(Frequency::Daily),
             "weekly" => Ok(Frequency::Weekly),
@@ -132,7 +132,7 @@ impl Scheduler {
     /// # エラー
     ///
     /// * プラットフォームがサポートされていない場合
-        pub fn new(config: Config) -> Result<Self> {
+    pub fn new(config: Config) -> Result<Self> {
         let platform = Platform::detect();
         if !platform.is_supported() {
             return Err(anyhow::anyhow!(
@@ -155,7 +155,7 @@ impl Scheduler {
     ///
     /// * launchd/systemd設定ファイルの作成に失敗した場合
     /// * 設定の妥当性検証に失敗した場合
-        pub fn setup_all(&self) -> Result<()> {
+    pub fn setup_all(&self) -> Result<()> {
         let priorities = [Priority::High, Priority::Medium, Priority::Low];
 
         for priority in &priorities {
@@ -176,7 +176,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 成功時は `Ok(())`、失敗時はエラー
-        pub fn setup_priority(&self, priority: &Priority) -> Result<()> {
+    pub fn setup_priority(&self, priority: &Priority) -> Result<()> {
         let frequency = self.get_frequency(priority)?;
 
         match self.platform {
@@ -191,7 +191,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 成功時は `Ok(())`、失敗時はエラー
-        pub fn enable_all(&self) -> Result<()> {
+    pub fn enable_all(&self) -> Result<()> {
         let priorities = [Priority::High, Priority::Medium, Priority::Low];
 
         for priority in &priorities {
@@ -212,7 +212,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 成功時は `Ok(())`、失敗時はエラー
-        pub fn enable_priority(&self, priority: &Priority) -> Result<()> {
+    pub fn enable_priority(&self, priority: &Priority) -> Result<()> {
         match self.platform {
             Platform::MacOS => self.enable_launchd(priority),
             Platform::Linux => self.enable_systemd(priority),
@@ -225,7 +225,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 成功時は `Ok(())`、失敗時はエラー
-        pub fn disable_all(&self) -> Result<()> {
+    pub fn disable_all(&self) -> Result<()> {
         let priorities = [Priority::High, Priority::Medium, Priority::Low];
 
         for priority in &priorities {
@@ -246,7 +246,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 成功時は `Ok(())`、失敗時はエラー
-        pub fn disable_priority(&self, priority: &Priority) -> Result<()> {
+    pub fn disable_priority(&self, priority: &Priority) -> Result<()> {
         match self.platform {
             Platform::MacOS => self.disable_launchd(priority),
             Platform::Linux => self.disable_systemd(priority),
@@ -259,7 +259,7 @@ impl Scheduler {
     /// # 戻り値
     ///
     /// 各優先度の有効/無効状態を返す
-        pub fn check_status(&self) -> Result<ScheduleStatus> {
+    pub fn check_status(&self) -> Result<ScheduleStatus> {
         let mut status = ScheduleStatus::default();
 
         for priority in &[Priority::High, Priority::Medium, Priority::Low] {
@@ -421,7 +421,8 @@ impl Scheduler {
 
         if !plist_path.exists() {
             return Err(anyhow::anyhow!(
-                "plistファイルが存在しません。先にsetupを実行してください: plist_path.display()".to_string()
+                "plistファイルが存在しません。先にsetupを実行してください: plist_path.display()"
+                    .to_string()
             ));
         }
 

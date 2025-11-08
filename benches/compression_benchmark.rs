@@ -1,5 +1,6 @@
 use backup_suite::compression::{CompressionConfig, CompressionEngine, CompressionType};
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use std::hint::black_box;
 use std::io::Cursor;
 
 fn generate_test_data(size: usize) -> Vec<u8> {

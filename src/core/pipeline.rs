@@ -258,7 +258,7 @@ impl ProcessingPipeline {
     }
 
     /// 暗号化有効でパイプラインを作成
-        pub fn with_encryption(password: &str) -> Result<(Self, [u8; 16])> {
+    pub fn with_encryption(password: &str) -> Result<(Self, [u8; 16])> {
         let config = PipelineConfig::default().with_encryption(EncryptionConfig::default());
         let mut pipeline = Self::new(config);
 

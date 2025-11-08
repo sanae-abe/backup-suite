@@ -60,9 +60,7 @@ fn test_streaming_nonce_u64_capacity() {
     assert_eq!(decrypted_size, total_size as u64);
     assert_eq!(data, decrypted_buffer);
 
-    println!(
-        "✅ SUCCESS: Streaming encryption with {chunk_count} chunks"
-    );
+    println!("✅ SUCCESS: Streaming encryption with {chunk_count} chunks");
     println!("   Original size: {} MB", total_size / 1024 / 1024);
     println!("   U64 counter capacity: 2^64 chunks (~16 exabytes)");
 }

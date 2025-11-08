@@ -42,7 +42,7 @@ pub enum LogLevel {
 
 impl LogLevel {
     /// 文字列から変換
-        pub fn parse(s: &str) -> Result<Self> {
+    pub fn parse(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "debug" => Ok(LogLevel::Debug),
             "info" => Ok(LogLevel::Info),
@@ -75,7 +75,7 @@ pub enum LogFormat {
 
 impl LogFormat {
     /// 文字列から変換
-        pub fn parse(s: &str) -> Result<Self> {
+    pub fn parse(s: &str) -> Result<Self> {
         match s.to_lowercase().as_str() {
             "text" | "plain" => Ok(LogFormat::Text),
             "json" => Ok(LogFormat::Json),
@@ -135,7 +135,7 @@ impl LogEntry {
     }
 
     /// JSON形式でフォーマット
-        pub fn format_json(&self) -> Result<String> {
+    pub fn format_json(&self) -> Result<String> {
         serde_json::to_string(self).context("JSON変換エラー")
     }
 }
@@ -176,7 +176,7 @@ impl Logger {
     /// let logger = Logger::new(LogLevel::Info, LogFormat::Text)?;
     /// # Ok::<(), anyhow::Error>(())
     /// ```
-        pub fn new(level: LogLevel, format: LogFormat) -> Result<Self> {
+    pub fn new(level: LogLevel, format: LogFormat) -> Result<Self> {
         let log_dir = Self::log_dir()?;
         fs::create_dir_all(&log_dir).context("ログディレクトリ作成エラー")?;
 

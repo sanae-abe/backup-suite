@@ -121,7 +121,7 @@ impl CopyEngine {
     ///     Path::new("/dest/file.txt")
     /// ).unwrap();
     /// ```
-        pub fn copy_file(&self, source: &Path, dest: &Path) -> Result<u64> {
+    pub fn copy_file(&self, source: &Path, dest: &Path) -> Result<u64> {
         // ファイルサイズを取得
         let metadata = std::fs::metadata(source)?;
         let size = metadata.len();

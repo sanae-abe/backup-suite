@@ -2033,9 +2033,8 @@ fn main() -> Result<()> {
                             get_color("reset"),
                             path
                         );
-                        std::fs::create_dir_all(&path).map_err(|e| {
-                            anyhow::anyhow!("ディレクトリ作成失敗: {path:?} - {e}")
-                        })?;
+                        std::fs::create_dir_all(&path)
+                            .map_err(|e| anyhow::anyhow!("ディレクトリ作成失敗: {path:?} - {e}"))?;
                     }
 
                     // 書き込み権限を確認

@@ -3,8 +3,9 @@
 //! このファイルは backup-suite の主要コンポーネントのパフォーマンステストを実装します。
 //! Criterionを使用して、継続的な性能監視と回帰検出を行います。
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use std::fs::{create_dir_all, File};
+use std::hint::black_box;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;
@@ -168,9 +169,8 @@ fn bench_file_filtering(c: &mut Criterion) {
             BenchmarkId::new("filter_patterns", format!("{pattern_count}_patterns")),
             pattern_count,
             |b, &pattern_count| {
-                let patterns: Vec<String> = (0..pattern_count)
-                    .map(|i| format!(r".*\.tmp{i}"))
-                    .collect();
+                let patterns: Vec<String> =
+                    (0..pattern_count).map(|i| format!(r".*\.tmp{i}")).collect();
 
                 let filter = FileFilter::new(&patterns).unwrap();
                 let test_file = Path::new("/path/to/document.txt");
@@ -235,10 +235,7 @@ fn bench_directory_traversal(c: &mut Criterion) {
     // 異なる深度・ファイル数での走査性能
     for (depth, files_per_dir) in [(3, 10), (4, 5), (5, 3)].iter() {
         group.bench_with_input(
-            BenchmarkId::new(
-                "walkdir",
-                format!("depth_{depth}_files_{files_per_dir}"),
-            ),
+            BenchmarkId::new("walkdir", format!("depth_{depth}_files_{files_per_dir}")),
             &(depth, files_per_dir),
             |b, &(depth, files_per_dir)| {
                 let temp_dir = TempDir::new().unwrap();

@@ -163,7 +163,7 @@ impl Config {
     /// let path = Config::config_path().unwrap();
     /// println!("設定ファイル: {:?}", path);
     /// ```
-        pub fn config_path() -> Result<PathBuf> {
+    pub fn config_path() -> Result<PathBuf> {
         let home = dirs::home_dir().context("ホームディレクトリが見つかりません")?;
         Ok(home.join(".config/backup-suite/config.toml"))
     }
@@ -192,7 +192,7 @@ impl Config {
     /// let config = Config::load().unwrap_or_default();
     /// println!("バックアップ先: {:?}", config.backup.destination);
     /// ```
-        pub fn load() -> Result<Self> {
+    pub fn load() -> Result<Self> {
         let config_path = Self::config_path()?;
 
         if !config_path.exists() {
@@ -240,7 +240,7 @@ impl Config {
     /// config.add_target(target);
     /// config.save().unwrap();
     /// ```
-        pub fn save(&self) -> Result<()> {
+    pub fn save(&self) -> Result<()> {
         let config_path = Self::config_path()?;
 
         // ディレクトリが存在しない場合は作成

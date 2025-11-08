@@ -356,7 +356,7 @@ impl BackupProgress {
 /// }
 /// pb.finish_with_message("完了");
 /// ```
-    #[must_use]
+#[must_use]
 pub fn create_progress_bar(total: u64, message: &str) -> ProgressBar {
     let pb = ProgressBar::new(total);
     pb.set_style(
@@ -391,7 +391,7 @@ pub fn create_progress_bar(total: u64, message: &str) -> ProgressBar {
 /// // ... 処理 ...
 /// spinner.finish_with_message("接続完了");
 /// ```
-    #[must_use]
+#[must_use]
 pub fn create_spinner(message: &str) -> ProgressBar {
     let spinner = ProgressBar::new_spinner();
     spinner.set_style(

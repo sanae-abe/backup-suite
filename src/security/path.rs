@@ -172,7 +172,7 @@ pub fn safe_join(base: &Path, child: &Path) -> Result<PathBuf> {
 /// let sanitized = sanitize_path_component("dangerous/../../../file.txt");
 /// assert_eq!(sanitized, "dangerousfiletxt");
 /// ```
-    #[must_use]
+#[must_use]
 pub fn sanitize_path_component(name: &str) -> String {
     name.chars()
         .filter(|&c| c.is_alphanumeric() || "-_".contains(c))
