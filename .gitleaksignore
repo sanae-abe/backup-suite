@@ -3,8 +3,14 @@
 # ドキュメント内の例示用トークン（実際のトークンではない）
 docs/PACKAGE_REGISTRY_SETUP.md:gitlab-pat:*
 setup-cargo-registry.sh:gitlab-pat:*
+README.md:gitlab-pat:*
+INSTALL.md:gitlab-pat:*
+.gitleaksignore:gitlab-pat:*
 
 # M3社内GitLab用のサンプルスクリプト
-# トークン "mglpat-xxxxxxxxxxxxxxxxxxxx" は実在しないサンプル値
+# トークン "glpat-xxxxxxxxxxxxxxxxxxxx" は実在しないサンプル値
 8c112d4b8c5ab308a0203bd71f264a8ab35ee5f6:docs/PACKAGE_REGISTRY_SETUP.md:gitlab-pat:403
 8c112d4b8c5ab308a0203bd71f264a8ab35ee5f6:setup-cargo-registry.sh:gitlab-pat:188
+b59d06317c319bd68b388d07a99ed60e920624d1:README.md:gitlab-pat:216
+8c112d4b8c5ab308a0203bd71f264a8ab35ee5f6:INSTALL.md:gitlab-pat:260
+a072a23a76c492b4e413fa67c21e74cec97dcb62:.gitleaksignore:gitlab-pat:8

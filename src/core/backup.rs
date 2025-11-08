@@ -96,6 +96,7 @@ impl BackupResult {
 ///     .with_progress(true);
 /// let result = runner.run(Some(&Priority::High), None).unwrap();
 /// ```
+#[allow(clippy::struct_excessive_bools)]
 pub struct BackupRunner {
     config: Config,
     dry_run: bool,
@@ -110,7 +111,7 @@ pub struct BackupRunner {
 }
 
 impl BackupRunner {
-    /// 新しいBackupRunnerを作成
+    /// 新しい`BackupRunner`を作成
     ///
     /// # 引数
     ///

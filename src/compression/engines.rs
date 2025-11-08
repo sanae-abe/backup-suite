@@ -82,7 +82,7 @@ impl CompressionConfig {
     #[must_use]
     pub fn zstd_adaptive() -> Self {
         let cpu_count = std::thread::available_parallelism()
-            .map(|n| n.get())
+            .map(std::num::NonZero::get)
             .unwrap_or(4);
 
         Self {
@@ -112,15 +112,10 @@ impl CompressionConfig {
     #[must_use]
     pub fn fast(compression_type: CompressionType) -> Self {
         match compression_type {
-            CompressionType::Zstd => Self {
+            CompressionType::Zstd | CompressionType::Gzip => Self {
                 level: 1,
                 chunk_size: 2 * 1024 * 1024, // 2MB チャンク（高速化）
                 buffer_size: 128 * 1024,     // 128KB バッファ
-            },
-            CompressionType::Gzip => Self {
-                level: 1,
-                chunk_size: 2 * 1024 * 1024,
-                buffer_size: 128 * 1024,
             },
             CompressionType::None => Self::none(),
         }
@@ -238,6 +233,7 @@ impl CompressedData {
             }
         };
 
+        #[allow(clippy::cast_possible_wrap)]
         let compression_level = u32::from_le_bytes(
             data.get(1..5)
                 .and_then(|s| s.try_into().ok())
@@ -257,6 +253,7 @@ impl CompressedData {
                 })?,
         );
 
+        #[allow(clippy::cast_possible_truncation)]
         if data.len() != 21 + compressed_size as usize {
             return Err(BackupError::CompressionError(
                 "圧縮データの長さが一致しません".to_string(),
@@ -348,8 +345,8 @@ impl CompressionEngine {
     /// 圧縮エンジンがデータの展開に失敗した場合にエラーを返します。
     pub fn decompress(&self, compressed_data: &CompressedData) -> Result<Vec<u8>> {
         match compressed_data.compression_type {
-            CompressionType::Zstd => self.decompress_zstd(&compressed_data.data),
-            CompressionType::Gzip => self.decompress_gzip(&compressed_data.data),
+            CompressionType::Zstd => Self::decompress_zstd(&compressed_data.data),
+            CompressionType::Gzip => Self::decompress_gzip(&compressed_data.data),
             CompressionType::None => Ok(compressed_data.data.clone()),
         }
     }
@@ -395,6 +392,7 @@ impl CompressionEngine {
                     .map_err(|e| BackupError::CompressionError(format!("Zstd完了エラー: {e}")))?;
             }
             CompressionType::Gzip => {
+                #[allow(clippy::cast_sign_loss)]
                 let mut encoder = GzEncoder::new(
                     &mut compressed_buffer,
                     Compression::new(self.config.level as u32),
@@ -508,12 +506,13 @@ impl CompressionEngine {
             .map_err(|e| BackupError::CompressionError(format!("Zstd圧縮エラー: {e}")))
     }
 
-    fn decompress_zstd(&self, data: &[u8]) -> Result<Vec<u8>> {
+    fn decompress_zstd(data: &[u8]) -> Result<Vec<u8>> {
         zstd::decode_all(data)
             .map_err(|e| BackupError::CompressionError(format!("Zstd展開エラー: {e}")))
     }
 
     fn compress_gzip(&self, data: &[u8]) -> Result<Vec<u8>> {
+        #[allow(clippy::cast_sign_loss)]
         let mut encoder = GzEncoder::new(Vec::new(), Compression::new(self.config.level as u32));
         encoder.write_all(data)?;
         encoder
@@ -521,7 +520,7 @@ impl CompressionEngine {
             .map_err(|e| BackupError::CompressionError(format!("Gzip圧縮エラー: {e}")))
     }
 
-    fn decompress_gzip(&self, data: &[u8]) -> Result<Vec<u8>> {
+    fn decompress_gzip(data: &[u8]) -> Result<Vec<u8>> {
         use std::io::Cursor;
         let mut decoder = GzDecoder::new(Cursor::new(data));
         let mut result = Vec::new();

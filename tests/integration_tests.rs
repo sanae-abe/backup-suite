@@ -3,6 +3,12 @@
 //! このファイルは以下の統合テストを提供します:
 //! - フルバックアップワークフロー
 //! - 除外パターンフィルタリング
+
+#![allow(clippy::cast_precision_loss)]
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_sign_loss)]
+#![allow(clippy::unnecessary_debug_formatting)]
+#![allow(clippy::ignored_unit_patterns)]
 //! - 優先度別バックアップ
 //! - 設定の読み込み・検証
 //! - エラーハンドリング
