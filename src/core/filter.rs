@@ -88,6 +88,7 @@ impl FileFilter {
     /// assert!(filter.should_exclude(Path::new("/project/.git")));
     /// assert!(!filter.should_exclude(Path::new("/project/src")));
     /// ```
+    #[must_use]
     pub fn should_exclude(&self, path: &Path) -> bool {
         // パターンが空の場合は何も除外しない
         if self.patterns.is_empty() {

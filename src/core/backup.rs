@@ -129,6 +129,7 @@ impl BackupRunner {
     /// let config = Config::load().unwrap();
     /// let mut runner = BackupRunner::new(config, false);
     /// ```
+    #[must_use]
     pub fn new(config: Config, dry_run: bool) -> Self {
         // 監査ログの初期化（失敗してもバックアップ処理は継続）
         let audit_log = AuditLog::new()
@@ -168,12 +169,14 @@ impl BackupRunner {
     /// let mut runner = BackupRunner::new(config, false)
     ///     .with_progress(false); // 進捗表示を無効化
     /// ```
+    #[must_use]
     pub fn with_progress(mut self, show_progress: bool) -> Self {
         self.show_progress = show_progress;
         self
     }
 
     /// 暗号化を有効化
+    #[must_use]
     pub fn with_encryption(mut self, password: String) -> Self {
         self.enable_encryption = true;
         self.password = Some(password);
@@ -181,6 +184,7 @@ impl BackupRunner {
     }
 
     /// 圧縮設定
+    #[must_use]
     pub fn with_compression(mut self, compression_type: CompressionType, level: i32) -> Self {
         self.compression_type = compression_type;
         self.compression_level = level;
@@ -188,12 +192,14 @@ impl BackupRunner {
     }
 
     /// 整合性検証の有効/無効を設定
+    #[must_use]
     pub fn with_verification(mut self, verify: bool) -> Self {
         self.verify_integrity = verify;
         self
     }
 
     /// 増分バックアップを有効化
+    #[must_use]
     pub fn with_incremental(mut self, incremental: bool) -> Self {
         self.incremental = incremental;
         self

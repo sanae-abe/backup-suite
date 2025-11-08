@@ -111,6 +111,7 @@ pub struct CleanupEngine {
 
 impl CleanupEngine {
     /// 新しいCleanupEngineを作成
+    #[must_use]
     pub fn new(policy: CleanupPolicy, dry_run: bool) -> Self {
         let audit_log = AuditLog::new()
             .map_err(|e| eprintln!("警告: 監査ログの初期化に失敗しました: {e}"))
@@ -125,6 +126,7 @@ impl CleanupEngine {
     }
 
     /// 対話的削除を有効化
+    #[must_use]
     pub fn with_interactive(mut self, interactive: bool) -> Self {
         self.interactive = interactive;
         self

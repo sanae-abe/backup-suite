@@ -125,6 +125,7 @@ impl Target {
     ///     "写真コレクション".to_string()
     /// );
     /// ```
+    #[must_use]
     pub fn new(path: PathBuf, priority: Priority, category: String) -> Self {
         let target_type = if path.is_file() {
             TargetType::File

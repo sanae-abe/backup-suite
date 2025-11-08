@@ -52,6 +52,7 @@ impl CopyEngine {
     ///
     /// let engine = CopyEngine::new();
     /// ```
+    #[must_use]
     pub fn new() -> Self {
         Self {
             buffer_size: 64 * 1024,               // 64KB
@@ -77,6 +78,7 @@ impl CopyEngine {
     ///
     /// let engine = CopyEngine::with_config(128 * 1024, 20 * 1024 * 1024);
     /// ```
+    #[must_use]
     pub fn with_config(buffer_size: usize, parallel_threshold: u64) -> Self {
         Self {
             buffer_size,
