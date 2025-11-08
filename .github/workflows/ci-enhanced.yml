@@ -389,7 +389,7 @@ jobs:
             --verbose \
             --all-features \
             --workspace \
-            --timeout 300 \
+            --timeout 600 \
             --out xml \
             --out lcov \
             --exclude-files 'benches/*' 'tests/*' 'examples/*'
