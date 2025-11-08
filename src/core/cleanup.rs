@@ -227,7 +227,7 @@ impl CleanupEngine {
         for entry in WalkDir::new(dest)
             .max_depth(1)
             .into_iter()
-            .filter_map(|e| e.ok())
+            .filter_map(std::result::Result::ok)
         {
             if !entry.file_type().is_dir() || entry.path() == dest {
                 continue;
@@ -255,7 +255,7 @@ impl CleanupEngine {
     /// ディレクトリサイズを計算
     fn calculate_size(&self, dir: &Path) -> Result<u64> {
         let mut total = 0;
-        for entry in WalkDir::new(dir).into_iter().filter_map(|e| e.ok()) {
+        for entry in WalkDir::new(dir).into_iter().filter_map(std::result::Result::ok) {
             if entry.file_type().is_file() {
                 total += entry.metadata()?.len();
             }
@@ -375,8 +375,8 @@ mod tests {
     #[test]
     fn test_format_bytes() {
         assert_eq!(format_bytes(1024), "1.00 KB");
-        assert_eq!(format_bytes(1048576), "1.00 MB");
-        assert_eq!(format_bytes(1073741824), "1.00 GB");
+        assert_eq!(format_bytes(1_048_576), "1.00 MB");
+        assert_eq!(format_bytes(1_073_741_824), "1.00 GB");
     }
 
     #[test]

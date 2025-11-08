@@ -13,7 +13,7 @@ fn main() {
     // ソースファイル一覧取得
     let files: Vec<PathBuf> = std::fs::read_dir(&source_dir)
         .expect("source_dir読み込み失敗")
-        .filter_map(|e| e.ok())
+        .filter_map(std::result::Result::ok)
         .map(|e| e.path())
         .filter(|p| p.is_file())
         .collect();

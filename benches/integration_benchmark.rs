@@ -256,7 +256,7 @@ fn bench_parallel_backup(c: &mut Criterion) {
         b.iter(|| {
             let entries: Vec<_> = fs::read_dir(&source)
                 .unwrap()
-                .filter_map(|e| e.ok())
+                .filter_map(std::result::Result::ok)
                 .collect();
 
             entries.par_iter().for_each(|entry| {
@@ -293,7 +293,7 @@ fn bench_filtering_performance(c: &mut Criterion) {
         b.iter(|| {
             let entries: Vec<_> = fs::read_dir(&source)
                 .unwrap()
-                .filter_map(|e| e.ok())
+                .filter_map(std::result::Result::ok)
                 .filter(|entry| {
                     let path = entry.path();
                     let path_str = path.to_string_lossy();
@@ -308,7 +308,7 @@ fn bench_filtering_performance(c: &mut Criterion) {
         b.iter(|| {
             let entries: Vec<_> = fs::read_dir(&source)
                 .unwrap()
-                .filter_map(|e| e.ok())
+                .filter_map(std::result::Result::ok)
                 .collect();
             black_box(entries);
         });
@@ -331,7 +331,7 @@ fn bench_metadata_collection(c: &mut Criterion) {
         b.iter(|| {
             let metadata: Vec<_> = fs::read_dir(&source)
                 .unwrap()
-                .filter_map(|e| e.ok())
+                .filter_map(std::result::Result::ok)
                 .filter_map(|entry| {
                     fs::metadata(entry.path())
                         .ok()
@@ -346,7 +346,7 @@ fn bench_metadata_collection(c: &mut Criterion) {
         b.iter(|| {
             let metadata: Vec<_> = fs::read_dir(&source)
                 .unwrap()
-                .filter_map(|e| e.ok())
+                .filter_map(std::result::Result::ok)
                 .filter_map(|entry| {
                     fs::metadata(entry.path()).ok().map(|meta| {
                         (

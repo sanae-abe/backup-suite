@@ -352,7 +352,7 @@ impl BackupRunner {
                 TargetType::Directory => {
                     for entry in WalkDir::new(&target.path)
                         .into_iter()
-                        .filter_map(|e| e.ok())
+                        .filter_map(std::result::Result::ok)
                     {
                         if entry.file_type().is_file() {
                             let source = entry.path().to_path_buf();
@@ -558,7 +558,7 @@ impl BackupRunner {
                     // 暗号化・圧縮パイプライン使用
                     match pipeline.process_file(
                         source,
-                        master_key.as_ref().map(|k| k.as_ref()),
+                        master_key.as_ref().map(std::convert::AsRef::as_ref),
                         encryption_salt,
                     ) {
                         Ok(processed) => {
@@ -651,7 +651,7 @@ impl BackupRunner {
                     .filter_map(|(_, dest)| {
                         dest.strip_prefix(&backup_base)
                             .ok()
-                            .map(|p| p.to_path_buf())
+                            .map(std::path::Path::to_path_buf)
                     })
                     .collect();
 

@@ -211,7 +211,7 @@ fn test_audit_log_rotation() -> Result<()> {
 
     // ローテーションされたファイルが存在することを確認
     let entries: Vec<_> = fs::read_dir(temp_dir.path())?
-        .filter_map(|e| e.ok())
+        .filter_map(std::result::Result::ok)
         .filter(|e| {
             let name = e.file_name().to_string_lossy().to_string();
             name.starts_with("audit_") && name.ends_with(".log")
@@ -324,7 +324,7 @@ fn test_audit_log_json_serialization() -> Result<()> {
 
     if let Some(ref meta) = events[0].metadata {
         assert_eq!(meta["total_files"], 100);
-        assert_eq!(meta["total_bytes"], 1024000);
+        assert_eq!(meta["total_bytes"], 1_024_000);
     }
 
     Ok(())

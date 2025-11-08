@@ -253,7 +253,7 @@ fn bench_directory_traversal(c: &mut Criterion) {
                     let mut count = 0;
                     for entry in WalkDir::new(black_box(&test_dir))
                         .into_iter()
-                        .filter_map(|e| e.ok())
+                        .filter_map(std::result::Result::ok)
                     {
                         if entry.file_type().is_file() {
                             count += 1;

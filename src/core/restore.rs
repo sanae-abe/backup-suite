@@ -133,7 +133,7 @@ impl RestoreEngine {
         for backup in &backup_chain {
             let files_in_backup: Vec<PathBuf> = WalkDir::new(backup)
                 .into_iter()
-                .filter_map(|e| e.ok())
+                .filter_map(std::result::Result::ok)
                 .filter(|e| e.file_type().is_file())
                 .filter(|e| {
                     // .integrityファイルを除外

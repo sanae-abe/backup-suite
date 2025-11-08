@@ -524,7 +524,7 @@ impl ProcessingPipeline {
     pub fn current_parallelism(&self) -> usize {
         self.thread_pool
             .as_ref()
-            .map(|pool| pool.current_num_threads())
+            .map(rayon::ThreadPool::current_num_threads)
             .unwrap_or(1)
     }
 }
@@ -704,7 +704,7 @@ mod tests {
 
         // 全ファイルが処理されたことを確認
         assert_eq!(results.len(), test_files.len());
-        assert!(results.iter().all(|r| r.is_ok()));
+        assert!(results.iter().all(std::result::Result::is_ok));
 
         // ThreadPoolが作成されていることを確認
         assert!(pipeline.is_parallel_ready());
@@ -743,7 +743,7 @@ mod tests {
             });
 
         assert_eq!(results.len(), test_files.len());
-        assert!(results.iter().all(|r| r.is_ok()));
+        assert!(results.iter().all(std::result::Result::is_ok));
 
         // 進捗コールバックが呼ばれたことを確認
         assert_eq!(

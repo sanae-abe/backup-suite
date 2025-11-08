@@ -17,7 +17,7 @@ fn test_history_with_filters() {
     let mut history_entries = vec![];
 
     // 高優先度のエントリ
-    let mut entry1 = BackupHistory::new(backup_dir.clone(), 100, 1000000, true);
+    let mut entry1 = BackupHistory::new(backup_dir.clone(), 100, 1_000_000, true);
     entry1.priority = Some(Priority::High);
     entry1.category = Some("documents".to_string());
     entry1.status = BackupStatus::Success;
@@ -27,7 +27,7 @@ fn test_history_with_filters() {
 
     // 中優先度のエントリ
     let mut entry2 =
-        BackupHistory::new(temp.path().join("backup_20251106_120000"), 50, 500000, true);
+        BackupHistory::new(temp.path().join("backup_20251106_120000"), 50, 500_000, true);
     entry2.priority = Some(Priority::Medium);
     entry2.category = Some("photos".to_string());
     entry2.status = BackupStatus::Success;

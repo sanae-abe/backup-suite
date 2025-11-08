@@ -326,7 +326,7 @@ fn benchmark_file_collection(c: &mut Criterion) {
                 b.iter(|| {
                     let files: Vec<_> = walkdir::WalkDir::new(&source_dir)
                         .into_iter()
-                        .filter_map(|e| e.ok())
+                        .filter_map(std::result::Result::ok)
                         .filter(|e| e.file_type().is_file())
                         .map(|e| e.path().to_path_buf())
                         .collect();

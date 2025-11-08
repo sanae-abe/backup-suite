@@ -78,7 +78,7 @@ impl CompressionConfig {
     /// zstd用の適応的設定（CPU数に基づく動的調整）
     pub fn zstd_adaptive() -> Self {
         let cpu_count = std::thread::available_parallelism()
-            .map(|n| n.get())
+            .map(std::num::NonZero::get)
             .unwrap_or(4);
 
         Self {

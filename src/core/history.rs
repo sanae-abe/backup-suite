@@ -393,7 +393,7 @@ impl BackupHistory {
         let mut dirs: Vec<PathBuf> = WalkDir::new(dest)
             .max_depth(1)
             .into_iter()
-            .filter_map(|e| e.ok())
+            .filter_map(std::result::Result::ok)
             .filter(|e| e.file_type().is_dir())
             .map(|e| e.path().to_path_buf())
             .filter(|p| p != dest)

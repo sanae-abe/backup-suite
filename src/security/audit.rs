@@ -262,7 +262,7 @@ impl AuditEvent {
             self.target.as_deref().unwrap_or(""),
             self.metadata
                 .as_ref()
-                .map(|m| m.to_string())
+                .map(std::string::ToString::to_string)
                 .unwrap_or_default()
         )
     }
@@ -741,7 +741,7 @@ mod tests {
 
         // ローテーションされたファイルが存在することを確認
         let entries: Vec<_> = std::fs::read_dir(temp_dir.path())?
-            .filter_map(|e| e.ok())
+            .filter_map(std::result::Result::ok)
             .filter(|e| {
                 e.file_name().to_string_lossy().starts_with("audit_")
                     && e.file_name().to_string_lossy().ends_with(".log")

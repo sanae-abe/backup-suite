@@ -134,7 +134,7 @@ impl IncrementalBackupEngine {
 
         let mut backups: Vec<PathBuf> = std::fs::read_dir(&self.backup_base)
             .context("バックアップディレクトリの読み込み失敗")?
-            .filter_map(|entry| entry.ok())
+            .filter_map(std::result::Result::ok)
             .filter(|entry| entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
             .filter(|entry| entry.file_name().to_string_lossy().starts_with("backup_"))
             .map(|entry| entry.path())
@@ -242,7 +242,7 @@ impl IncrementalBackupEngine {
                 let name = path
                     .file_name()
                     .and_then(|n| n.to_str())
-                    .map(|s| s.to_string())
+                    .map(std::string::ToString::to_string)
                     .ok_or_else(|| anyhow::anyhow!("バックアップ名取得失敗"))?;
                 Ok(Some(name))
             }

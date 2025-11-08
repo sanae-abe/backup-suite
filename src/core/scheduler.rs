@@ -334,38 +334,38 @@ impl Scheduler {
 
         let calendar_interval = match frequency {
             Frequency::Daily => {
-                r#"<dict>
+                r"<dict>
         <key>Hour</key>
         <integer>2</integer>
         <key>Minute</key>
         <integer>0</integer>
-    </dict>"#
+    </dict>"
             }
             Frequency::Weekly => {
-                r#"<dict>
+                r"<dict>
         <key>Hour</key>
         <integer>2</integer>
         <key>Minute</key>
         <integer>0</integer>
         <key>Weekday</key>
         <integer>0</integer>
-    </dict>"#
+    </dict>"
             }
             Frequency::Monthly => {
-                r#"<dict>
+                r"<dict>
         <key>Hour</key>
         <integer>2</integer>
         <key>Minute</key>
         <integer>0</integer>
         <key>Day</key>
         <integer>1</integer>
-    </dict>"#
+    </dict>"
             }
             Frequency::Hourly => {
-                r#"<dict>
+                r"<dict>
         <key>Minute</key>
         <integer>0</integer>
-    </dict>"#
+    </dict>"
             }
         };
 
@@ -525,7 +525,7 @@ impl Scheduler {
         let priority_str = Self::priority_to_string(priority);
 
         let service = format!(
-            r#"[Unit]
+            r"[Unit]
 Description=Backup Suite - {priority} Priority Backup
 After=network.target
 
@@ -537,7 +537,7 @@ StandardError=journal
 
 [Install]
 WantedBy=default.target
-"#,
+",
             priority = priority_str,
             backup_suite_path = backup_suite_path.display()
         );
@@ -561,7 +561,7 @@ WantedBy=default.target
         };
 
         let timer = format!(
-            r#"[Unit]
+            r"[Unit]
 Description=Backup Suite - {priority_str} Priority Backup Timer
 
 [Timer]
@@ -570,7 +570,7 @@ Persistent=true
 
 [Install]
 WantedBy=timers.target
-"#
+"
         );
 
         Ok(timer)

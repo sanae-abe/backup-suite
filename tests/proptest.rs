@@ -161,7 +161,7 @@ fn test_directory_traversal_consistency() -> Result<(), proptest::test_runner::T
         // walkdirで走査してファイル数をカウント
         let count = walkdir::WalkDir::new(&base_dir)
             .into_iter()
-            .filter_map(|e| e.ok())
+            .filter_map(std::result::Result::ok)
             .filter(|e| e.file_type().is_file())
             .count();
 

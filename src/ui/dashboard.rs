@@ -328,7 +328,7 @@ fn calculate_directory_size(dir: &std::path::Path) -> Result<(u64, usize)> {
 
     for entry in walkdir::WalkDir::new(dir)
         .into_iter()
-        .filter_map(|e| e.ok())
+        .filter_map(std::result::Result::ok)
     {
         if entry.file_type().is_file() {
             if let Ok(metadata) = entry.metadata() {
