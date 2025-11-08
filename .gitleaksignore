@@ -1,2 +1,10 @@
-# Ignore Claude Code configuration (contains example data)
-.claude/
+# gitleaksignore - 誤検知を除外
+
+# ドキュメント内の例示用トークン（実際のトークンではない）
+docs/PACKAGE_REGISTRY_SETUP.md:gitlab-pat:*
+setup-cargo-registry.sh:gitlab-pat:*
+
+# M3社内GitLab用のサンプルスクリプト
+# トークン "mglpat-xxxxxxxxxxxxxxxxxxxx" は実在しないサンプル値
+8c112d4b8c5ab308a0203bd71f264a8ab35ee5f6:docs/PACKAGE_REGISTRY_SETUP.md:gitlab-pat:403
+8c112d4b8c5ab308a0203bd71f264a8ab35ee5f6:setup-cargo-registry.sh:gitlab-pat:188

@@ -358,8 +358,14 @@ fn get_disk_info(path: &std::path::Path) -> Result<Option<(u64, u64)>> {
         Ok(cstr) => cstr,
         Err(_) => return Ok(None),
     };
+    // SAFETY: libc::statfs構造体はC言語由来のPOD型であり、
+    // mem::zeroed()で初期化することが安全。すべてのフィールドが数値型で、
+    // ゼロ初期化された状態は有効な初期値として機能する。
     let mut stat: libc::statfs = unsafe { mem::zeroed() };
 
+    // SAFETY: path_cstr は有効なCStringから取得したポインタで、
+    // statはゼロ初期化された有効な構造体への可変参照。
+    // libc::statfsはPOSIX標準のシステムコールで、正常なパラメータで呼び出している。
     let result = unsafe { libc::statfs(path_cstr.as_ptr(), &mut stat) };
 
     if result == 0 {
