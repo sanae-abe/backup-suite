@@ -16,9 +16,9 @@ use std::time::Duration;
 /// # 使用例
 ///
 /// ```no_run
-/// use backup_suite::ui::progress::`BackupProgress`;
+/// use backup_suite::ui::progress::BackupProgress;
 ///
-/// let progress = `BackupProgress`::new(100);
+/// let progress = BackupProgress::new(100);
 /// progress.set_message("処理中: /path/to/file.txt");
 /// progress.inc(1);
 /// progress.finish("バックアップ完了");
@@ -33,7 +33,7 @@ pub struct BackupProgress {
 }
 
 impl BackupProgress {
-    /// 新しい`BackupProgress`インスタンスを作成
+    /// 新しいBackupProgressインスタンスを作成
     ///
     /// # 引数
     ///
@@ -41,14 +41,14 @@ impl BackupProgress {
     ///
     /// # 戻り値
     ///
-    /// `BackupProgress`インスタンス
+    /// BackupProgressインスタンス
     ///
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::ui::progress::`BackupProgress`;
+    /// use backup_suite::ui::progress::BackupProgress;
     ///
-    /// let progress = `BackupProgress`::new(100);
+    /// let progress = BackupProgress::new(100);
     /// ```
     #[must_use]
     pub fn new(total_files: u64) -> Self {
@@ -98,9 +98,9 @@ impl BackupProgress {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::ui::progress::`BackupProgress`;
+    /// use backup_suite::ui::progress::BackupProgress;
     ///
-    /// let progress = `BackupProgress`::new(100);
+    /// let progress = BackupProgress::new(100);
     /// progress.inc(1); // 1つ進める
     /// ```
     pub fn inc(&self, delta: u64) {
@@ -118,9 +118,9 @@ impl BackupProgress {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::ui::progress::`BackupProgress`;
+    /// use backup_suite::ui::progress::BackupProgress;
     ///
-    /// let progress = `BackupProgress`::new(100);
+    /// let progress = BackupProgress::new(100);
     /// progress.set_message("処理中: /path/to/file.txt");
     /// ```
     pub fn set_message(&self, msg: &str) {
@@ -136,9 +136,9 @@ impl BackupProgress {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::ui::progress::`BackupProgress`;
+    /// use backup_suite::ui::progress::BackupProgress;
     ///
-    /// let progress = `BackupProgress`::new(100);
+    /// let progress = BackupProgress::new(100);
     /// progress.set_main_message("高優先度ファイル処理中");
     /// ```
     pub fn set_main_message(&self, msg: &str) {
@@ -156,9 +156,9 @@ impl BackupProgress {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::ui::progress::`BackupProgress`;
+    /// use backup_suite::ui::progress::BackupProgress;
     ///
-    /// let progress = `BackupProgress`::new(100);
+    /// let progress = BackupProgress::new(100);
     /// progress.set_stats("速度: 15.2 MB/s | 合計: 1.5 GB");
     /// ```
     pub fn set_stats(&self, msg: &str) {
@@ -176,9 +176,9 @@ impl BackupProgress {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::ui::progress::`BackupProgress`;
+    /// use backup_suite::ui::progress::BackupProgress;
     ///
-    /// let progress = `BackupProgress`::new(100);
+    /// let progress = BackupProgress::new(100);
     /// // ... 処理 ...
     /// progress.finish("バックアップ完了！");
     /// ```
@@ -197,9 +197,9 @@ impl BackupProgress {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::ui::progress::`BackupProgress`;
+    /// use backup_suite::ui::progress::BackupProgress;
     ///
-    /// let progress = `BackupProgress`::new(100);
+    /// let progress = BackupProgress::new(100);
     /// progress.set_position(50); // 50%に設定
     /// ```
     pub fn set_position(&self, pos: u64) {
@@ -217,9 +217,9 @@ impl BackupProgress {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::ui::progress::`BackupProgress`;
+    /// use backup_suite::ui::progress::BackupProgress;
     ///
-    /// let progress = `BackupProgress`::new(0);
+    /// let progress = BackupProgress::new(0);
     /// progress.set_length(150); // 実際の総数が判明
     /// ```
     pub fn set_length(&self, len: u64) {
@@ -233,9 +233,9 @@ impl BackupProgress {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::ui::progress::`BackupProgress`;
+    /// use backup_suite::ui::progress::BackupProgress;
     ///
-    /// let progress = `BackupProgress`::new(100);
+    /// let progress = BackupProgress::new(100);
     /// progress.finish_and_clear();
     /// ```
     pub fn finish_and_clear(&self) {
@@ -255,9 +255,9 @@ impl BackupProgress {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::ui::progress::`BackupProgress`;
+    /// use backup_suite::ui::progress::BackupProgress;
     ///
-    /// let progress = `BackupProgress`::new_spinner();
+    /// let progress = BackupProgress::new_spinner();
     /// progress.set_message("ファイル検索中...");
     /// // ... 処理 ...
     /// progress.finish("検索完了");
@@ -308,9 +308,9 @@ impl BackupProgress {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::ui::progress::`BackupProgress`;
+    /// use backup_suite::ui::progress::BackupProgress;
     ///
-    /// let progress = `BackupProgress`::new(100);
+    /// let progress = BackupProgress::new(100);
     /// progress.update_stats(50, 52428800, 10.5); // 50ファイル, 50MB, 10.5秒
     /// ```
     #[allow(clippy::cast_precision_loss)]
@@ -343,7 +343,7 @@ impl BackupProgress {
 ///
 /// # 戻り値
 ///
-/// `ProgressBar`インスタンス
+/// ProgressBarインスタンス
 ///
 /// # 使用例
 ///
@@ -380,7 +380,7 @@ pub fn create_progress_bar(total: u64, message: &str) -> ProgressBar {
 ///
 /// # 戻り値
 ///
-/// スピナーの`ProgressBar`インスタンス
+/// スピナーのProgressBarインスタンス
 ///
 /// # 使用例
 ///

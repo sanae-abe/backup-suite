@@ -17,10 +17,10 @@ use crate::error::Result;
 /// # 使用例
 ///
 /// ```no_run
-/// use backup_suite::core::copy_engine::`CopyEngine`;
+/// use backup_suite::core::copy_engine::CopyEngine;
 /// use std::path::Path;
 ///
-/// let engine = `CopyEngine`::new();
+/// let engine = CopyEngine::new();
 /// let bytes = engine.copy_file(
 ///     Path::new("/source/file.txt"),
 ///     Path::new("/dest/file.txt")
@@ -36,21 +36,21 @@ pub struct CopyEngine {
 }
 
 impl CopyEngine {
-    /// デフォルト設定で`CopyEngine`を作成
+    /// デフォルト設定でCopyEngineを作成
     ///
     /// - バッファサイズ: 64KB
     /// - 並列処理閾値: 10MB
     ///
     /// # 戻り値
     ///
-    /// `CopyEngine`インスタンス
+    /// CopyEngineインスタンス
     ///
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::core::copy_engine::`CopyEngine`;
+    /// use backup_suite::core::copy_engine::CopyEngine;
     ///
-    /// let engine = `CopyEngine`::new();
+    /// let engine = CopyEngine::new();
     /// ```
     #[must_use]
     pub fn new() -> Self {
@@ -60,7 +60,7 @@ impl CopyEngine {
         }
     }
 
-    /// カスタム設定で`CopyEngine`を作成
+    /// カスタム設定でCopyEngineを作成
     ///
     /// # 引数
     ///
@@ -69,14 +69,14 @@ impl CopyEngine {
     ///
     /// # 戻り値
     ///
-    /// カスタム設定の`CopyEngine`インスタンス
+    /// カスタム設定のCopyEngineインスタンス
     ///
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::core::copy_engine::`CopyEngine`;
+    /// use backup_suite::core::copy_engine::CopyEngine;
     ///
-    /// let engine = `CopyEngine`::with_config(128 * 1024, 20 * 1024 * 1024);
+    /// let engine = CopyEngine::with_config(128 * 1024, 20 * 1024 * 1024);
     /// ```
     #[must_use]
     pub fn with_config(buffer_size: usize, parallel_threshold: u64) -> Self {
@@ -112,10 +112,10 @@ impl CopyEngine {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::core::copy_engine::`CopyEngine`;
+    /// use backup_suite::core::copy_engine::CopyEngine;
     /// use std::path::Path;
     ///
-    /// let engine = `CopyEngine`::new();
+    /// let engine = CopyEngine::new();
     /// let bytes = engine.copy_file(
     ///     Path::new("/source/file.txt"),
     ///     Path::new("/dest/file.txt")

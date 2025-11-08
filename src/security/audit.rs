@@ -316,7 +316,7 @@ impl AuditLog {
     ///
     /// # Errors
     ///
-    /// * 設定ディレクトリが取得できない場合（`dirs::config_dir()`が`None`を返す）
+    /// * 設定ディレクトリが取得できない場合（`dirs::config_dir()`がNoneを返す）
     /// * 設定ディレクトリ（`~/.config/backup-suite`等）の作成に失敗した場合
     /// * 秘密鍵の読み込みまたは生成に失敗した場合
         pub fn new() -> Result<Self> {

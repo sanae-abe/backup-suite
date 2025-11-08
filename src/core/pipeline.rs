@@ -247,7 +247,7 @@ impl ProcessingPipeline {
         }
     }
 
-    /// 最適化された`ThreadPool`を作成
+    /// 最適化されたThreadPoolを作成
     fn create_thread_pool(performance: &PerformanceConfig) -> Result<rayon::ThreadPool> {
         ThreadPoolBuilder::new()
             .num_threads(performance.parallel_threads)
@@ -528,7 +528,7 @@ impl ProcessingPipeline {
         }
     }
 
-    /// `ThreadPool`が正常に作成されているか確認
+    /// ThreadPoolが正常に作成されているか確認
     #[must_use]
     pub fn is_parallel_ready(&self) -> bool {
         self.thread_pool.is_some()

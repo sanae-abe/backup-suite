@@ -39,7 +39,7 @@ pub struct RestoreEngine {
 }
 
 impl RestoreEngine {
-    /// 新しい`RestoreEngine`を作成
+    /// 新しいRestoreEngineを作成
     #[must_use]
     pub fn new(dry_run: bool) -> Self {
         let audit_log = AuditLog::new()
@@ -78,7 +78,7 @@ impl RestoreEngine {
     ///
     /// # 戻り値
     ///
-    /// 成功時は `RestoreResult`、失敗時はエラー
+    /// 成功時は RestoreResult、失敗時はエラー
     pub fn restore(
         &mut self,
         backup_dir: &Path,

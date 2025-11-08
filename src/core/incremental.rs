@@ -34,8 +34,8 @@ use super::integrity::BackupMetadata;
 ///
 /// # バリアント
 ///
-/// * `Full` - 全ファイルをバックアップ（初回または前回なし）
-/// * `Incremental` - 変更ファイルのみバックアップ（前回バックアップからの差分）
+/// * Full - 全ファイルをバックアップ（初回または前回なし）
+/// * Incremental - 変更ファイルのみバックアップ（前回バックアップからの差分）
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum BackupType {
     #[default]

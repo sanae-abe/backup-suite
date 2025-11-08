@@ -72,7 +72,7 @@ pub enum BackupError {
     Other(#[from] anyhow::Error),
 }
 
-/// `BackupError`用の`Result`型エイリアス
+/// BackupError用のResult型エイリアス
 ///
 /// # 使用例
 ///
