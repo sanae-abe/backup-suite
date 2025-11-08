@@ -386,8 +386,11 @@ fn get_disk_info(path: &std::path::Path) -> Result<Option<(u64, u64)>> {
     let result = unsafe { libc::statfs(path_cstr.as_ptr(), &mut stat) };
 
     if result == 0 {
+        #[allow(clippy::unnecessary_cast)]
         let block_size = stat.f_bsize as u64;
+        #[allow(clippy::unnecessary_cast)]
         let total_blocks = stat.f_blocks as u64;
+        #[allow(clippy::unnecessary_cast)]
         let available_blocks = stat.f_bavail as u64;
 
         let total_bytes = total_blocks * block_size;
