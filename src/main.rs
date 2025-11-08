@@ -33,8 +33,8 @@
 use anyhow::{Context, Result};
 use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Generator, Shell};
+use dialoguer::FuzzySelect;
 use is_terminal::IsTerminal;
-use skim::prelude::*;
 use std::io::{self};
 use std::path::PathBuf;
 
@@ -265,47 +265,49 @@ fn print_completions<G: Generator>(generator: G, cmd: &mut clap::Command) {
     );
 }
 
-fn select_file_with_skim(prompt: &str) -> Result<Option<PathBuf>> {
-    use std::io::BufReader;
+fn select_file_with_fuzzy(prompt: &str) -> Result<Option<PathBuf>> {
+    use std::io::BufRead;
 
-    // findコマンドでファイル一覧を取得
-    let options = SkimOptionsBuilder::default()
-        .height("50%".to_string())
-        .multi(false)
-        .prompt(prompt.to_string())
-        .build()
-        .map_err(|e| anyhow::anyhow!("Skim options error: {e}"))?;
-
-    // findコマンドでファイル/ディレクトリ一覧を生成
-    let cmd = "find . -type f -o -type d | head -1000";
-    let child = std::process::Command::new("sh")
-        .arg("-c")
-        .arg(cmd)
-        .stdout(std::process::Stdio::piped())
-        .spawn()?;
-
-    let stdout = child
-        .stdout
-        .ok_or_else(|| anyhow::anyhow!("findコマンド実行失敗"))?;
-    let reader = BufReader::new(stdout);
-    let input = SkimItemReader::default().of_bufread(reader);
-
-    let skim_output = Skim::run_with(&options, Some(input));
-
-    // ユーザーがキャンセル（Esc）した場合は None を返す
-    let selected_items = match skim_output {
-        Some(out) => {
-            // Escキー（abort）や Ctrl+C でキャンセルされた場合を検出
-            if out.is_abort {
-                return Ok(None);
-            }
-            out.selected_items
-        }
-        None => return Ok(None), // skimが失敗した場合
+    // findコマンドでファイル/ディレクトリ一覧を取得
+    let cmd = if cfg!(windows) {
+        // Windows: dir /s /b (recursive list)
+        "dir /s /b 2>nul"
+    } else {
+        // Unix: find command
+        "find . -type f -o -type d 2>/dev/null | head -1000"
     };
 
-    if let Some(item) = selected_items.first() {
-        let path_str = item.output().to_string();
+    let output = if cfg!(windows) {
+        std::process::Command::new("cmd")
+            .args(["/C", cmd])
+            .output()?
+    } else {
+        std::process::Command::new("sh")
+            .arg("-c")
+            .arg(cmd)
+            .output()?
+    };
+
+    let paths: Vec<String> = std::io::BufReader::new(&output.stdout[..])
+        .lines()
+        .filter_map(|line| line.ok())
+        .filter(|line| !line.is_empty())
+        .take(1000)
+        .collect();
+
+    if paths.is_empty() {
+        return Ok(None);
+    }
+
+    // dialoguer::FuzzySelectで選択
+    let selection = FuzzySelect::new()
+        .with_prompt(prompt)
+        .items(&paths)
+        .default(0)
+        .interact_opt()?;
+
+    if let Some(index) = selection {
+        let path_str: &str = &paths[index];
         let path = if let Some(stripped) = path_str.strip_prefix("./") {
             PathBuf::from(stripped)
         } else {
@@ -325,7 +327,7 @@ fn select_file_with_skim(prompt: &str) -> Result<Option<PathBuf>> {
     }
 }
 
-fn select_target_with_skim(config: &Config, lang: Language) -> Result<Option<PathBuf>> {
+fn select_target_with_fuzzy(config: &Config, lang: Language) -> Result<Option<PathBuf>> {
     if config.targets.is_empty() {
         println!(
             "{}⚠️ {}{}",
@@ -336,15 +338,8 @@ fn select_target_with_skim(config: &Config, lang: Language) -> Result<Option<Pat
         return Ok(None);
     }
 
-    let options = SkimOptionsBuilder::default()
-        .height("50%".to_string())
-        .multi(false)
-        .prompt("削除するバックアップ対象を選択: ".to_string())
-        .build()
-        .map_err(|e| anyhow::anyhow!("Skim options error: {e}"))?;
-
     // バックアップ対象一覧を文字列として生成
-    let targets_text = config
+    let targets_display: Vec<String> = config
         .targets
         .iter()
         .map(|t| {
@@ -359,33 +354,17 @@ fn select_target_with_skim(config: &Config, lang: Language) -> Result<Option<Pat
                 t.category
             )
         })
-        .collect::<Vec<_>>()
-        .join("\n");
+        .collect();
 
-    let input = SkimItemReader::default().of_bufread(std::io::Cursor::new(targets_text));
+    // dialoguer::FuzzySelectで選択
+    let selection = FuzzySelect::new()
+        .with_prompt("削除するバックアップ対象を選択")
+        .items(&targets_display)
+        .default(0)
+        .interact_opt()?;
 
-    let skim_output = Skim::run_with(&options, Some(input));
-
-    // ユーザーがキャンセル（Esc）した場合は None を返す
-    let selected_items = match skim_output {
-        Some(out) => {
-            // Escキー（abort）や Ctrl+C でキャンセルされた場合を検出
-            if out.is_abort {
-                return Ok(None);
-            }
-            out.selected_items
-        }
-        None => return Ok(None), // skimが失敗した場合
-    };
-
-    if let Some(item) = selected_items.first() {
-        let selected_text = item.output().to_string();
-        // 最初の部分（パス）を抽出
-        if let Some(path_str) = selected_text.split_whitespace().next() {
-            Ok(Some(PathBuf::from(path_str)))
-        } else {
-            Ok(None)
-        }
+    if let Some(index) = selection {
+        Ok(Some(config.targets[index].path.clone()))
     } else {
         Ok(None)
     }
@@ -1192,7 +1171,7 @@ fn main() -> Result<()> {
             // パスを決定（pathが指定されていない場合、またはinteractiveフラグが立っている場合はskin選択）
             let target_path = if let Some(p) = path {
                 if interactive {
-                    match select_file_with_skim("追加するファイル/ディレクトリを選択: ")?
+                    match select_file_with_fuzzy("追加するファイル/ディレクトリを選択: ")?
                     {
                         Some(selected_path) => selected_path,
                         None => {
@@ -1209,7 +1188,7 @@ fn main() -> Result<()> {
                     p
                 }
             } else {
-                match select_file_with_skim("追加するファイル/ディレクトリを選択: ")?
+                match select_file_with_fuzzy("追加するファイル/ディレクトリを選択: ")?
                 {
                     Some(selected_path) => selected_path,
                     None => {
@@ -1283,7 +1262,7 @@ fn main() -> Result<()> {
             // パスを決定（pathが指定されていない場合、またはinteractiveフラグが立っている場合はskin選択）
             let target_path = if let Some(p) = path {
                 if interactive {
-                    match select_target_with_skim(&config, lang)? {
+                    match select_target_with_fuzzy(&config, lang)? {
                         Some(selected_path) => selected_path,
                         None => {
                             println!(
@@ -1299,7 +1278,7 @@ fn main() -> Result<()> {
                     p
                 }
             } else {
-                match select_target_with_skim(&config, lang)? {
+                match select_target_with_fuzzy(&config, lang)? {
                     Some(selected_path) => selected_path,
                     None => {
                         println!(

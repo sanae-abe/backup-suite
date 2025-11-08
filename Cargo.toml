@@ -28,7 +28,7 @@ clap = { version = "4.5", features = ["derive", "cargo"] }
 clap_complete = "4.5.60"
 comfy-table = "7.1"
 console = "0.16"
-dialoguer = "0.12"
+dialoguer = { version = "0.12", features = ["fuzzy-select"] }
 dirs = "6.0.0"
 indicatif = "0.18"
 is-terminal = "0.4"
@@ -37,7 +37,6 @@ rayon = "1.11.0"
 regex = "1.12"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0"
-skim = "0.20.5"
 thiserror = "1.0"
 toml = "0.9.8"
 walkdir = "2.5.0"
