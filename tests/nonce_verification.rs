@@ -14,7 +14,7 @@ fn test_nonce_uniqueness_1000_iterations() {
     for i in 0..1000 {
         let encrypted = engine
             .encrypt(data, &master_key, salt)
-            .unwrap_or_else(|_| panic!("Encryption failed at iteration {}", i));
+            .unwrap_or_else(|_| panic!("Encryption failed at iteration {i}"));
 
         assert!(
             nonces.insert(encrypted.nonce),
@@ -61,8 +61,7 @@ fn test_streaming_nonce_u64_capacity() {
     assert_eq!(data, decrypted_buffer);
 
     println!(
-        "✅ SUCCESS: Streaming encryption with {} chunks",
-        chunk_count
+        "✅ SUCCESS: Streaming encryption with {chunk_count} chunks"
     );
     println!("   Original size: {} MB", total_size / 1024 / 1024);
     println!("   U64 counter capacity: 2^64 chunks (~16 exabytes)");
@@ -97,14 +96,12 @@ fn test_nonce_statistical_distribution() {
         // 1000サンプルで50%以上の値が出現すれば良好な分布
         assert!(
             unique_values >= 128,
-            "❌ Poor randomness at byte position {}: only {} unique values",
-            byte_pos,
-            unique_values
+            "❌ Poor randomness at byte position {byte_pos}: only {unique_values} unique values"
         );
     }
 
     println!("✅ SUCCESS: Nonce distribution shows good randomness");
-    println!("   Samples: {}", iterations);
+    println!("   Samples: {iterations}");
     println!("   Nonce size: 12 bytes");
 }
 
@@ -136,8 +133,8 @@ fn test_chunk_nonce_uniqueness() {
     // （理論検証: u64カウンターで最大2^64チャンク対応）
 
     println!("✅ SUCCESS: Chunk nonce uniqueness verified");
-    println!("   Base nonce: {:?}", base_nonce);
-    println!("   Chunk count: {}", chunk_count);
+    println!("   Base nonce: {base_nonce:?}");
+    println!("   Chunk count: {chunk_count}");
     println!("   Theoretical max chunks (u64): 2^64 = 18,446,744,073,709,551,616");
 }
 

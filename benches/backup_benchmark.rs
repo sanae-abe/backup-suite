@@ -27,8 +27,8 @@ fn setup_benchmark_env(num_files: usize) -> (TempDir, Config) {
     // ファイル作成
     for i in 0..num_files {
         fs::write(
-            source_dir.join(format!("file_{:04}.txt", i)),
-            format!("content for file {}", i),
+            source_dir.join(format!("file_{i:04}.txt")),
+            format!("content for file {i}"),
         )
         .unwrap();
     }
@@ -62,15 +62,15 @@ fn setup_nested_structure(depth: usize, files_per_dir: usize) -> (TempDir, Confi
         // 各ディレクトリにファイルを作成
         for i in 0..files {
             fs::write(
-                base.join(format!("file_{}.txt", i)),
-                format!("content at depth {}", current_depth),
+                base.join(format!("file_{i}.txt")),
+                format!("content at depth {current_depth}"),
             )
             .unwrap();
         }
 
         // サブディレクトリを作成
         for i in 0..2 {
-            let subdir = base.join(format!("subdir_{}", i));
+            let subdir = base.join(format!("subdir_{i}"));
             create_nested(&subdir, current_depth + 1, max_depth, files);
         }
     }
@@ -99,7 +99,7 @@ fn setup_large_files(num_files: usize, size_mb: usize) -> (TempDir, Config) {
     let content = vec![0u8; size_mb * 1024 * 1024];
 
     for i in 0..num_files {
-        fs::write(source_dir.join(format!("large_file_{}.bin", i)), &content).unwrap();
+        fs::write(source_dir.join(format!("large_file_{i}.bin")), &content).unwrap();
     }
 
     let mut config = Config::default();
@@ -151,7 +151,7 @@ fn benchmark_large_files(c: &mut Criterion) {
         group.throughput(Throughput::Bytes((size_mb * 1024 * 1024) as u64));
 
         group.bench_with_input(
-            BenchmarkId::from_parameter(format!("{}MB", size_mb)),
+            BenchmarkId::from_parameter(format!("{size_mb}MB")),
             size_mb,
             |b, &size_mb| {
                 b.iter_batched(
@@ -177,7 +177,7 @@ fn benchmark_nested_directories(c: &mut Criterion) {
 
     for depth in [2, 3, 4].iter() {
         group.bench_with_input(
-            BenchmarkId::from_parameter(format!("depth_{}", depth)),
+            BenchmarkId::from_parameter(format!("depth_{depth}")),
             depth,
             |b, &depth| {
                 b.iter_batched(
@@ -271,7 +271,7 @@ fn benchmark_config_operations(c: &mut Criterion) {
     let mut config = Config::default();
     for i in 0..100 {
         config.targets.push(Target::new(
-            temp_dir.path().join(format!("target_{}", i)),
+            temp_dir.path().join(format!("target_{i}")),
             Priority::Medium,
             "test".to_string(),
         ));
@@ -317,8 +317,8 @@ fn benchmark_file_collection(c: &mut Criterion) {
 
                 for i in 0..num_files {
                     fs::write(
-                        source_dir.join(format!("file_{}.txt", i)),
-                        format!("content {}", i),
+                        source_dir.join(format!("file_{i}.txt")),
+                        format!("content {i}"),
                     )
                     .unwrap();
                 }
@@ -386,7 +386,7 @@ fn benchmark_memory_usage(c: &mut Criterion) {
             let mut config = Config::default();
             for i in 0..10000 {
                 config.targets.push(Target::new(
-                    format!("/tmp/target_{}", i).into(),
+                    format!("/tmp/target_{i}").into(),
                     Priority::Medium,
                     "test".to_string(),
                 ));

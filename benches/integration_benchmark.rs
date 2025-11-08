@@ -6,7 +6,7 @@ use tempfile::TempDir;
 
 fn create_test_files(dir: &std::path::Path, count: usize, size: usize) {
     for i in 0..count {
-        let path = dir.join(format!("file_{}.txt", i));
+        let path = dir.join(format!("file_{i}.txt"));
         let content = vec![b'x'; size];
         fs::write(path, content).unwrap();
     }
@@ -19,7 +19,7 @@ fn create_nested_structure(dir: &std::path::Path, depth: usize, files_per_dir: u
     }
 
     for i in 0..3 {
-        let subdir = dir.join(format!("level_{}", i));
+        let subdir = dir.join(format!("level_{i}"));
         fs::create_dir_all(&subdir).unwrap();
         create_nested_structure(&subdir, depth - 1, files_per_dir);
     }
@@ -98,7 +98,7 @@ fn bench_nested_directory_backup(c: &mut Criterion) {
 
     for depth in depths {
         group.bench_with_input(
-            BenchmarkId::from_parameter(format!("depth_{}", depth)),
+            BenchmarkId::from_parameter(format!("depth_{depth}")),
             &depth,
             |b, &depth| {
                 let temp_dir = TempDir::new().unwrap();
@@ -201,7 +201,7 @@ fn bench_incremental_backup(c: &mut Criterion) {
     group.bench_function("partial_changes", |b| {
         // 10%のファイルを変更
         for i in (0..100).step_by(10) {
-            let path = source.join(format!("file_{}.txt", i));
+            let path = source.join(format!("file_{i}.txt"));
             fs::write(&path, vec![b'y'; 1024]).unwrap();
         }
 
@@ -278,10 +278,10 @@ fn bench_filtering_performance(c: &mut Criterion) {
 
     // 様々な拡張子のファイルを作成
     for i in 0..50 {
-        fs::write(source.join(format!("file_{}.txt", i)), "text").unwrap();
-        fs::write(source.join(format!("file_{}.log", i)), "log").unwrap();
-        fs::write(source.join(format!("file_{}.tmp", i)), "tmp").unwrap();
-        fs::write(source.join(format!("file_{}.dat", i)), "data").unwrap();
+        fs::write(source.join(format!("file_{i}.txt")), "text").unwrap();
+        fs::write(source.join(format!("file_{i}.log")), "log").unwrap();
+        fs::write(source.join(format!("file_{i}.tmp")), "tmp").unwrap();
+        fs::write(source.join(format!("file_{i}.dat")), "data").unwrap();
     }
 
     let exclude_pattern = Regex::new(r"\.(log|tmp)$").unwrap();

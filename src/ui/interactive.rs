@@ -101,8 +101,8 @@ pub fn confirm_with_text(
     yes_text: &str,
     no_text: &str,
 ) -> Result<bool> {
-    println!("\n{}", message);
-    println!("  {} / {}", yes_text, no_text);
+    println!("\n{message}");
+    println!("  {yes_text} / {no_text}");
 
     let result = Confirm::with_theme(&ColorfulTheme::default())
         .with_prompt("選択してください")
@@ -319,8 +319,8 @@ pub fn confirm_backup(file_count: usize, destination: &str) -> Result<bool> {
     println!("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     println!("📦 バックアップ実行確認");
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    println!("対象ファイル数: {} ファイル", file_count);
-    println!("バックアップ先: {}", destination);
+    println!("対象ファイル数: {file_count} ファイル");
+    println!("バックアップ先: {destination}");
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
     confirm("バックアップを実行しますか？", true)
@@ -356,8 +356,8 @@ pub fn confirm_backup(file_count: usize, destination: &str) -> Result<bool> {
 /// ```
 pub fn confirm_cleanup(count: usize, keep_days: u32) -> Result<bool> {
     println!("\n🗑️  古いバックアップの削除");
-    println!("削除対象: {} 個のバックアップ", count);
-    println!("保持期間: {} 日", keep_days);
+    println!("削除対象: {count} 個のバックアップ");
+    println!("保持期間: {keep_days} 日");
 
     confirm("削除を実行しますか？", false)
 }

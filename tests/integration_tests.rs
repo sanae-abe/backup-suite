@@ -389,8 +389,8 @@ fn test_parallel_backup_large_directory() -> Result<()> {
     // 100個のファイルを作成
     for i in 0..100 {
         fs::write(
-            source_dir.join(format!("file_{:03}.txt", i)),
-            format!("content {}", i),
+            source_dir.join(format!("file_{i:03}.txt")),
+            format!("content {i}"),
         )?;
     }
 
@@ -488,8 +488,7 @@ fn test_large_file_backup_performance() -> Result<()> {
     // パフォーマンス目標: 10MBを5秒以内でバックアップ
     assert!(
         duration.as_secs() < 5,
-        "バックアップに時間がかかりすぎています: {:?}",
-        duration
+        "バックアップに時間がかかりすぎています: {duration:?}"
     );
 
     Ok(())

@@ -28,7 +28,7 @@ fn safe_join(base: &Path, child: &Path) -> Result<PathBuf, String> {
                 }
             })
         })
-        .ok_or_else(|| format!("不正なパス: {:?}", child))
+        .ok_or_else(|| format!("不正なパス: {child:?}"))
 }
 
 fn sanitize_path_component(name: &str) -> String {
@@ -38,14 +38,14 @@ fn sanitize_path_component(name: &str) -> String {
 }
 
 fn check_read_permission(path: &Path) -> Result<(), String> {
-    let metadata = std::fs::metadata(path).map_err(|e| format!("メタデータ取得失敗: {}", e))?;
+    let metadata = std::fs::metadata(path).map_err(|e| format!("メタデータ取得失敗: {e}"))?;
 
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
         let mode = metadata.permissions().mode();
         if mode & 0o400 == 0 {
-            return Err(format!("読み取り権限がありません: {:?}", path));
+            return Err(format!("読み取り権限がありません: {path:?}"));
         }
     }
 
@@ -61,7 +61,7 @@ fn validate_path_security(path: &Path) -> Result<(), String> {
 
     for pattern in &dangerous_patterns {
         if path_str.contains(pattern) {
-            return Err(format!("危険なパターン検出: {}", pattern));
+            return Err(format!("危険なパターン検出: {pattern}"));
         }
     }
 
@@ -205,9 +205,9 @@ fn bench_concurrent_security_checks(c: &mut Criterion) {
     // 100個のテストファイルを作成
     let files: Vec<_> = (0..100)
         .map(|i| {
-            let path = base.join(format!("file_{}.txt", i));
-            fs::write(&path, format!("content {}", i)).unwrap();
-            PathBuf::from(format!("file_{}.txt", i))
+            let path = base.join(format!("file_{i}.txt"));
+            fs::write(&path, format!("content {i}")).unwrap();
+            PathBuf::from(format!("file_{i}.txt"))
         })
         .collect();
 

@@ -63,7 +63,7 @@ pub fn display_targets(targets: &[Target], theme: &ColorTheme) {
     }
 
     println!("\n{}", theme.header().apply_to("📋 バックアップ対象一覧"));
-    println!("{}\n", table);
+    println!("{table}\n");
 }
 
 /// バックアップ履歴をテーブル表示
@@ -114,7 +114,7 @@ pub fn display_history(history: &[BackupHistory], theme: &ColorTheme) {
         ]);
     }
 
-    println!("{}\n", table);
+    println!("{table}\n");
 }
 
 /// バックアップ結果をテーブル表示
@@ -157,7 +157,7 @@ pub fn display_backup_result(
     ]);
 
     println!("\n\n{}", theme.header().apply_to("📈 バックアップ結果"));
-    println!("{}\n", table);
+    println!("{table}\n");
 }
 
 /// バイト数を人間が読める形式に変換

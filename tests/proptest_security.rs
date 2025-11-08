@@ -42,7 +42,7 @@ proptest! {
         // Construct attack path: ../../../target/path
         let attack_prefix = "../".repeat(parent_count);
         let attack_suffix = target_segments.join("/");
-        let attack_path = PathBuf::from(format!("{}{}", attack_prefix, attack_suffix));
+        let attack_path = PathBuf::from(format!("{attack_prefix}{attack_suffix}"));
 
         let result = safe_join(base, &attack_path);
 
@@ -246,7 +246,7 @@ proptest! {
         let base = temp_dir.path();
 
         // Create deeply nested path
-        let segments: Vec<_> = (0..depth).map(|i| format!("dir{}", i)).collect();
+        let segments: Vec<_> = (0..depth).map(|i| format!("dir{i}")).collect();
         let deep_path = PathBuf::from(segments.join("/"));
 
         let result = safe_join(base, &deep_path);
@@ -298,7 +298,7 @@ proptest! {
         special in r"[:;<>!@#$%^&*+=]{1,10}",
         suffix in r"[a-z]{1,5}"
     ) {
-        let input = format!("{}{}{}", prefix, special, suffix);
+        let input = format!("{prefix}{special}{suffix}");
         let sanitized = sanitize_path_component(&input);
 
         // Verify no special characters remain
@@ -335,7 +335,7 @@ proptest! {
         prefix in r"[a-z]{1,10}",
         suffix in r"[a-z]{1,10}"
     ) {
-        let input = format!("{}\0{}", prefix, suffix);
+        let input = format!("{prefix}\0{suffix}");
         let sanitized = sanitize_path_component(&input);
 
         // Verify no null bytes
@@ -419,8 +419,7 @@ mod unit_tests {
             if let Ok(joined) = result {
                 assert!(
                     joined.starts_with(base),
-                    "Attack pattern '{}' bypassed security",
-                    pattern
+                    "Attack pattern '{pattern}' bypassed security"
                 );
             }
         }
@@ -441,8 +440,7 @@ mod unit_tests {
             let sanitized = sanitize_path_component(input);
             assert_eq!(
                 sanitized, expected,
-                "Sanitization failed for input: {}",
-                input
+                "Sanitization failed for input: {input}"
             );
         }
     }

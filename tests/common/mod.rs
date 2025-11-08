@@ -166,7 +166,7 @@ pub fn create_sample_directory_structure(env: &TestEnvironment) -> Result<()> {
 #[allow(dead_code)]
 pub fn create_large_directory(env: &TestEnvironment, num_files: usize) -> Result<()> {
     for i in 0..num_files {
-        env.create_file(format!("file_{:04}.txt", i), &format!("content {}", i))?;
+        env.create_file(format!("file_{i:04}.txt"), &format!("content {i}"))?;
     }
     Ok(())
 }
@@ -263,7 +263,7 @@ pub fn debug_directory_structure(path: &Path) -> Result<String> {
         } else {
             "📄"
         };
-        result.push_str(&format!("{}{} {}\n", indent, file_type, name));
+        result.push_str(&format!("{indent}{file_type} {name}\n"));
     }
     Ok(result)
 }

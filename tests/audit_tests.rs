@@ -204,7 +204,7 @@ fn test_audit_log_rotation() -> Result<()> {
     // 大量のイベントを記録してローテーションをトリガー
     for i in 0..100 {
         audit_log.log(AuditEvent::backup_started(
-            format!("/path/{}", i),
+            format!("/path/{i}"),
             "testuser",
         ))?;
     }
@@ -306,18 +306,15 @@ fn test_audit_log_json_serialization() -> Result<()> {
     let content = fs::read_to_string(&log_path)?;
     assert!(
         content.contains("total_files"),
-        "Content missing 'total_files': {}",
-        content
+        "Content missing 'total_files': {content}"
     );
     assert!(
         content.contains("1024000"),
-        "Content missing '1024000': {}",
-        content
+        "Content missing '1024000': {content}"
     );
     assert!(
         content.contains("BackupCompleted"),
-        "Content missing 'BackupCompleted': {}",
-        content
+        "Content missing 'BackupCompleted': {content}"
     );
 
     // JSON形式で読み込めることを確認

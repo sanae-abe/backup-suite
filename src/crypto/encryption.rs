@@ -132,7 +132,7 @@ impl EncryptionEngine {
 
         let ciphertext = cipher
             .encrypt(nonce, data)
-            .map_err(|e| BackupError::EncryptionError(format!("暗号化エラー: {}", e)))?;
+            .map_err(|e| BackupError::EncryptionError(format!("暗号化エラー: {e}")))?;
 
         Ok(EncryptedData {
             nonce: nonce_bytes,
@@ -162,7 +162,7 @@ impl EncryptionEngine {
 
         let plaintext = cipher
             .decrypt(nonce, encrypted_data.ciphertext.as_ref())
-            .map_err(|e| BackupError::EncryptionError(format!("復号化エラー: {}", e)))?;
+            .map_err(|e| BackupError::EncryptionError(format!("復号化エラー: {e}")))?;
 
         Ok(plaintext)
     }
@@ -212,7 +212,7 @@ impl EncryptionEngine {
             #[allow(deprecated)]
             let nonce = Nonce::from_slice(&chunk_nonce);
             let chunk_ciphertext = cipher.encrypt(nonce, &buffer[..bytes_read]).map_err(|e| {
-                BackupError::EncryptionError(format!("チャンク暗号化エラー: {}", e))
+                BackupError::EncryptionError(format!("チャンク暗号化エラー: {e}"))
             })?;
 
             // チャンクサイズと暗号化データを書き込み
@@ -280,7 +280,7 @@ impl EncryptionEngine {
             #[allow(deprecated)]
             let nonce = Nonce::from_slice(&chunk_nonce);
             let plaintext = cipher.decrypt(nonce, chunk_data.as_ref()).map_err(|e| {
-                BackupError::EncryptionError(format!("チャンク復号化エラー: {}", e))
+                BackupError::EncryptionError(format!("チャンク復号化エラー: {e}"))
             })?;
 
             writer.write_all(&plaintext)?;

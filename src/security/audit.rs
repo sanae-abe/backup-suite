@@ -389,7 +389,7 @@ impl AuditLog {
             .context("ログファイルのオープンに失敗しました")?;
 
         let json_line = serde_json::to_string(&event)?;
-        writeln!(file, "{}", json_line).context("ログの書き込みに失敗しました")?;
+        writeln!(file, "{json_line}").context("ログの書き込みに失敗しました")?;
 
         Ok(())
     }
@@ -409,7 +409,7 @@ impl AuditLog {
         let timestamp = Utc::now().format("%Y%m%d_%H%M%S");
         let rotated_path = self
             .log_path
-            .with_file_name(format!("audit_{}.log", timestamp));
+            .with_file_name(format!("audit_{timestamp}.log"));
 
         std::fs::rename(&self.log_path, &rotated_path)
             .context("ログローテーションに失敗しました")?;
@@ -578,7 +578,7 @@ fn generate_random_bytes(len: usize) -> Vec<u8> {
 mod hex {
     pub fn encode(data: &[u8]) -> String {
         data.iter()
-            .map(|b| format!("{:02x}", b))
+            .map(|b| format!("{b:02x}"))
             .collect::<String>()
     }
 }
@@ -736,7 +736,7 @@ mod tests {
 
         // 多数のイベントを記録（ローテーションをトリガー）
         for i in 0..50 {
-            audit_log.log(AuditEvent::backup_started(format!("/path/{}", i), "user1"))?;
+            audit_log.log(AuditEvent::backup_started(format!("/path/{i}"), "user1"))?;
         }
 
         // ローテーションされたファイルが存在することを確認

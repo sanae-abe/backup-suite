@@ -42,7 +42,7 @@ impl RestoreEngine {
     /// 新しいRestoreEngineを作成
     pub fn new(dry_run: bool) -> Self {
         let audit_log = AuditLog::new()
-            .map_err(|e| eprintln!("警告: 監査ログの初期化に失敗しました: {}", e))
+            .map_err(|e| eprintln!("警告: 監査ログの初期化に失敗しました: {e}"))
             .ok();
 
         Self {
@@ -83,13 +83,13 @@ impl RestoreEngine {
         password: Option<&str>,
     ) -> Result<RestoreResult> {
         let user = AuditLog::current_user();
-        let target_desc = format!("{:?} → {:?}", backup_dir, dest_dir);
+        let target_desc = format!("{backup_dir:?} → {dest_dir:?}");
 
         // 監査ログ: 復元開始
         if let Some(ref mut audit_log) = self.audit_log {
             let _ = audit_log
                 .log(AuditEvent::restore_started(&target_desc, &user))
-                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {}", e));
+                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {e}"));
         }
 
         if !backup_dir.exists() {
@@ -101,12 +101,11 @@ impl RestoreEngine {
                         &user,
                         "バックアップディレクトリが存在しません",
                     ))
-                    .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {}", e));
+                    .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {e}"));
             }
 
             return Err(anyhow::anyhow!(
-                "バックアップディレクトリが存在しません: {:?}",
-                backup_dir
+                "バックアップディレクトリが存在しません: {backup_dir:?}"
             ));
         }
 
@@ -126,7 +125,7 @@ impl RestoreEngine {
         // 復元先ディレクトリを作成
         if !self.dry_run {
             std::fs::create_dir_all(dest_dir)
-                .context(format!("復元先ディレクトリ作成失敗: {:?}", dest_dir))?;
+                .context(format!("復元先ディレクトリ作成失敗: {dest_dir:?}"))?;
         }
 
         // チェーン内のすべてのバックアップからファイル一覧を収集
@@ -154,12 +153,11 @@ impl RestoreEngine {
 
         if self.dry_run {
             println!(
-                "📋 ドライランモード: {} ファイルを復元対象として検出",
-                total_files
+                "📋 ドライランモード: {total_files} ファイルを復元対象として検出"
             );
             for (backup_src, file) in &all_files {
                 if let Ok(relative) = file.strip_prefix(backup_src) {
-                    println!("  {:?}", relative);
+                    println!("  {relative:?}");
                 }
             }
             return Ok(RestoreResult {
@@ -204,8 +202,7 @@ impl RestoreEngine {
                     }
                     Err(e) => {
                         eprintln!(
-                            "警告: 整合性メタデータの読み込みに失敗しました ({:?}): {}",
-                            backup, e
+                            "警告: 整合性メタデータの読み込みに失敗しました ({backup:?}): {e}"
                         );
                     }
                 }
@@ -224,7 +221,7 @@ impl RestoreEngine {
             // プログレス更新
             if let Some(ref pb) = progress {
                 if let Some(file_name) = source_path.file_name() {
-                    pb.set_message(&format!("復元中: {:?}", file_name));
+                    pb.set_message(&format!("復元中: {file_name:?}"));
                 }
             }
 
@@ -232,7 +229,7 @@ impl RestoreEngine {
             let relative_path = match source_path.strip_prefix(source_backup_dir) {
                 Ok(r) => r,
                 Err(e) => {
-                    errors.push(format!("相対パス取得失敗: {:?}: {}", source_path, e));
+                    errors.push(format!("相対パス取得失敗: {source_path:?}: {e}"));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                     if let Some(ref pb) = progress {
                         pb.inc(1);
@@ -245,7 +242,7 @@ impl RestoreEngine {
             let dest_path = match safe_join(dest_dir, relative_path) {
                 Ok(p) => p,
                 Err(e) => {
-                    errors.push(format!("パストラバーサル検出: {:?}: {}", relative_path, e));
+                    errors.push(format!("パストラバーサル検出: {relative_path:?}: {e}"));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                     if let Some(ref pb) = progress {
                         pb.inc(1);
@@ -257,7 +254,7 @@ impl RestoreEngine {
             // 親ディレクトリを作成
             if let Some(parent) = dest_path.parent() {
                 if let Err(e) = std::fs::create_dir_all(parent) {
-                    errors.push(format!("ディレクトリ作成失敗: {:?}: {}", parent, e));
+                    errors.push(format!("ディレクトリ作成失敗: {parent:?}: {e}"));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                     if let Some(ref pb) = progress {
                         pb.inc(1);
@@ -270,7 +267,7 @@ impl RestoreEngine {
             let file_data = match std::fs::read(source_path) {
                 Ok(d) => d,
                 Err(e) => {
-                    errors.push(format!("ファイル読み込み失敗: {:?}: {}", source_path, e));
+                    errors.push(format!("ファイル読み込み失敗: {source_path:?}: {e}"));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                     if let Some(ref pb) = progress {
                         pb.inc(1);
@@ -290,8 +287,7 @@ impl RestoreEngine {
                         Some(p) => p.to_string(),
                         None => {
                             errors.push(format!(
-                                "暗号化されたファイルですがパスワードが未指定: {:?}",
-                                relative_path
+                                "暗号化されたファイルですがパスワードが未指定: {relative_path:?}"
                             ));
                             failed_count.fetch_add(1, Ordering::Relaxed);
                             if let Some(ref pb) = progress {
@@ -308,7 +304,7 @@ impl RestoreEngine {
                             master_key_opt = Some(std::sync::Arc::new(mk));
                         }
                         Err(e) => {
-                            errors.push(format!("マスターキー復元失敗: {}", e));
+                            errors.push(format!("マスターキー復元失敗: {e}"));
                             failed_count.fetch_add(1, Ordering::Relaxed);
                             if let Some(ref pb) = progress {
                                 pb.inc(1);
@@ -328,7 +324,7 @@ impl RestoreEngine {
                         self.decompress_if_needed(&decrypted_data)?
                     }
                     Err(e) => {
-                        errors.push(format!("復号化失敗: {:?}: {}", relative_path, e));
+                        errors.push(format!("復号化失敗: {relative_path:?}: {e}"));
                         failed_count.fetch_add(1, Ordering::Relaxed);
                         if let Some(ref pb) = progress {
                             pb.inc(1);
@@ -357,18 +353,17 @@ impl RestoreEngine {
                             Ok(false) => {
                                 verification_failed_count.fetch_add(1, Ordering::Relaxed);
                                 errors.push(format!(
-                                    "⚠ 整合性検証失敗（ファイルが改ざんされています）: {:?}",
-                                    relative_path
+                                    "⚠ 整合性検証失敗（ファイルが改ざんされています）: {relative_path:?}"
                                 ));
                             }
                             Err(e) => {
-                                eprintln!("警告: 整合性検証エラー: {:?}: {}", relative_path, e);
+                                eprintln!("警告: 整合性検証エラー: {relative_path:?}: {e}");
                             }
                         }
                     }
                 }
                 Err(e) => {
-                    errors.push(format!("ファイル書き込み失敗: {:?}: {}", dest_path, e));
+                    errors.push(format!("ファイル書き込み失敗: {dest_path:?}: {e}"));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                 }
             }
@@ -384,7 +379,7 @@ impl RestoreEngine {
             if failed == 0 {
                 pb.finish("✓ 復元完了");
             } else {
-                pb.finish(&format!("⚠ 復元完了（{}件失敗）", failed));
+                pb.finish(&format!("⚠ 復元完了（{failed}件失敗）"));
             }
         }
 
@@ -423,7 +418,7 @@ impl RestoreEngine {
 
             let _ = audit_log
                 .log(event)
-                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {}", e));
+                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {e}"));
         }
 
         Ok(result)

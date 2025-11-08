@@ -201,7 +201,7 @@ impl Config {
         }
 
         let content = std::fs::read_to_string(&config_path)
-            .context(format!("設定ファイル読み込み失敗: {:?}", config_path))?;
+            .context(format!("設定ファイル読み込み失敗: {config_path:?}"))?;
 
         let config: Config = toml::from_str(&content).context("TOML解析失敗")?;
 
@@ -251,7 +251,7 @@ impl Config {
         let content = toml::to_string_pretty(self).context("TOML生成失敗")?;
 
         std::fs::write(&config_path, content)
-            .context(format!("設定ファイル書き込み失敗: {:?}", config_path))?;
+            .context(format!("設定ファイル書き込み失敗: {config_path:?}"))?;
 
         Ok(())
     }

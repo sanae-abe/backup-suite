@@ -125,39 +125,34 @@ impl BackupError {
                 .to_string(),
             BackupError::TargetNotFound { path } => {
                 format!(
-                    "バックアップ対象が存在しません: {:?}\n\
-                     対処法: パスが正しいか、ファイル/ディレクトリが存在するか確認してください。",
-                    path
+                    "バックアップ対象が存在しません: {path:?}\n\
+                     対処法: パスが正しいか、ファイル/ディレクトリが存在するか確認してください。"
                 )
             }
             BackupError::PermissionDenied { path } => {
                 format!(
-                    "読み取り権限がありません: {:?}\n\
-                     対処法: ファイル/ディレクトリの権限を確認するか、sudo で実行してください。",
-                    path
+                    "読み取り権限がありません: {path:?}\n\
+                     対処法: ファイル/ディレクトリの権限を確認するか、sudo で実行してください。"
                 )
             }
             BackupError::PathTraversalDetected { path } => {
                 format!(
-                    "不正なパスが検出されました: {:?}\n\
-                     セキュリティ警告: ディレクトリトラバーサル攻撃の可能性があります。",
-                    path
+                    "不正なパスが検出されました: {path:?}\n\
+                     セキュリティ警告: ディレクトリトラバーサル攻撃の可能性があります。"
                 )
             }
             BackupError::ConfigValidationError { message } => {
                 format!(
-                    "設定に問題があります: {}\n\
-                     対処法: ~/.config/backup-suite/config.toml を確認してください。",
-                    message
+                    "設定に問題があります: {message}\n\
+                     対処法: ~/.config/backup-suite/config.toml を確認してください。"
                 )
             }
             BackupError::FileCopyError { from, to } => {
                 format!(
                     "ファイルコピーに失敗しました:\n\
-                     元: {:?}\n\
-                     先: {:?}\n\
-                     対処法: ディスク容量と権限を確認してください。",
-                    from, to
+                     元: {from:?}\n\
+                     先: {to:?}\n\
+                     対処法: ディスク容量と権限を確認してください。"
                 )
             }
             _ => self.to_string(),

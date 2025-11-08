@@ -40,7 +40,7 @@ mod path_traversal_tests {
             //     "Path traversal not detected for: {}",
             //     malicious_path
             // );
-            println!("Testing malicious path: {}", malicious_path);
+            println!("Testing malicious path: {malicious_path}");
         }
     }
 
@@ -59,7 +59,7 @@ mod path_traversal_tests {
             // Uncomment after implementation
             // let result = safe_join(base, Path::new(attack));
             // assert!(result.is_err(), "Unicode traversal not detected: {}", attack);
-            println!("Testing unicode attack: {}", attack);
+            println!("Testing unicode attack: {attack}");
         }
     }
 
@@ -79,7 +79,7 @@ mod path_traversal_tests {
             // Uncomment after implementation
             // let result = safe_join(&base, Path::new(path));
             // assert!(result.is_ok(), "Legitimate path rejected: {}", path);
-            println!("Testing legitimate path: {}", path);
+            println!("Testing legitimate path: {path}");
         }
     }
 }
@@ -104,7 +104,7 @@ mod symlink_attack_tests {
         //     result.is_err(),
         //     "Symbolic link to system file was not blocked"
         // );
-        println!("Created symlink: {:?}", link_path);
+        println!("Created symlink: {link_path:?}");
     }
 
     #[test]
@@ -125,7 +125,7 @@ mod symlink_attack_tests {
         // Uncomment after implementation
         // let result = safe_join(&base, Path::new("subdir/escape_link"));
         // assert!(result.is_err(), "Symlink traversal not detected");
-        println!("Created symlink traversal: {:?}", link);
+        println!("Created symlink traversal: {link:?}");
     }
 
     #[test]
@@ -137,7 +137,7 @@ mod symlink_attack_tests {
         // Uncomment after implementation
         // let result = safe_copy(&file, temp.path().join("dest.txt"));
         // assert!(result.is_ok(), "Regular file copy should succeed");
-        println!("Testing regular file: {:?}", file);
+        println!("Testing regular file: {file:?}");
     }
 }
 
@@ -240,7 +240,7 @@ mod permission_tests {
                 //     "Access to system directory {} should be denied",
                 //     dir
                 // );
-                println!("Testing system directory: {}", dir);
+                println!("Testing system directory: {dir}");
             }
         }
     }
@@ -280,7 +280,7 @@ mod resource_exhaustion_tests {
 
         // Create deeply nested directory (depth > 32)
         for i in 0..40 {
-            current = current.join(format!("level_{}", i));
+            current = current.join(format!("level_{i}"));
         }
         std::fs::create_dir_all(&current).unwrap();
 
@@ -331,7 +331,7 @@ mod input_validation_tests {
             //     "Invalid path should be rejected: {}",
             //     path
             // );
-            println!("Testing invalid path: {:?}", path);
+            println!("Testing invalid path: {path:?}");
         }
     }
 
@@ -520,7 +520,7 @@ fn create_malicious_symlink(temp_dir: &Path, target: &str) -> PathBuf {
 fn create_deeply_nested_directory(base: &Path, depth: usize) -> PathBuf {
     let mut current = base.to_path_buf();
     for i in 0..depth {
-        current = current.join(format!("level_{}", i));
+        current = current.join(format!("level_{i}"));
     }
     std::fs::create_dir_all(&current).ok();
     current

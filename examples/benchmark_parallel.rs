@@ -36,7 +36,7 @@ fn main() {
     let elapsed = start.elapsed();
     let success = results.iter().filter(|r| r.is_ok()).count();
 
-    println!("完了: {} ファイル", success);
+    println!("完了: {success} ファイル");
     println!("実行時間: {:.3}秒", elapsed.as_secs_f64());
 
     // 後片付け

@@ -13,7 +13,7 @@ fn bench_encryption(c: &mut Criterion) {
     for size_kb in [1, 10, 100, 1000] {
         group.throughput(Throughput::Bytes((size_kb * 1024) as u64));
         group.bench_with_input(
-            BenchmarkId::new("aes_256_gcm", format!("{}KB", size_kb)),
+            BenchmarkId::new("aes_256_gcm", format!("{size_kb}KB")),
             &size_kb,
             |b, &size_kb| {
                 let data = vec![0u8; size_kb * 1024];
@@ -43,7 +43,7 @@ fn bench_decryption(c: &mut Criterion) {
     for size_kb in [1, 10, 100, 1000] {
         group.throughput(Throughput::Bytes((size_kb * 1024) as u64));
         group.bench_with_input(
-            BenchmarkId::new("aes_256_gcm", format!("{}KB", size_kb)),
+            BenchmarkId::new("aes_256_gcm", format!("{size_kb}KB")),
             &size_kb,
             |b, &size_kb| {
                 let data = vec![0u8; size_kb * 1024];
@@ -76,7 +76,7 @@ fn bench_compression(c: &mut Criterion) {
 
         for comp_type in [CompressionType::Zstd, CompressionType::Gzip] {
             group.bench_with_input(
-                BenchmarkId::new(format!("{:?}", comp_type), format!("{}KB", size_kb)),
+                BenchmarkId::new(format!("{comp_type:?}"), format!("{size_kb}KB")),
                 &size_kb,
                 |b, &size_kb| {
                     let data = vec![42u8; size_kb * 1024]; // 繰り返しパターンで圧縮効果を確認
@@ -105,7 +105,7 @@ fn bench_decompression(c: &mut Criterion) {
 
         for comp_type in [CompressionType::Zstd, CompressionType::Gzip] {
             group.bench_with_input(
-                BenchmarkId::new(format!("{:?}", comp_type), format!("{}KB", size_kb)),
+                BenchmarkId::new(format!("{comp_type:?}"), format!("{size_kb}KB")),
                 &size_kb,
                 |b, &size_kb| {
                     let data = vec![42u8; size_kb * 1024];

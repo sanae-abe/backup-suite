@@ -127,7 +127,7 @@ impl ColorTheme {
 pub fn success(msg: &str) -> String {
     ColorTheme::auto()
         .success()
-        .apply_to(format!("[OK] {}", msg))
+        .apply_to(format!("[OK] {msg}"))
         .to_string()
 }
 
@@ -135,7 +135,7 @@ pub fn success(msg: &str) -> String {
 pub fn error(msg: &str) -> String {
     ColorTheme::auto()
         .error()
-        .apply_to(format!("[ERROR] {}", msg))
+        .apply_to(format!("[ERROR] {msg}"))
         .to_string()
 }
 
@@ -143,7 +143,7 @@ pub fn error(msg: &str) -> String {
 pub fn warning(msg: &str) -> String {
     ColorTheme::auto()
         .warning()
-        .apply_to(format!("[WARN] {}", msg))
+        .apply_to(format!("[WARN] {msg}"))
         .to_string()
 }
 
@@ -151,7 +151,7 @@ pub fn warning(msg: &str) -> String {
 pub fn info(msg: &str) -> String {
     ColorTheme::auto()
         .info()
-        .apply_to(format!("[INFO] {}", msg))
+        .apply_to(format!("[INFO] {msg}"))
         .to_string()
 }
 

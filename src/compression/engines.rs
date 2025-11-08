@@ -28,8 +28,7 @@ impl FromStr for CompressionType {
             "gzip" => Ok(Self::Gzip),
             "none" => Ok(Self::None),
             _ => Err(BackupError::CompressionError(format!(
-                "不明な圧縮タイプ: {}",
-                s
+                "不明な圧縮タイプ: {s}"
             ))),
         }
     }
@@ -359,7 +358,7 @@ impl CompressionEngine {
             CompressionType::Zstd => {
                 let mut encoder = ZstdEncoder::new(&mut compressed_buffer, self.config.level)
                     .map_err(|e| {
-                        BackupError::CompressionError(format!("Zstdエンコーダ作成エラー: {}", e))
+                        BackupError::CompressionError(format!("Zstdエンコーダ作成エラー: {e}"))
                     })?;
 
                 let mut buffer = vec![0u8; self.config.buffer_size];
@@ -370,13 +369,13 @@ impl CompressionEngine {
                     }
                     original_size += bytes_read as u64;
                     encoder.write_all(&buffer[..bytes_read]).map_err(|e| {
-                        BackupError::CompressionError(format!("Zstd圧縮エラー: {}", e))
+                        BackupError::CompressionError(format!("Zstd圧縮エラー: {e}"))
                     })?;
                 }
 
                 encoder
                     .finish()
-                    .map_err(|e| BackupError::CompressionError(format!("Zstd完了エラー: {}", e)))?;
+                    .map_err(|e| BackupError::CompressionError(format!("Zstd完了エラー: {e}")))?;
             }
             CompressionType::Gzip => {
                 let mut encoder = GzEncoder::new(
@@ -440,13 +439,13 @@ impl CompressionEngine {
         match compression_type {
             CompressionType::Zstd => {
                 let mut decoder = ZstdDecoder::new(reader).map_err(|e| {
-                    BackupError::CompressionError(format!("Zstdデコーダ作成エラー: {}", e))
+                    BackupError::CompressionError(format!("Zstdデコーダ作成エラー: {e}"))
                 })?;
 
                 let mut buffer = vec![0u8; self.config.buffer_size];
                 loop {
                     let bytes_read = decoder.read(&mut buffer).map_err(|e| {
-                        BackupError::CompressionError(format!("Zstd展開エラー: {}", e))
+                        BackupError::CompressionError(format!("Zstd展開エラー: {e}"))
                     })?;
                     if bytes_read == 0 {
                         break;
@@ -489,12 +488,12 @@ impl CompressionEngine {
 
     fn compress_zstd(&self, data: &[u8]) -> Result<Vec<u8>> {
         zstd::encode_all(data, self.config.level)
-            .map_err(|e| BackupError::CompressionError(format!("Zstd圧縮エラー: {}", e)))
+            .map_err(|e| BackupError::CompressionError(format!("Zstd圧縮エラー: {e}")))
     }
 
     fn decompress_zstd(&self, data: &[u8]) -> Result<Vec<u8>> {
         zstd::decode_all(data)
-            .map_err(|e| BackupError::CompressionError(format!("Zstd展開エラー: {}", e)))
+            .map_err(|e| BackupError::CompressionError(format!("Zstd展開エラー: {e}")))
     }
 
     fn compress_gzip(&self, data: &[u8]) -> Result<Vec<u8>> {
@@ -502,7 +501,7 @@ impl CompressionEngine {
         encoder.write_all(data)?;
         encoder
             .finish()
-            .map_err(|e| BackupError::CompressionError(format!("Gzip圧縮エラー: {}", e)))
+            .map_err(|e| BackupError::CompressionError(format!("Gzip圧縮エラー: {e}")))
     }
 
     fn decompress_gzip(&self, data: &[u8]) -> Result<Vec<u8>> {

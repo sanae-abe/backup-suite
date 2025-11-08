@@ -14,7 +14,7 @@ fn format_progress_bar(current: u64, total: u64, width: usize) -> String {
     let empty = width.saturating_sub(filled);
 
     let bar = "█".repeat(filled) + &"░".repeat(empty);
-    format!("[{}] {:.1}% ({}/{})", bar, percentage, current, total)
+    format!("[{bar}] {percentage:.1}% ({current}/{total})")
 }
 
 fn format_file_size(bytes: u64) -> String {
@@ -41,11 +41,11 @@ fn format_duration(seconds: u64) -> String {
     let secs = seconds % 60;
 
     if hours > 0 {
-        format!("{}h {}m {}s", hours, minutes, secs)
+        format!("{hours}h {minutes}m {secs}s")
     } else if minutes > 0 {
-        format!("{}m {}s", minutes, secs)
+        format!("{minutes}m {secs}s")
     } else {
-        format!("{}s", secs)
+        format!("{secs}s")
     }
 }
 
@@ -59,14 +59,14 @@ fn colorize_text(text: &str, color: &str) -> String {
         _ => "",
     };
 
-    format!("{}{}\x1b[0m", color_code, text)
+    format!("{color_code}{text}\x1b[0m")
 }
 
 fn format_table_row(columns: &[&str], widths: &[usize]) -> String {
     columns
         .iter()
         .zip(widths.iter())
-        .map(|(col, width)| format!("{:width$}", col, width = width))
+        .map(|(col, width)| format!("{col:width$}"))
         .collect::<Vec<_>>()
         .join(" | ")
 }
@@ -200,7 +200,7 @@ fn bench_ui_full_render(c: &mut Criterion) {
 
             // プログレスバー
             let progress = format_progress_bar(500, 1000, 40);
-            writeln!(output, "{}", progress).unwrap();
+            writeln!(output, "{progress}").unwrap();
 
             // 統計情報
             writeln!(output, "処理済み: {}", format_file_size(500 * 1024 * 1024)).unwrap();
@@ -227,7 +227,7 @@ fn bench_large_table_render(c: &mut Criterion) {
             let mut output = Vec::new();
 
             for i in 0..rows {
-                let filename = format!("file_{}.txt", i);
+                let filename = format!("file_{i}.txt");
                 let filesize = format_file_size(i * 1024);
                 let row_data = vec![&filename, &filesize, "完了", "2025-11-05 10:00:00"];
                 writeln!(output, "{}", format_table_row(&row_data, &widths)).unwrap();

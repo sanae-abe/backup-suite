@@ -85,16 +85,16 @@ impl KeyDerivation {
                 self.config.parallelism,
                 Some(32),
             )
-            .map_err(|e| BackupError::EncryptionError(format!("Argon2パラメータエラー: {}", e)))?,
+            .map_err(|e| BackupError::EncryptionError(format!("Argon2パラメータエラー: {e}")))?,
         );
 
         let salt_string = SaltString::encode_b64(salt)
-            .map_err(|e| BackupError::EncryptionError(format!("Salt エンコードエラー: {}", e)))?;
+            .map_err(|e| BackupError::EncryptionError(format!("Salt エンコードエラー: {e}")))?;
 
         let password_hash = argon2
             .hash_password(password.as_bytes(), &salt_string)
             .map_err(|e| {
-                BackupError::EncryptionError(format!("パスワードハッシュエラー: {}", e))
+                BackupError::EncryptionError(format!("パスワードハッシュエラー: {e}"))
             })?;
 
         let hash = password_hash
@@ -128,7 +128,7 @@ impl KeyDerivation {
     ///   - 破損したハッシュデータの場合
     pub fn verify_password(&self, password: &str, hash: &str) -> Result<bool> {
         let parsed_hash = PasswordHash::new(hash)
-            .map_err(|e| BackupError::EncryptionError(format!("ハッシュ解析エラー: {}", e)))?;
+            .map_err(|e| BackupError::EncryptionError(format!("ハッシュ解析エラー: {e}")))?;
 
         let argon2 = Argon2::default();
         Ok(argon2

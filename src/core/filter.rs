@@ -99,7 +99,7 @@ impl FileFilter {
             Some(s) => s,
             None => {
                 // UTF-8ではないパス名は除外しない（警告のみ）
-                eprintln!("警告: UTF-8ではないパス名をスキップ: {:?}", path);
+                eprintln!("警告: UTF-8ではないパス名をスキップ: {path:?}");
                 return false;
             }
         };

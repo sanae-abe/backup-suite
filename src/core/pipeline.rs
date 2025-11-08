@@ -240,10 +240,10 @@ impl ProcessingPipeline {
     fn create_thread_pool(performance: &PerformanceConfig) -> Result<rayon::ThreadPool> {
         ThreadPoolBuilder::new()
             .num_threads(performance.parallel_threads)
-            .thread_name(|i| format!("backup-worker-{}", i))
+            .thread_name(|i| format!("backup-worker-{i}"))
             .stack_size(8 * 1024 * 1024) // 8MBスタックサイズ
             .build()
-            .map_err(|e| BackupError::Other(anyhow::anyhow!("ThreadPool作成エラー: {}", e)))
+            .map_err(|e| BackupError::Other(anyhow::anyhow!("ThreadPool作成エラー: {e}")))
     }
 
     /// 暗号化有効でパイプラインを作成
@@ -692,8 +692,8 @@ mod tests {
         let temp_dir = std::env::temp_dir();
         let test_files: Vec<PathBuf> = (0..10)
             .map(|i| {
-                let path = temp_dir.join(format!("test_parallel_{}.txt", i));
-                let data = format!("Test data for file {}", i).repeat(100);
+                let path = temp_dir.join(format!("test_parallel_{i}.txt"));
+                let data = format!("Test data for file {i}").repeat(100);
                 std::fs::write(&path, data).unwrap();
                 path
             })
@@ -724,8 +724,8 @@ mod tests {
         let temp_dir = std::env::temp_dir();
         let test_files: Vec<PathBuf> = (0..5)
             .map(|i| {
-                let path = temp_dir.join(format!("test_progress_{}.txt", i));
-                let data = format!("Progress test {}", i).repeat(50);
+                let path = temp_dir.join(format!("test_progress_{i}.txt"));
+                let data = format!("Progress test {i}").repeat(50);
                 std::fs::write(&path, data).unwrap();
                 path
             })

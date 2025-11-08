@@ -132,7 +132,7 @@ impl BackupRunner {
     pub fn new(config: Config, dry_run: bool) -> Self {
         // 監査ログの初期化（失敗してもバックアップ処理は継続）
         let audit_log = AuditLog::new()
-            .map_err(|e| eprintln!("警告: 監査ログの初期化に失敗しました: {}", e))
+            .map_err(|e| eprintln!("警告: 監査ログの初期化に失敗しました: {e}"))
             .ok();
 
         Self {
@@ -245,15 +245,14 @@ impl BackupRunner {
     ) -> Result<BackupResult> {
         let user = AuditLog::current_user();
         let target_desc = format!(
-            "priority={:?}, category={:?}",
-            priority_filter, category_filter
+            "priority={priority_filter:?}, category={category_filter:?}"
         );
 
         // 監査ログ: バックアップ開始
         if let Some(ref mut audit_log) = self.audit_log {
             let _ = audit_log
                 .log(AuditEvent::backup_started(&target_desc, &user))
-                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {}", e));
+                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {e}"));
         }
 
         // バックアップ対象をフィルタ（優先度 → カテゴリの順）
@@ -276,7 +275,7 @@ impl BackupRunner {
         let dest_base = &self.config.backup.destination;
         let now = chrono::Local::now();
         let timestamp = now.format("%Y%m%d_%H%M%S");
-        let backup_name = format!("backup_{}", timestamp);
+        let backup_name = format!("backup_{timestamp}");
         let backup_base = dest_base.join(&backup_name);
 
         // 暗号化が有効な場合、KeyManagerとmaster keyを準備
@@ -314,8 +313,7 @@ impl BackupRunner {
 
             // カテゴリディレクトリを作成
             std::fs::create_dir_all(&backup_dir).context(format!(
-                "バックアップディレクトリ作成失敗: {:?}",
-                backup_dir
+                "バックアップディレクトリ作成失敗: {backup_dir:?}"
             ))?;
 
             // FileFilterの準備
@@ -323,7 +321,7 @@ impl BackupRunner {
                 match FileFilter::new(&target.exclude_patterns) {
                     Ok(f) => Some(f),
                     Err(e) => {
-                        eprintln!("警告: 除外パターンの処理に失敗: {}", e);
+                        eprintln!("警告: 除外パターンの処理に失敗: {e}");
                         None
                     }
                 }
@@ -346,7 +344,7 @@ impl BackupRunner {
                             // safe_joinを使用してディレクトリトラバーサル対策
                             match safe_join(&backup_dir, std::path::Path::new(file_name)) {
                                 Ok(dest) => all_files.push((target.path.clone(), dest)),
-                                Err(e) => eprintln!("警告: ファイルパス処理エラー: {}", e),
+                                Err(e) => eprintln!("警告: ファイルパス処理エラー: {e}"),
                             }
                         }
                     }
@@ -373,12 +371,12 @@ impl BackupRunner {
                                     match safe_join(&backup_dir, relative) {
                                         Ok(dest) => all_files.push((source, dest)),
                                         Err(e) => {
-                                            eprintln!("警告: パストラバーサル検出、スキップ: {}", e)
+                                            eprintln!("警告: パストラバーサル検出、スキップ: {e}")
                                         }
                                     }
                                 }
                                 Err(e) => {
-                                    eprintln!("警告: パスのstrip_prefixに失敗: {}", e);
+                                    eprintln!("警告: パスのstrip_prefixに失敗: {e}");
                                 }
                             }
                         }
@@ -433,7 +431,7 @@ impl BackupRunner {
                         .collect();
 
                     let parent_name = inc_engine.get_previous_backup_name()?;
-                    println!("  前回バックアップ: {:?}", parent_name);
+                    println!("  前回バックアップ: {parent_name:?}");
                     println!(
                         "  変更ファイル数: {}/{}",
                         changed_files.len(),
@@ -453,7 +451,7 @@ impl BackupRunner {
                     } else {
                         // 実際のエラー時（メタデータ破損など）: 警告レベルのメッセージ
                         eprintln!("⚠️  前回のメタデータ読み込みに失敗しました。フルバックアップにフォールバックします。");
-                        eprintln!("   詳細: {}", e);
+                        eprintln!("   詳細: {e}");
                     }
                     println!("📦 フルバックアップモード（全ファイル）");
                     (BackupType::Full, None, all_files.clone())
@@ -472,11 +470,10 @@ impl BackupRunner {
 
         if self.dry_run {
             println!(
-                "📋 ドライランモード: {} ファイルをバックアップ対象として検出",
-                total_files
+                "📋 ドライランモード: {total_files} ファイルをバックアップ対象として検出"
             );
             for (source, dest) in &files_to_backup {
-                println!("  {:?} → {:?}", source, dest);
+                println!("  {source:?} → {dest:?}");
             }
             return Ok(BackupResult {
                 total_files,
@@ -538,7 +535,7 @@ impl BackupRunner {
                 // 進捗表示更新
                 if let Some(ref pb) = progress {
                     if let Some(file_name) = source.file_name() {
-                        pb.set_message(&format!("処理中: {:?}", file_name));
+                        pb.set_message(&format!("処理中: {file_name:?}"));
                     }
                 }
 
@@ -552,7 +549,7 @@ impl BackupRunner {
                         if let Some(ref pb) = progress {
                             pb.inc(1);
                         }
-                        return Some(format!("ディレクトリ作成失敗 {:?}: {}", parent, e));
+                        return Some(format!("ディレクトリ作成失敗 {parent:?}: {e}"));
                     }
                 }
 
@@ -583,7 +580,7 @@ impl BackupRunner {
                                     if let Some(ref pb) = progress {
                                         pb.inc(1);
                                     }
-                                    Err(format!("書き込み失敗 {:?}: {}", dest, e))
+                                    Err(format!("書き込み失敗 {dest:?}: {e}"))
                                 }
                             }
                         }
@@ -592,7 +589,7 @@ impl BackupRunner {
                             if let Some(ref pb) = progress {
                                 pb.inc(1);
                             }
-                            Err(format!("処理失敗 {:?}: {}", source, e))
+                            Err(format!("処理失敗 {source:?}: {e}"))
                         }
                     }
                 } else {
@@ -611,7 +608,7 @@ impl BackupRunner {
                             if let Some(ref pb) = progress {
                                 pb.inc(1);
                             }
-                            Err(format!("コピー失敗 {:?}: {}", source, e))
+                            Err(format!("コピー失敗 {source:?}: {e}"))
                         }
                     }
                 };
@@ -639,7 +636,7 @@ impl BackupRunner {
             if failed == 0 {
                 pb.finish("✓ バックアップ完了");
             } else {
-                pb.finish(&format!("⚠ バックアップ完了（{}件失敗）", failed));
+                pb.finish(&format!("⚠ バックアップ完了（{failed}件失敗）"));
             }
         }
 
@@ -674,7 +671,7 @@ impl BackupRunner {
                 }
 
                 if let Err(e) = guard.save_metadata(&backup_base) {
-                    eprintln!("警告: 整合性メタデータの保存に失敗しました: {}", e);
+                    eprintln!("警告: 整合性メタデータの保存に失敗しました: {e}");
                 }
             }
         }
@@ -696,7 +693,7 @@ impl BackupRunner {
             result.total_bytes,
             success,
         )) {
-            eprintln!("履歴保存失敗: {}", e);
+            eprintln!("履歴保存失敗: {e}");
         }
 
         // 監査ログ: バックアップ完了 or 失敗
@@ -721,7 +718,7 @@ impl BackupRunner {
 
             let _ = audit_log
                 .log(event)
-                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {}", e));
+                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {e}"));
         }
 
         Ok(result)

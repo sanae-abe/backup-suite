@@ -109,7 +109,7 @@ pub fn safe_join(base: &Path, child: &Path) -> Result<PathBuf> {
             // どの親ディレクトリも存在しない場合はエラー
             return Err(BackupError::IoError(std::io::Error::new(
                 std::io::ErrorKind::NotFound,
-                format!("ベースパス {:?} が存在しません", base),
+                format!("ベースパス {base:?} が存在しません"),
             )));
         }
     };

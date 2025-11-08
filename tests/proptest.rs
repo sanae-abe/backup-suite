@@ -140,22 +140,22 @@ fn test_directory_traversal_consistency() -> Result<(), proptest::test_runner::T
 
         // ディレクトリ作成
         for i in 0..num_dirs {
-            fs::create_dir_all(base_dir.join(format!("dir{}", i))).unwrap();
+            fs::create_dir_all(base_dir.join(format!("dir{i}"))).unwrap();
         }
 
         // ファイル作成
         for i in 0..num_files {
             let dir_index = i % (num_dirs.max(1));
             let file_path = if num_dirs > 0 {
-                base_dir.join(format!("dir{}/file{}.txt", dir_index, i))
+                base_dir.join(format!("dir{dir_index}/file{i}.txt"))
             } else {
-                base_dir.join(format!("file{}.txt", i))
+                base_dir.join(format!("file{i}.txt"))
             };
 
             if let Some(parent) = file_path.parent() {
                 fs::create_dir_all(parent).unwrap();
             }
-            fs::write(&file_path, format!("content{}", i)).unwrap();
+            fs::write(&file_path, format!("content{i}")).unwrap();
         }
 
         // walkdirで走査してファイル数をカウント
@@ -191,7 +191,7 @@ fn test_config_serialization_roundtrip() -> Result<(), proptest::test_runner::Te
 
         // ターゲット追加
         for i in 0..num_targets {
-            let target_path = temp_dir.path().join(format!("target{}", i));
+            let target_path = temp_dir.path().join(format!("target{i}"));
             fs::create_dir_all(&target_path).unwrap();
 
             let priority = match i % 3 {
@@ -203,7 +203,7 @@ fn test_config_serialization_roundtrip() -> Result<(), proptest::test_runner::Te
             config.targets.push(Target::new(
                 target_path,
                 priority,
-                format!("category{}", i),
+                format!("category{i}"),
             ));
         }
 
@@ -347,8 +347,8 @@ fn test_concurrent_file_access_safety() -> Result<(), proptest::test_runner::Tes
         // ファイル作成
         for i in 0..num_files {
             fs::write(
-                base_dir.join(format!("file{}.txt", i)),
-                format!("content{}", i)
+                base_dir.join(format!("file{i}.txt")),
+                format!("content{i}")
             ).unwrap();
         }
 
@@ -356,7 +356,7 @@ fn test_concurrent_file_access_safety() -> Result<(), proptest::test_runner::Tes
         use rayon::prelude::*;
 
         let files: Vec<_> = (0..num_files)
-            .map(|i| base_dir.join(format!("file{}.txt", i)))
+            .map(|i| base_dir.join(format!("file{i}.txt")))
             .collect();
 
         // 並列で複数回読み込んでもエラーが起きないことを確認

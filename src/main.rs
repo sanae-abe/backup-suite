@@ -242,7 +242,7 @@ fn select_file_with_skim(prompt: &str) -> Result<Option<PathBuf>> {
         .multi(false)
         .prompt(prompt.to_string())
         .build()
-        .map_err(|e| anyhow::anyhow!("Skim options error: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Skim options error: {e}"))?;
 
     // findコマンドでファイル/ディレクトリ一覧を生成
     let cmd = "find . -type f -o -type d | head -1000";
@@ -309,7 +309,7 @@ fn select_target_with_skim(config: &Config, lang: Language) -> Result<Option<Pat
         .multi(false)
         .prompt("削除するバックアップ対象を選択: ".to_string())
         .build()
-        .map_err(|e| anyhow::anyhow!("Skim options error: {}", e))?;
+        .map_err(|e| anyhow::anyhow!("Skim options error: {e}"))?;
 
     // バックアップ対象一覧を文字列として生成
     let targets_text = config
@@ -364,7 +364,7 @@ fn parse_priority(s: &str) -> Result<Priority> {
         "high" => Ok(Priority::High),
         "medium" => Ok(Priority::Medium),
         "low" => Ok(Priority::Low),
-        _ => Err(anyhow::anyhow!("不明な優先度: {}", s)),
+        _ => Err(anyhow::anyhow!("不明な優先度: {s}")),
     }
 }
 
@@ -1539,7 +1539,7 @@ fn main() -> Result<()> {
             let backup_dir = if let Some(pattern) = from {
                 dirs.iter()
                     .find(|d| d.to_string_lossy().contains(&pattern))
-                    .ok_or_else(|| anyhow::anyhow!("バックアップが見つかりません: {}", pattern))?
+                    .ok_or_else(|| anyhow::anyhow!("バックアップが見つかりません: {pattern}"))?
             } else {
                 &dirs[0] // 最新
             };
@@ -1592,7 +1592,7 @@ fn main() -> Result<()> {
                     get_color("reset")
                 );
                 for error in &result.errors {
-                    println!("  - {}", error);
+                    println!("  - {error}");
                 }
             }
         }
@@ -1634,7 +1634,7 @@ fn main() -> Result<()> {
                     get_color("reset")
                 );
                 for error in &result.errors {
-                    println!("  - {}", error);
+                    println!("  - {error}");
                 }
             }
         }
@@ -1725,10 +1725,10 @@ fn main() -> Result<()> {
                     );
                     println!("📁 パス: {:?}", entry.backup_dir);
                     if let Some(ref cat) = entry.category {
-                        println!("🏷️  カテゴリ: {}", cat);
+                        println!("🏷️  カテゴリ: {cat}");
                     }
                     if let Some(ref prio) = entry.priority {
-                        println!("⚡ 優先度: {:?}", prio);
+                        println!("⚡ 優先度: {prio:?}");
                     }
                     println!("📊 ステータス: {:?}", entry.status);
                     println!("📦 ファイル数: {}", entry.total_files);
@@ -1769,7 +1769,7 @@ fn main() -> Result<()> {
                 get_message(MessageKey::AutoBackupEnabled, lang),
                 priority
                     .as_ref()
-                    .map(|p| format!(" ({})", p))
+                    .map(|p| format!(" ({p})"))
                     .unwrap_or_default(),
                 get_color("reset")
             );
@@ -1784,7 +1784,7 @@ fn main() -> Result<()> {
                 get_message(MessageKey::AutoBackupDisabled, lang),
                 priority
                     .as_ref()
-                    .map(|p| format!(" ({})", p))
+                    .map(|p| format!(" ({p})"))
                     .unwrap_or_default(),
                 get_color("reset")
             );
@@ -2034,14 +2034,14 @@ fn main() -> Result<()> {
                             path
                         );
                         std::fs::create_dir_all(&path).map_err(|e| {
-                            anyhow::anyhow!("ディレクトリ作成失敗: {:?} - {}", path, e)
+                            anyhow::anyhow!("ディレクトリ作成失敗: {path:?} - {e}")
                         })?;
                     }
 
                     // 書き込み権限を確認
                     use backup_suite::security::check_write_permission;
                     check_write_permission(&path)
-                        .map_err(|e| anyhow::anyhow!("書き込み権限エラー: {:?} - {}", path, e))?;
+                        .map_err(|e| anyhow::anyhow!("書き込み権限エラー: {path:?} - {e}"))?;
 
                     // 設定を更新
                     let old_destination = config.backup.destination.clone();
@@ -2153,7 +2153,7 @@ fn main() -> Result<()> {
                     let status = std::process::Command::new(&editor)
                         .arg(&config_path)
                         .status()
-                        .context(format!("エディタ起動失敗: {}", editor))?;
+                        .context(format!("エディタ起動失敗: {editor}"))?;
 
                     if !status.success() {
                         println!(

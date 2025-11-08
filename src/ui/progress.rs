@@ -358,8 +358,7 @@ pub fn create_progress_bar(total: u64, message: &str) -> ProgressBar {
     pb.set_style(
         ProgressStyle::default_bar()
             .template(&format!(
-                "{{spinner:.green}} {} [{{elapsed_precise}}] {{bar:40.cyan/blue}} {{pos}}/{{len}} ({{percent}}%) ETA: {{eta}} {{msg}}",
-                message
+                "{{spinner:.green}} {message} [{{elapsed_precise}}] {{bar:40.cyan/blue}} {{pos}}/{{len}} ({{percent}}%) ETA: {{eta}} {{msg}}"
             ))
             .unwrap()
             .progress_chars("█▉▊▋▌▍▎▏  "),
@@ -392,7 +391,7 @@ pub fn create_spinner(message: &str) -> ProgressBar {
     let spinner = ProgressBar::new_spinner();
     spinner.set_style(
         ProgressStyle::default_spinner()
-            .template(&format!("{{spinner:.cyan}} {}", message))
+            .template(&format!("{{spinner:.cyan}} {message}"))
             .unwrap()
             .tick_chars("⠁⠂⠄⡀⢀⠠⠐⠈ "),
     );

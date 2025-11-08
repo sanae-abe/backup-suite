@@ -100,7 +100,7 @@ impl Frequency {
             "weekly" => Ok(Frequency::Weekly),
             "monthly" => Ok(Frequency::Monthly),
             "hourly" => Ok(Frequency::Hourly),
-            _ => Err(anyhow::anyhow!("不明な頻度: {}", s)),
+            _ => Err(anyhow::anyhow!("不明な頻度: {s}")),
         }
     }
 
@@ -157,7 +157,7 @@ impl Scheduler {
 
         for priority in &priorities {
             if let Err(e) = self.setup_priority(priority) {
-                eprintln!("警告: {:?} 優先度のスケジュール設定失敗: {}", priority, e);
+                eprintln!("警告: {priority:?} 優先度のスケジュール設定失敗: {e}");
             }
         }
 
@@ -193,7 +193,7 @@ impl Scheduler {
 
         for priority in &priorities {
             if let Err(e) = self.enable_priority(priority) {
-                eprintln!("警告: {:?} 優先度の有効化失敗: {}", priority, e);
+                eprintln!("警告: {priority:?} 優先度の有効化失敗: {e}");
             }
         }
 
@@ -227,7 +227,7 @@ impl Scheduler {
 
         for priority in &priorities {
             if let Err(e) = self.disable_priority(priority) {
-                eprintln!("警告: {:?} 優先度の無効化失敗: {}", priority, e);
+                eprintln!("警告: {priority:?} 優先度の無効化失敗: {e}");
             }
         }
 
@@ -322,7 +322,7 @@ impl Scheduler {
 
         // ファイルに書き込み
         std::fs::write(&plist_path, plist_content)
-            .context(format!("plistファイル書き込み失敗: {:?}", plist_path))?;
+            .context(format!("plistファイル書き込み失敗: {plist_path:?}"))?;
 
         Ok(())
     }
@@ -418,8 +418,7 @@ impl Scheduler {
 
         if !plist_path.exists() {
             return Err(anyhow::anyhow!(
-                "plistファイルが存在しません。先にsetupを実行してください: {:?}",
-                plist_path
+                "plistファイルが存在しません。先にsetupを実行してください: {plist_path:?}"
             ));
         }
 
@@ -430,7 +429,7 @@ impl Scheduler {
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(anyhow::anyhow!("launchctl load 失敗: {}", stderr));
+            return Err(anyhow::anyhow!("launchctl load 失敗: {stderr}"));
         }
 
         Ok(())
@@ -448,13 +447,13 @@ impl Scheduler {
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             // unloadは既に無効化されている場合エラーになることがあるが、続行
-            eprintln!("警告: launchctl unload 失敗: {}", stderr);
+            eprintln!("警告: launchctl unload 失敗: {stderr}");
         }
 
         // plistファイルを削除
         if plist_path.exists() {
             std::fs::remove_file(&plist_path)
-                .context(format!("plistファイル削除失敗: {:?}", plist_path))?;
+                .context(format!("plistファイル削除失敗: {plist_path:?}"))?;
         }
 
         Ok(())
@@ -504,12 +503,12 @@ impl Scheduler {
         // service ファイルを生成
         let service_content = self.generate_systemd_service_content(priority)?;
         std::fs::write(&service_path, service_content)
-            .context(format!("serviceファイル書き込み失敗: {:?}", service_path))?;
+            .context(format!("serviceファイル書き込み失敗: {service_path:?}"))?;
 
         // timer ファイルを生成
         let timer_content = self.generate_systemd_timer_content(priority, frequency)?;
         std::fs::write(&timer_path, timer_content)
-            .context(format!("timerファイル書き込み失敗: {:?}", timer_path))?;
+            .context(format!("timerファイル書き込み失敗: {timer_path:?}"))?;
 
         // systemd をリロード
         let _output = std::process::Command::new("systemctl")
@@ -563,7 +562,7 @@ WantedBy=default.target
 
         let timer = format!(
             r#"[Unit]
-Description=Backup Suite - {priority} Priority Backup Timer
+Description=Backup Suite - {priority_str} Priority Backup Timer
 
 [Timer]
 OnCalendar={on_calendar}
@@ -571,9 +570,7 @@ Persistent=true
 
 [Install]
 WantedBy=timers.target
-"#,
-            priority = priority_str,
-            on_calendar = on_calendar
+"#
         );
 
         Ok(timer)
@@ -591,7 +588,7 @@ WantedBy=timers.target
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(anyhow::anyhow!("systemctl enable 失敗: {}", stderr));
+            return Err(anyhow::anyhow!("systemctl enable 失敗: {stderr}"));
         }
 
         // timerを開始
@@ -602,7 +599,7 @@ WantedBy=timers.target
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(anyhow::anyhow!("systemctl start 失敗: {}", stderr));
+            return Err(anyhow::anyhow!("systemctl start 失敗: {stderr}"));
         }
 
         Ok(())

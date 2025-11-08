@@ -141,13 +141,12 @@ impl BackupMetadata {
         let metadata_path = backup_dir.join(".integrity");
         if !metadata_path.exists() {
             return Err(anyhow::anyhow!(
-                "整合性メタデータが見つかりません: {:?}",
-                metadata_path
+                "整合性メタデータが見つかりません: {metadata_path:?}"
             ));
         }
 
         let content = fs::read_to_string(&metadata_path)
-            .context(format!("メタデータ読み込み失敗: {:?}", metadata_path))?;
+            .context(format!("メタデータ読み込み失敗: {metadata_path:?}"))?;
         let metadata: BackupMetadata =
             serde_json::from_str(&content).context("メタデータJSON解析失敗")?;
 
@@ -188,7 +187,7 @@ impl BackupMetadata {
         let metadata_path = backup_dir.join(".integrity");
         let content = serde_json::to_string_pretty(self).context("メタデータJSON生成失敗")?;
         fs::write(&metadata_path, content)
-            .context(format!("メタデータ保存失敗: {:?}", metadata_path))?;
+            .context(format!("メタデータ保存失敗: {metadata_path:?}"))?;
         Ok(())
     }
 
@@ -236,8 +235,7 @@ impl BackupMetadata {
             Some(h) => h,
             None => {
                 return Err(anyhow::anyhow!(
-                    "ファイルのハッシュ情報が見つかりません: {:?}",
-                    relative_path
+                    "ファイルのハッシュ情報が見つかりません: {relative_path:?}"
                 ));
             }
         };
@@ -263,7 +261,7 @@ impl BackupMetadata {
     /// * ファイルの読み込みに失敗した場合
     pub fn compute_file_hash(file_path: &Path) -> Result<String> {
         let mut file =
-            fs::File::open(file_path).context(format!("ファイル読み込み失敗: {:?}", file_path))?;
+            fs::File::open(file_path).context(format!("ファイル読み込み失敗: {file_path:?}"))?;
 
         let mut hasher = Sha256::new();
         let mut buffer = vec![0u8; 8192]; // 8KB バッファ
@@ -277,7 +275,7 @@ impl BackupMetadata {
         }
 
         let result = hasher.finalize();
-        Ok(format!("{:x}", result))
+        Ok(format!("{result:x}"))
     }
 }
 

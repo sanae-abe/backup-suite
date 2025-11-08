@@ -136,7 +136,7 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
             .set_alignment(CellAlignment::Right),
     ]);
 
-    println!("{}", targets_table);
+    println!("{targets_table}");
     println!();
 
     // バックアップ履歴の統計
@@ -184,7 +184,7 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
             .set_alignment(CellAlignment::Right),
     ]);
 
-    println!("{}", history_table);
+    println!("{history_table}");
     println!();
 
     // セキュリティ統計
@@ -207,18 +207,18 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
 
     security_table.add_row(vec![
         Cell::new("暗号化バックアップ"),
-        Cell::new(format!("{} ({:.1}%)", encrypted_backups, encryption_rate))
+        Cell::new(format!("{encrypted_backups} ({encryption_rate:.1}%)"))
             .fg(Color::Green)
             .set_alignment(CellAlignment::Right),
     ]);
     security_table.add_row(vec![
         Cell::new("圧縮バックアップ"),
-        Cell::new(format!("{} ({:.1}%)", compressed_backups, compression_rate))
+        Cell::new(format!("{compressed_backups} ({compression_rate:.1}%)"))
             .fg(Color::Cyan)
             .set_alignment(CellAlignment::Right),
     ]);
 
-    println!("{}", security_table);
+    println!("{security_table}");
 
     Ok(())
 }
@@ -248,7 +248,7 @@ fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
 
     disk_table.add_row(vec![
         Cell::new("バックアップディレクトリ"),
-        Cell::new(format!("{:?}", backup_dir))
+        Cell::new(format!("{backup_dir:?}"))
             .fg(Color::Cyan)
             .set_alignment(CellAlignment::Left),
     ]);
@@ -291,7 +291,7 @@ fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
 
         disk_table.add_row(vec![
             Cell::new("ディスク使用率"),
-            Cell::new(format!("{:.1}%", used_percent))
+            Cell::new(format!("{used_percent:.1}%"))
                 .fg(if used_percent > 90.0 {
                     Color::Red
                 } else if used_percent > 75.0 {
@@ -312,7 +312,7 @@ fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
         ]);
     }
 
-    println!("{}", disk_table);
+    println!("{disk_table}");
 
     Ok(())
 }
@@ -398,7 +398,7 @@ fn create_usage_graph(percent: f64) -> String {
     let filled = "█".repeat(filled_bars);
     let empty = "░".repeat(empty_bars);
 
-    format!("[{}{}] {:.1}%", filled, empty, percent)
+    format!("[{filled}{empty}] {percent:.1}%")
 }
 
 /// 最近のバックアップ一覧（直近5件）
@@ -447,8 +447,7 @@ fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
 
         if days_since > 7 {
             warnings.push(format!(
-                "最後のバックアップから{}日経過しています",
-                days_since
+                "最後のバックアップから{days_since}日経過しています"
             ));
         }
     } else {
@@ -458,7 +457,7 @@ fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
     // 失敗したバックアップの警告
     let failed_count = history.iter().filter(|h| !h.success).count();
     if failed_count > 0 {
-        warnings.push(format!("失敗したバックアップが{}件あります", failed_count));
+        warnings.push(format!("失敗したバックアップが{failed_count}件あります"));
     }
 
     // ディスク容量警告
@@ -468,8 +467,7 @@ fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
             let available_percent = (available as f64 / total as f64) * 100.0;
             if available_percent < 10.0 {
                 warnings.push(format!(
-                    "ディスク空き容量が少なくなっています ({:.1}%)",
-                    available_percent
+                    "ディスク空き容量が少なくなっています ({available_percent:.1}%)"
                 ));
             }
         }
@@ -496,7 +494,7 @@ fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
             ]);
         }
 
-        println!("{}", table);
+        println!("{table}");
         println!(
             "\n{}",
             theme

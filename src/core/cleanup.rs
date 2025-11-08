@@ -109,7 +109,7 @@ impl CleanupEngine {
     /// 新しいCleanupEngineを作成
     pub fn new(policy: CleanupPolicy, dry_run: bool) -> Self {
         let audit_log = AuditLog::new()
-            .map_err(|e| eprintln!("警告: 監査ログの初期化に失敗しました: {}", e))
+            .map_err(|e| eprintln!("警告: 監査ログの初期化に失敗しました: {e}"))
             .ok();
 
         Self {
@@ -144,7 +144,7 @@ impl CleanupEngine {
         if let Some(ref mut audit_log) = self.audit_log {
             let _ = audit_log
                 .log(AuditEvent::cleanup_started(&user, days))
-                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {}", e));
+                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {e}"));
         }
 
         let config = Config::load()?;
@@ -214,7 +214,7 @@ impl CleanupEngine {
 
             let _ = audit_log
                 .log(event)
-                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {}", e));
+                .map_err(|e| eprintln!("警告: 監査ログの記録に失敗しました: {e}"));
         }
 
         Ok(result)
@@ -340,7 +340,7 @@ impl CleanupEngine {
         );
         println!("  サイズ: {}", format_bytes(backup.size));
         if let Some(ref priority) = backup.priority {
-            println!("  優先度: {:?}", priority);
+            println!("  優先度: {priority:?}");
         }
 
         let confirm = Confirm::new()

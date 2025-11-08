@@ -195,7 +195,7 @@ impl IncrementalBackupEngine {
 
             // 現在のハッシュを計算
             let current_hash = BackupMetadata::compute_file_hash(absolute_path)
-                .context(format!("ハッシュ計算失敗: {:?}", absolute_path))?;
+                .context(format!("ハッシュ計算失敗: {absolute_path:?}"))?;
 
             // ハッシュが異なる場合、または新規ファイルの場合は変更とみなす
             if previous_hash != Some(&current_hash) {
@@ -310,8 +310,7 @@ pub fn resolve_backup_chain(backup_dir: &Path) -> Result<Vec<PathBuf>> {
 
                 if !parent_dir.exists() {
                     return Err(anyhow::anyhow!(
-                        "親バックアップが見つかりません: {:?}",
-                        parent_dir
+                        "親バックアップが見つかりません: {parent_dir:?}"
                     ));
                 }
 

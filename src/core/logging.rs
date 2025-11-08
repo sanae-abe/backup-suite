@@ -48,7 +48,7 @@ impl LogLevel {
             "info" => Ok(LogLevel::Info),
             "warn" | "warning" => Ok(LogLevel::Warn),
             "error" => Ok(LogLevel::Error),
-            _ => Err(anyhow::anyhow!("不明なログレベル: {}", s)),
+            _ => Err(anyhow::anyhow!("不明なログレベル: {s}")),
         }
     }
 
@@ -78,7 +78,7 @@ impl LogFormat {
         match s.to_lowercase().as_str() {
             "text" | "plain" => Ok(LogFormat::Text),
             "json" => Ok(LogFormat::Json),
-            _ => Err(anyhow::anyhow!("不明なログフォーマット: {}", s)),
+            _ => Err(anyhow::anyhow!("不明なログフォーマット: {s}")),
         }
     }
 }
@@ -259,7 +259,7 @@ impl Logger {
             LogFormat::Json => entry.format_json()?,
         };
 
-        writeln!(file, "{}", line).context("ログ書き込みエラー")?;
+        writeln!(file, "{line}").context("ログ書き込みエラー")?;
 
         Ok(())
     }
@@ -316,7 +316,7 @@ impl Logger {
 
                 if modified_datetime < cutoff_date {
                     fs::remove_file(&path)
-                        .context(format!("古いログファイル削除エラー: {:?}", path))?;
+                        .context(format!("古いログファイル削除エラー: {path:?}"))?;
                 }
             }
         }

@@ -22,7 +22,7 @@ fn create_test_files(dir: &Path, count: usize, size_kb: usize) -> std::io::Resul
     let content = vec![b'A'; size_kb * 1024];
 
     for i in 0..count {
-        let file_path = dir.join(format!("test_file_{:04}.dat", i));
+        let file_path = dir.join(format!("test_file_{i:04}.dat"));
         let mut file = File::create(&file_path)?;
         file.write_all(&content)?;
         files.push(file_path);
@@ -38,7 +38,7 @@ fn create_nested_structure(base: &Path, depth: usize, files_per_dir: usize) -> s
     }
 
     for i in 0..3 {
-        let dir = base.join(format!("level_{}", i));
+        let dir = base.join(format!("level_{i}"));
         create_dir_all(&dir)?;
 
         // 各ディレクトリにファイルを作成
@@ -60,7 +60,7 @@ fn bench_file_copy(c: &mut Criterion) {
         group.throughput(Throughput::Bytes((*size_kb * 1024) as u64));
 
         group.bench_with_input(
-            BenchmarkId::new("copy_engine", format!("{}KB", size_kb)),
+            BenchmarkId::new("copy_engine", format!("{size_kb}KB")),
             size_kb,
             |b, &size_kb| {
                 let temp_dir = TempDir::new().unwrap();
@@ -99,7 +99,7 @@ fn bench_parallel_backup(c: &mut Criterion) {
         group.throughput(Throughput::Elements(*file_count as u64));
 
         group.bench_with_input(
-            BenchmarkId::new("backup_files", format!("{}_files", file_count)),
+            BenchmarkId::new("backup_files", format!("{file_count}_files")),
             file_count,
             |b, &file_count| {
                 let temp_dir = TempDir::new().unwrap();
@@ -165,11 +165,11 @@ fn bench_file_filtering(c: &mut Criterion) {
     // 除外パターン数による性能影響
     for pattern_count in [1, 5, 10, 20, 50].iter() {
         group.bench_with_input(
-            BenchmarkId::new("filter_patterns", format!("{}_patterns", pattern_count)),
+            BenchmarkId::new("filter_patterns", format!("{pattern_count}_patterns")),
             pattern_count,
             |b, &pattern_count| {
                 let patterns: Vec<String> = (0..pattern_count)
-                    .map(|i| format!(r".*\.tmp{}", i))
+                    .map(|i| format!(r".*\.tmp{i}"))
                     .collect();
 
                 let filter = FileFilter::new(&patterns).unwrap();
@@ -196,9 +196,9 @@ fn bench_config_operations(c: &mut Criterion) {
         let mut config = Config::default();
         for i in 0..100 {
             let target = Target::new(
-                PathBuf::from(format!("/test/path/{}", i)),
+                PathBuf::from(format!("/test/path/{i}")),
                 Priority::Medium,
-                format!("category_{}", i),
+                format!("category_{i}"),
             );
             config.add_target(target);
         }
@@ -215,9 +215,9 @@ fn bench_config_operations(c: &mut Criterion) {
         let mut config = Config::default();
         for i in 0..100 {
             let target = Target::new(
-                PathBuf::from(format!("/test/path/{}", i)),
+                PathBuf::from(format!("/test/path/{i}")),
                 Priority::Medium,
-                format!("category_{}", i),
+                format!("category_{i}"),
             );
             config.add_target(target);
         }
@@ -237,7 +237,7 @@ fn bench_directory_traversal(c: &mut Criterion) {
         group.bench_with_input(
             BenchmarkId::new(
                 "walkdir",
-                format!("depth_{}_files_{}", depth, files_per_dir),
+                format!("depth_{depth}_files_{files_per_dir}"),
             ),
             &(depth, files_per_dir),
             |b, &(depth, files_per_dir)| {

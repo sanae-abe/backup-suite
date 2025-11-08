@@ -272,7 +272,7 @@ impl PasswordPolicy {
         if !warnings.is_empty() {
             report.push_str("\nWarnings:\n");
             for warning in warnings {
-                report.push_str(&format!("  - {}\n", warning));
+                report.push_str(&format!("  - {warning}\n"));
             }
         }
 
@@ -404,9 +404,7 @@ mod tests {
                     strength,
                     PasswordStrength::Medium | PasswordStrength::Strong
                 ),
-                "Generated password of length {} should be at least Medium strength, got {:?}",
-                length,
-                strength
+                "Generated password of length {length} should be at least Medium strength, got {strength:?}"
             );
 
             // For longer passwords, we expect Strong
@@ -415,8 +413,7 @@ mod tests {
                 // We'll just check it's not Weak
                 assert!(
                     !matches!(strength, PasswordStrength::Weak),
-                    "Generated password of length {} should not be Weak",
-                    length
+                    "Generated password of length {length} should not be Weak"
                 );
             }
         }
