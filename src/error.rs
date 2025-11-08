@@ -128,20 +128,23 @@ impl BackupError {
                 .to_string(),
             BackupError::TargetNotFound { path } => {
                 format!(
-                    "バックアップ対象が存在しません: path.display()\n\
-                     対処法: パスが正しいか、ファイル/ディレクトリが存在するか確認してください。"
+                    "バックアップ対象が存在しません: {}\n\
+                     対処法: パスが正しいか、ファイル/ディレクトリが存在するか確認してください。",
+                    path.display()
                 )
             }
             BackupError::PermissionDenied { path } => {
                 format!(
-                    "読み取り権限がありません: path.display()\n\
-                     対処法: ファイル/ディレクトリの権限を確認するか、sudo で実行してください。"
+                    "読み取り権限がありません: {}\n\
+                     対処法: ファイル/ディレクトリの権限を確認するか、sudo で実行してください。",
+                    path.display()
                 )
             }
             BackupError::PathTraversalDetected { path } => {
                 format!(
-                    "不正なパスが検出されました: path.display()\n\
-                     セキュリティ警告: ディレクトリトラバーサル攻撃の可能性があります。"
+                    "不正なパスが検出されました: {}\n\
+                     セキュリティ警告: ディレクトリトラバーサル攻撃の可能性があります。",
+                    path.display()
                 )
             }
             BackupError::ConfigValidationError { message } => {

@@ -318,9 +318,9 @@ impl BackupRunner {
             let backup_dir = backup_base.join(&category);
 
             // カテゴリディレクトリを作成
-            std::fs::create_dir_all(&backup_dir).context(format!(
-                "バックアップディレクトリ作成失敗: backup_dir.display()"
-            ))?;
+            std::fs::create_dir_all(&backup_dir).context(
+                "バックアップディレクトリ作成失敗: backup_dir.display()".to_string()
+            )?;
 
             // FileFilterの準備
             let filter = if !target.exclude_patterns.is_empty() {
@@ -478,8 +478,8 @@ impl BackupRunner {
             println!(
                 "📋 ドライランモード: {total_files} ファイルをバックアップ対象として検出"
             );
-            for (source, dest) in &files_to_backup {
-                println!("  source.display() → dest.display()");
+            for (_source, _dest) in &files_to_backup {
+                println!("  _source.display() → _dest.display()");
             }
             return Ok(BackupResult {
                 total_files,
