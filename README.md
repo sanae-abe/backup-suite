@@ -1,5 +1,11 @@
 # backup-suite
 
+[![Crates.io](https://img.shields.io/crates/v/backup-suite.svg)](https://crates.io/crates/backup-suite)
+[![Documentation](https://docs.rs/backup-suite/badge.svg)](https://docs.rs/backup-suite)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-1.70%2B-blue.svg)](https://www.rust-lang.org)
+[![CI](https://github.com/sanae-abe/backup-suite/workflows/CI/badge.svg)](https://github.com/sanae-abe/backup-suite/actions)
+
 [日本語](README.md) | [English](README.en.md)
 
 > **高速・安全・インテリジェントなローカルバックアップツール**
