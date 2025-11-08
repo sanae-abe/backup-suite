@@ -44,6 +44,7 @@ impl PipelineConfig {
     }
 
     /// 圧縮を設定する
+    #[must_use]
     pub fn with_compression(
         mut self,
         compression_type: CompressionType,
@@ -257,6 +258,7 @@ impl ProcessingPipeline {
     }
 
     /// 暗号化有効でパイプラインを作成
+    #[must_use]
     pub fn with_encryption(password: &str) -> Result<(Self, [u8; 16])> {
         let config = PipelineConfig::default().with_encryption(EncryptionConfig::default());
         let mut pipeline = Self::new(config);
@@ -510,6 +512,7 @@ impl ProcessingPipeline {
     }
 
     /// 設定を取得
+    #[must_use]
     pub fn config(&self) -> &PipelineConfig {
         &self.config
     }
@@ -527,6 +530,7 @@ impl ProcessingPipeline {
     }
 
     /// ThreadPoolが正常に作成されているか確認
+    #[must_use]
     pub fn is_parallel_ready(&self) -> bool {
         self.thread_pool.is_some()
     }
@@ -562,6 +566,7 @@ pub struct PerformanceStats {
 /// num_cpusクレートを使用して論理コア数を取得する。
 /// フォールバック時は4コアを仮定。
 mod num_cpus {
+    #[must_use]
     pub fn get() -> usize {
         ::num_cpus::get()
     }

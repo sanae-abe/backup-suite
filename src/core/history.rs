@@ -104,6 +104,7 @@ impl BackupHistory {
     ///     true
     /// );
     /// ```
+    #[must_use]
     pub fn new(backup_dir: PathBuf, total_files: usize, total_bytes: u64, success: bool) -> Self {
         Self {
             timestamp: Utc::now(),
@@ -136,6 +137,7 @@ impl BackupHistory {
     /// 以下の場合にエラーを返します:
     /// * 設定ファイルパスの取得に失敗した場合
     /// * 設定ディレクトリの親ディレクトリが存在しない場合
+    #[must_use]
     pub fn log_path() -> Result<PathBuf> {
         let config_dir = Config::config_path()?
             .parent()
@@ -179,6 +181,7 @@ impl BackupHistory {
     /// );
     /// BackupHistory::save(&history).unwrap();
     /// ```
+    #[must_use]
     pub fn save(entry: &BackupHistory) -> Result<()> {
         let log_path = Self::log_path()?;
         let mut history = Self::load_all()?;
@@ -217,6 +220,7 @@ impl BackupHistory {
     /// let history = BackupHistory::load_all().unwrap();
     /// println!("過去のバックアップ数: {}", history.len());
     /// ```
+    #[must_use]
     pub fn load_all() -> Result<Vec<BackupHistory>> {
         let log_path = Self::log_path()?;
         if !log_path.exists() {
@@ -254,6 +258,7 @@ impl BackupHistory {
     /// let recent = BackupHistory::filter_by_days(7).unwrap();
     /// println!("過去7日間のバックアップ: {}件", recent.len());
     /// ```
+    #[must_use]
     pub fn filter_by_days(days: u32) -> Result<Vec<BackupHistory>> {
         let all = Self::load_all()?;
         let cutoff = Utc::now() - chrono::Duration::days(days as i64);
@@ -281,6 +286,7 @@ impl BackupHistory {
     /// let high_priority = BackupHistory::filter_by_priority(&history, &Priority::High);
     /// println!("高優先度のバックアップ: {}件", high_priority.len());
     /// ```
+    #[must_use]
     pub fn filter_by_priority<'a>(
         entries: &'a [BackupHistory],
         priority: &Priority,
@@ -312,6 +318,7 @@ impl BackupHistory {
     /// let docs = BackupHistory::filter_by_category(&history, "documents");
     /// println!("ドキュメントカテゴリのバックアップ: {}件", docs.len());
     /// ```
+    #[must_use]
     pub fn filter_by_category<'a>(
         entries: &'a [BackupHistory],
         category: &str,
@@ -350,6 +357,7 @@ impl BackupHistory {
     ///     println!("{}: {:?}", entry.timestamp, entry.backup_dir);
     /// }
     /// ```
+    #[must_use]
     pub fn get_recent_entries(count: usize) -> Result<Vec<BackupHistory>> {
         let mut all = Self::load_all()?;
         all.sort_by(|a, b| b.timestamp.cmp(&a.timestamp)); // 新しい順
@@ -382,6 +390,7 @@ impl BackupHistory {
     ///     println!("バックアップ: {:?}", dir);
     /// }
     /// ```
+    #[must_use]
     pub fn list_backup_dirs() -> Result<Vec<PathBuf>> {
         let config = Config::load()?;
         let dest = &config.backup.destination;
