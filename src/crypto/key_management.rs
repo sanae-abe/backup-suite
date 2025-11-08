@@ -51,8 +51,8 @@ impl Default for KeyDerivationConfig {
     fn default() -> Self {
         Self {
             memory_cost: 131_072, // 128MB（OWASP推奨）
-            time_cost: 4,        // 4回反復（OWASP推奨）
-            parallelism: 2,      // 並列度2（セキュリティと性能のバランス）
+            time_cost: 4,         // 4回反復（OWASP推奨）
+            parallelism: 2,       // 並列度2（セキュリティと性能のバランス）
         }
     }
 }
