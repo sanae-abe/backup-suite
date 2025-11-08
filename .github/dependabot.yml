@@ -1,35 +1,51 @@
-# Dependabot configuration for backup-suite
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+# Dependabot設定: セキュリティ脆弱性のみ自動更新
+# 通常のバージョン更新は四半期ごとの手動メンテナンス
 
 version: 2
 updates:
+  # Cargo依存関係（セキュリティ重視）
   - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "monthly"  # 月次チェック（セキュリティ更新のみ）
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 3  # PR数制限（ノイズ削減）
+
+    # patch/minorのみグループ化（major更新は手動対応）
+    groups:
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+      minor-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+
+    labels:
+      - "dependencies"
+      - "security"
+
+    commit-message:
+      prefix: "deps"
+
+  # GitHub Actions（セキュリティ重視）
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "monthly"
       day: "monday"
       time: "09:00"
       timezone: "Asia/Tokyo"
-
-    # Limit number of open PRs
     open-pull-requests-limit: 3
 
-    # Group patch and minor updates together
-    groups:
-      dependencies:
-        update-types:
-          - "patch"
-          - "minor"
-
-    # Labels for PRs
     labels:
       - "dependencies"
+      - "ci"
 
-    # Commit message configuration
     commit-message:
-      prefix: "deps"
-
-    # Ignore major version updates (breaking changes)
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
+      prefix: "ci"
