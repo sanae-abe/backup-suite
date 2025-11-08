@@ -182,8 +182,8 @@ fn test_cleanup_engine_with_audit_logging() -> Result<()> {
     let mut engine = CleanupEngine::new(policy, false);
     let result = engine.cleanup()?;
 
-    // 削除確認
-    assert!(result.deleted >= 0); // ドライランでなければ削除される
+    // 削除確認（古いバックアップが削除されたことを確認）
+    assert!(result.deleted > 0); // ドライランでなければ削除される
 
     Ok(())
 }
