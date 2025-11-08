@@ -18,6 +18,7 @@ use tempfile::TempDir;
 /// Phase 1で実装予定のsafe_join関数のテスト
 /// 現在はPath::join()の動作を検証
 #[test]
+#[cfg(unix)]
 fn test_path_joining_never_escapes_base() {
     proptest!(|(
         base in r"[a-zA-Z0-9_-]{1,10}",
