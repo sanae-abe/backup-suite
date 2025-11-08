@@ -152,6 +152,7 @@ fn test_exclude_patterns_simple() -> Result<()> {
 }
 
 #[test]
+#[cfg(unix)]
 fn test_exclude_patterns_complex() -> Result<()> {
     let temp_dir = TempDir::new()?;
     let source_dir = temp_dir.path().join("source");
@@ -353,23 +354,15 @@ fn test_nonexistent_source_handling() {
 }
 
 #[test]
+#[cfg(unix)]
 fn test_invalid_destination_handling() {
     let temp_dir = TempDir::new().unwrap();
     let source_file = temp_dir.path().join("source.txt");
     fs::write(&source_file, "test").unwrap();
 
     let mut config = Config::default();
-    // 書き込み不可能なディレクトリを指定 (Unix系)
-    #[cfg(unix)]
-    {
-        // /proc/self は常に読み取り専用なので、書き込みエラーが確実に発生
-        config.backup.destination = PathBuf::from("/proc/self/backup_not_writable");
-    }
-
-    #[cfg(windows)]
-    {
-        config.backup.destination = PathBuf::from("C:\\Windows\\System32\\backup_not_writable");
-    }
+    // /proc/self は常に読み取り専用なので、書き込みエラーが確実に発生
+    config.backup.destination = PathBuf::from("/proc/self/backup_not_writable");
 
     config
         .targets
