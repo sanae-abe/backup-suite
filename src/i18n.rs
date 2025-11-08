@@ -390,24 +390,34 @@ impl MessageKey {
             MessageKey::CompressLevel => "--compress-level 1-22: Compression level",
 
             // Run command options
-            MessageKey::IncrementalOption => "--incremental: Incremental backup (changed files only)",
+            MessageKey::IncrementalOption => {
+                "--incremental: Incremental backup (changed files only)"
+            }
             MessageKey::GeneratePasswordOption => "--generate-password: Generate secure password",
             MessageKey::PasswordOption => "--password <PASSWORD>: Specify encryption password",
             MessageKey::DryRunOption => "--dry-run: Dry run mode (no actual backup)",
-            MessageKey::PriorityOption => "--priority <PRIORITY>: Filter by priority (high/medium/low)",
+            MessageKey::PriorityOption => {
+                "--priority <PRIORITY>: Filter by priority (high/medium/low)"
+            }
             MessageKey::CategoryOption => "--category <CATEGORY>: Filter by category",
 
             // Restore command options
             MessageKey::FromOption => "--from <BACKUP_NAME>: Backup to restore",
             MessageKey::ToOption => "--to <DESTINATION>: Restore destination",
-            MessageKey::RestorePasswordOption => "--password <PASSWORD>: Decryption password (if encrypted)",
+            MessageKey::RestorePasswordOption => {
+                "--password <PASSWORD>: Decryption password (if encrypted)"
+            }
 
             // Cleanup command options
             MessageKey::DaysOption => "--days <DAYS>: Delete backups older than specified days",
-            MessageKey::CleanupDryRunOption => "--dry-run: Dry run mode (show what would be deleted)",
+            MessageKey::CleanupDryRunOption => {
+                "--dry-run: Dry run mode (show what would be deleted)"
+            }
 
             // Add command options
-            MessageKey::AddPriorityOption => "--priority <PRIORITY>: Set priority (high/medium/low)",
+            MessageKey::AddPriorityOption => {
+                "--priority <PRIORITY>: Set priority (high/medium/low)"
+            }
             MessageKey::AddCategoryOption => "--category <CATEGORY>: Set category",
             MessageKey::InteractiveOption => "--interactive: Interactive selection mode",
 
@@ -660,7 +670,9 @@ impl MessageKey {
             // Restore command options
             MessageKey::FromOption => "--from <バックアップ名>: 復元するバックアップ",
             MessageKey::ToOption => "--to <復元先>: 復元先ディレクトリ",
-            MessageKey::RestorePasswordOption => "--password <パスワード>: 復号化パスワード（暗号化時）",
+            MessageKey::RestorePasswordOption => {
+                "--password <パスワード>: 復号化パスワード（暗号化時）"
+            }
 
             // Cleanup command options
             MessageKey::DaysOption => "--days <日数>: 指定日数より古いバックアップを削除",

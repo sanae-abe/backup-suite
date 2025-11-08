@@ -5,7 +5,9 @@
 
 use anyhow::Result;
 use backup_suite::security::{AuditEvent, AuditLog, EventType};
-use backup_suite::{BackupRunner, CleanupEngine, CleanupPolicy, Config, Priority, RestoreEngine, Target};
+use backup_suite::{
+    BackupRunner, CleanupEngine, CleanupPolicy, Config, Priority, RestoreEngine, Target,
+};
 use std::fs;
 use tempfile::TempDir;
 
@@ -89,7 +91,10 @@ fn test_audit_log_various_event_types() -> Result<()> {
         "admin",
         serde_json::json!({"deleted": 5}),
     ))?;
-    audit_log.log(AuditEvent::security_warning("suspicious activity", "system"))?;
+    audit_log.log(AuditEvent::security_warning(
+        "suspicious activity",
+        "system",
+    ))?;
     audit_log.log(AuditEvent::permission_denied("/etc/shadow", "hacker"))?;
 
     // すべてのイベントを読み込み
@@ -213,7 +218,10 @@ fn test_audit_log_rotation() -> Result<()> {
         })
         .collect();
 
-    assert!(!entries.is_empty(), "ログローテーションが実行されませんでした");
+    assert!(
+        !entries.is_empty(),
+        "ログローテーションが実行されませんでした"
+    );
 
     Ok(())
 }
@@ -271,7 +279,9 @@ fn test_audit_log_hmac_with_different_keys() {
     assert!(!event.verify_hmac(secret2));
 
     // 監査ログに記録して検証
-    audit_log.log(AuditEvent::backup_started("/test2", "user")).unwrap();
+    audit_log
+        .log(AuditEvent::backup_started("/test2", "user"))
+        .unwrap();
     assert!(audit_log.verify_all().unwrap());
 }
 
@@ -294,9 +304,21 @@ fn test_audit_log_json_serialization() -> Result<()> {
 
     // ログファイルの内容を確認
     let content = fs::read_to_string(&log_path)?;
-    assert!(content.contains("total_files"), "Content missing 'total_files': {}", content);
-    assert!(content.contains("1024000"), "Content missing '1024000': {}", content);
-    assert!(content.contains("BackupCompleted"), "Content missing 'BackupCompleted': {}", content);
+    assert!(
+        content.contains("total_files"),
+        "Content missing 'total_files': {}",
+        content
+    );
+    assert!(
+        content.contains("1024000"),
+        "Content missing '1024000': {}",
+        content
+    );
+    assert!(
+        content.contains("BackupCompleted"),
+        "Content missing 'BackupCompleted': {}",
+        content
+    );
 
     // JSON形式で読み込めることを確認
     let events = audit_log.read_all()?;
@@ -337,7 +359,11 @@ fn test_audit_log_permission_security() -> Result<()> {
         let mode = permissions.mode();
 
         // Unix権限: 600 = 0o100600 (ファイルタイプビット含む)
-        assert_eq!(mode & 0o777, 0o600, "秘密鍵のパーミッションが600ではありません");
+        assert_eq!(
+            mode & 0o777,
+            0o600,
+            "秘密鍵のパーミッションが600ではありません"
+        );
     }
 
     Ok(())
@@ -368,7 +394,10 @@ fn test_audit_log_error_recovery() -> Result<()> {
 
     // 読み込み時にエラーが発生することを確認
     let result = audit_log.read_all();
-    assert!(result.is_err(), "不正なJSON行のエラーハンドリングが機能していません");
+    assert!(
+        result.is_err(),
+        "不正なJSON行のエラーハンドリングが機能していません"
+    );
 
     Ok(())
 }

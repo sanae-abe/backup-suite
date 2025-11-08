@@ -153,7 +153,10 @@ impl RestoreEngine {
         let total_files = files.len();
 
         if self.dry_run {
-            println!("📋 ドライランモード: {} ファイルを復元対象として検出", total_files);
+            println!(
+                "📋 ドライランモード: {} ファイルを復元対象として検出",
+                total_files
+            );
             for (backup_src, file) in &all_files {
                 if let Ok(relative) = file.strip_prefix(backup_src) {
                     println!("  {:?}", relative);

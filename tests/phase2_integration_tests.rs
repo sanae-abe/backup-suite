@@ -1,6 +1,6 @@
 use backup_suite::{
-    BackupHistory, BackupRunner, BackupStatus, CleanupPolicy, Config, Priority,
-    RestoreEngine, Target,
+    BackupHistory, BackupRunner, BackupStatus, CleanupPolicy, Config, Priority, RestoreEngine,
+    Target,
 };
 use std::fs;
 use tempfile::TempDir;
@@ -26,7 +26,8 @@ fn test_history_with_filters() {
     history_entries.push(entry1);
 
     // 中優先度のエントリ
-    let mut entry2 = BackupHistory::new(temp.path().join("backup_20251106_120000"), 50, 500000, true);
+    let mut entry2 =
+        BackupHistory::new(temp.path().join("backup_20251106_120000"), 50, 500000, true);
     entry2.priority = Some(Priority::Medium);
     entry2.category = Some("photos".to_string());
     entry2.status = BackupStatus::Success;
@@ -120,7 +121,9 @@ fn test_target_with_exclude_patterns() {
     // ターゲットに除外パターンが設定されていることを確認
     assert_eq!(config.targets.len(), 1);
     assert_eq!(config.targets[0].exclude_patterns.len(), 2);
-    assert!(config.targets[0].exclude_patterns.contains(&r"\.log$".to_string()));
+    assert!(config.targets[0]
+        .exclude_patterns
+        .contains(&r"\.log$".to_string()));
 }
 
 #[test]

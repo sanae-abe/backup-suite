@@ -368,7 +368,6 @@ fn parse_priority(s: &str) -> Result<Priority> {
     }
 }
 
-
 /// Detect language from CLI argument and environment
 fn detect_language(lang_arg: Option<&str>) -> Language {
     if let Some(lang_str) = lang_arg {
@@ -1713,8 +1712,17 @@ fn main() -> Result<()> {
             if detailed {
                 // 詳細表示
                 for entry in &history {
-                    println!("\n{}{}{}", get_color("green"), "=".repeat(60), get_color("reset"));
-                    println!("🕒 {}: {}", get_message(MessageKey::StatusTitle, lang), entry.timestamp.format("%Y-%m-%d %H:%M:%S"));
+                    println!(
+                        "\n{}{}{}",
+                        get_color("green"),
+                        "=".repeat(60),
+                        get_color("reset")
+                    );
+                    println!(
+                        "🕒 {}: {}",
+                        get_message(MessageKey::StatusTitle, lang),
+                        entry.timestamp.format("%Y-%m-%d %H:%M:%S")
+                    );
                     println!("📁 パス: {:?}", entry.backup_dir);
                     if let Some(ref cat) = entry.category {
                         println!("🏷️  カテゴリ: {}", cat);
@@ -1724,7 +1732,10 @@ fn main() -> Result<()> {
                     }
                     println!("📊 ステータス: {:?}", entry.status);
                     println!("📦 ファイル数: {}", entry.total_files);
-                    println!("💾 サイズ: {:.2} MB", entry.total_bytes as f64 / 1024.0 / 1024.0);
+                    println!(
+                        "💾 サイズ: {:.2} MB",
+                        entry.total_bytes as f64 / 1024.0 / 1024.0
+                    );
                     if entry.compressed {
                         println!("🗜️  圧縮: 有効");
                     }
@@ -1735,7 +1746,12 @@ fn main() -> Result<()> {
                         println!("⏱️  処理時間: {:.2}秒", entry.duration_ms as f64 / 1000.0);
                     }
                     if let Some(ref err) = entry.error_message {
-                        println!("{}❌ エラー: {}{}", get_color("red"), err, get_color("reset"));
+                        println!(
+                            "{}❌ エラー: {}{}",
+                            get_color("red"),
+                            err,
+                            get_color("reset")
+                        );
                     }
                 }
             } else {

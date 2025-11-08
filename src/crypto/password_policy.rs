@@ -238,7 +238,9 @@ impl PasswordPolicy {
         ];
 
         let lower = password.to_lowercase();
-        COMMON_PASSWORDS.iter().any(|&p| lower == p || lower.contains(p))
+        COMMON_PASSWORDS
+            .iter()
+            .any(|&p| lower == p || lower.contains(p))
     }
 
     /// Generate a strong random password
@@ -398,7 +400,10 @@ mod tests {
             // (Most will be Strong, but we allow Medium due to randomness)
             let strength = policy.evaluate(&password);
             assert!(
-                matches!(strength, PasswordStrength::Medium | PasswordStrength::Strong),
+                matches!(
+                    strength,
+                    PasswordStrength::Medium | PasswordStrength::Strong
+                ),
                 "Generated password of length {} should be at least Medium strength, got {:?}",
                 length,
                 strength

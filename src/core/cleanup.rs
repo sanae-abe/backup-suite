@@ -334,7 +334,10 @@ impl CleanupEngine {
 
         println!("\n削除候補:");
         println!("  パス: {:?}", backup.path);
-        println!("  作成日時: {}", backup.modified_time.format("%Y-%m-%d %H:%M:%S"));
+        println!(
+            "  作成日時: {}",
+            backup.modified_time.format("%Y-%m-%d %H:%M:%S")
+        );
         println!("  サイズ: {}", format_bytes(backup.size));
         if let Some(ref priority) = backup.priority {
             println!("  優先度: {:?}", priority);

@@ -146,10 +146,7 @@ pub fn check_write_permission(path: &Path) -> Result<()> {
     }
 
     // プロセスIDを含む一意な一時ファイル名（TOCTOU対策）
-    let temp_file = target_dir.join(format!(
-        ".backup_suite_perm_{}.tmp",
-        std::process::id()
-    ));
+    let temp_file = target_dir.join(format!(".backup_suite_perm_{}.tmp", std::process::id()));
 
     // create_new()で原子的にファイル作成（存在時エラー・競合状態対策）
     use std::fs::OpenOptions;

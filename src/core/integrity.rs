@@ -148,8 +148,8 @@ impl BackupMetadata {
 
         let content = fs::read_to_string(&metadata_path)
             .context(format!("メタデータ読み込み失敗: {:?}", metadata_path))?;
-        let metadata: BackupMetadata = serde_json::from_str(&content)
-            .context("メタデータJSON解析失敗")?;
+        let metadata: BackupMetadata =
+            serde_json::from_str(&content).context("メタデータJSON解析失敗")?;
 
         Ok(metadata)
     }
@@ -186,8 +186,7 @@ impl BackupMetadata {
     /// ```
     pub fn save(&self, backup_dir: &Path) -> Result<()> {
         let metadata_path = backup_dir.join(".integrity");
-        let content = serde_json::to_string_pretty(self)
-            .context("メタデータJSON生成失敗")?;
+        let content = serde_json::to_string_pretty(self).context("メタデータJSON生成失敗")?;
         fs::write(&metadata_path, content)
             .context(format!("メタデータ保存失敗: {:?}", metadata_path))?;
         Ok(())
@@ -263,15 +262,14 @@ impl BackupMetadata {
     /// * ファイルのオープンに失敗した場合
     /// * ファイルの読み込みに失敗した場合
     pub fn compute_file_hash(file_path: &Path) -> Result<String> {
-        let mut file = fs::File::open(file_path)
-            .context(format!("ファイル読み込み失敗: {:?}", file_path))?;
+        let mut file =
+            fs::File::open(file_path).context(format!("ファイル読み込み失敗: {:?}", file_path))?;
 
         let mut hasher = Sha256::new();
         let mut buffer = vec![0u8; 8192]; // 8KB バッファ
 
         loop {
-            let bytes_read = file.read(&mut buffer)
-                .context("ファイル読み込みエラー")?;
+            let bytes_read = file.read(&mut buffer).context("ファイル読み込みエラー")?;
             if bytes_read == 0 {
                 break;
             }
@@ -488,8 +486,14 @@ mod tests {
         // メタデータ読み込み
         let loaded = BackupMetadata::load(&backup_dir).unwrap();
         assert_eq!(loaded.file_hashes.len(), 2);
-        assert_eq!(loaded.file_hashes.get(&PathBuf::from("test.txt")), Some(&"hash1".to_string()));
-        assert_eq!(loaded.file_hashes.get(&PathBuf::from("data/file.dat")), Some(&"hash2".to_string()));
+        assert_eq!(
+            loaded.file_hashes.get(&PathBuf::from("test.txt")),
+            Some(&"hash1".to_string())
+        );
+        assert_eq!(
+            loaded.file_hashes.get(&PathBuf::from("data/file.dat")),
+            Some(&"hash2".to_string())
+        );
     }
 
     #[test]
@@ -512,7 +516,9 @@ mod tests {
 
         // 検証
         let metadata = BackupMetadata::load(&backup_dir).unwrap();
-        let is_valid = metadata.verify_file(&PathBuf::from("test.txt"), &test_file).unwrap();
+        let is_valid = metadata
+            .verify_file(&PathBuf::from("test.txt"), &test_file)
+            .unwrap();
         assert!(is_valid);
     }
 
@@ -539,7 +545,9 @@ mod tests {
 
         // 検証（失敗するはず）
         let metadata = BackupMetadata::load(&backup_dir).unwrap();
-        let is_valid = metadata.verify_file(&PathBuf::from("test.txt"), &test_file).unwrap();
+        let is_valid = metadata
+            .verify_file(&PathBuf::from("test.txt"), &test_file)
+            .unwrap();
         assert!(!is_valid);
     }
 

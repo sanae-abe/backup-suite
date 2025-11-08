@@ -178,9 +178,7 @@ fn test_incremental_restore_chain() {
     // 最新のバックアップから復元
     let backup_dir3 = backup_base.join(&result3.backup_name);
     let mut engine = RestoreEngine::new(false).with_progress(false);
-    let restore_result = engine
-        .restore(&backup_dir3, &restore_dir, None)
-        .unwrap();
+    let restore_result = engine.restore(&backup_dir3, &restore_dir, None).unwrap();
 
     // 復元が成功すればOK（タイムスタンプの問題でフルバックアップになることもある）
     assert!(restore_result.restored >= 2);

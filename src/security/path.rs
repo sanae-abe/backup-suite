@@ -71,7 +71,8 @@ pub fn safe_join(base: &Path, child: &Path) -> Result<PathBuf> {
     // Unicode攻撃パターン検出
     if normalized_str.contains('\u{2044}')  // Unicode Fraction Slash
         || normalized_str.contains('\u{FF0E}')  // 全角ピリオド
-        || normalized_str.contains('\u{FF0F}')  // 全角スラッシュ
+        || normalized_str.contains('\u{FF0F}')
+    // 全角スラッシュ
     {
         return Err(BackupError::PathTraversalDetected {
             path: child.to_path_buf(),

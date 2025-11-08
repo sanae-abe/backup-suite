@@ -81,8 +81,7 @@ fn test_backup_and_restore_with_integrity_verification() {
     let restored1 = fs::read_to_string(restore_dir.join("test-category/test1.txt")).unwrap();
     assert_eq!(restored1, "test content 1");
 
-    let restored2 =
-        fs::read_to_string(restore_dir.join("test-category/subdir/test2.txt")).unwrap();
+    let restored2 = fs::read_to_string(restore_dir.join("test-category/subdir/test2.txt")).unwrap();
     assert_eq!(restored2, "test content 2 with more data");
 }
 

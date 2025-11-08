@@ -200,7 +200,12 @@ impl AuditEvent {
 
     /// クリーンアップ完了イベントを作成
     pub fn cleanup_completed(user: impl Into<String>, metadata: serde_json::Value) -> Self {
-        Self::new(EventType::CleanupCompleted, user.into(), None, Some(metadata))
+        Self::new(
+            EventType::CleanupCompleted,
+            user.into(),
+            None,
+            Some(metadata),
+        )
     }
 
     /// クリーンアップ失敗イベントを作成
@@ -309,8 +314,7 @@ impl AuditLog {
         let config_dir = dirs::config_dir()
             .context("設定ディレクトリが取得できません")?
             .join("backup-suite");
-        std::fs::create_dir_all(&config_dir)
-            .context("設定ディレクトリの作成に失敗しました")?;
+        std::fs::create_dir_all(&config_dir).context("設定ディレクトリの作成に失敗しました")?;
 
         let log_path = config_dir.join("audit.log");
         Self::with_path(log_path)
@@ -462,10 +466,7 @@ impl AuditLog {
 
         for (i, event) in events.iter().enumerate() {
             if !event.verify_hmac(&self.secret) {
-                eprintln!(
-                    "警告: {}行目のログエントリのHMAC検証に失敗しました",
-                    i + 1
-                );
+                eprintln!("警告: {}行目のログエントリのHMAC検証に失敗しました", i + 1);
                 return Ok(false);
             }
         }
@@ -735,24 +736,22 @@ mod tests {
 
         // 多数のイベントを記録（ローテーションをトリガー）
         for i in 0..50 {
-            audit_log.log(AuditEvent::backup_started(
-                format!("/path/{}", i),
-                "user1",
-            ))?;
+            audit_log.log(AuditEvent::backup_started(format!("/path/{}", i), "user1"))?;
         }
 
         // ローテーションされたファイルが存在することを確認
         let entries: Vec<_> = std::fs::read_dir(temp_dir.path())?
             .filter_map(|e| e.ok())
             .filter(|e| {
-                e.file_name()
-                    .to_string_lossy()
-                    .starts_with("audit_")
+                e.file_name().to_string_lossy().starts_with("audit_")
                     && e.file_name().to_string_lossy().ends_with(".log")
             })
             .collect();
 
-        assert!(!entries.is_empty(), "ログローテーションが実行されませんでした");
+        assert!(
+            !entries.is_empty(),
+            "ログローテーションが実行されませんでした"
+        );
 
         Ok(())
     }

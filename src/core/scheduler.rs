@@ -179,9 +179,7 @@ impl Scheduler {
         match self.platform {
             Platform::MacOS => self.setup_launchd(priority, frequency),
             Platform::Linux => self.setup_systemd(priority, frequency),
-            Platform::Unsupported => {
-                Err(anyhow::anyhow!("サポートされていないプラットフォーム"))
-            }
+            Platform::Unsupported => Err(anyhow::anyhow!("サポートされていないプラットフォーム")),
         }
     }
 
@@ -215,9 +213,7 @@ impl Scheduler {
         match self.platform {
             Platform::MacOS => self.enable_launchd(priority),
             Platform::Linux => self.enable_systemd(priority),
-            Platform::Unsupported => {
-                Err(anyhow::anyhow!("サポートされていないプラットフォーム"))
-            }
+            Platform::Unsupported => Err(anyhow::anyhow!("サポートされていないプラットフォーム")),
         }
     }
 
@@ -251,9 +247,7 @@ impl Scheduler {
         match self.platform {
             Platform::MacOS => self.disable_launchd(priority),
             Platform::Linux => self.disable_systemd(priority),
-            Platform::Unsupported => {
-                Err(anyhow::anyhow!("サポートされていないプラットフォーム"))
-            }
+            Platform::Unsupported => Err(anyhow::anyhow!("サポートされていないプラットフォーム")),
         }
     }
 
@@ -493,10 +487,7 @@ impl Scheduler {
     /// systemd timer ファイルのパスを取得
     fn get_systemd_timer_path(&self, priority: &Priority) -> Result<PathBuf> {
         let home = dirs::home_dir().context("ホームディレクトリが見つかりません")?;
-        let filename = format!(
-            "backup-suite-{}.timer",
-            Self::priority_to_string(priority)
-        );
+        let filename = format!("backup-suite-{}.timer", Self::priority_to_string(priority));
         Ok(home.join(".config/systemd/user").join(filename))
     }
 
@@ -590,10 +581,7 @@ WantedBy=timers.target
 
     /// systemd スケジュールを有効化
     fn enable_systemd(&self, priority: &Priority) -> Result<()> {
-        let timer_name = format!(
-            "backup-suite-{}.timer",
-            Self::priority_to_string(priority)
-        );
+        let timer_name = format!("backup-suite-{}.timer", Self::priority_to_string(priority));
 
         // timerを有効化
         let output = std::process::Command::new("systemctl")
@@ -622,10 +610,7 @@ WantedBy=timers.target
 
     /// systemd スケジュールを無効化
     fn disable_systemd(&self, priority: &Priority) -> Result<()> {
-        let timer_name = format!(
-            "backup-suite-{}.timer",
-            Self::priority_to_string(priority)
-        );
+        let timer_name = format!("backup-suite-{}.timer", Self::priority_to_string(priority));
 
         // timerを停止
         let _output = std::process::Command::new("systemctl")
@@ -661,10 +646,7 @@ WantedBy=timers.target
 
     /// systemd スケジュールが有効かチェック
     fn is_systemd_enabled(&self, priority: &Priority) -> Result<bool> {
-        let timer_name = format!(
-            "backup-suite-{}.timer",
-            Self::priority_to_string(priority)
-        );
+        let timer_name = format!("backup-suite-{}.timer", Self::priority_to_string(priority));
 
         let output = std::process::Command::new("systemctl")
             .args(["--user", "is-enabled", &timer_name])

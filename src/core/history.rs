@@ -110,7 +110,11 @@ impl BackupHistory {
             backup_dir,
             category: None,
             priority: None,
-            status: if success { BackupStatus::Success } else { BackupStatus::Failed },
+            status: if success {
+                BackupStatus::Success
+            } else {
+                BackupStatus::Failed
+            },
             total_files,
             total_bytes,
             compressed: false,
@@ -277,7 +281,10 @@ impl BackupHistory {
     /// let high_priority = BackupHistory::filter_by_priority(&history, &Priority::High);
     /// println!("高優先度のバックアップ: {}件", high_priority.len());
     /// ```
-    pub fn filter_by_priority<'a>(entries: &'a [BackupHistory], priority: &Priority) -> Vec<&'a BackupHistory> {
+    pub fn filter_by_priority<'a>(
+        entries: &'a [BackupHistory],
+        priority: &Priority,
+    ) -> Vec<&'a BackupHistory> {
         entries
             .iter()
             .filter(|h| h.priority.as_ref() == Some(priority))
@@ -305,7 +312,10 @@ impl BackupHistory {
     /// let docs = BackupHistory::filter_by_category(&history, "documents");
     /// println!("ドキュメントカテゴリのバックアップ: {}件", docs.len());
     /// ```
-    pub fn filter_by_category<'a>(entries: &'a [BackupHistory], category: &str) -> Vec<&'a BackupHistory> {
+    pub fn filter_by_category<'a>(
+        entries: &'a [BackupHistory],
+        category: &str,
+    ) -> Vec<&'a BackupHistory> {
         entries
             .iter()
             .filter(|h| h.category.as_deref() == Some(category))

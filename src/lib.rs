@@ -249,10 +249,10 @@ pub mod ui;
 // 主要な型を再エクスポート
 pub use compression::{CompressedData, CompressionConfig, CompressionEngine, CompressionType};
 pub use core::{
-    BackupHistory, BackupResult, BackupRunner, CleanupEngine, CleanupPolicy, CleanupResult,
-    Config, CopyEngine, Frequency, PerformanceConfig, PipelineConfig, Platform, Priority,
-    ProcessedData, ProcessingMetadata, ProcessingPipeline, RestoreEngine, RestoreResult,
-    ScheduleStatus, Scheduler, Target, TargetType,
+    BackupHistory, BackupResult, BackupRunner, CleanupEngine, CleanupPolicy, CleanupResult, Config,
+    CopyEngine, Frequency, PerformanceConfig, PipelineConfig, Platform, Priority, ProcessedData,
+    ProcessingMetadata, ProcessingPipeline, RestoreEngine, RestoreResult, ScheduleStatus,
+    Scheduler, Target, TargetType,
 };
 // Phase 2: 履歴管理の拡張型をエクスポート
 pub use core::history::BackupStatus;

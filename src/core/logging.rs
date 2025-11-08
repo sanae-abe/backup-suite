@@ -224,7 +224,8 @@ impl Logger {
     fn log_dir() -> Result<PathBuf> {
         #[cfg(target_os = "macos")]
         {
-            let home = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("ホームディレクトリが見つかりません"))?;
+            let home = dirs::home_dir()
+                .ok_or_else(|| anyhow::anyhow!("ホームディレクトリが見つかりません"))?;
             Ok(home.join("Library/Logs/backup-suite"))
         }
 
@@ -270,9 +271,7 @@ impl Logger {
         }
 
         let metadata = fs::metadata(&self.log_file).context("ログファイルメタデータ取得エラー")?;
-        let modified = metadata
-            .modified()
-            .context("最終更新日時取得エラー")?;
+        let modified = metadata.modified().context("最終更新日時取得エラー")?;
 
         let modified_datetime: DateTime<Utc> = modified.into();
         let now = Utc::now();
@@ -280,14 +279,10 @@ impl Logger {
 
         // 1日以上経過していたらローテーション
         if days_old >= 1 {
-            let rotated_name = format!(
-                "backup-{}.log",
-                modified_datetime.format("%Y%m%d")
-            );
+            let rotated_name = format!("backup-{}.log", modified_datetime.format("%Y%m%d"));
             let rotated_path = self.log_file.parent().unwrap().join(rotated_name);
 
-            fs::rename(&self.log_file, &rotated_path)
-                .context("ログローテーションエラー")?;
+            fs::rename(&self.log_file, &rotated_path).context("ログローテーションエラー")?;
 
             // 古いログファイルを削除
             self.cleanup_old_logs()?;
@@ -418,13 +413,8 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let log_file = temp_dir.path().join("test.log");
 
-        let logger = Logger::with_config(
-            LogLevel::Info,
-            LogFormat::Text,
-            log_file.clone(),
-            7,
-        )
-        .unwrap();
+        let logger =
+            Logger::with_config(LogLevel::Info, LogFormat::Text, log_file.clone(), 7).unwrap();
 
         assert_eq!(logger.level(), LogLevel::Info);
         assert_eq!(logger.format(), LogFormat::Text);
@@ -435,13 +425,8 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let log_file = temp_dir.path().join("test.log");
 
-        let logger = Logger::with_config(
-            LogLevel::Info,
-            LogFormat::Text,
-            log_file.clone(),
-            7,
-        )
-        .unwrap();
+        let logger =
+            Logger::with_config(LogLevel::Info, LogFormat::Text, log_file.clone(), 7).unwrap();
 
         logger.info("テストログ");
         logger.debug("このログは出力されない"); // レベルがInfoなので
@@ -456,13 +441,8 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let log_file = temp_dir.path().join("test.log");
 
-        let logger = Logger::with_config(
-            LogLevel::Debug,
-            LogFormat::Json,
-            log_file.clone(),
-            7,
-        )
-        .unwrap();
+        let logger =
+            Logger::with_config(LogLevel::Debug, LogFormat::Json, log_file.clone(), 7).unwrap();
 
         logger.error("JSONエラーログ");
 
@@ -476,13 +456,8 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let log_file = temp_dir.path().join("test.log");
 
-        let logger = Logger::with_config(
-            LogLevel::Info,
-            LogFormat::Text,
-            log_file.clone(),
-            7,
-        )
-        .unwrap();
+        let logger =
+            Logger::with_config(LogLevel::Info, LogFormat::Text, log_file.clone(), 7).unwrap();
 
         let metadata = serde_json::json!({
             "file_count": 42,

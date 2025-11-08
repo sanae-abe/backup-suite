@@ -401,7 +401,9 @@ impl BackupRunner {
         };
 
         // 増分バックアップの場合、前回のメタデータを読み込み（失敗した場合はフルバックアップにフォールバック）
-        let (actual_backup_type, parent_backup_name, files_to_backup) = if backup_type == BackupType::Incremental {
+        let (actual_backup_type, parent_backup_name, files_to_backup) = if backup_type
+            == BackupType::Incremental
+        {
             match inc_engine.load_previous_metadata() {
                 Ok(previous_metadata) => {
                     println!("📦 増分バックアップモード（変更ファイルのみ）");
@@ -416,13 +418,15 @@ impl BackupRunner {
                         })
                         .collect();
 
-                    let changed_files_relative = inc_engine.detect_changed_files(&files_with_relative, &previous_metadata)?;
+                    let changed_files_relative = inc_engine
+                        .detect_changed_files(&files_with_relative, &previous_metadata)?;
 
                     // 元のall_files形式に戻す（source, dest）
                     let changed_files: Vec<(PathBuf, PathBuf)> = changed_files_relative
                         .iter()
                         .filter_map(|(_relative_path, source_path)| {
-                            all_files.iter()
+                            all_files
+                                .iter()
                                 .find(|(src, _)| src == source_path)
                                 .cloned()
                         })
@@ -430,7 +434,11 @@ impl BackupRunner {
 
                     let parent_name = inc_engine.get_previous_backup_name()?;
                     println!("  前回バックアップ: {:?}", parent_name);
-                    println!("  変更ファイル数: {}/{}", changed_files.len(), all_files.len());
+                    println!(
+                        "  変更ファイル数: {}/{}",
+                        changed_files.len(),
+                        all_files.len()
+                    );
 
                     (BackupType::Incremental, parent_name, changed_files)
                 }
@@ -438,7 +446,8 @@ impl BackupRunner {
                     // エラーメッセージの内容で初回実行時か実際のエラーかを判別
                     let error_msg = e.to_string();
                     if error_msg.contains("前回のバックアップが見つかりません")
-                        || error_msg.contains("前回のバックアップメタデータ読み込み失敗") {
+                        || error_msg.contains("前回のバックアップメタデータ読み込み失敗")
+                    {
                         // 初回実行時: 情報レベルのメッセージ
                         println!("ℹ️  前回のバックアップが見つかりません。フルバックアップを実行します。");
                     } else {
@@ -642,7 +651,11 @@ impl BackupRunner {
                 guard.metadata.parent_backup = parent_backup_name;
                 guard.metadata.changed_files = files_to_backup
                     .iter()
-                    .filter_map(|(_, dest)| dest.strip_prefix(&backup_base).ok().map(|p| p.to_path_buf()))
+                    .filter_map(|(_, dest)| {
+                        dest.strip_prefix(&backup_base)
+                            .ok()
+                            .map(|p| p.to_path_buf())
+                    })
                     .collect();
 
                 // 増分バックアップの場合、変更されなかったファイルのハッシュも保存

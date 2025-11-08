@@ -136,12 +136,7 @@ impl IncrementalBackupEngine {
             .context("バックアップディレクトリの読み込み失敗")?
             .filter_map(|entry| entry.ok())
             .filter(|entry| entry.file_type().map(|ft| ft.is_dir()).unwrap_or(false))
-            .filter(|entry| {
-                entry
-                    .file_name()
-                    .to_string_lossy()
-                    .starts_with("backup_")
-            })
+            .filter(|entry| entry.file_name().to_string_lossy().starts_with("backup_"))
             .map(|entry| entry.path())
             // dry-runで作成された空のディレクトリ（.integrityなし）を除外
             .filter(|path| path.join(".integrity").exists())
@@ -227,8 +222,7 @@ impl IncrementalBackupEngine {
             .find_latest_backup()?
             .ok_or_else(|| anyhow::anyhow!("前回のバックアップが見つかりません"))?;
 
-        BackupMetadata::load(&latest_backup)
-            .context("前回のバックアップメタデータ読み込み失敗")
+        BackupMetadata::load(&latest_backup).context("前回のバックアップメタデータ読み込み失敗")
     }
 
     /// 前回のバックアップ名を取得
