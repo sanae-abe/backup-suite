@@ -82,7 +82,7 @@ impl CompressionConfig {
     #[must_use]
     pub fn zstd_adaptive() -> Self {
         let cpu_count = std::thread::available_parallelism()
-            .map(std::num::NonZero::get)
+            .map(|n| n.get())
             .unwrap_or(4);
 
         Self {
