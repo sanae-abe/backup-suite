@@ -10,7 +10,7 @@ use crate::error::{BackupError, Result};
 /// # 使用例
 ///
 /// ```no_run
-/// use backup_suite::core::filter::FileFilter;
+/// use backup_suite::core::filter::`FileFilter`;
 /// use std::path::Path;
 ///
 /// let patterns = vec![
@@ -19,7 +19,7 @@ use crate::error::{BackupError, Result};
 ///     r"\.DS_Store$".to_string(),
 /// ];
 ///
-/// let filter = FileFilter::new(&patterns).unwrap();
+/// let filter = `FileFilter`::new(&patterns).unwrap();
 /// let path = Path::new("/project/.git");
 /// assert!(filter.should_exclude(path));
 /// ```
@@ -29,7 +29,7 @@ pub struct FileFilter {
 }
 
 impl FileFilter {
-    /// 新しいFileFilterインスタンスを作成
+    /// 新しい`FileFilter`インスタンスを作成
     ///
     /// # 引数
     ///
@@ -37,7 +37,7 @@ impl FileFilter {
     ///
     /// # 戻り値
     ///
-    /// 成功した場合は `Ok(FileFilter)`、正規表現のコンパイルに失敗した場合はエラー
+    /// 成功した場合は `Ok(`FileFilter`)`、正規表現のコンパイルに失敗した場合はエラー
     ///
     /// # Errors
     ///
@@ -47,10 +47,10 @@ impl FileFilter {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::core::filter::FileFilter;
+    /// use backup_suite::core::filter::`FileFilter`;
     ///
     /// let patterns = vec![r"\.git$".to_string()];
-    /// let filter = FileFilter::new(&patterns).unwrap();
+    /// let filter = `FileFilter`::new(&patterns).unwrap();
     /// ```
     #[must_use]
     pub fn new(exclude_patterns: &[String]) -> Result<Self> {
@@ -82,10 +82,10 @@ impl FileFilter {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::core::filter::FileFilter;
+    /// use backup_suite::core::filter::`FileFilter`;
     /// use std::path::Path;
     ///
-    /// let filter = FileFilter::new(&vec![r"\.git$".to_string()]).unwrap();
+    /// let filter = `FileFilter`::new(&vec![r"\.git$".to_string()]).unwrap();
     /// assert!(filter.should_exclude(Path::new("/project/.git")));
     /// assert!(!filter.should_exclude(Path::new("/project/src")));
     /// ```
@@ -131,10 +131,10 @@ impl FileFilter {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::core::filter::FileFilter;
+    /// use backup_suite::core::filter::`FileFilter`;
     /// use std::path::Path;
     ///
-    /// let filter = FileFilter::new(&vec![r"^\.DS_Store$".to_string()]).unwrap();
+    /// let filter = `FileFilter`::new(&vec![r"^\.DS_Store$".to_string()]).unwrap();
     /// assert!(filter.should_exclude_filename(Path::new("/any/path/.DS_Store")));
     /// assert!(!filter.should_exclude_filename(Path::new("/any/path/normal.txt")));
     /// ```

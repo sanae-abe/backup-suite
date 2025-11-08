@@ -110,7 +110,7 @@ pub struct CleanupEngine {
 }
 
 impl CleanupEngine {
-    /// 新しいCleanupEngineを作成
+    /// 新しい`CleanupEngine`を作成
     #[must_use]
     pub fn new(policy: CleanupPolicy, dry_run: bool) -> Self {
         let audit_log = AuditLog::new()

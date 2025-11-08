@@ -247,7 +247,7 @@ impl ProcessingPipeline {
         }
     }
 
-    /// 最適化されたThreadPoolを作成
+    /// 最適化された`ThreadPool`を作成
     fn create_thread_pool(performance: &PerformanceConfig) -> Result<rayon::ThreadPool> {
         ThreadPoolBuilder::new()
             .num_threads(performance.parallel_threads)
@@ -529,7 +529,7 @@ impl ProcessingPipeline {
         }
     }
 
-    /// ThreadPoolが正常に作成されているか確認
+    /// `ThreadPool`が正常に作成されているか確認
     #[must_use]
     pub fn is_parallel_ready(&self) -> bool {
         self.thread_pool.is_some()
@@ -563,7 +563,7 @@ pub struct PerformanceStats {
 
 /// CPU コア数を取得
 ///
-/// num_cpusクレートを使用して論理コア数を取得する。
+/// `num_cpus`クレートを使用して論理コア数を取得する。
 /// フォールバック時は4コアを仮定。
 mod num_cpus {
     #[must_use]

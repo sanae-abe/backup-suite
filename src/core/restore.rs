@@ -39,7 +39,7 @@ pub struct RestoreEngine {
 }
 
 impl RestoreEngine {
-    /// 新しいRestoreEngineを作成
+    /// 新しい`RestoreEngine`を作成
     #[must_use]
     pub fn new(dry_run: bool) -> Self {
         let audit_log = AuditLog::new()

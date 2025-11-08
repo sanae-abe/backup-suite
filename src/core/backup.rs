@@ -32,10 +32,10 @@ use crate::ui::progress::BackupProgress;
 /// # 使用例
 ///
 /// ```no_run
-/// use backup_suite::{Config, BackupRunner};
+/// use backup_suite::{Config, `BackupRunner`};
 ///
 /// let config = Config::load().unwrap();
-/// let mut runner = BackupRunner::new(config, false);
+/// let mut runner = `BackupRunner`::new(config, false);
 /// let result = runner.run(None, None).unwrap();
 ///
 /// if result.failed > 0 {
@@ -83,16 +83,16 @@ impl BackupResult {
 /// # 使用例
 ///
 /// ```no_run
-/// use backup_suite::{Config, BackupRunner, Priority};
+/// use backup_suite::{Config, `BackupRunner`, Priority};
 ///
 /// // 基本的なバックアップ実行
 /// let config = Config::load().unwrap();
-/// let mut runner = BackupRunner::new(config, false);
+/// let mut runner = `BackupRunner`::new(config, false);
 /// let result = runner.run(None, None).unwrap();
 ///
 /// // 高優先度のみ実行
 /// let config = Config::load().unwrap();
-/// let mut runner = BackupRunner::new(config, false)
+/// let mut runner = `BackupRunner`::new(config, false)
 ///     .with_progress(true);
 /// let result = runner.run(Some(&Priority::High), None).unwrap();
 /// ```
@@ -110,7 +110,7 @@ pub struct BackupRunner {
 }
 
 impl BackupRunner {
-    /// 新しいBackupRunnerを作成
+    /// 新しい`BackupRunner`を作成
     ///
     /// # 引数
     ///
@@ -119,15 +119,15 @@ impl BackupRunner {
     ///
     /// # 戻り値
     ///
-    /// 進捗表示が有効な BackupRunner インスタンス
+    /// 進捗表示が有効な `BackupRunner` インスタンス
     ///
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::{Config, BackupRunner};
+    /// use backup_suite::{Config, `BackupRunner`};
     ///
     /// let config = Config::load().unwrap();
-    /// let mut runner = BackupRunner::new(config, false);
+    /// let mut runner = `BackupRunner`::new(config, false);
     /// ```
     #[must_use]
     pub fn new(config: Config, dry_run: bool) -> Self {
@@ -158,15 +158,15 @@ impl BackupRunner {
     ///
     /// # 戻り値
     ///
-    /// 設定を更新した BackupRunner インスタンス
+    /// 設定を更新した `BackupRunner` インスタンス
     ///
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::{Config, BackupRunner};
+    /// use backup_suite::{Config, `BackupRunner`};
     ///
     /// let config = Config::load().unwrap();
-    /// let mut runner = BackupRunner::new(config, false)
+    /// let mut runner = `BackupRunner`::new(config, false)
     ///     .with_progress(false); // 進捗表示を無効化
     /// ```
     #[must_use]
@@ -231,17 +231,17 @@ impl BackupRunner {
     /// # 使用例
     ///
     /// ```no_run
-    /// use backup_suite::{Config, BackupRunner, Priority};
+    /// use backup_suite::{Config, `BackupRunner`, Priority};
     ///
     /// let config = Config::load().unwrap();
-    /// let mut runner = BackupRunner::new(config, false);
+    /// let mut runner = `BackupRunner`::new(config, false);
     ///
     /// // 全ファイルをバックアップ
     /// let result = runner.run(None, None).unwrap();
     ///
     /// // 高優先度のみバックアップ
     /// let config = Config::load().unwrap();
-    /// let mut runner = BackupRunner::new(config, false);
+    /// let mut runner = `BackupRunner`::new(config, false);
     /// let result = runner.run(Some(&Priority::High), None).unwrap();
     /// ```
     pub fn run(

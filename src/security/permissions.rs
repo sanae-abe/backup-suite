@@ -24,7 +24,7 @@ use std::path::Path;
 /// # Errors
 ///
 /// * `BackupError::PermissionDenied` - 以下の場合にエラーを返す
-///   - メタデータ取得時にPermissionDeniedエラーが発生した場合
+///   - メタデータ取得時に`PermissionDenied`エラーが発生した場合
 ///   - Unix系: 読み取り権限ビット（0o444）がすべて0の場合
 /// * `BackupError::IoError` - メタデータの取得に失敗した場合（権限以外のエラー）
 ///
@@ -102,8 +102,8 @@ pub fn check_read_permission(path: &Path) -> Result<()> {
 ///
 /// * `BackupError::ParentDirectoryNotFound` - ファイルパスの親ディレクトリが見つからない場合
 /// * `BackupError::PermissionDenied` - 以下の場合にエラーを返す
-///   - ディレクトリ作成時にPermissionDeniedエラーが発生した場合
-///   - 一時ファイル作成時にPermissionDeniedエラーが発生した場合
+///   - ディレクトリ作成時に`PermissionDenied`エラーが発生した場合
+///   - 一時ファイル作成時に`PermissionDenied`エラーが発生した場合
 /// * `BackupError::IoError` - 以下の場合にエラーを返す
 ///   - ディレクトリ作成に失敗した場合（権限以外のエラー）
 ///   - 一時ファイルが既に存在する場合（TOCTOU対策により検出）
