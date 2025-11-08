@@ -379,6 +379,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn test_validate_path_safety_absolute() {
         // 深い階層の絶対パス（安全）
         let safe_absolute = Path::new("/home/user/documents/file.txt");
