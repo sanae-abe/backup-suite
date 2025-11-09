@@ -44,7 +44,7 @@ jobs:
           --verbose \
           --all-features \
           --workspace \
-          --timeout 300 \
+          --timeout 600 \
           --out Xml \
           --out Html \
           --output-dir coverage

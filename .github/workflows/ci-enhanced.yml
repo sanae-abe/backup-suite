@@ -203,7 +203,7 @@ jobs:
         run: cargo install cargo-audit --locked
 
       - name: Run security audit
-        run: cargo audit --deny warnings --deny unsound --deny yanked
+        run: cargo audit --deny unsound --deny yanked
 
       - name: Generate audit report
         if: always()

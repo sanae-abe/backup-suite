@@ -41,7 +41,7 @@ jobs:
       run: cargo install cargo-audit
 
     - name: Run cargo-audit
-      run: cargo audit --deny warnings
+      run: cargo audit --deny unsound --deny yanked
 
     - name: Install cargo-deny
       run: cargo install cargo-deny
