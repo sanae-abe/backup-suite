@@ -33,6 +33,7 @@ use tempfile::TempDir;
 
 #[cfg(feature = "ai")]
 /// モック履歴データ生成ヘルパー
+#[allow(clippy::cast_possible_wrap)]
 fn create_mock_histories(count: usize, base_size: u64) -> Vec<BackupHistory> {
     let now = Utc::now();
     (0..count)
