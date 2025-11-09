@@ -2,13 +2,15 @@
 //!
 //! Provides multi-language support for the Backup Suite CLI.
 //! Default language: English
-//! Supported languages: English, Japanese
+//! Supported languages: English, Japanese, Simplified Chinese, Traditional Chinese
 
 /// Supported languages
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Language {
     English,
     Japanese,
+    SimplifiedChinese,
+    TraditionalChinese,
 }
 
 impl Language {
@@ -18,15 +20,61 @@ impl Language {
     pub fn detect() -> Self {
         // Check LANG environment variable
         if let Ok(lang) = std::env::var("LANG") {
-            if lang.starts_with("ja") || lang.starts_with("jp") {
+            let lang_lower = lang.to_lowercase();
+
+            // Japanese detection
+            if lang_lower.starts_with("ja") || lang_lower.starts_with("jp") {
                 return Language::Japanese;
+            }
+
+            // Simplified Chinese detection (zh-CN, zh-Hans, zh_CN, zh_Hans)
+            if lang_lower.starts_with("zh-cn")
+                || lang_lower.starts_with("zh_cn")
+                || lang_lower.starts_with("zh-hans")
+                || lang_lower.starts_with("zh_hans")
+            {
+                return Language::SimplifiedChinese;
+            }
+
+            // Traditional Chinese detection (zh-TW, zh-HK, zh-Hant, zh_TW, zh_HK, zh_Hant)
+            if lang_lower.starts_with("zh-tw")
+                || lang_lower.starts_with("zh_tw")
+                || lang_lower.starts_with("zh-hk")
+                || lang_lower.starts_with("zh_hk")
+                || lang_lower.starts_with("zh-hant")
+                || lang_lower.starts_with("zh_hant")
+            {
+                return Language::TraditionalChinese;
             }
         }
 
         // Check LC_ALL environment variable as fallback
         if let Ok(lang) = std::env::var("LC_ALL") {
-            if lang.starts_with("ja") || lang.starts_with("jp") {
+            let lang_lower = lang.to_lowercase();
+
+            // Japanese detection
+            if lang_lower.starts_with("ja") || lang_lower.starts_with("jp") {
                 return Language::Japanese;
+            }
+
+            // Simplified Chinese detection
+            if lang_lower.starts_with("zh-cn")
+                || lang_lower.starts_with("zh_cn")
+                || lang_lower.starts_with("zh-hans")
+                || lang_lower.starts_with("zh_hans")
+            {
+                return Language::SimplifiedChinese;
+            }
+
+            // Traditional Chinese detection
+            if lang_lower.starts_with("zh-tw")
+                || lang_lower.starts_with("zh_tw")
+                || lang_lower.starts_with("zh-hk")
+                || lang_lower.starts_with("zh_hk")
+                || lang_lower.starts_with("zh-hant")
+                || lang_lower.starts_with("zh_hant")
+            {
+                return Language::TraditionalChinese;
             }
         }
 
@@ -40,6 +88,18 @@ impl Language {
         match s.to_lowercase().as_str() {
             "en" | "english" => Some(Language::English),
             "ja" | "japanese" | "日本語" => Some(Language::Japanese),
+            "zh-cn" | "zh_cn" | "zh-hans" | "zh_hans" | "simplified chinese" | "简体中文" => {
+                Some(Language::SimplifiedChinese)
+            }
+            "zh-tw"
+            | "zh_tw"
+            | "zh-hk"
+            | "zh_hk"
+            | "zh-hant"
+            | "zh_hant"
+            | "traditional chinese"
+            | "繁體中文"
+            | "繁体中文" => Some(Language::TraditionalChinese),
             _ => None,
         }
     }
@@ -50,6 +110,8 @@ impl Language {
         match self {
             Language::English => "en",
             Language::Japanese => "ja",
+            Language::SimplifiedChinese => "zh-cn",
+            Language::TraditionalChinese => "zh-tw",
         }
     }
 }
@@ -68,6 +130,7 @@ pub enum MessageKey {
     InformationCommands,
     ConfigCommands,
     UtilityCommands,
+    AiCommands,
 
     // Commands
     CmdAdd,
@@ -86,6 +149,7 @@ pub enum MessageKey {
     CmdConfig,
     CmdOpen,
     CmdCompletion,
+    CmdAi,
 
     // Command descriptions
     DescAdd,
@@ -104,6 +168,33 @@ pub enum MessageKey {
     DescConfig,
     DescOpen,
     DescCompletion,
+    DescAi,
+
+    // AI subcommands
+    CmdAiDetect,
+    CmdAiAnalyze,
+    CmdAiSuggestExclude,
+    CmdAiAutoConfigure,
+    DescAiDetect,
+    DescAiAnalyze,
+    DescAiSuggestExclude,
+    DescAiAutoConfigure,
+
+    // AI messages
+    AiDetectTitle,
+    AiDetectNoAnomalies,
+    AiDetectAnomalyFound,
+    AiAnalyzeTitle,
+    AiAnalyzeImportanceHigh,
+    AiAnalyzeImportanceMedium,
+    AiAnalyzeImportanceLow,
+    AiSuggestExcludeTitle,
+    AiSuggestExcludeRecommendation,
+    AiAutoConfigureTitle,
+    AiAutoConfigureSuccess,
+    AiErrorNotEnabled,
+    AiErrorInsufficientData,
+    AiErrorAnalysisFailed,
 
     // Options
     Options,
@@ -119,6 +210,9 @@ pub enum MessageKey {
     ExampleEncryptCompress,
     ExampleCleanup,
     ExampleSchedule,
+    ExampleAiDetect,
+    ExampleAiAnalyze,
+    ExampleAiSuggestExclude,
 
     // Detailed info
     DetailedInfo,
@@ -298,6 +392,8 @@ impl MessageKey {
         match lang {
             Language::English => self.get_en(),
             Language::Japanese => self.get_ja(),
+            Language::SimplifiedChinese => self.get_zh_cn(),
+            Language::TraditionalChinese => self.get_zh_tw(),
         }
     }
 
@@ -317,6 +413,7 @@ impl MessageKey {
             MessageKey::InformationCommands => "📊 Information Commands",
             MessageKey::ConfigCommands => "⚙️  Configuration",
             MessageKey::UtilityCommands => "🔧 Utility",
+            MessageKey::AiCommands => "🤖 AI Commands",
 
             // Commands
             MessageKey::CmdAdd => "add",
@@ -335,6 +432,7 @@ impl MessageKey {
             MessageKey::CmdConfig => "config",
             MessageKey::CmdOpen => "open",
             MessageKey::CmdCompletion => "completion",
+            MessageKey::CmdAi => "ai",
 
             // Command descriptions
             MessageKey::DescAdd => "Add target (interactive selection supported)",
@@ -353,6 +451,35 @@ impl MessageKey {
             MessageKey::DescConfig => "Manage configuration (destination, retention period)",
             MessageKey::DescOpen => "Open backup directory",
             MessageKey::DescCompletion => "Generate shell completion script",
+            MessageKey::DescAi => "AI-driven intelligent backup management",
+
+            // AI subcommands
+            MessageKey::CmdAiDetect => "detect",
+            MessageKey::CmdAiAnalyze => "analyze",
+            MessageKey::CmdAiSuggestExclude => "suggest-exclude",
+            MessageKey::CmdAiAutoConfigure => "auto-configure",
+            MessageKey::DescAiDetect => "Detect anomalies in backup history",
+            MessageKey::DescAiAnalyze => "Analyze file importance",
+            MessageKey::DescAiSuggestExclude => "Suggest exclude patterns",
+            MessageKey::DescAiAutoConfigure => "Auto-configure backup settings with AI",
+
+            // AI messages
+            MessageKey::AiDetectTitle => "🤖 AI Anomaly Detection",
+            MessageKey::AiDetectNoAnomalies => "No anomalies detected in the backup history",
+            MessageKey::AiDetectAnomalyFound => "Anomaly detected",
+            MessageKey::AiAnalyzeTitle => "🤖 AI File Importance Analysis",
+            MessageKey::AiAnalyzeImportanceHigh => "High importance",
+            MessageKey::AiAnalyzeImportanceMedium => "Medium importance",
+            MessageKey::AiAnalyzeImportanceLow => "Low importance",
+            MessageKey::AiSuggestExcludeTitle => "🤖 AI Exclude Pattern Suggestions",
+            MessageKey::AiSuggestExcludeRecommendation => "Recommended exclusion",
+            MessageKey::AiAutoConfigureTitle => "🤖 AI Auto-Configuration",
+            MessageKey::AiAutoConfigureSuccess => "Auto-configuration completed successfully",
+            MessageKey::AiErrorNotEnabled => {
+                "AI features are not enabled. Compile with --features ai"
+            }
+            MessageKey::AiErrorInsufficientData => "Insufficient data for AI analysis",
+            MessageKey::AiErrorAnalysisFailed => "AI analysis failed",
 
             // Options
             MessageKey::Options => "Options:",
@@ -368,6 +495,9 @@ impl MessageKey {
             MessageKey::ExampleEncryptCompress => "# Encrypted + Compressed backup",
             MessageKey::ExampleCleanup => "# Delete backups older than 30 days (dry run)",
             MessageKey::ExampleSchedule => "# Setup schedule and enable",
+            MessageKey::ExampleAiDetect => "# Detect anomalies in last 7 days",
+            MessageKey::ExampleAiAnalyze => "# Analyze file importance",
+            MessageKey::ExampleAiSuggestExclude => "# Get AI exclude suggestions",
 
             // Detailed info
             MessageKey::DetailedInfo => "Detailed Information:",
@@ -548,7 +678,7 @@ impl MessageKey {
             MessageKey::CurrentKeepDays => "Current backup retention period",
             MessageKey::OpeningConfigFile => "Opening configuration file",
             MessageKey::EditorDidNotExitCleanly => "Editor did not exit cleanly",
-            MessageKey::RustFastTypeSafe => "🦀 Rust · Fast · Type-safe",
+            MessageKey::RustFastTypeSafe => "Intelligent Backup with AES-256 Encryption & AI",
             MessageKey::ScheduleCommandPlaceholder => "<command>",
             MessageKey::ConfigCommandPlaceholder => "<command>",
             MessageKey::ConfigArgsPlaceholder => "[args]",
@@ -589,6 +719,7 @@ impl MessageKey {
             MessageKey::InformationCommands => "📊 情報表示",
             MessageKey::ConfigCommands => "⚙️  設定管理",
             MessageKey::UtilityCommands => "🔧 ユーティリティ",
+            MessageKey::AiCommands => "🤖 AIコマンド",
 
             // Commands
             MessageKey::CmdAdd => "add",
@@ -607,6 +738,7 @@ impl MessageKey {
             MessageKey::CmdConfig => "config",
             MessageKey::CmdOpen => "open",
             MessageKey::CmdCompletion => "completion",
+            MessageKey::CmdAi => "ai",
 
             // Command descriptions
             MessageKey::DescAdd => "対象追加（インタラクティブ選択対応）",
@@ -625,6 +757,35 @@ impl MessageKey {
             MessageKey::DescConfig => "設定管理（保存先・保持期間）",
             MessageKey::DescOpen => "バックアップディレクトリを開く",
             MessageKey::DescCompletion => "シェル補完スクリプト生成",
+            MessageKey::DescAi => "AI駆動のインテリジェントバックアップ管理",
+
+            // AI subcommands
+            MessageKey::CmdAiDetect => "detect",
+            MessageKey::CmdAiAnalyze => "analyze",
+            MessageKey::CmdAiSuggestExclude => "suggest-exclude",
+            MessageKey::CmdAiAutoConfigure => "auto-configure",
+            MessageKey::DescAiDetect => "バックアップ履歴の異常検知",
+            MessageKey::DescAiAnalyze => "ファイル重要度分析",
+            MessageKey::DescAiSuggestExclude => "除外パターン提案",
+            MessageKey::DescAiAutoConfigure => "AIによる自動設定",
+
+            // AI messages
+            MessageKey::AiDetectTitle => "🤖 AI異常検知",
+            MessageKey::AiDetectNoAnomalies => "バックアップ履歴に異常は検出されませんでした",
+            MessageKey::AiDetectAnomalyFound => "異常を検出しました",
+            MessageKey::AiAnalyzeTitle => "🤖 AIファイル重要度分析",
+            MessageKey::AiAnalyzeImportanceHigh => "重要度：高",
+            MessageKey::AiAnalyzeImportanceMedium => "重要度：中",
+            MessageKey::AiAnalyzeImportanceLow => "重要度：低",
+            MessageKey::AiSuggestExcludeTitle => "🤖 AI除外パターン提案",
+            MessageKey::AiSuggestExcludeRecommendation => "除外推奨",
+            MessageKey::AiAutoConfigureTitle => "🤖 AI自動設定",
+            MessageKey::AiAutoConfigureSuccess => "自動設定が完了しました",
+            MessageKey::AiErrorNotEnabled => {
+                "AI機能が有効化されていません。--features ai でコンパイルしてください"
+            }
+            MessageKey::AiErrorInsufficientData => "AI分析に必要なデータが不足しています",
+            MessageKey::AiErrorAnalysisFailed => "AI分析に失敗しました",
 
             // Options
             MessageKey::Options => "オプション:",
@@ -640,6 +801,9 @@ impl MessageKey {
             MessageKey::ExampleEncryptCompress => "# 暗号化＋圧縮バックアップ",
             MessageKey::ExampleCleanup => "# 30日以上前のバックアップを削除（ドライラン）",
             MessageKey::ExampleSchedule => "# スケジュールを設定して有効化",
+            MessageKey::ExampleAiDetect => "# 直近7日間の異常検知",
+            MessageKey::ExampleAiAnalyze => "# ファイル重要度分析",
+            MessageKey::ExampleAiSuggestExclude => "# AI除外推奨を取得",
 
             // Detailed info
             MessageKey::DetailedInfo => "詳細情報:",
@@ -812,7 +976,7 @@ impl MessageKey {
             MessageKey::CurrentKeepDays => "現在のバックアップ保持期間",
             MessageKey::OpeningConfigFile => "設定ファイルを開きます",
             MessageKey::EditorDidNotExitCleanly => "エディタが正常に終了しませんでした",
-            MessageKey::RustFastTypeSafe => "🦀 Rust・高速・型安全",
+            MessageKey::RustFastTypeSafe => "AES-256暗号化 & AI搭載のインテリジェントバックアップ",
             MessageKey::ScheduleCommandPlaceholder => "<コマンド>",
             MessageKey::ConfigCommandPlaceholder => "<コマンド>",
             MessageKey::ConfigArgsPlaceholder => "[引数]",
@@ -832,6 +996,80 @@ impl MessageKey {
             MessageKey::StatusTitle => "ステータス",
             MessageKey::DaysUnit => "日",
             MessageKey::DryRunParens => "（ドライラン）",
+        }
+    }
+
+    /// Get Simplified Chinese message
+    fn get_zh_cn(&self) -> &'static str {
+        match self {
+            // AI-related messages
+            MessageKey::AiCommands => "🤖 AI命令",
+            MessageKey::DescAi => "AI驱动的智能备份管理",
+            MessageKey::CmdAiDetect => "detect",
+            MessageKey::CmdAiAnalyze => "analyze",
+            MessageKey::CmdAiSuggestExclude => "suggest-exclude",
+            MessageKey::CmdAiAutoConfigure => "auto-configure",
+            MessageKey::DescAiDetect => "检测备份历史中的异常",
+            MessageKey::DescAiAnalyze => "分析文件重要性",
+            MessageKey::DescAiSuggestExclude => "建议排除模式",
+            MessageKey::DescAiAutoConfigure => "使用AI自动配置备份设置",
+            MessageKey::AiDetectTitle => "🤖 AI异常检测",
+            MessageKey::AiDetectNoAnomalies => "备份历史中未检测到异常",
+            MessageKey::AiDetectAnomalyFound => "检测到异常",
+            MessageKey::AiAnalyzeTitle => "🤖 AI文件重要性分析",
+            MessageKey::AiAnalyzeImportanceHigh => "重要性：高",
+            MessageKey::AiAnalyzeImportanceMedium => "重要性：中",
+            MessageKey::AiAnalyzeImportanceLow => "重要性：低",
+            MessageKey::AiSuggestExcludeTitle => "🤖 AI排除模式建议",
+            MessageKey::AiSuggestExcludeRecommendation => "建议排除",
+            MessageKey::AiAutoConfigureTitle => "🤖 AI自动配置",
+            MessageKey::AiAutoConfigureSuccess => "自动配置成功完成",
+            MessageKey::AiErrorNotEnabled => "AI功能未启用。请使用 --features ai 编译",
+            MessageKey::AiErrorInsufficientData => "AI分析数据不足",
+            MessageKey::AiErrorAnalysisFailed => "AI分析失败",
+            MessageKey::ExampleAiDetect => "# 检测最近7天的异常",
+            MessageKey::ExampleAiAnalyze => "# 分析文件重要性",
+            MessageKey::ExampleAiSuggestExclude => "# 获取AI排除建议",
+            MessageKey::RustFastTypeSafe => "AES-256加密 & AI驱动的智能备份",
+            // Keep all existing Simplified Chinese translations
+            _ => self.get_en(), // Fallback to English for non-implemented keys
+        }
+    }
+
+    /// Get Traditional Chinese message
+    fn get_zh_tw(&self) -> &'static str {
+        match self {
+            // AI-related messages
+            MessageKey::AiCommands => "🤖 AI指令",
+            MessageKey::DescAi => "AI驅動的智慧備份管理",
+            MessageKey::CmdAiDetect => "detect",
+            MessageKey::CmdAiAnalyze => "analyze",
+            MessageKey::CmdAiSuggestExclude => "suggest-exclude",
+            MessageKey::CmdAiAutoConfigure => "auto-configure",
+            MessageKey::DescAiDetect => "偵測備份歷史中的異常",
+            MessageKey::DescAiAnalyze => "分析檔案重要性",
+            MessageKey::DescAiSuggestExclude => "建議排除模式",
+            MessageKey::DescAiAutoConfigure => "使用AI自動設定備份",
+            MessageKey::AiDetectTitle => "🤖 AI異常偵測",
+            MessageKey::AiDetectNoAnomalies => "備份歷史中未偵測到異常",
+            MessageKey::AiDetectAnomalyFound => "偵測到異常",
+            MessageKey::AiAnalyzeTitle => "🤖 AI檔案重要性分析",
+            MessageKey::AiAnalyzeImportanceHigh => "重要性：高",
+            MessageKey::AiAnalyzeImportanceMedium => "重要性：中",
+            MessageKey::AiAnalyzeImportanceLow => "重要性：低",
+            MessageKey::AiSuggestExcludeTitle => "🤖 AI排除模式建議",
+            MessageKey::AiSuggestExcludeRecommendation => "建議排除",
+            MessageKey::AiAutoConfigureTitle => "🤖 AI自動設定",
+            MessageKey::AiAutoConfigureSuccess => "自動設定成功完成",
+            MessageKey::AiErrorNotEnabled => "AI功能未啟用。請使用 --features ai 編譯",
+            MessageKey::AiErrorInsufficientData => "AI分析資料不足",
+            MessageKey::AiErrorAnalysisFailed => "AI分析失敗",
+            MessageKey::ExampleAiDetect => "# 偵測最近7天的異常",
+            MessageKey::ExampleAiAnalyze => "# 分析檔案重要性",
+            MessageKey::ExampleAiSuggestExclude => "# 取得AI排除建議",
+            MessageKey::RustFastTypeSafe => "AES-256加密 & AI驅動的智慧備份",
+            // Keep all existing Traditional Chinese translations
+            _ => self.get_en(), // Fallback to English for non-implemented keys
         }
     }
 }
@@ -856,11 +1094,62 @@ mod tests {
 
     #[test]
     fn test_language_parsing() {
+        // English
         assert_eq!(Language::parse("en"), Some(Language::English));
         assert_eq!(Language::parse("english"), Some(Language::English));
+
+        // Japanese
         assert_eq!(Language::parse("ja"), Some(Language::Japanese));
         assert_eq!(Language::parse("japanese"), Some(Language::Japanese));
         assert_eq!(Language::parse("日本語"), Some(Language::Japanese));
+
+        // Simplified Chinese
+        assert_eq!(Language::parse("zh-cn"), Some(Language::SimplifiedChinese));
+        assert_eq!(Language::parse("zh_cn"), Some(Language::SimplifiedChinese));
+        assert_eq!(
+            Language::parse("zh-hans"),
+            Some(Language::SimplifiedChinese)
+        );
+        assert_eq!(
+            Language::parse("zh_hans"),
+            Some(Language::SimplifiedChinese)
+        );
+        assert_eq!(
+            Language::parse("simplified chinese"),
+            Some(Language::SimplifiedChinese)
+        );
+        assert_eq!(
+            Language::parse("简体中文"),
+            Some(Language::SimplifiedChinese)
+        );
+
+        // Traditional Chinese
+        assert_eq!(Language::parse("zh-tw"), Some(Language::TraditionalChinese));
+        assert_eq!(Language::parse("zh_tw"), Some(Language::TraditionalChinese));
+        assert_eq!(Language::parse("zh-hk"), Some(Language::TraditionalChinese));
+        assert_eq!(Language::parse("zh_hk"), Some(Language::TraditionalChinese));
+        assert_eq!(
+            Language::parse("zh-hant"),
+            Some(Language::TraditionalChinese)
+        );
+        assert_eq!(
+            Language::parse("zh_hant"),
+            Some(Language::TraditionalChinese)
+        );
+        assert_eq!(
+            Language::parse("traditional chinese"),
+            Some(Language::TraditionalChinese)
+        );
+        assert_eq!(
+            Language::parse("繁體中文"),
+            Some(Language::TraditionalChinese)
+        );
+        assert_eq!(
+            Language::parse("繁体中文"),
+            Some(Language::TraditionalChinese)
+        );
+
+        // Unknown
         assert_eq!(Language::parse("unknown"), None);
     }
 
@@ -868,6 +1157,8 @@ mod tests {
     fn test_language_code() {
         assert_eq!(Language::English.code(), "en");
         assert_eq!(Language::Japanese.code(), "ja");
+        assert_eq!(Language::SimplifiedChinese.code(), "zh-cn");
+        assert_eq!(Language::TraditionalChinese.code(), "zh-tw");
     }
 
     #[test]
@@ -884,8 +1175,33 @@ mod tests {
             "Backup Suite v1.0.0"
         );
 
+        // Test Simplified Chinese
+        assert_eq!(
+            get_message(MessageKey::AppVersion, Language::SimplifiedChinese),
+            "Backup Suite v1.0.0"
+        );
+
+        // Test Traditional Chinese
+        assert_eq!(
+            get_message(MessageKey::AppVersion, Language::TraditionalChinese),
+            "Backup Suite v1.0.0"
+        );
+
         // Test different messages
         assert!(get_message(MessageKey::AppTitle, Language::English).contains("Fast"));
         assert!(get_message(MessageKey::AppTitle, Language::Japanese).contains("高速"));
+    }
+
+    #[test]
+    fn test_ai_messages() {
+        // Test AI message keys
+        assert_eq!(
+            get_message(MessageKey::AiCommands, Language::English),
+            "🤖 AI Commands"
+        );
+        assert_eq!(
+            get_message(MessageKey::AiCommands, Language::Japanese),
+            "🤖 AIコマンド"
+        );
     }
 }

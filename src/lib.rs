@@ -271,6 +271,8 @@
 //! ```
 
 // モジュール宣言
+#[cfg(feature = "ai")]
+pub mod ai;
 pub mod compression;
 pub mod core;
 pub mod crypto;

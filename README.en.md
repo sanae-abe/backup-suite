@@ -17,6 +17,7 @@
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Basic Usage](#basic-usage)
+- [AI Features (Intelligent Backup)](#-ai-features-intelligent-backup)
 - [Configuration File](#configuration-file)
 - [Command Reference](#command-reference)
 - [Update & Uninstall](#update--uninstall)
@@ -31,6 +32,13 @@
 - **Important work files** automatically backed up daily
 - **Photos and personal files** backed up weekly
 - **Archive files** backed up monthly
+
+### 🤖 AI-Driven Intelligent Management (New Feature)
+- **Anomaly Detection**: Automatically detect backup size anomalies using statistical analysis (< 1ms)
+- **File Importance Analysis**: Automatically classify files in directories by importance level (~8s/10,000 files)
+- **Exclude Pattern Suggestions**: Auto-detect and suggest exclusion of unnecessary files (cache, build artifacts)
+- **Auto-Optimization**: Automatically generate optimal backup configuration through directory analysis
+- **Fully Offline**: All AI features run locally, complete privacy protection
 
 ### 🔐 Military-Grade Encryption Protection
 - **AES-256-GCM encryption** virtually impossible to decrypt
@@ -56,12 +64,18 @@
 - **No manual operation required** after setup - runs automatically
 - **Frequency adjusted by importance** (daily/weekly/monthly)
 - **Completely prevents forgotten backups**
+- **macOS launchd/Linux systemd integration** for reliable automated execution
 
 ### 📊 Clear Management and Maintenance
 - **Check backup statistics** to see how much has been backed up
 - **View execution history** to see when backups ran
 - **Automatically delete old backups** to save disk space
 - **Easy restoration** when data is corrupted
+
+### 🌍 International Language Support
+- **4 languages fully supported**: English, Japanese (日本語), Simplified Chinese (简体中文), Traditional Chinese (繁體中文)
+- **Automatic language detection**: Auto-detected from `LANG` environment variable (supports `ja`, `en`, `zh-CN`, `zh-TW`, etc.)
+- **Complete translations**: All CLI output, error messages, and help text available in each language
 
 ## Screenshots
 
@@ -102,6 +116,10 @@ brew install backup-suite
 ### Install via Cargo
 
 ```bash
+# Install with AI features enabled (recommended)
+cargo install backup-suite --features ai
+
+# Install without AI features (lightweight version)
 cargo install backup-suite
 ```
 
@@ -116,9 +134,9 @@ cd backup-suite
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.cargo/env
 
-# 3. Build & Install
-cargo build --release
-cargo install --path .
+# 3. Build & Install (with AI features)
+cargo build --release --features ai
+cargo install --path . --features ai
 
 # 4. Verify operation
 backup-suite --version
@@ -135,7 +153,7 @@ backup-suite status
 # ~/.config/backup-suite/config.toml
 ```
 
-**Note**: Language is automatically detected from the `LANG` environment variable. It will automatically display in Japanese in Japanese environments.
+**Note**: Language is automatically detected from the `LANG` environment variable. Supported languages: English, Japanese, Simplified Chinese (简体中文), Traditional Chinese (繁體中文). It will automatically display in the appropriate language based on your system locale.
 
 ### 2. Configure Backup Destination
 
@@ -196,6 +214,199 @@ backup-suite schedule setup --high daily --medium weekly --low monthly
 backup-suite schedule enable
 ```
 
+## 🤖 AI Features (Intelligent Backup)
+
+Optimize your backups with statistical anomaly detection and file importance analysis.
+
+### Installation
+
+To use AI features, you need to build with the `--features ai` flag.
+
+```bash
+# Build with AI features enabled
+cargo build --release --features ai
+cargo install --path . --features ai
+
+# Or install via Cargo
+cargo install backup-suite --features ai
+```
+
+### Key Features
+
+#### 1. Anomaly Detection
+
+Detect statistically abnormal backups from historical data.
+
+```bash
+# Detect anomalies in the last 7 days
+backup-suite ai detect --days 7
+
+# More detailed analysis (with statistics)
+backup-suite ai detect --days 14 --detailed
+```
+
+**Detection Content**:
+- Backup size surge/drop (Z-score statistical analysis)
+- Disk capacity depletion prediction (linear regression)
+- Failure pattern analysis (by category and time)
+
+**Example Output**:
+```
+🤖 AI Anomaly Detection Report (Last 7 Days)
+
+┌────┬──────────────────┬──────────────┬────────────┬────────────────────────┐
+│ No │ Detection Time   │ Anomaly Type │ Confidence │ Description            │
+├────┼──────────────────┼──────────────┼────────────┼────────────────────────┤
+│ 1  │ 2025-11-09 03:15 │ Size Surge   │ 95.3%      │ File size 3x normal    │
+└────┴──────────────────┴──────────────┴────────────┴────────────────────────┘
+
+📊 Summary: 1 anomaly detected
+💡 Recommended Action: Add temporary files in ~/Downloads to exclusion settings
+```
+
+**Performance**: < 1ms (100 history entries)
+
+#### 2. File Importance Analysis
+
+Classify files in a directory by importance level to optimize backup strategy.
+
+```bash
+# Analyze directory importance
+backup-suite ai analyze ~/documents
+
+# Show detailed importance scores
+backup-suite ai analyze ~/documents --detailed
+
+# Analyze only specific file types
+backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
+```
+
+**Evaluation Criteria**:
+- **High Importance (80-100 points)**: Source code, documents, configuration files
+- **Medium Importance (40-79 points)**: Images, data files
+- **Low Importance (0-39 points)**: Logs, temporary files
+
+**Example Output**:
+```
+🤖 AI File Importance Analysis: ~/Documents
+
+┌─────────────────────────┬──────────────────┬──────────────┬─────────────────────┐
+│ File/Directory          │ Importance Score │ Suggested    │ Reason              │
+│                         │                  │ Priority     │                     │
+├─────────────────────────┼──────────────────┼──────────────┼─────────────────────┤
+│ src/                    │ ████████ 95      │ High         │ Source code (frequent updates) │
+│ reports/                │ ████████ 90      │ High         │ Documents (important) │
+│ photos/                 │ ████░░░░ 60      │ Medium       │ Image files         │
+│ .cache/                 │ █░░░░░░░ 10      │ Exclude      │ Cache directory     │
+└─────────────────────────┴──────────────────┴──────────────┴─────────────────────┘
+```
+
+**Performance**: ~8 seconds (10,000 files)
+
+#### 3. Exclude Pattern Suggestions
+
+Automatically detect unnecessary files and suggest exclusion patterns.
+
+```bash
+# Show suggested exclusion patterns
+backup-suite ai suggest-exclude ~/projects
+
+# Automatically apply suggested patterns to config
+backup-suite ai suggest-exclude ~/projects --apply
+
+# Specify minimum file size (default: 100MB)
+backup-suite ai suggest-exclude ~/projects --min-size 50MB
+```
+
+**Detection Targets**:
+- Build artifacts (`target/`, `dist/`, `build/`)
+- Dependency caches (`node_modules/`, `.cargo/`)
+- Temporary files (`*.tmp`, `*.cache`)
+- Large media files (above threshold size)
+
+**Example Output**:
+```
+🤖 AI Exclude Pattern Suggestions: ~/projects
+
+┌──────────────────┬──────────┬────────────┬─────────────────────────┐
+│ Pattern          │ Size     │ Confidence │ Reason                  │
+│                  │ Saved    │            │                         │
+├──────────────────┼──────────┼────────────┼─────────────────────────┤
+│ node_modules/    │ 2.34 GB  │ 99%        │ npm dependencies (regenerable) │
+│ target/          │ 1.87 GB  │ 99%        │ Rust build artifacts    │
+│ .cache/          │ 0.45 GB  │ 95%        │ Cache directory         │
+└──────────────────┴──────────┴────────────┴─────────────────────────┘
+
+💡 Total Reduction: 4.66 GB (approx. 30% faster backup time)
+```
+
+#### 4. AI Auto-Configuration
+
+Analyze directories and automatically generate optimal backup configuration.
+
+```bash
+# Auto-analyze and configure
+backup-suite ai auto-configure ~/data
+
+# Interactive confirmation during configuration
+backup-suite ai auto-configure ~/data --interactive
+
+# Dry run (preview only, don't apply)
+backup-suite ai auto-configure ~/data --dry-run
+```
+
+**Features**:
+- Automatic priority setting based on file type analysis
+- Optimal compression level recommendations
+- Automatic exclusion pattern generation
+- Backup schedule suggestions
+
+**Example Output**:
+```
+🤖 AI Auto-Configuration Report: ~/data
+
+📊 Analysis Results:
+  - Total Files: 12,345 files
+  - Total Size: 15.6 GB
+  - Suggested Priority: High (many important source code & documents)
+  - Excludable Size: 3.2 GB (node_modules, .cache, etc.)
+
+⚙️ Recommended Settings:
+  - Backup Target: ~/data
+  - Priority: high
+  - Schedule: Daily at 2:00 AM
+  - Compression: zstd (level 3)
+  - Encryption: Recommended
+  - Exclude Patterns:
+    * node_modules/
+    * target/
+    * .cache/
+    * *.tmp
+
+✅ Settings saved to ~/.config/backup-suite/config.toml
+```
+
+### Disabling AI Features
+
+If AI features are not needed, use the standard build.
+
+```bash
+# Standard build (without AI features)
+cargo build --release
+cargo install --path .
+```
+
+### Security and Privacy
+
+All AI features operate **completely offline**:
+
+- ✅ External API calls: None
+- ✅ Cloud services: Not required
+- ✅ Sensitive data transmission: Zero
+- ✅ Data collection: None
+
+For more details, see [AI Features Documentation](docs/AI_FEATURES.md).
+
 ## Configuration File
 
 ### ~/.config/backup-suite/config.toml Example
@@ -247,6 +458,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 | **config**     | Manage configuration      | `backup-suite config set-destination ~/backups` |
 | **open**       | Open backup directory     | `backup-suite open`                             |
 | **completion** | Generate shell completion | `backup-suite completion zsh`                   |
+| **ai**         | AI features (requires `--features ai`) | `backup-suite ai detect --days 7`    |
 
 ## Update & Uninstall
 
@@ -257,12 +469,12 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 brew upgrade backup-suite
 
 # Cargo
-cargo install backup-suite --force
+cargo install backup-suite --force --features ai
 
 # From source
 cd backup-suite
 git pull origin main
-cargo install --path . --force
+cargo install --path . --force --features ai
 ```
 
 ### Uninstall
@@ -299,6 +511,7 @@ rm -rf ~/.local/share/backup-suite/
 - **Encryption**: AES-256-GCM, Argon2
 - **Configuration**: TOML (human-readable configuration format)
 - **Scheduling**: macOS launchctl, Linux systemd
+- **AI/ML**: statrs (statistical computing), rayon (parallel processing)
 
 ## Supported Platforms
 
@@ -319,5 +532,3 @@ This project is licensed under the [MIT License](LICENSE).
 
 Bug reports, feature requests, and pull requests are welcome!
 Feel free to contact us via GitHub Issues or PRs.
-
-

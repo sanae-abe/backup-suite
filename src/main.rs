@@ -206,6 +206,12 @@ enum Commands {
         #[command(subcommand)]
         action: ConfigAction,
     },
+    /// AI-driven intelligent backup management
+    #[cfg(feature = "ai")]
+    Ai {
+        #[command(subcommand)]
+        action: AiAction,
+    },
     /// ヘルプを表示（--help を使用してください）
     #[command(hide = true)]
     Help,
@@ -253,6 +259,55 @@ enum ConfigAction {
     GetKeepDays,
     /// Open configuration file in default editor
     Open,
+    Help,
+}
+
+#[cfg(feature = "ai")]
+#[derive(Subcommand)]
+#[command(disable_help_subcommand = true)]
+enum AiAction {
+    /// Detect anomalies in backup history
+    Detect {
+        #[arg(long, default_value = "7")]
+        /// Number of days to analyze
+        days: u32,
+        #[arg(long, default_value = "table")]
+        /// Output format: table, json, detailed
+        format: String,
+    },
+    /// Analyze file importance
+    Analyze {
+        /// Path to analyze
+        path: PathBuf,
+        #[arg(long)]
+        /// Suggest priority based on importance
+        suggest_priority: bool,
+        #[arg(long)]
+        /// Show detailed analysis
+        detailed: bool,
+    },
+    /// Suggest exclude patterns
+    SuggestExclude {
+        /// Path to analyze
+        path: PathBuf,
+        #[arg(long)]
+        /// Apply suggestions to config
+        apply: bool,
+        #[arg(long, default_value = "0.8")]
+        /// Minimum confidence (0.0-1.0)
+        confidence: f64,
+    },
+    /// Auto-configure backup settings with AI
+    AutoConfigure {
+        /// Paths to configure
+        paths: Vec<PathBuf>,
+        #[arg(long)]
+        /// Dry run (show what would be done)
+        dry_run: bool,
+        #[arg(long)]
+        /// Interactive mode (confirm each change)
+        interactive: bool,
+    },
     Help,
 }
 
@@ -619,6 +674,24 @@ fn print_help(lang: Language) {
         get_message(MessageKey::DescConfig, lang)
     );
     println!();
+
+    #[cfg(feature = "ai")]
+    {
+        println!(
+            "{}{}{}",
+            magenta,
+            get_message(MessageKey::AiCommands, lang),
+            reset
+        );
+        println!(
+            "  {}{}{}           {}",
+            yellow,
+            get_message(MessageKey::CmdAi, lang),
+            reset,
+            get_message(MessageKey::DescAi, lang)
+        );
+        println!();
+    }
 
     println!(
         "{}{}{}",
@@ -2176,6 +2249,608 @@ fn main() -> Result<()> {
                 }
                 ConfigAction::Help => {
                     print_config_help(lang);
+                }
+            }
+        }
+        #[cfg(feature = "ai")]
+        Some(Commands::Ai { action }) => {
+            use backup_suite::ai::anomaly::AnomalyDetector;
+            use backup_suite::ai::recommendation::{
+                ExcludeRecommendationEngine, ImportanceEvaluator,
+            };
+            use backup_suite::ai::types::BackupSize;
+            use comfy_table::{Cell, Table};
+
+            match action {
+                AiAction::Detect { days, format } => {
+                    println!(
+                        "{}🤖 {}{}",
+                        get_color("magenta"),
+                        get_message(MessageKey::AiDetectTitle, lang),
+                        get_color("reset")
+                    );
+                    println!(
+                        "{}{}{}...\n",
+                        if lang == Language::Japanese {
+                            "過去"
+                        } else {
+                            "Analyzing last"
+                        },
+                        days,
+                        if lang == Language::Japanese {
+                            "日間のバックアップを分析中"
+                        } else {
+                            " days of backups"
+                        }
+                    );
+
+                    let detector = AnomalyDetector::default_detector();
+                    let history = BackupHistory::filter_by_days(days)?;
+
+                    if history.is_empty() {
+                        println!(
+                            "{}ℹ️  {}{}",
+                            get_color("yellow"),
+                            get_message(MessageKey::AiErrorInsufficientData, lang),
+                            get_color("reset")
+                        );
+                    } else {
+                        let current_size =
+                            BackupSize::new(history.last().map(|h| h.total_bytes).unwrap_or(0));
+
+                        match detector.detect_size_anomaly(&history, current_size) {
+                            Ok(Some(result)) if result.is_anomaly() => match format.as_str() {
+                                "json" => {
+                                    let json_output = serde_json::json!({
+                                        "anomaly_detected": true,
+                                        "z_score": result.z_score(),
+                                        "confidence": result.confidence().get(),
+                                        "description": result.description(),
+                                        "recommended_action": result.recommended_action().unwrap_or("None")
+                                    });
+                                    println!("{}", serde_json::to_string_pretty(&json_output)?);
+                                }
+                                "detailed" => {
+                                    println!(
+                                        "{}🚨 {}{}",
+                                        get_color("red"),
+                                        get_message(MessageKey::AiDetectAnomalyFound, lang),
+                                        get_color("reset")
+                                    );
+                                    println!("  Z-score: {:.2}", result.z_score());
+                                    println!(
+                                        "  {}: {:.1}%",
+                                        if lang == Language::Japanese {
+                                            "信頼度"
+                                        } else {
+                                            "Confidence"
+                                        },
+                                        result.confidence().get() * 100.0
+                                    );
+                                    println!(
+                                        "  {}: {}",
+                                        if lang == Language::Japanese {
+                                            "説明"
+                                        } else {
+                                            "Description"
+                                        },
+                                        result.description()
+                                    );
+                                    println!(
+                                        "  {}: {}",
+                                        if lang == Language::Japanese {
+                                            "推奨アクション"
+                                        } else {
+                                            "Recommended Action"
+                                        },
+                                        result.recommended_action().unwrap_or("None")
+                                    );
+                                }
+                                _ => {
+                                    let mut table = Table::new();
+                                    table.set_header(vec![
+                                        if lang == Language::Japanese {
+                                            "項目"
+                                        } else {
+                                            "Item"
+                                        },
+                                        if lang == Language::Japanese {
+                                            "値"
+                                        } else {
+                                            "Value"
+                                        },
+                                    ]);
+                                    table.add_row(vec![
+                                        "Z-score",
+                                        &format!("{:.2}", result.z_score()),
+                                    ]);
+                                    table.add_row(vec![
+                                        if lang == Language::Japanese {
+                                            "信頼度"
+                                        } else {
+                                            "Confidence"
+                                        },
+                                        &format!("{:.1}%", result.confidence().get() * 100.0),
+                                    ]);
+                                    table.add_row(vec![
+                                        if lang == Language::Japanese {
+                                            "説明"
+                                        } else {
+                                            "Description"
+                                        },
+                                        result.description(),
+                                    ]);
+                                    println!(
+                                        "{}🚨 {}{}\n",
+                                        get_color("red"),
+                                        get_message(MessageKey::AiDetectAnomalyFound, lang),
+                                        get_color("reset")
+                                    );
+                                    println!("{table}");
+                                }
+                            },
+                            _ => {
+                                if format == "json" {
+                                    let json_output = serde_json::json!({
+                                        "anomaly_detected": false,
+                                        "message": get_message(MessageKey::AiDetectNoAnomalies, lang)
+                                    });
+                                    println!("{}", serde_json::to_string_pretty(&json_output)?);
+                                } else {
+                                    println!(
+                                        "{}✅ {}{}",
+                                        get_color("green"),
+                                        get_message(MessageKey::AiDetectNoAnomalies, lang),
+                                        get_color("reset")
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+                AiAction::Analyze {
+                    path,
+                    suggest_priority,
+                    detailed,
+                } => {
+                    println!(
+                        "{}🤖 {}{}",
+                        get_color("magenta"),
+                        get_message(MessageKey::AiAnalyzeTitle, lang),
+                        get_color("reset")
+                    );
+                    println!(
+                        "{}: {:?}\n",
+                        if lang == Language::Japanese {
+                            "パス"
+                        } else {
+                            "Path"
+                        },
+                        path
+                    );
+
+                    let evaluator = ImportanceEvaluator::default();
+                    match evaluator.evaluate(&path) {
+                        Ok(result) => {
+                            if detailed {
+                                let mut table = Table::new();
+                                table.set_header(vec![
+                                    if lang == Language::Japanese {
+                                        "項目"
+                                    } else {
+                                        "Item"
+                                    },
+                                    if lang == Language::Japanese {
+                                        "値"
+                                    } else {
+                                        "Value"
+                                    },
+                                ]);
+                                table.add_row(vec![
+                                    if lang == Language::Japanese {
+                                        "重要度スコア"
+                                    } else {
+                                        "Importance Score"
+                                    },
+                                    &format!("{}/100", result.score().get()),
+                                ]);
+                                table.add_row(vec![
+                                    if lang == Language::Japanese {
+                                        "推奨優先度"
+                                    } else {
+                                        "Recommended Priority"
+                                    },
+                                    &format!("{:?}", *result.priority()),
+                                ]);
+                                table.add_row(vec![
+                                    if lang == Language::Japanese {
+                                        "カテゴリ"
+                                    } else {
+                                        "Category"
+                                    },
+                                    result.category(),
+                                ]);
+                                table.add_row(vec![
+                                    if lang == Language::Japanese {
+                                        "理由"
+                                    } else {
+                                        "Reason"
+                                    },
+                                    result.reason(),
+                                ]);
+                                println!("{table}");
+                            } else {
+                                println!(
+                                    "  {}: {}/100",
+                                    if lang == Language::Japanese {
+                                        "重要度スコア"
+                                    } else {
+                                        "Importance Score"
+                                    },
+                                    result.score().get()
+                                );
+                                println!(
+                                    "  {}: {:?}",
+                                    if lang == Language::Japanese {
+                                        "推奨優先度"
+                                    } else {
+                                        "Recommended Priority"
+                                    },
+                                    *result.priority()
+                                );
+                                println!(
+                                    "  {}: {}",
+                                    if lang == Language::Japanese {
+                                        "カテゴリ"
+                                    } else {
+                                        "Category"
+                                    },
+                                    result.category()
+                                );
+                                println!(
+                                    "  {}: {}",
+                                    if lang == Language::Japanese {
+                                        "理由"
+                                    } else {
+                                        "Reason"
+                                    },
+                                    result.reason()
+                                );
+                            }
+
+                            if suggest_priority {
+                                println!(
+                                    "\n{}💡 {}: backup-suite add {:?} --priority {:?}{}",
+                                    get_color("yellow"),
+                                    if lang == Language::Japanese {
+                                        "推奨コマンド"
+                                    } else {
+                                        "Recommended command"
+                                    },
+                                    path,
+                                    *result.priority(),
+                                    get_color("reset")
+                                );
+                            }
+                        }
+                        Err(e) => {
+                            println!(
+                                "{}⚠️  {}: {}{}",
+                                get_color("red"),
+                                get_message(MessageKey::AiErrorAnalysisFailed, lang),
+                                e,
+                                get_color("reset")
+                            );
+                        }
+                    }
+                }
+                AiAction::SuggestExclude {
+                    path,
+                    apply,
+                    confidence,
+                } => {
+                    println!(
+                        "{}🤖 {}{}",
+                        get_color("magenta"),
+                        get_message(MessageKey::AiSuggestExcludeTitle, lang),
+                        get_color("reset")
+                    );
+                    println!(
+                        "{}: {:?}\n",
+                        if lang == Language::Japanese {
+                            "パス"
+                        } else {
+                            "Path"
+                        },
+                        path
+                    );
+
+                    let engine = ExcludeRecommendationEngine::default();
+                    match engine.suggest_exclude_patterns(&path) {
+                        Ok(recommendations) => {
+                            let filtered: Vec<_> = recommendations
+                                .into_iter()
+                                .filter(|r| r.confidence().get() >= confidence)
+                                .collect();
+
+                            if filtered.is_empty() {
+                                println!(
+                                    "{}✅ {}{}",
+                                    get_color("green"),
+                                    if lang == Language::Japanese {
+                                        "除外推奨なし（すべて最適化済み）"
+                                    } else {
+                                        "No exclusions recommended (already optimized)"
+                                    },
+                                    get_color("reset")
+                                );
+                            } else {
+                                let mut table = Table::new();
+                                table.set_header(vec![
+                                    if lang == Language::Japanese {
+                                        "パターン"
+                                    } else {
+                                        "Pattern"
+                                    },
+                                    if lang == Language::Japanese {
+                                        "信頼度"
+                                    } else {
+                                        "Confidence"
+                                    },
+                                    if lang == Language::Japanese {
+                                        "削減見込(GB)"
+                                    } else {
+                                        "Reduction (GB)"
+                                    },
+                                    if lang == Language::Japanese {
+                                        "理由"
+                                    } else {
+                                        "Reason"
+                                    },
+                                ]);
+                                for rec in &filtered {
+                                    table.add_row(vec![
+                                        Cell::new(rec.pattern()),
+                                        Cell::new(format!(
+                                            "{:.1}%",
+                                            rec.confidence().get() * 100.0
+                                        )),
+                                        Cell::new(format!("{:.2}", rec.size_reduction_gb())),
+                                        Cell::new(rec.reason()),
+                                    ]);
+                                }
+                                println!("{table}");
+
+                                if apply {
+                                    use dialoguer::Confirm;
+                                    println!();
+                                    for rec in &filtered {
+                                        let prompt = format!(
+                                            "{}\"{}\" {} ({:.2}GB {}){}",
+                                            get_color("yellow"),
+                                            rec.pattern(),
+                                            if lang == Language::Japanese {
+                                                "を除外リストに追加しますか？"
+                                            } else {
+                                                "to exclude list?"
+                                            },
+                                            rec.size_reduction_gb(),
+                                            if lang == Language::Japanese {
+                                                "削減見込"
+                                            } else {
+                                                "reduction"
+                                            },
+                                            get_color("reset")
+                                        );
+
+                                        if Confirm::new().with_prompt(prompt).interact()? {
+                                            println!(
+                                                "{}✅ \"{}\" {}{}",
+                                                get_color("green"),
+                                                rec.pattern(),
+                                                if lang == Language::Japanese {
+                                                    "を追加しました"
+                                                } else {
+                                                    "added"
+                                                },
+                                                get_color("reset")
+                                            );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            println!(
+                                "{}⚠️  {}: {}{}",
+                                get_color("red"),
+                                get_message(MessageKey::AiErrorAnalysisFailed, lang),
+                                e,
+                                get_color("reset")
+                            );
+                        }
+                    }
+                }
+                AiAction::AutoConfigure {
+                    paths,
+                    dry_run,
+                    interactive,
+                } => {
+                    println!(
+                        "{}🤖 {}{}",
+                        get_color("magenta"),
+                        get_message(MessageKey::AiAutoConfigureTitle, lang),
+                        get_color("reset")
+                    );
+                    if dry_run {
+                        println!(
+                            "{}[{}]{}\n",
+                            get_color("yellow"),
+                            if lang == Language::Japanese {
+                                "ドライラン モード"
+                            } else {
+                                "DRY RUN Mode"
+                            },
+                            get_color("reset")
+                        );
+                    }
+
+                    let mut config = Config::load()?;
+                    let evaluator = ImportanceEvaluator::default();
+                    let mut added_count = 0;
+
+                    for path in paths {
+                        println!(
+                            "{}: {:?}",
+                            if lang == Language::Japanese {
+                                "分析中"
+                            } else {
+                                "Analyzing"
+                            },
+                            path
+                        );
+
+                        if let Ok(result) = evaluator.evaluate(&path) {
+                            println!(
+                                "  {}: {:?} ({}: {})",
+                                if lang == Language::Japanese {
+                                    "推奨優先度"
+                                } else {
+                                    "Recommended Priority"
+                                },
+                                *result.priority(),
+                                if lang == Language::Japanese {
+                                    "スコア"
+                                } else {
+                                    "Score"
+                                },
+                                result.score().get()
+                            );
+
+                            if interactive {
+                                use dialoguer::Confirm;
+                                let prompt = format!(
+                                    "{}{:?} {} {:?} {}{}",
+                                    get_color("yellow"),
+                                    path,
+                                    if lang == Language::Japanese {
+                                        "を優先度"
+                                    } else {
+                                        "with priority"
+                                    },
+                                    *result.priority(),
+                                    if lang == Language::Japanese {
+                                        "で追加しますか？"
+                                    } else {
+                                        "?"
+                                    },
+                                    get_color("reset")
+                                );
+
+                                if !Confirm::new().with_prompt(prompt).interact()? {
+                                    continue;
+                                }
+                            }
+
+                            if !dry_run {
+                                let target = Target::new(
+                                    path.clone(),
+                                    *result.priority(),
+                                    result.category().to_string(),
+                                );
+                                config.add_target(target);
+                                added_count += 1;
+                                println!(
+                                    "  {}✅ {}{}",
+                                    get_color("green"),
+                                    if lang == Language::Japanese {
+                                        "設定に追加しました"
+                                    } else {
+                                        "Added to configuration"
+                                    },
+                                    get_color("reset")
+                                );
+                            }
+                        }
+                    }
+
+                    if !dry_run && added_count > 0 {
+                        config.save()?;
+                        println!(
+                            "\n{}{}{}",
+                            get_color("green"),
+                            get_message(MessageKey::AiAutoConfigureSuccess, lang),
+                            get_color("reset")
+                        );
+                        println!(
+                            "  {}: {}",
+                            if lang == Language::Japanese {
+                                "追加された項目"
+                            } else {
+                                "Items added"
+                            },
+                            added_count
+                        );
+                    }
+                }
+                AiAction::Help => {
+                    let magenta = get_color("magenta");
+                    let yellow = get_color("yellow");
+                    let reset = get_color("reset");
+
+                    println!(
+                        "{}{}{}",
+                        magenta,
+                        if lang == Language::Japanese {
+                            "🤖 AIコマンド ヘルプ"
+                        } else {
+                            "🤖 AI Commands Help"
+                        },
+                        reset
+                    );
+                    println!();
+                    println!(
+                        "  {}detect{}           {}",
+                        yellow,
+                        reset,
+                        get_message(MessageKey::DescAiDetect, lang)
+                    );
+                    println!(
+                        "  {}analyze{}          {}",
+                        yellow,
+                        reset,
+                        get_message(MessageKey::DescAiAnalyze, lang)
+                    );
+                    println!(
+                        "  {}suggest-exclude{}  {}",
+                        yellow,
+                        reset,
+                        get_message(MessageKey::DescAiSuggestExclude, lang)
+                    );
+                    println!(
+                        "  {}auto-configure{}   {}",
+                        yellow,
+                        reset,
+                        get_message(MessageKey::DescAiAutoConfigure, lang)
+                    );
+                    println!();
+                    println!(
+                        "{}{}{}",
+                        magenta,
+                        get_message(MessageKey::UsageExamples, lang),
+                        reset
+                    );
+                    println!("  {}", get_message(MessageKey::ExampleAiDetect, lang));
+                    println!("  backup-suite ai detect --days 7");
+                    println!();
+                    println!("  {}", get_message(MessageKey::ExampleAiAnalyze, lang));
+                    println!("  backup-suite ai analyze /path/to/file");
+                    println!();
+                    println!(
+                        "  {}",
+                        get_message(MessageKey::ExampleAiSuggestExclude, lang)
+                    );
+                    println!("  backup-suite ai suggest-exclude /path/to/dir");
                 }
             }
         }

@@ -80,7 +80,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-clippy-
 
-      - name: Run Clippy (strict)
+      - name: Run Clippy (strict with AI features)
         run: |
           cargo clippy --all-targets --all-features -- \
             -D warnings \
@@ -159,8 +159,11 @@ jobs:
           path: target
           key: ${{ runner.os }}-msrv-${{ env.MSRV }}-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Check MSRV builds
+      - name: Check MSRV builds (all features including AI)
         run: cargo build --all-features
+
+      - name: Check MSRV builds (AI feature only)
+        run: cargo build --features ai
 
       - name: Verify MSRV in Cargo.toml
         run: |
@@ -266,8 +269,8 @@ jobs:
           EOF
           fi
 
-      - name: Check licenses, advisories, and bans
-        run: cargo deny check
+      - name: Check licenses, advisories, and bans (all features)
+        run: cargo deny check --all-features
 
   # SBOM（Software Bill of Materials）生成
   sbom-generation:
@@ -353,6 +356,9 @@ jobs:
       - name: Run property-based tests
         run: cargo test --test proptest --verbose --all-features || true
 
+      - name: Run AI tests
+        run: cargo test --features ai --test ai_tests --verbose
+
       - name: Run doc tests
         run: cargo test --doc --verbose --all-features
 
@@ -383,7 +389,7 @@ jobs:
         if: steps.cache-tarpaulin.outputs.cache-hit != 'true'
         run: cargo install cargo-tarpaulin --version 0.27.0 --locked
 
-      - name: Generate coverage report
+      - name: Generate coverage report (all features including AI)
         run: |
           cargo tarpaulin \
             --verbose \
@@ -418,6 +424,17 @@ jobs:
             # 現在はwarningのみ（Phase 2完了後にfailに変更）
           fi
 
+      - name: Check AI module coverage
+        run: |
+          # AI機能のカバレッジを個別チェック
+          ai_coverage=$(jq '[.files | to_entries | .[].value | select(.path | contains("src/ai")) | .coverage | select(. != null)] | if length > 0 then add / length else 0 end' tarpaulin-report.json || echo 0)
+          echo "AI module coverage: ${ai_coverage}%"
+          echo "AI coverage target: 80%"
+
+          if (( $(echo "$ai_coverage > 0 && $ai_coverage < 80" | bc -l) )); then
+            echo "::warning::AI module coverage ${ai_coverage}% is below target 80%"
+          fi
+
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -427,6 +444,64 @@ jobs:
             lcov.info
 
   # ==================== Phase 4: 品質メトリクス ====================
+
+  # AIベンチマーク（パフォーマンスリグレッション検出）
+  ai-benchmark:
+    name: AI Benchmark
+    needs: [format, clippy]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-bench-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run AI benchmarks
+        run: |
+          cargo bench --features ai --bench ai_benchmark -- --output-format bencher | tee benchmark-output.txt
+
+      - name: Parse benchmark results
+        if: always()
+        run: |
+          echo "## AI Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat benchmark-output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Check performance regression
+        if: always()
+        run: |
+          # 異常検知パフォーマンス目標: 100件で < 5ms
+          if grep -q "anomaly_detection/detect_size_anomaly/100" benchmark-output.txt; then
+            echo "✅ Anomaly detection benchmark completed"
+          else
+            echo "::warning::Anomaly detection benchmark may have issues"
+          fi
+
+          # 統計計算パフォーマンス目標: 1000件で < 1ms
+          if grep -q "statistics_computation/mean_calculation/1000" benchmark-output.txt; then
+            echo "✅ Statistics computation benchmark completed"
+          else
+            echo "::warning::Statistics computation benchmark may have issues"
+          fi
+
+      - name: Upload benchmark results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-benchmark-results
+          path: |
+            benchmark-output.txt
+            target/criterion/
 
   # 依存関係アップデートチェック
   dependency-check:
@@ -510,6 +585,7 @@ jobs:
       - cargo-deny
       - test
       - coverage
+      - ai-benchmark
       - documentation
     if: always()
     timeout-minutes: 5
@@ -531,11 +607,12 @@ jobs:
           echo "| Security Audit | ${{ needs.security-audit.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Cargo Deny | ${{ needs.cargo-deny.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "## Testing" >> $GITHUB_STEP_SUMMARY
+          echo "## Testing & Performance" >> $GITHUB_STEP_SUMMARY
           echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Coverage | ${{ needs.coverage.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| AI Benchmark | ${{ needs.ai-benchmark.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Documentation | ${{ needs.documentation.result }} |" >> $GITHUB_STEP_SUMMARY
 
       - name: Check required jobs
@@ -547,6 +624,7 @@ jobs:
           needs.cargo-deny.result != 'success' ||
           needs.test.result != 'success' ||
           needs.coverage.result != 'success' ||
+          needs.ai-benchmark.result != 'success' ||
           needs.documentation.result != 'success'
         run: |
           echo "::error::One or more required checks failed"

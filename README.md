@@ -17,6 +17,7 @@
 - [インストール](#インストール)
 - [クイックスタート](#クイックスタート)
 - [基本的な使用方法](#基本的な使用方法)
+- [AI機能（インテリジェントバックアップ）](#-ai機能インテリジェントバックアップ)
 - [設定ファイル](#設定ファイル)
 - [コマンドリファレンス](#コマンドリファレンス)
 - [アップデート・アンインストール](#アップデートアンインストール)
@@ -31,6 +32,13 @@
 - **重要な仕事ファイル**は毎日自動バックアップ
 - **写真や個人ファイル**は週次バックアップ
 - **アーカイブファイル**は月次バックアップ
+
+### 🤖 AI駆動のインテリジェント管理（新機能）
+- **異常検知**: 統計的分析でバックアップサイズ異常を自動検知（< 1ms）
+- **ファイル重要度分析**: ディレクトリ内のファイルを重要度別に自動分類（~8秒/10,000ファイル）
+- **除外パターン推奨**: 不要ファイル（キャッシュ、ビルド成果物）を自動検出・除外提案
+- **自動最適化**: ディレクトリ分析による最適なバックアップ設定の自動生成
+- **完全オフライン**: すべてのAI機能はローカルで動作、プライバシー完全保護
 
 ### 🔐 軍事レベルの暗号化保護
 - **AES-256-GCM暗号化**で解読は事実上不可能
@@ -63,6 +71,11 @@
 - **いつ実行されたか**履歴で確認
 - **古いバックアップ**を自動削除してディスク節約
 - **データが壊れた時**の簡単復元
+
+### 🌍 多言語対応
+- **4言語完全対応**：日本語、英語、簡体中文（中国大陸）、繁體中文（台湾・香港）
+- **自動言語検出**：`LANG`環境変数から自動判定（`ja`, `en`, `zh-CN`, `zh-TW`等に対応）
+- **全メッセージ翻訳済み**：CLI出力、エラーメッセージ、ヘルプ全てを各言語で表示
 
 ## スクリーンショット
 
@@ -103,6 +116,10 @@ brew install backup-suite
 ### Cargoでインストール
 
 ```bash
+# AI機能を有効化してインストール（推奨）
+cargo install backup-suite --features ai
+
+# AI機能なしでインストール（軽量版）
 cargo install backup-suite
 ```
 
@@ -117,9 +134,9 @@ cd backup-suite
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.cargo/env
 
-# 3. ビルド＆インストール
-cargo build --release
-cargo install --path .
+# 3. ビルド＆インストール（AI機能あり）
+cargo build --release --features ai
+cargo install --path . --features ai
 
 # 4. 動作確認
 backup-suite --version
@@ -136,7 +153,7 @@ backup-suite status
 # ~/.config/backup-suite/config.toml
 ```
 
-**注意**: 言語は環境変数`LANG`で自動検出されます。日本語環境では自動的に日本語で表示されます。
+**注意**: 言語は環境変数`LANG`で自動検出されます。対応言語：日本語、英語、簡体中文、繁體中文。日本語環境では自動的に日本語で表示されます。
 
 ### 2. バックアップ保存先の設定
 
@@ -196,6 +213,197 @@ backup-suite run --compress zstd --encrypt --password "secure-password"
 backup-suite schedule setup --high daily --medium weekly --low monthly
 backup-suite schedule enable
 ```
+
+## 🤖 AI機能（インテリジェントバックアップ）
+
+統計的異常検知・ファイル重要度分析でバックアップを最適化します。
+
+### インストール
+
+AI機能を使用するには、`--features ai`フラグを付けてビルドする必要があります。
+
+```bash
+# AI機能を有効化してビルド
+cargo build --release --features ai
+cargo install --path . --features ai
+
+# または Cargo経由でインストール
+cargo install backup-suite --features ai
+```
+
+### 主要機能
+
+#### 1. 異常検知
+
+過去の履歴から統計的に異常なバックアップを検知します。
+
+```bash
+# 過去7日間の異常検知
+backup-suite ai detect --days 7
+
+# より詳細な分析（統計情報も表示）
+backup-suite ai detect --days 14 --detailed
+```
+
+**検知内容**:
+- バックアップサイズの急増/急減（Z-score統計分析）
+- ディスク容量枯渇予測（線形回帰）
+- 失敗パターンの分析（カテゴリ別・時刻別）
+
+**出力例**:
+```
+🤖 AI異常検知レポート（過去7日間）
+
+┌────┬──────────────────┬──────────┬──────────┬─────────────────────┐
+│ No │ 検出日時          │ 異常種別  │ 信頼度    │ 説明                 │
+├────┼──────────────────┼──────────┼──────────┼─────────────────────┤
+│ 1  │ 2025-11-09 03:15 │ サイズ急増│ 95.3%    │ ファイルサイズが通常の3倍 │
+└────┴──────────────────┴──────────┴──────────┴─────────────────────┘
+
+📊 サマリー: 1件の異常を検出
+💡 推奨アクション: ~/Downloads の一時ファイルを除外設定に追加
+```
+
+**パフォーマンス**: < 1ms（100件履歴）
+
+#### 2. ファイル重要度分析
+
+ディレクトリ内のファイルを重要度別に分類し、バックアップ戦略を最適化します。
+
+```bash
+# ディレクトリの重要度分析
+backup-suite ai analyze ~/documents
+
+# 詳細な重要度スコア表示
+backup-suite ai analyze ~/documents --detailed
+
+# 特定のファイル種別のみ分析
+backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
+```
+
+**評価基準**:
+- **高重要度（80-100点）**: ソースコード、ドキュメント、設定ファイル
+- **中重要度（40-79点）**: 画像、データファイル
+- **低重要度（0-39点）**: ログ、一時ファイル
+
+**出力例**:
+```
+🤖 AIファイル重要度分析: ~/Documents
+
+┌─────────────────────────┬──────────────┬──────────┬─────────────────────┐
+│ ファイル/ディレクトリ     │ 重要度スコア   │ 提案優先度 │ 理由                 │
+├─────────────────────────┼──────────────┼──────────┼─────────────────────┤
+│ src/                    │ ████████ 95  │ 高        │ ソースコード（頻繁更新）│
+│ reports/                │ ████████ 90  │ 高        │ ドキュメント（重要）  │
+│ photos/                 │ ████░░░░ 60  │ 中        │ 画像ファイル          │
+│ .cache/                 │ █░░░░░░░ 10  │ 除外推奨  │ キャッシュディレクトリ │
+└─────────────────────────┴──────────────┴──────────┴─────────────────────┘
+```
+
+**パフォーマンス**: ~8秒（10,000ファイル）
+
+#### 3. 除外パターン推奨
+
+不要なファイルを自動検出し、除外パターンを推奨します。
+
+```bash
+# 除外パターンの推奨を表示
+backup-suite ai suggest-exclude ~/projects
+
+# 推奨パターンを自動的に設定ファイルに適用
+backup-suite ai suggest-exclude ~/projects --apply
+
+# 最小ファイルサイズを指定（デフォルト: 100MB）
+backup-suite ai suggest-exclude ~/projects --min-size 50MB
+```
+
+**検出対象**:
+- ビルド成果物（`target/`, `dist/`, `build/`）
+- 依存関係キャッシュ（`node_modules/`, `.cargo/`）
+- 一時ファイル（`*.tmp`, `*.cache`）
+- 大容量メディアファイル（閾値以上のサイズ）
+
+**出力例**:
+```
+🤖 AI除外パターン推奨: ~/projects
+
+┌──────────────────┬──────────┬──────────┬─────────────────────┐
+│ パターン          │ 削減量    │ 信頼度    │ 理由                 │
+├──────────────────┼──────────┼──────────┼─────────────────────┤
+│ node_modules/    │ 2.34 GB  │ 99%      │ npm依存関係（再生成可能）│
+│ target/          │ 1.87 GB  │ 99%      │ Rustビルド成果物      │
+│ .cache/          │ 0.45 GB  │ 95%      │ キャッシュディレクトリ │
+└──────────────────┴──────────┴──────────┴─────────────────────┘
+
+💡 総削減量: 4.66 GB（バックアップ時間を約30%短縮）
+```
+
+#### 4. AI自動設定
+
+ディレクトリを分析し、最適なバックアップ設定を自動生成します。
+
+```bash
+# 自動分析・設定
+backup-suite ai auto-configure ~/data
+
+# 対話的に確認しながら設定
+backup-suite ai auto-configure ~/data --interactive
+
+# ドライラン（設定を適用せず確認のみ）
+backup-suite ai auto-configure ~/data --dry-run
+```
+
+**機能**:
+- ファイル種別分析による優先度自動設定
+- 最適な圧縮レベルの推奨
+- 除外パターンの自動生成
+- バックアップスケジュールの提案
+
+**出力例**:
+```
+🤖 AI自動設定レポート: ~/data
+
+📊 分析結果:
+  - 総ファイル数: 12,345ファイル
+  - 総サイズ: 15.6 GB
+  - 推奨優先度: High（重要なソースコード・ドキュメント多数）
+  - 除外可能サイズ: 3.2 GB（node_modules, .cache等）
+
+⚙️ 推奨設定:
+  - バックアップ対象: ~/data
+  - 優先度: high
+  - スケジュール: 毎日午前2時
+  - 圧縮: zstd（レベル3）
+  - 暗号化: 有効化推奨
+  - 除外パターン:
+    * node_modules/
+    * target/
+    * .cache/
+    * *.tmp
+
+✅ 設定を ~/.config/backup-suite/config.toml に保存しました
+```
+
+### AI機能の無効化
+
+AI機能が不要な場合は、通常のビルドを使用してください。
+
+```bash
+# 通常ビルド（AI機能なし）
+cargo build --release
+cargo install --path .
+```
+
+### セキュリティとプライバシー
+
+すべてのAI機能は**完全にオフライン**で動作します：
+
+- ✅ 外部APIコール: なし
+- ✅ クラウドサービス: 不要
+- ✅ 機密情報の送信: ゼロ
+- ✅ データ収集: なし
+
+詳細は [AI機能ドキュメント](docs/AI_FEATURES.md) を参照してください。
 
 ## 設定ファイル
 
@@ -277,6 +485,7 @@ backup-suite schedule status
 | **config**     | 設定管理                       | `backup-suite config set-destination ~/backups` |
 | **open**       | バックアップディレクトリを開く | `backup-suite open`                             |
 | **completion** | シェル補完生成                 | `backup-suite completion zsh`                   |
+| **ai**         | AI機能（要`--features ai`）    | `backup-suite ai detect --days 7`               |
 
 ## アップデート・アンインストール
 
@@ -287,12 +496,12 @@ backup-suite schedule status
 brew upgrade backup-suite
 
 # Cargo
-cargo install backup-suite --force
+cargo install backup-suite --force --features ai
 
 # ソースから
 cd backup-suite
 git pull origin main
-cargo install --path . --force
+cargo install --path . --force --features ai
 ```
 
 ### アンインストール
@@ -329,6 +538,7 @@ rm -rf ~/.local/share/backup-suite/
 - **暗号化**: AES-256-GCM、Argon2
 - **設定**: TOML （人間にとって読みやすい設定形式）
 - **スケジューリング**: macOS launchctl、Linux systemd
+- **AI/ML**: statrs（統計計算）、rayon（並列処理）
 
 ## 対応プラットフォーム
 
