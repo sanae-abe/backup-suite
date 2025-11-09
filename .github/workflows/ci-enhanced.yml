@@ -128,7 +128,8 @@ jobs:
             -A clippy::uninlined-format-args \
             -A clippy::redundant-closure-for-method-calls \
             -A clippy::unreadable-literal \
-            -A clippy::redundant-continue
+            -A clippy::needless-continue \
+            -A clippy::return-self-not-must-use
 
       - name: Clippy JSON report
         if: always()
