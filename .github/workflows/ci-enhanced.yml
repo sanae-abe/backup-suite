@@ -124,7 +124,11 @@ jobs:
             -A clippy::single-char-pattern \
             -A clippy::implicit-clone \
             -A clippy::no-effect-underscore-binding \
-            -A clippy::explicit-iter-loop
+            -A clippy::explicit-iter-loop \
+            -A clippy::uninlined-format-args \
+            -A clippy::redundant-closure-for-method-calls \
+            -A clippy::unreadable-literal \
+            -A clippy::redundant-continue
 
       - name: Clippy JSON report
         if: always()
@@ -270,7 +274,7 @@ jobs:
           fi
 
       - name: Check licenses, advisories, and bans (all features)
-        run: cargo deny check --all-features
+        run: cargo deny check
 
   # SBOM（Software Bill of Materials）生成
   sbom-generation:

@@ -12,8 +12,8 @@ db-urls = ["https://github.com/rustsec/advisory-db"]
 
 # 無視するアドバイザリID（必要に応じて追加）
 ignore = [
-    # 例: "RUSTSEC-2023-0001",
-    # 例: { id = "RUSTSEC-2023-0001", reason = "理由を記載" },
+    # paste クレート - メンテナンス終了だが、間接依存で代替不可
+    { id = "RUSTSEC-2024-0436", reason = "Indirect dependency via nalgebra/statrs. No security vulnerability, only unmaintained warning." },
 ]
 
 # ==================== Licenses ====================
