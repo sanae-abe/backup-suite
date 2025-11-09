@@ -700,55 +700,107 @@ mod tests {
 
     #[test]
     fn test_evaluate_document() {
-        let evaluator = ImportanceEvaluator::new();
-        let path = Path::new("/home/user/documents/report.pdf");
+        use std::fs;
+        use std::io::Write;
 
-        let result = evaluator.evaluate(path).unwrap();
+        let evaluator = ImportanceEvaluator::new();
+
+        // 一時ファイルを作成
+        let temp_dir = std::env::temp_dir();
+        let path = temp_dir.join("test_eval_doc_report.pdf");
+        let mut file = fs::File::create(&path).unwrap();
+        file.write_all(b"test pdf content").unwrap();
+
+        let result = evaluator.evaluate(&path).unwrap();
         assert!(result.score().is_high());
         assert_eq!(result.priority(), &Priority::High);
         assert_eq!(result.category(), "ドキュメント");
+
+        // クリーンアップ
+        let _ = fs::remove_file(&path);
     }
 
     #[test]
     fn test_evaluate_source_code() {
-        let evaluator = ImportanceEvaluator::new();
-        let path = Path::new("/home/user/projects/src/main.rs");
+        use std::fs;
+        use std::io::Write;
 
-        let result = evaluator.evaluate(path).unwrap();
+        let evaluator = ImportanceEvaluator::new();
+
+        // 一時ファイルを作成
+        let temp_dir = std::env::temp_dir();
+        let path = temp_dir.join("test_eval_src_main.rs");
+        let mut file = fs::File::create(&path).unwrap();
+        file.write_all(b"fn main() {}").unwrap();
+
+        let result = evaluator.evaluate(&path).unwrap();
         assert!(result.score().is_high());
         assert_eq!(result.category(), "ソースコード");
+
+        // クリーンアップ
+        let _ = fs::remove_file(&path);
     }
 
     #[test]
     fn test_evaluate_temp_file() {
-        let evaluator = ImportanceEvaluator::new();
-        let path = Path::new("/home/user/.cache/temp.tmp");
+        use std::fs;
+        use std::io::Write;
 
-        let result = evaluator.evaluate(path).unwrap();
+        let evaluator = ImportanceEvaluator::new();
+
+        // 一時ファイルを作成
+        let temp_dir = std::env::temp_dir();
+        let path = temp_dir.join("test_eval_temp_temp.tmp");
+        let mut file = fs::File::create(&path).unwrap();
+        file.write_all(b"temporary data").unwrap();
+
+        let result = evaluator.evaluate(&path).unwrap();
         assert!(result.score().is_low());
         assert_eq!(result.priority(), &Priority::Low);
+
+        // クリーンアップ
+        let _ = fs::remove_file(&path);
     }
 
     #[test]
     fn test_evaluate_image() {
-        let evaluator = ImportanceEvaluator::new();
-        let path = Path::new("/home/user/photos/vacation.jpg");
+        use std::fs;
+        use std::io::Write;
 
-        let result = evaluator.evaluate(path).unwrap();
+        let evaluator = ImportanceEvaluator::new();
+
+        // 一時ファイルを作成
+        let temp_dir = std::env::temp_dir();
+        let path = temp_dir.join("test_eval_img_vacation.jpg");
+        let mut file = fs::File::create(&path).unwrap();
+        file.write_all(b"fake jpg data").unwrap();
+
+        let result = evaluator.evaluate(&path).unwrap();
         assert!(result.score().is_medium());
         assert_eq!(result.category(), "画像");
+
+        // クリーンアップ
+        let _ = fs::remove_file(&path);
     }
 
     #[test]
     fn test_cache() {
+        use std::fs;
+        use std::io::Write;
+
         let evaluator = ImportanceEvaluator::new();
-        let path = Path::new("/home/user/documents/report.pdf");
+
+        // 一時ファイルを作成
+        let temp_dir = std::env::temp_dir();
+        let path = temp_dir.join("cache_test_report.pdf");
+        let mut file = fs::File::create(&path).unwrap();
+        file.write_all(b"test pdf content").unwrap();
 
         // 初回評価
-        let result1 = evaluator.evaluate(path).unwrap();
+        let result1 = evaluator.evaluate(&path).unwrap();
 
         // キャッシュから取得
-        let cached = evaluator.evaluate_cached(path).unwrap();
+        let cached = evaluator.evaluate_cached(&path).unwrap();
         assert_eq!(result1.score(), cached);
 
         // キャッシュサイズ確認
@@ -757,22 +809,39 @@ mod tests {
         // キャッシュクリア
         evaluator.clear_cache();
         assert_eq!(evaluator.cache_size(), 0);
+
+        // クリーンアップ
+        let _ = fs::remove_file(&path);
     }
 
     #[test]
     fn test_bonus_score() {
+        use std::fs;
+        use std::io::Write;
+
         let evaluator = ImportanceEvaluator::new();
 
+        // 一時ファイルを作成
+        let temp_dir = std::env::temp_dir();
+
         // バージョン番号付きファイル
-        let path1 = Path::new("/home/user/document_v2.pdf");
-        let result1 = evaluator.evaluate(path1).unwrap();
+        let path1 = temp_dir.join("test_bonus_document_v2.pdf");
+        let mut file1 = fs::File::create(&path1).unwrap();
+        file1.write_all(b"test pdf content v2").unwrap();
+        let result1 = evaluator.evaluate(&path1).unwrap();
 
         // 通常のファイル
-        let path2 = Path::new("/home/user/document.pdf");
-        let result2 = evaluator.evaluate(path2).unwrap();
+        let path2 = temp_dir.join("test_bonus_document.pdf");
+        let mut file2 = fs::File::create(&path2).unwrap();
+        file2.write_all(b"test pdf content").unwrap();
+        let result2 = evaluator.evaluate(&path2).unwrap();
 
         // バージョン番号付きの方がスコアが高い
         assert!(result1.score().get() >= result2.score().get());
+
+        // クリーンアップ
+        let _ = fs::remove_file(&path1);
+        let _ = fs::remove_file(&path2);
     }
 
     #[test]
