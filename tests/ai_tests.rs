@@ -1148,7 +1148,7 @@ mod integration_tests {
                 .iter()
                 .any(|p| p.contains("node_modules") || p.contains("target"));
             if has_common_patterns {
-                assert!(recommendations.len() > 0);
+                assert!(!recommendations.is_empty());
             }
         }
 
