@@ -1031,6 +1031,8 @@ impl MessageKey {
             MessageKey::ExampleAiAnalyze => "# 分析文件重要性",
             MessageKey::ExampleAiSuggestExclude => "# 获取AI排除建议",
             MessageKey::RustFastTypeSafe => "AES-256加密 & AI驱动的智能备份",
+            // Common messages
+            MessageKey::UsageExamples => "使用示例:",
             // Keep all existing Simplified Chinese translations
             _ => self.get_en(), // Fallback to English for non-implemented keys
         }
@@ -1068,6 +1070,8 @@ impl MessageKey {
             MessageKey::ExampleAiAnalyze => "# 分析檔案重要性",
             MessageKey::ExampleAiSuggestExclude => "# 取得AI排除建議",
             MessageKey::RustFastTypeSafe => "AES-256加密 & AI驅動的智慧備份",
+            // Common messages
+            MessageKey::UsageExamples => "使用範例:",
             // Keep all existing Traditional Chinese translations
             _ => self.get_en(), // Fallback to English for non-implemented keys
         }

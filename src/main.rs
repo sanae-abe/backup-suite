@@ -56,18 +56,21 @@ fn supports_color() -> bool {
 
 // カラーコードを返す関数（カラーサポートに応じて切り替え）
 fn get_color(color_code: &str) -> &'static str {
-    if supports_color() {
-        match color_code {
-            "green" => "\x1b[32m",
-            "yellow" => "\x1b[33m",
-            "red" => "\x1b[31m",
-            "magenta" => "\x1b[35m",
-            "gray" => "\x1b[90m",
-            "reset" => "\x1b[0m",
-            _ => "",
-        }
-    } else {
-        ""
+    get_color_with_override(color_code, false)
+}
+
+fn get_color_with_override(color_code: &str, no_color: bool) -> &'static str {
+    if no_color || !supports_color() {
+        return "";
+    }
+    match color_code {
+        "green" => "\x1b[32m",
+        "yellow" => "\x1b[33m",
+        "red" => "\x1b[31m",
+        "magenta" => "\x1b[35m",
+        "gray" => "\x1b[90m",
+        "reset" => "\x1b[0m",
+        _ => "",
     }
 }
 
@@ -91,6 +94,10 @@ struct Cli {
     #[arg(long = "lang", value_name = "LANG")]
     /// Language (en/ja)
     lang: Option<String>,
+
+    #[arg(long = "no-color", global = true)]
+    /// Disable colored output
+    no_color: bool,
 }
 
 #[derive(Subcommand)]
@@ -210,7 +217,11 @@ enum Commands {
     #[cfg(feature = "ai")]
     Ai {
         #[command(subcommand)]
-        action: AiAction,
+        action: Option<AiAction>,
+
+        /// Show help for AI commands
+        #[arg(short = 'h', long = "help")]
+        help: bool,
     },
     /// ヘルプを表示（--help を使用してください）
     #[command(hide = true)]
@@ -264,7 +275,6 @@ enum ConfigAction {
 
 #[cfg(feature = "ai")]
 #[derive(Subcommand)]
-#[command(disable_help_subcommand = true)]
 enum AiAction {
     /// Detect anomalies in backup history
     Detect {
@@ -1051,6 +1061,81 @@ fn print_schedule_help(lang: Language) {
     );
 }
 
+/// AI サブコマンド専用のヘルプを表示
+#[cfg(feature = "ai")]
+fn print_ai_help(lang: Language) {
+    let magenta = get_color("magenta");
+    let yellow = get_color("yellow");
+    let reset = get_color("reset");
+
+    // Title
+    println!(
+        "{}{} {}{}",
+        magenta,
+        get_message(MessageKey::AiCommands, lang),
+        if lang == Language::English {
+            "Help"
+        } else if lang == Language::Japanese {
+            "ヘルプ"
+        } else if lang == Language::SimplifiedChinese {
+            "帮助"
+        } else {
+            "說明"
+        },
+        reset
+    );
+    println!();
+
+    // Commands
+    println!(
+        "  {}detect{}           {}",
+        yellow,
+        reset,
+        get_message(MessageKey::DescAiDetect, lang)
+    );
+    println!(
+        "  {}analyze{}          {}",
+        yellow,
+        reset,
+        get_message(MessageKey::DescAiAnalyze, lang)
+    );
+    println!(
+        "  {}suggest-exclude{}  {}",
+        yellow,
+        reset,
+        get_message(MessageKey::DescAiSuggestExclude, lang)
+    );
+    println!(
+        "  {}auto-configure{}   {}",
+        yellow,
+        reset,
+        get_message(MessageKey::DescAiAutoConfigure, lang)
+    );
+    println!();
+
+    // Examples
+    println!(
+        "{}{}:{}",
+        magenta,
+        get_message(MessageKey::UsageExamples, lang)
+            .split(':')
+            .next()
+            .unwrap_or("Examples"),
+        reset
+    );
+    println!("  {}", get_message(MessageKey::ExampleAiDetect, lang));
+    println!("  backup-suite ai detect --days 7");
+    println!();
+    println!("  {}", get_message(MessageKey::ExampleAiAnalyze, lang));
+    println!("  backup-suite ai analyze /path/to/dir");
+    println!();
+    println!(
+        "  {}",
+        get_message(MessageKey::ExampleAiSuggestExclude, lang)
+    );
+    println!("  backup-suite ai suggest-exclude /path/to/dir");
+}
+
 /// config サブコマンド専用のヘルプを表示
 fn print_config_help(lang: Language) {
     let green = get_color("green");
@@ -1223,9 +1308,9 @@ fn main() -> Result<()> {
     if cli.version {
         println!(
             "{}{}{}",
-            get_color("green"),
+            get_color_with_override("green", cli.no_color),
             get_message(MessageKey::AppVersion, lang),
-            get_color("reset")
+            get_color_with_override("reset", cli.no_color)
         );
         println!("{}", get_message(MessageKey::RustFastTypeSafe, lang));
         return Ok(());
@@ -2253,7 +2338,7 @@ fn main() -> Result<()> {
             }
         }
         #[cfg(feature = "ai")]
-        Some(Commands::Ai { action }) => {
+        Some(Commands::Ai { action, help }) => {
             use backup_suite::ai::anomaly::AnomalyDetector;
             use backup_suite::ai::recommendation::{
                 ExcludeRecommendationEngine, ImportanceEvaluator,
@@ -2261,10 +2346,18 @@ fn main() -> Result<()> {
             use backup_suite::ai::types::BackupSize;
             use comfy_table::{Cell, Table};
 
+            // --help フラグまたは引数なしの場合はヘルプを表示
+            if help || action.is_none() {
+                print_ai_help(lang);
+                return Ok(());
+            }
+
+            let action = action.unwrap();
+
             match action {
                 AiAction::Detect { days, format } => {
                     println!(
-                        "{}🤖 {}{}",
+                        "{}{}{}",
                         get_color("magenta"),
                         get_message(MessageKey::AiDetectTitle, lang),
                         get_color("reset")
@@ -2287,123 +2380,189 @@ fn main() -> Result<()> {
                     let detector = AnomalyDetector::default_detector();
                     let history = BackupHistory::filter_by_days(days)?;
 
-                    if history.is_empty() {
-                        println!(
-                            "{}ℹ️  {}{}",
-                            get_color("yellow"),
-                            get_message(MessageKey::AiErrorInsufficientData, lang),
-                            get_color("reset")
-                        );
-                    } else {
-                        let current_size =
-                            BackupSize::new(history.last().map(|h| h.total_bytes).unwrap_or(0));
+                    let current_size =
+                        BackupSize::new(history.last().map(|h| h.total_bytes).unwrap_or(0));
 
-                        match detector.detect_size_anomaly(&history, current_size) {
-                            Ok(Some(result)) if result.is_anomaly() => match format.as_str() {
-                                "json" => {
-                                    let json_output = serde_json::json!({
-                                        "anomaly_detected": true,
-                                        "z_score": result.z_score(),
-                                        "confidence": result.confidence().get(),
-                                        "description": result.description(),
-                                        "recommended_action": result.recommended_action().unwrap_or("None")
-                                    });
-                                    println!("{}", serde_json::to_string_pretty(&json_output)?);
-                                }
-                                "detailed" => {
-                                    println!(
-                                        "{}🚨 {}{}",
-                                        get_color("red"),
-                                        get_message(MessageKey::AiDetectAnomalyFound, lang),
-                                        get_color("reset")
-                                    );
-                                    println!("  Z-score: {:.2}", result.z_score());
-                                    println!(
-                                        "  {}: {:.1}%",
-                                        if lang == Language::Japanese {
-                                            "信頼度"
-                                        } else {
-                                            "Confidence"
-                                        },
-                                        result.confidence().get() * 100.0
-                                    );
-                                    println!(
-                                        "  {}: {}",
-                                        if lang == Language::Japanese {
-                                            "説明"
-                                        } else {
-                                            "Description"
-                                        },
-                                        result.description()
-                                    );
-                                    println!(
-                                        "  {}: {}",
-                                        if lang == Language::Japanese {
-                                            "推奨アクション"
-                                        } else {
-                                            "Recommended Action"
-                                        },
-                                        result.recommended_action().unwrap_or("None")
-                                    );
-                                }
-                                _ => {
-                                    let mut table = Table::new();
-                                    table.set_header(vec![
-                                        if lang == Language::Japanese {
-                                            "項目"
-                                        } else {
-                                            "Item"
-                                        },
-                                        if lang == Language::Japanese {
-                                            "値"
-                                        } else {
-                                            "Value"
-                                        },
-                                    ]);
-                                    table.add_row(vec![
-                                        "Z-score",
-                                        &format!("{:.2}", result.z_score()),
-                                    ]);
-                                    table.add_row(vec![
-                                        if lang == Language::Japanese {
-                                            "信頼度"
-                                        } else {
-                                            "Confidence"
-                                        },
-                                        &format!("{:.1}%", result.confidence().get() * 100.0),
-                                    ]);
-                                    table.add_row(vec![
-                                        if lang == Language::Japanese {
-                                            "説明"
-                                        } else {
-                                            "Description"
-                                        },
-                                        result.description(),
-                                    ]);
-                                    println!(
-                                        "{}🚨 {}{}\n",
-                                        get_color("red"),
-                                        get_message(MessageKey::AiDetectAnomalyFound, lang),
-                                        get_color("reset")
-                                    );
-                                    println!("{table}");
-                                }
-                            },
+                    match detector.detect_size_anomaly(&history, current_size) {
+                        Ok(Some(result)) if result.is_anomaly() => match format.as_str() {
+                            "json" => {
+                                let json_output = serde_json::json!({
+                                    "anomaly_detected": true,
+                                    "z_score": result.z_score(),
+                                    "confidence": result.confidence().get(),
+                                    "description": result.description(),
+                                    "recommended_action": result.recommended_action().unwrap_or("None")
+                                });
+                                println!("{}", serde_json::to_string_pretty(&json_output)?);
+                            }
+                            "detailed" => {
+                                println!(
+                                    "{}🚨 {}{}",
+                                    get_color("red"),
+                                    get_message(MessageKey::AiDetectAnomalyFound, lang),
+                                    get_color("reset")
+                                );
+                                println!("  Z-score: {:.2}", result.z_score());
+                                println!(
+                                    "  {}: {:.1}%",
+                                    if lang == Language::Japanese {
+                                        "信頼度"
+                                    } else {
+                                        "Confidence"
+                                    },
+                                    result.confidence().get() * 100.0
+                                );
+                                println!(
+                                    "  {}: {}",
+                                    if lang == Language::Japanese {
+                                        "説明"
+                                    } else {
+                                        "Description"
+                                    },
+                                    result.description()
+                                );
+                                println!(
+                                    "  {}: {}",
+                                    if lang == Language::Japanese {
+                                        "推奨アクション"
+                                    } else {
+                                        "Recommended Action"
+                                    },
+                                    result.recommended_action().unwrap_or("None")
+                                );
+                            }
                             _ => {
-                                if format == "json" {
-                                    let json_output = serde_json::json!({
-                                        "anomaly_detected": false,
-                                        "message": get_message(MessageKey::AiDetectNoAnomalies, lang)
-                                    });
-                                    println!("{}", serde_json::to_string_pretty(&json_output)?);
-                                } else {
-                                    println!(
-                                        "{}✅ {}{}",
-                                        get_color("green"),
-                                        get_message(MessageKey::AiDetectNoAnomalies, lang),
-                                        get_color("reset")
-                                    );
-                                }
+                                let mut table = Table::new();
+                                table.set_header(vec![
+                                    if lang == Language::Japanese {
+                                        "項目"
+                                    } else {
+                                        "Item"
+                                    },
+                                    if lang == Language::Japanese {
+                                        "値"
+                                    } else {
+                                        "Value"
+                                    },
+                                ]);
+                                table.add_row(vec!["Z-score", &format!("{:.2}", result.z_score())]);
+                                table.add_row(vec![
+                                    if lang == Language::Japanese {
+                                        "信頼度"
+                                    } else {
+                                        "Confidence"
+                                    },
+                                    &format!("{:.1}%", result.confidence().get() * 100.0),
+                                ]);
+                                table.add_row(vec![
+                                    if lang == Language::Japanese {
+                                        "説明"
+                                    } else {
+                                        "Description"
+                                    },
+                                    result.description(),
+                                ]);
+                                println!(
+                                    "{}🚨 {}{}\n",
+                                    get_color("red"),
+                                    get_message(MessageKey::AiDetectAnomalyFound, lang),
+                                    get_color("reset")
+                                );
+                                println!("{table}");
+                            }
+                        },
+                        Ok(Some(_)) => {
+                            // 異常なし
+                            if format == "json" {
+                                let json_output = serde_json::json!({
+                                    "anomaly_detected": false,
+                                    "message": get_message(MessageKey::AiDetectNoAnomalies, lang)
+                                });
+                                println!("{}", serde_json::to_string_pretty(&json_output)?);
+                            } else {
+                                println!(
+                                    "{}✅ {}{}",
+                                    get_color("green"),
+                                    get_message(MessageKey::AiDetectNoAnomalies, lang),
+                                    get_color("reset")
+                                );
+                            }
+                        }
+                        Ok(None) => {
+                            // データ不足
+                            if format == "json" {
+                                let json_output = serde_json::json!({
+                                    "error": "insufficient_data",
+                                    "message": format!(
+                                        "{}（{}3{}、{}{}{}）",
+                                        if lang == Language::Japanese {
+                                            "データが不足しています"
+                                        } else {
+                                            "Insufficient data"
+                                        },
+                                        if lang == Language::Japanese {
+                                            "最低"
+                                        } else {
+                                            "minimum "
+                                        },
+                                        if lang == Language::Japanese {
+                                            "件必要"
+                                        } else {
+                                            " entries required"
+                                        },
+                                        if lang == Language::Japanese {
+                                            ""
+                                        } else {
+                                            "found "
+                                        },
+                                        history.len(),
+                                        if lang == Language::Japanese {
+                                            "件しかありません"
+                                        } else {
+                                            ""
+                                        }
+                                    )
+                                });
+                                println!("{}", serde_json::to_string_pretty(&json_output)?);
+                            } else {
+                                println!(
+                                    "{}⚠️  {}{}",
+                                    get_color("yellow"),
+                                    if lang == Language::Japanese {
+                                        format!(
+                                            "データが不足しています（最低3件必要、{}件しかありません）",
+                                            history.len()
+                                        )
+                                    } else {
+                                        format!(
+                                            "Insufficient data (minimum 3 entries required, found {})",
+                                            history.len()
+                                        )
+                                    },
+                                    get_color("reset")
+                                );
+                            }
+                        }
+                        Err(e) => {
+                            // エラー
+                            if format == "json" {
+                                let json_output = serde_json::json!({
+                                    "error": "analysis_failed",
+                                    "message": format!("{}", e)
+                                });
+                                println!("{}", serde_json::to_string_pretty(&json_output)?);
+                            } else {
+                                println!(
+                                    "{}❌ {}: {}{}",
+                                    get_color("red"),
+                                    if lang == Language::Japanese {
+                                        "分析エラー"
+                                    } else {
+                                        "Analysis error"
+                                    },
+                                    e,
+                                    get_color("reset")
+                                );
                             }
                         }
                     }
@@ -2414,7 +2573,7 @@ fn main() -> Result<()> {
                     detailed,
                 } => {
                     println!(
-                        "{}🤖 {}{}",
+                        "{}{}{}",
                         get_color("magenta"),
                         get_message(MessageKey::AiAnalyzeTitle, lang),
                         get_color("reset")
@@ -2550,7 +2709,7 @@ fn main() -> Result<()> {
                     confidence,
                 } => {
                     println!(
-                        "{}🤖 {}{}",
+                        "{}{}{}",
                         get_color("magenta"),
                         get_message(MessageKey::AiSuggestExcludeTitle, lang),
                         get_color("reset")
@@ -2677,7 +2836,7 @@ fn main() -> Result<()> {
                     interactive,
                 } => {
                     println!(
-                        "{}🤖 {}{}",
+                        "{}{}{}",
                         get_color("magenta"),
                         get_message(MessageKey::AiAutoConfigureTitle, lang),
                         get_color("reset")
@@ -2794,63 +2953,7 @@ fn main() -> Result<()> {
                     }
                 }
                 AiAction::Help => {
-                    let magenta = get_color("magenta");
-                    let yellow = get_color("yellow");
-                    let reset = get_color("reset");
-
-                    println!(
-                        "{}{}{}",
-                        magenta,
-                        if lang == Language::Japanese {
-                            "🤖 AIコマンド ヘルプ"
-                        } else {
-                            "🤖 AI Commands Help"
-                        },
-                        reset
-                    );
-                    println!();
-                    println!(
-                        "  {}detect{}           {}",
-                        yellow,
-                        reset,
-                        get_message(MessageKey::DescAiDetect, lang)
-                    );
-                    println!(
-                        "  {}analyze{}          {}",
-                        yellow,
-                        reset,
-                        get_message(MessageKey::DescAiAnalyze, lang)
-                    );
-                    println!(
-                        "  {}suggest-exclude{}  {}",
-                        yellow,
-                        reset,
-                        get_message(MessageKey::DescAiSuggestExclude, lang)
-                    );
-                    println!(
-                        "  {}auto-configure{}   {}",
-                        yellow,
-                        reset,
-                        get_message(MessageKey::DescAiAutoConfigure, lang)
-                    );
-                    println!();
-                    println!(
-                        "{}{}{}",
-                        magenta,
-                        get_message(MessageKey::UsageExamples, lang),
-                        reset
-                    );
-                    println!("  {}", get_message(MessageKey::ExampleAiDetect, lang));
-                    println!("  backup-suite ai detect --days 7");
-                    println!();
-                    println!("  {}", get_message(MessageKey::ExampleAiAnalyze, lang));
-                    println!("  backup-suite ai analyze /path/to/file");
-                    println!();
-                    println!(
-                        "  {}",
-                        get_message(MessageKey::ExampleAiSuggestExclude, lang)
-                    );
-                    println!("  backup-suite ai suggest-exclude /path/to/dir");
+                    print_ai_help(lang);
                 }
             }
         }

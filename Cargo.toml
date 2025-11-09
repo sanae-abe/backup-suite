@@ -11,6 +11,11 @@ homepage = "https://github.com/sanae-abe/backup-suite"
 keywords = ["backup", "cli", "rust", "tool", "filesystem"]
 categories = ["command-line-utilities", "filesystem"]
 readme = "README.md"
+
+# MSRV: 1.82.0
+# - comfy-table 7.2.1+ が Rust edition 2024 を要求
+# - base64ct 1.8.0 が Rust edition 2024 を要求
+# - CI/CD互換性のため、依存を固定し MSRV を 1.82.0 に設定
 rust-version = "1.82.0"
 
 [lib]

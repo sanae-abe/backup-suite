@@ -42,10 +42,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **AIモジュールカバレッジ**: 76.39%（目標95%に向けて改善中）
 
 #### ドキュメント
-- `docs/AI_FEATURES.md`: 包括的なAI機能ガイド（使用例・アーキテクチャ）
-- `docs/AI_IMPLEMENTATION_PLAN.md`: 詳細な実装計画書（Phase 1/2ロードマップ）
-- `docs/AI_RECOMMENDATION_ENGINE.md`: 推奨エンジン実装報告
-- `docs/AI_TEST_REPORT.md`: テストカバレッジ・ベンチマーク結果
+- `docs/ai/features.md`: 包括的なAI機能ガイド（使用例・アーキテクチャ）
+- `docs/ai/development/implementation-plan.md`: 詳細な実装計画書（Phase 1/2ロードマップ）
+- `docs/ai/development/recommendation-engine.md`: 推奨エンジン実装報告
+- `docs/ai/development/test-report.md`: テストカバレッジ報告
+- `docs/ai/development/benchmark-report.md`: ベンチマーク結果
+- `docs/ai/manual-test.md`: AI機能手動テスト手順
+- `docs/ai/README.md`: AI機能ドキュメントインデックス
 - README.md/README.en.md: AI機能セクション追加（インストール方法・使用例）
 
 #### 技術スタック

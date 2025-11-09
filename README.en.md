@@ -405,7 +405,7 @@ All AI features operate **completely offline**:
 - ✅ Sensitive data transmission: Zero
 - ✅ Data collection: None
 
-For more details, see [AI Features Documentation](docs/AI_FEATURES.md).
+For more details, see [AI Features Documentation](docs/ai/features.md).
 
 ## Configuration File
 

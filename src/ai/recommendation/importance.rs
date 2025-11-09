@@ -93,6 +93,7 @@ impl FileImportanceResult {
 struct ImportanceRule {
     extensions: Vec<String>,
     dir_patterns: Vec<String>,
+    file_names: Vec<String>,
     base_score: u8,
     category: String,
 }
@@ -107,6 +108,23 @@ impl ImportanceRule {
         Self {
             extensions,
             dir_patterns,
+            file_names: Vec::new(),
+            base_score,
+            category,
+        }
+    }
+
+    const fn with_file_names(
+        extensions: Vec<String>,
+        dir_patterns: Vec<String>,
+        file_names: Vec<String>,
+        base_score: u8,
+        category: String,
+    ) -> Self {
+        Self {
+            extensions,
+            dir_patterns,
+            file_names,
             base_score,
             category,
         }
@@ -161,6 +179,16 @@ impl ImportanceEvaluator {
                 "ドキュメント".to_string(),
             ),
             ImportanceRule::new(
+                vec!["md".to_string()],
+                vec![
+                    "docs".to_string(),
+                    ".claude".to_string(),
+                    "documentation".to_string(),
+                ],
+                85,
+                "ドキュメント".to_string(),
+            ),
+            ImportanceRule::new(
                 vec![
                     "rs".to_string(),
                     "py".to_string(),
@@ -186,6 +214,8 @@ impl ImportanceEvaluator {
                     "json".to_string(),
                     "ini".to_string(),
                     "conf".to_string(),
+                    "cfg".to_string(),
+                    "xml".to_string(),
                 ],
                 vec!["config".to_string(), ".config".to_string()],
                 85,
@@ -245,6 +275,18 @@ impl ImportanceEvaluator {
                 20,
                 "ログ".to_string(),
             ),
+            // OS固有ファイル（極低重要度）
+            ImportanceRule::with_file_names(
+                vec![],
+                vec![],
+                vec![
+                    ".DS_Store".to_string(),   // macOS
+                    "Thumbs.db".to_string(),   // Windows
+                    "desktop.ini".to_string(), // Windows
+                ],
+                5,
+                "OS固有ファイル".to_string(),
+            ),
         ];
 
         Self {
@@ -262,12 +304,25 @@ impl ImportanceEvaluator {
         // パストラバーサル対策
         validate_path_safety(path)?;
 
+        // ファイル/ディレクトリの存在確認
+        if !path.exists() {
+            return Err(AiError::InvalidParameter(format!(
+                "File or directory does not exist: {}",
+                path.display()
+            )));
+        }
+
         // キャッシュチェック
         {
             let cache = self.cache.lock().unwrap();
             if let Some(&importance) = cache.get(path) {
                 return self.create_result(path, importance);
             }
+        }
+
+        // ディレクトリの場合は専用ロジックを使用
+        if path.is_dir() {
+            return self.evaluate_directory(path);
         }
 
         // 拡張子を取得
@@ -279,27 +334,64 @@ impl ImportanceEvaluator {
         // パス文字列を取得
         let path_str = path.to_string_lossy().to_lowercase();
 
-        // ルールマッチング
+        // dotfiles（設定ファイル）の検出
+        let is_dotfile = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map(|s| s.starts_with('.') && s != "." && s != "..")
+            .unwrap_or(false);
+
+        // ファイル名を取得
+        let file_name = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map(|s| s.to_lowercase())
+            .unwrap_or_default();
+
+        // ファイル名マッチング（最優先）
         let mut best_score = 30u8; // デフォルトスコア
+        let mut file_name_matched = false;
 
         for rule in &self.rules {
-            let mut matched = false;
+            if !file_name.is_empty()
+                && rule
+                    .file_names
+                    .iter()
+                    .any(|n| n.to_lowercase() == file_name)
+            {
+                best_score = rule.base_score;
+                file_name_matched = true;
+                break; // ファイル名マッチは最優先なので即座に終了
+            }
+        }
 
-            // 拡張子マッチ
-            if let Some(ref ext) = extension {
-                if rule.extensions.iter().any(|e| e == ext) {
+        // ファイル名マッチングで見つからなかった場合のみ、拡張子とディレクトリパターンを確認
+        if !file_name_matched {
+            for rule in &self.rules {
+                let mut matched = false;
+
+                // 拡張子マッチ
+                if let Some(ref ext) = extension {
+                    if rule.extensions.iter().any(|e| e == ext) {
+                        matched = true;
+                    }
+                }
+
+                // ディレクトリパターンマッチ
+                if rule.dir_patterns.iter().any(|p| path_str.contains(p)) {
                     matched = true;
                 }
-            }
 
-            // ディレクトリパターンマッチ
-            if rule.dir_patterns.iter().any(|p| path_str.contains(p)) {
-                matched = true;
+                if matched && rule.base_score > best_score {
+                    best_score = rule.base_score;
+                }
             }
+        }
 
-            if matched && rule.base_score > best_score {
-                best_score = rule.base_score;
-            }
+        // dotfiles は設定ファイルとして扱う（デフォルトスコアの場合のみ）
+        // OS固有ファイル等の極低重要度ファイル（スコア < 30）は除外
+        if is_dotfile && (30..80).contains(&best_score) {
+            best_score = 85;
         }
 
         // ボーナススコア計算
@@ -337,6 +429,118 @@ impl ImportanceEvaluator {
         // 評価実行
         let result = self.evaluate(path)?;
         Ok(result.score)
+    }
+
+    /// ディレクトリの重要度を評価
+    ///
+    /// # Errors
+    ///
+    /// パスが不正な場合やファイルアクセスに失敗した場合はエラーを返します。
+    fn evaluate_directory(&self, path: &Path) -> AiResult<FileImportanceResult> {
+        use walkdir::WalkDir;
+
+        let mut score = 30u8; // デフォルトスコア
+        let mut category = "ディレクトリ".to_string();
+
+        // プロジェクトマーカーファイルを検出
+        let has_package_json = path.join("package.json").exists();
+        let has_cargo_toml = path.join("Cargo.toml").exists();
+        let has_requirements_txt = path.join("requirements.txt").exists();
+        let has_git = path.join(".git").exists();
+        let has_src = path.join("src").exists();
+        let _has_tests = path.join("tests").exists() || path.join("test").exists();
+
+        // プロジェクトタイプ判定
+        if has_cargo_toml {
+            score = 95;
+            category = "Rustプロジェクト".to_string();
+        } else if has_package_json {
+            score = 95;
+            category = "Node.jsプロジェクト".to_string();
+        } else if has_requirements_txt {
+            score = 90;
+            category = "Pythonプロジェクト".to_string();
+        } else if has_src {
+            score = 85;
+            category = "ソースコードプロジェクト".to_string();
+        } else if has_git {
+            score = 75;
+            category = "Git管理ディレクトリ".to_string();
+        }
+
+        // ディレクトリ内のファイルをサンプリングして評価
+        let mut file_count = 0;
+        let mut total_score = 0u32;
+        let mut high_importance_count = 0;
+
+        for entry in WalkDir::new(path)
+            .max_depth(3) // 深すぎる探索を避ける
+            .follow_links(false)
+            .into_iter()
+            .filter_map(Result::ok)
+            .take(100)
+        // 最大100ファイルをサンプリング
+        {
+            let entry_path = entry.path();
+            if entry_path.is_file() {
+                if let Ok(result) = self.evaluate(entry_path) {
+                    file_count += 1;
+                    total_score += result.score().get() as u32;
+                    if result.score().is_high() {
+                        high_importance_count += 1;
+                    }
+                }
+            }
+        }
+
+        // サンプリング結果に基づいてスコアを調整
+        if file_count > 0 {
+            let avg_score = (total_score / file_count) as u8;
+            let high_ratio = high_importance_count as f64 / file_count as f64;
+
+            // 高重要度ファイルが50%以上なら高スコア
+            if high_ratio >= 0.5 {
+                score = score.max(90);
+            } else if high_ratio >= 0.3 {
+                score = score.max(75);
+            } else {
+                // 平均スコアとマーカー検出スコアの高い方を採用
+                score = score.max(avg_score);
+            }
+        }
+
+        let importance = FileImportance::new(score).map_err(AiError::InvalidParameter)?;
+
+        // キャッシュ更新
+        {
+            let mut cache = self.cache.lock().unwrap();
+            cache.insert(path.to_path_buf(), importance);
+        }
+
+        let priority = if importance.is_high() {
+            Priority::High
+        } else if importance.is_medium() {
+            Priority::Medium
+        } else {
+            Priority::Low
+        };
+
+        let reason = if file_count > 0 {
+            format!(
+                "{} (サンプリング: {}ファイル, 高重要度: {}件, スコア: {})",
+                category, file_count, high_importance_count, score
+            )
+        } else {
+            format!("{} (スコア: {})", category, score)
+        };
+
+        Ok(FileImportanceResult::new(
+            path.to_path_buf(),
+            importance,
+            priority,
+            category,
+            reason,
+        ))
     }
 
     /// ボーナススコアを計算
@@ -392,11 +596,49 @@ impl ImportanceEvaluator {
         path: &Path,
         importance: FileImportance,
     ) -> (String, String) {
+        // ファイル名を取得
+        let file_name = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map(|s| s.to_lowercase())
+            .unwrap_or_default();
+
+        // dotfiles チェック
+        let is_dotfile = path
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map(|s| s.starts_with('.') && s != "." && s != "..")
+            .unwrap_or(false);
+
         let extension = path
             .extension()
             .and_then(|e| e.to_str())
             .map(|s| s.to_lowercase());
 
+        // ファイル名マッチング（最優先）
+        if !file_name.is_empty() {
+            for rule in &self.rules {
+                if rule
+                    .file_names
+                    .iter()
+                    .any(|n| n.to_lowercase() == file_name)
+                {
+                    let filename = path
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .unwrap_or("unknown");
+                    let reason = format!(
+                        "{} (ファイル名: {}, スコア: {})",
+                        rule.category,
+                        filename,
+                        importance.get()
+                    );
+                    return (rule.category.clone(), reason);
+                }
+            }
+        }
+
+        // 拡張子マッチング
         for rule in &self.rules {
             if let Some(ref ext) = extension {
                 if rule.extensions.iter().any(|e| e == ext) {
@@ -411,6 +653,21 @@ impl ImportanceEvaluator {
             }
         }
 
+        // dotfile の場合
+        if is_dotfile {
+            let filename = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("unknown");
+            let reason = format!(
+                "設定ファイル (dotfile: {}, スコア: {})",
+                filename,
+                importance.get()
+            );
+            return ("設定ファイル".to_string(), reason);
+        }
+
+        // デフォルト
         (
             "その他".to_string(),
             format!("スコア: {}", importance.get()),
@@ -516,5 +773,66 @@ mod tests {
 
         // バージョン番号付きの方がスコアが高い
         assert!(result1.score().get() >= result2.score().get());
+    }
+
+    #[test]
+    fn test_dotfiles() {
+        use std::fs;
+        use std::io::Write;
+
+        let evaluator = ImportanceEvaluator::new();
+
+        // テスト用の一時ファイルを作成
+        let temp_dir = std::env::temp_dir();
+        let test_files = vec![
+            temp_dir.join(".zshrc"),
+            temp_dir.join(".bashrc"),
+            temp_dir.join(".gitconfig"),
+            temp_dir.join(".vimrc"),
+        ];
+
+        for path in &test_files {
+            let mut file = fs::File::create(path).unwrap();
+            file.write_all(b"test content").unwrap();
+        }
+
+        // .zshrc
+        let result1 = evaluator.evaluate(&test_files[0]).unwrap();
+        assert!(result1.score().is_high());
+        assert_eq!(result1.category(), "設定ファイル");
+        assert!(result1.reason().contains("dotfile"));
+
+        // .bashrc
+        let result2 = evaluator.evaluate(&test_files[1]).unwrap();
+        assert!(result2.score().is_high());
+        assert_eq!(result2.category(), "設定ファイル");
+
+        // .gitconfig
+        let result3 = evaluator.evaluate(&test_files[2]).unwrap();
+        assert!(result3.score().is_high());
+        assert_eq!(result3.category(), "設定ファイル");
+
+        // .vimrc
+        let result4 = evaluator.evaluate(&test_files[3]).unwrap();
+        assert!(result4.score().is_high());
+        assert_eq!(result4.category(), "設定ファイル");
+
+        // クリーンアップ
+        for path in &test_files {
+            let _ = fs::remove_file(path);
+        }
+    }
+
+    #[test]
+    fn test_nonexistent_file() {
+        let evaluator = ImportanceEvaluator::new();
+        let path = Path::new("/nonexistent/file.txt");
+
+        let result = evaluator.evaluate(path);
+        assert!(result.is_err());
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("File or directory does not exist"));
     }
 }

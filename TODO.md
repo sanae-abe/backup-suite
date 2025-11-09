@@ -3,7 +3,7 @@
 **作成日**: 2025-11-09
 **最終更新**: 2025-11-09 12:30 JST
 **ステータス**: Phase 1完了 → Phase 2移行準備中
-**参照**: [AI_IMPLEMENTATION_PLAN.md](docs/AI_IMPLEMENTATION_PLAN.md)
+**参照**: [AI実装計画](docs/ai/development/implementation-plan.md)
 
 ---
 

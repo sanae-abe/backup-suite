@@ -175,13 +175,13 @@ impl ExcludeRecommendationEngine {
             },
             // バージョン管理システム（中信頼度）
             ExcludePattern {
-                pattern: r"\.git".to_string(),
+                pattern: ".git".to_string(),
                 reason: "Gitリポジトリメタデータ（リモートから復元可能）".to_string(),
                 confidence: 0.70,
                 is_directory: true,
             },
             ExcludePattern {
-                pattern: r"\.svn".to_string(),
+                pattern: ".svn".to_string(),
                 reason: "SVNリポジトリメタデータ（リモートから復元可能）".to_string(),
                 confidence: 0.70,
                 is_directory: true,
@@ -216,6 +216,25 @@ impl ExcludeRecommendationEngine {
                 pattern: r".*\.log$".to_string(),
                 reason: "ログファイル（古いログは通常不要）".to_string(),
                 confidence: 0.70,
+                is_directory: false,
+            },
+            // OS固有ファイル（高信頼度）
+            ExcludePattern {
+                pattern: ".DS_Store".to_string(),
+                reason: "macOSメタデータファイル（自動生成）".to_string(),
+                confidence: 0.99,
+                is_directory: false,
+            },
+            ExcludePattern {
+                pattern: "Thumbs.db".to_string(),
+                reason: "Windowsサムネイルキャッシュ（自動生成）".to_string(),
+                confidence: 0.99,
+                is_directory: false,
+            },
+            ExcludePattern {
+                pattern: "desktop.ini".to_string(),
+                reason: "Windowsデスクトップ設定ファイル（自動生成）".to_string(),
+                confidence: 0.95,
                 is_directory: false,
             },
         ];
@@ -257,8 +276,8 @@ impl ExcludeRecommendationEngine {
                 let total_size = self.calculate_total_size(&matches)?;
                 let size_gb = total_size as f64 / 1_073_741_824.0;
 
-                // 推奨が意味のあるサイズの場合のみ追加（10MB以上）
-                if size_gb >= 0.01 {
+                // 推奨が意味のあるサイズの場合のみ追加（1KB以上）
+                if size_gb >= 0.000001 || total_size > 0 {
                     let confidence = PredictionConfidence::new(pattern_def.confidence)
                         .map_err(AiError::InvalidParameter)?;
 
@@ -330,7 +349,12 @@ impl ExcludeRecommendationEngine {
             return file_name.ends_with(&extension);
         }
 
-        // 単純な文字列マッチ
+        // 完全一致を優先
+        if file_name == pattern {
+            return true;
+        }
+
+        // 部分一致
         file_name.contains(pattern)
     }
 
