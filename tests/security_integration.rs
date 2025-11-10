@@ -5,9 +5,9 @@
 use assert_cmd::prelude::*;
 use predicates::prelude::*;
 use std::fs;
-use std::process::Command;
 #[cfg(unix)]
 use std::os::unix::fs as unix_fs;
+use std::process::Command;
 use tempfile::TempDir;
 
 /// パストラバーサル攻撃のテスト - add コマンド
@@ -82,7 +82,10 @@ fn test_ai_analyze_rejects_path_traversal() {
         .arg("../../../etc/passwd")
         .assert()
         .success()
-        .stdout(predicate::str::contains("パスが存在しません").or(predicate::str::contains("AI分析に失敗")));
+        .stdout(
+            predicate::str::contains("パスが存在しません")
+                .or(predicate::str::contains("AI分析に失敗")),
+        );
 }
 
 /// AI suggest-exclude コマンドのパストラバーサル攻撃テスト
@@ -97,7 +100,10 @@ fn test_ai_suggest_exclude_rejects_path_traversal() {
         .arg("../../../etc/passwd")
         .assert()
         .success()
-        .stdout(predicate::str::contains("パスが存在しません").or(predicate::str::contains("AI分析に失敗")));
+        .stdout(
+            predicate::str::contains("パスが存在しません")
+                .or(predicate::str::contains("AI分析に失敗")),
+        );
 }
 
 /// シンボリックリンク攻撃のテスト - restore コマンド
@@ -143,7 +149,8 @@ fn test_add_accepts_valid_path() {
     fs::write(&test_file, b"test content").unwrap();
 
     // current_dirからの相対パスを取得
-    let relative_path = test_file.strip_prefix(&current_dir)
+    let relative_path = test_file
+        .strip_prefix(&current_dir)
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
@@ -167,7 +174,8 @@ fn test_config_set_destination_accepts_valid_path() {
     let dest_dir = temp_dir.path().join("backups");
 
     // current_dirからの相対パスを取得
-    let relative_path = dest_dir.strip_prefix(&current_dir)
+    let relative_path = dest_dir
+        .strip_prefix(&current_dir)
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
@@ -377,7 +385,8 @@ fn test_ai_suggest_exclude_confidence_validation_min() {
     fs::create_dir_all(&test_dir).unwrap();
 
     // current_dirからの相対パスを取得
-    let relative_path = test_dir.strip_prefix(&current_dir)
+    let relative_path = test_dir
+        .strip_prefix(&current_dir)
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
@@ -386,7 +395,7 @@ fn test_ai_suggest_exclude_confidence_validation_min() {
         .arg("ai")
         .arg("suggest-exclude")
         .arg(relative_path.to_str().unwrap())
-        .arg("--confidence=-0.5")  // = を使って負の値を渡す
+        .arg("--confidence=-0.5") // = を使って負の値を渡す
         .assert()
         .success()
         .stdout(predicate::str::contains("0.0-1.0 の範囲で指定してください"));
@@ -405,7 +414,8 @@ fn test_ai_suggest_exclude_confidence_validation_max() {
     fs::create_dir_all(&test_dir).unwrap();
 
     // current_dirからの相対パスを取得
-    let relative_path = test_dir.strip_prefix(&current_dir)
+    let relative_path = test_dir
+        .strip_prefix(&current_dir)
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
@@ -434,7 +444,8 @@ fn test_ai_auto_configure_max_depth_zero() {
     fs::create_dir_all(&test_dir).unwrap();
 
     // current_dirからの相対パスを取得
-    let relative_path = test_dir.strip_prefix(&current_dir)
+    let relative_path = test_dir
+        .strip_prefix(&current_dir)
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
@@ -468,7 +479,8 @@ fn test_ai_auto_configure_max_depth_valid() {
     fs::create_dir_all(&sub_dir).unwrap();
 
     // current_dirからの相対パスを取得
-    let relative_path = test_dir.strip_prefix(&current_dir)
+    let relative_path = test_dir
+        .strip_prefix(&current_dir)
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
