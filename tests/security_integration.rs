@@ -16,7 +16,9 @@ use tempfile::TempDir;
 #[test]
 fn test_add_rejects_path_traversal() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("add")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("add")
         .arg("../../../etc/passwd")
         .assert()
         .success()
@@ -27,7 +29,9 @@ fn test_add_rejects_path_traversal() {
 #[test]
 fn test_add_rejects_shallow_absolute_path() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("add")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("add")
         .arg("/etc/passwd")
         .assert()
         .failure()
@@ -54,7 +58,9 @@ fn test_remove_rejects_path_traversal() {
 #[test]
 fn test_config_set_destination_rejects_path_traversal() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("config")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("config")
         .arg("set-destination")
         .arg("../../../tmp/malicious")
         .assert()
@@ -69,7 +75,9 @@ fn test_config_set_destination_rejects_path_traversal() {
 #[test]
 fn test_ai_analyze_rejects_path_traversal() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("ai")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("ai")
         .arg("analyze")
         .arg("../../../etc/passwd")
         .assert()
@@ -139,7 +147,9 @@ fn test_add_accepts_valid_path() {
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("add")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("add")
         .arg(relative_path.to_str().unwrap())
         .assert()
         .success()
@@ -161,7 +171,9 @@ fn test_config_set_destination_accepts_valid_path() {
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("config")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("config")
         .arg("set-destination")
         .arg(relative_path.to_str().unwrap())
         .assert()
@@ -198,7 +210,9 @@ fn test_compression_type_enum_invalid_value() {
 #[test]
 fn test_cleanup_days_validation_min() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("cleanup")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("cleanup")
         .arg("--days")
         .arg("0")
         .arg("--dry-run")
@@ -211,7 +225,9 @@ fn test_cleanup_days_validation_min() {
 #[test]
 fn test_cleanup_days_validation_max() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("cleanup")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("cleanup")
         .arg("--days")
         .arg("9999")
         .arg("--dry-run")
@@ -224,7 +240,9 @@ fn test_cleanup_days_validation_max() {
 #[test]
 fn test_config_set_keep_days_validation_min() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("config")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("config")
         .arg("set-keep-days")
         .arg("0")
         .assert()
@@ -236,7 +254,9 @@ fn test_config_set_keep_days_validation_min() {
 #[test]
 fn test_config_set_keep_days_validation_max() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("config")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("config")
         .arg("set-keep-days")
         .arg("9999")
         .assert()
@@ -248,7 +268,9 @@ fn test_config_set_keep_days_validation_max() {
 #[test]
 fn test_run_compress_level_validation_zstd_min() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("run")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("run")
         .arg("--compress")
         .arg("zstd")
         .arg("--compress-level")
@@ -263,7 +285,9 @@ fn test_run_compress_level_validation_zstd_min() {
 #[test]
 fn test_run_compress_level_validation_zstd_max() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("run")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("run")
         .arg("--compress")
         .arg("zstd")
         .arg("--compress-level")
@@ -278,7 +302,9 @@ fn test_run_compress_level_validation_zstd_max() {
 #[test]
 fn test_run_compress_level_validation_gzip_min() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("run")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("run")
         .arg("--compress")
         .arg("gzip")
         .arg("--compress-level")
@@ -293,7 +319,9 @@ fn test_run_compress_level_validation_gzip_min() {
 #[test]
 fn test_run_compress_level_validation_gzip_max() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("run")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("run")
         .arg("--compress")
         .arg("gzip")
         .arg("--compress-level")
@@ -309,7 +337,9 @@ fn test_run_compress_level_validation_gzip_max() {
 #[test]
 fn test_ai_detect_days_validation_min() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("ai")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("ai")
         .arg("detect")
         .arg("--days")
         .arg("0")
@@ -323,7 +353,9 @@ fn test_ai_detect_days_validation_min() {
 #[test]
 fn test_ai_detect_days_validation_max() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("ai")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("ai")
         .arg("detect")
         .arg("--days")
         .arg("9999")
@@ -349,7 +381,9 @@ fn test_ai_suggest_exclude_confidence_validation_min() {
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("ai")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("ai")
         .arg("suggest-exclude")
         .arg(relative_path.to_str().unwrap())
         .arg("--confidence=-0.5")  // = を使って負の値を渡す
@@ -375,7 +409,9 @@ fn test_ai_suggest_exclude_confidence_validation_max() {
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("ai")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("ai")
         .arg("suggest-exclude")
         .arg(relative_path.to_str().unwrap())
         .arg("--confidence")
@@ -402,7 +438,9 @@ fn test_ai_auto_configure_max_depth_zero() {
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("ai")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("ai")
         .arg("auto-configure")
         .arg(relative_path.to_str().unwrap())
         .arg("--max-depth")
@@ -449,7 +487,9 @@ fn test_ai_auto_configure_max_depth_valid() {
 #[test]
 fn test_add_rejects_nonexistent_path() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("add")
+    cmd.arg("--lang")
+        .arg("ja")
+        .arg("add")
         .arg("nonexistent_file_12345")
         .assert()
         .success() // セキュリティ検証は通過
