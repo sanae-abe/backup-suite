@@ -1,0 +1,25 @@
+{
+  "currentState": "VALIDATING",
+  "registry": "crates.io",
+  "transitions": [
+    {
+      "from": "INITIAL",
+      "to": "INITIAL",
+      "timestamp": "2025-11-10T07:59:38.186Z"
+    },
+    {
+      "from": "INITIAL",
+      "to": "DETECTING",
+      "timestamp": "2025-11-10T07:59:38.188Z"
+    },
+    {
+      "from": "DETECTING",
+      "to": "VALIDATING",
+      "timestamp": "2025-11-10T08:01:25.284Z",
+      "metadata": {
+        "registry": "crates.io"
+      }
+    }
+  ],
+  "canResume": true
+}

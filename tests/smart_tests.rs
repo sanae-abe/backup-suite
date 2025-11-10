@@ -2,25 +2,25 @@
 //!
 //! 以下をテスト:
 //! - 型定義（BackupSize, PredictionConfidence等のnewtype pattern）
-//! - エラー処理（AiError）
+//! - エラー処理（SmartError）
 //! - 異常検知（AnomalyDetector, Predictor, PatternAnalyzer）
 //! - 推奨エンジン（ImportanceEvaluator, SuggestEngine, ExcludeRecommendationEngine）
 //!
 //! カバレッジ目標: 95%以上
 
-#![cfg(feature = "ai")]
+#![cfg(feature = "smart")]
 
-use backup_suite::ai::anomaly::{
+use backup_suite::core::history::BackupHistory;
+use backup_suite::smart::anomaly::{
     AnomalyDetector, AnomalyThreshold, PatternAnalyzer, Predictor, RiskLevel, Trend,
 };
-use backup_suite::ai::error::AiError;
-use backup_suite::ai::recommendation::{
+use backup_suite::smart::error::SmartError;
+use backup_suite::smart::recommendation::{
     ExcludeRecommendationEngine, ImportanceEvaluator, SuggestEngine,
 };
-use backup_suite::ai::{
+use backup_suite::smart::{
     BackupSize, DiskCapacity, FailureRate, FileImportance, PredictionConfidence, TimeSeriesPoint,
 };
-use backup_suite::core::history::BackupHistory;
 use chrono::{Duration, TimeZone, Utc};
 use proptest::prelude::*;
 use std::fs;
@@ -207,7 +207,7 @@ mod error_tests {
 
     #[test]
     fn test_insufficient_data_error() {
-        let error = AiError::InsufficientData {
+        let error = SmartError::InsufficientData {
             required: 10,
             actual: 3,
         };
@@ -218,7 +218,7 @@ mod error_tests {
 
     #[test]
     fn test_out_of_range_error() {
-        let error = AiError::OutOfRange {
+        let error = SmartError::OutOfRange {
             value: 150.0,
             min: 0.0,
             max: 100.0,
@@ -232,26 +232,26 @@ mod error_tests {
     fn test_user_friendly_messages() {
         let test_cases = vec![
             (
-                AiError::StatisticsError("計算失敗".to_string()),
+                SmartError::StatisticsError("計算失敗".to_string()),
                 "分析処理中にエラー",
             ),
             (
-                AiError::PredictionError("予測失敗".to_string()),
+                SmartError::PredictionError("予測失敗".to_string()),
                 "分析処理中にエラー",
             ),
             (
-                AiError::InsufficientData {
+                SmartError::InsufficientData {
                     required: 5,
                     actual: 2,
                 },
                 "データが不足",
             ),
             (
-                AiError::InvalidParameter("パラメータエラー".to_string()),
+                SmartError::InvalidParameter("パラメータエラー".to_string()),
                 "設定値が不正",
             ),
             (
-                AiError::OutOfRange {
+                SmartError::OutOfRange {
                     value: 10.0,
                     min: 0.0,
                     max: 5.0,
@@ -273,11 +273,12 @@ mod error_tests {
 
     #[test]
     fn test_error_recoverability() {
-        let io_error = AiError::IoError(std::io::Error::new(std::io::ErrorKind::NotFound, "test"));
+        let io_error =
+            SmartError::IoError(std::io::Error::new(std::io::ErrorKind::NotFound, "test"));
         assert!(io_error.is_recoverable());
         assert!(io_error.is_transient());
 
-        let stat_error = AiError::StatisticsError("test".to_string());
+        let stat_error = SmartError::StatisticsError("test".to_string());
         assert!(!stat_error.is_recoverable());
         assert!(!stat_error.is_transient());
     }
@@ -285,8 +286,8 @@ mod error_tests {
     #[test]
     fn test_from_io_error() {
         let io_error = std::io::Error::new(std::io::ErrorKind::PermissionDenied, "test");
-        let ai_error: AiError = io_error.into();
-        assert!(matches!(ai_error, AiError::IoError(_)));
+        let ai_error: SmartError = io_error.into();
+        assert!(matches!(ai_error, SmartError::IoError(_)));
     }
 }
 
@@ -581,7 +582,7 @@ mod predictor_tests {
     fn test_risk_level_classification() {
         let confidence = PredictionConfidence::new(0.8).unwrap();
 
-        let critical = backup_suite::ai::anomaly::PredictionResult::new(
+        let critical = backup_suite::smart::anomaly::PredictionResult::new(
             DiskCapacity::new(1000),
             -1,
             confidence,
@@ -590,7 +591,7 @@ mod predictor_tests {
         assert_eq!(critical.risk_level(), RiskLevel::Critical);
         assert_eq!(RiskLevel::Critical.description(), "緊急");
 
-        let high = backup_suite::ai::anomaly::PredictionResult::new(
+        let high = backup_suite::smart::anomaly::PredictionResult::new(
             DiskCapacity::new(1000),
             5,
             confidence,
@@ -598,7 +599,7 @@ mod predictor_tests {
         );
         assert_eq!(high.risk_level(), RiskLevel::High);
 
-        let medium = backup_suite::ai::anomaly::PredictionResult::new(
+        let medium = backup_suite::smart::anomaly::PredictionResult::new(
             DiskCapacity::new(1000),
             20,
             confidence,
@@ -606,7 +607,7 @@ mod predictor_tests {
         );
         assert_eq!(medium.risk_level(), RiskLevel::Medium);
 
-        let low = backup_suite::ai::anomaly::PredictionResult::new(
+        let low = backup_suite::smart::anomaly::PredictionResult::new(
             DiskCapacity::new(1000),
             100,
             confidence,

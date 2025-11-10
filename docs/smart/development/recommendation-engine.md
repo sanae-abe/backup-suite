@@ -7,7 +7,7 @@ backup-suiteのインテリジェント推奨エンジンを完全実装しま�
 ### モジュール構成
 
 ```
-src/ai/recommendation/
+src/smart/recommendation/
 ├── mod.rs              # サブモジュールエクスポート
 ├── importance.rs       # ファイル重要度判定エンジン
 ├── suggest.rs          # バックアップ対象自動提案エンジン
@@ -177,7 +177,7 @@ validate_path_safety(path)?;  // ../../../etc/passwd を拒否
 ### テスト実行
 
 ```bash
-cargo test --features ai --lib ai::recommendation
+cargo test --features smart --lib ai::recommendation
 
 running 16 tests
 test result: ok. 16 passed; 0 failed
@@ -185,7 +185,7 @@ test result: ok. 16 passed; 0 failed
 
 ## API公開
 
-`src/ai/mod.rs`で以下のAPIを公開：
+`src/smart/mod.rs`で以下のAPIを公開：
 
 ```rust
 pub use recommendation::{
@@ -209,10 +209,10 @@ pub use recommendation::{
 ## コンパイル確認
 
 ```bash
-cargo build --features ai --lib
+cargo build --features smart --lib
 # Finished `dev` profile [unoptimized + debuginfo] target(s)
 
-cargo clippy --features ai --lib -- -D warnings
+cargo clippy --features smart --lib -- -D warnings
 # Finished `dev` profile (warnings: 0)
 ```
 

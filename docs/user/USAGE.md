@@ -670,14 +670,14 @@ $ backup-suite config open
 
 ---
 
-### `ai` - AI駆動のインテリジェントバックアップ管理（要 `--features ai`）
+### `ai` - AI駆動のインテリジェントバックアップ管理（要 `--features smart`）
 
-AI機能を使用するには、`--features ai` フラグを付けてビルドする必要があります。
+Smart機能を使用するには、`--features smart` フラグを付けてビルドする必要があります。
 
 ```bash
-# AI機能を有効化してビルド
-cargo build --release --features ai
-cargo install --path . --features ai
+# Smart機能を有効化してビルド
+cargo build --release --features smart
+cargo install --path . --features smart
 ```
 
 #### サブコマンド
@@ -688,7 +688,7 @@ cargo install --path . --features ai
 
 **基本構文:**
 ```bash
-backup-suite ai detect [OPTIONS]
+backup-suite smart detect [OPTIONS]
 ```
 
 **オプション:**
@@ -698,18 +698,18 @@ backup-suite ai detect [OPTIONS]
 **使用例:**
 ```bash
 # 過去7日間の異常検知（デフォルト）
-backup-suite ai detect
+backup-suite smart detect
 
 # 過去14日間を詳細分析
-backup-suite ai detect --days 14 --format detailed
+backup-suite smart detect --days 14 --format detailed
 
 # JSON形式で出力
-backup-suite ai detect --format json
+backup-suite smart detect --format json
 ```
 
 **実行例と出力:**
 ```bash
-$ backup-suite ai detect --days 7
+$ backup-suite smart detect --days 7
 🤖 AI異常検知レポート（過去7日間）
 
 ┌────┬──────────────────┬──────────┬──────────┬─────────────────────┐
@@ -730,7 +730,7 @@ $ backup-suite ai detect --days 7
 
 **基本構文:**
 ```bash
-backup-suite ai analyze <PATH> [OPTIONS]
+backup-suite smart analyze <PATH> [OPTIONS]
 ```
 
 **引数:**
@@ -743,18 +743,18 @@ backup-suite ai analyze <PATH> [OPTIONS]
 **使用例:**
 ```bash
 # ディレクトリの重要度分析
-backup-suite ai analyze ~/documents
+backup-suite smart analyze ~/documents
 
 # 詳細な重要度スコア表示
-backup-suite ai analyze ~/documents --detailed
+backup-suite smart analyze ~/documents --detailed
 
 # 推奨コマンド付きで表示
-backup-suite ai analyze ~/projects --suggest-priority
+backup-suite smart analyze ~/projects --suggest-priority
 ```
 
 **実行例と出力:**
 ```bash
-$ backup-suite ai analyze ~/Documents
+$ backup-suite smart analyze ~/Documents
 🤖 AIファイル重要度分析: ~/Documents
 
   重要度スコア: 90/100
@@ -762,7 +762,7 @@ $ backup-suite ai analyze ~/Documents
   カテゴリ: ドキュメント
   理由: PDFファイル（頻繁に更新）
 
-$ backup-suite ai analyze ~/projects --suggest-priority
+$ backup-suite smart analyze ~/projects --suggest-priority
 🤖 AIファイル重要度分析: ~/projects
 
   重要度スコア: 95/100
@@ -781,7 +781,7 @@ $ backup-suite ai analyze ~/projects --suggest-priority
 
 **基本構文:**
 ```bash
-backup-suite ai suggest-exclude <PATH> [OPTIONS]
+backup-suite smart suggest-exclude <PATH> [OPTIONS]
 ```
 
 **引数:**
@@ -794,18 +794,18 @@ backup-suite ai suggest-exclude <PATH> [OPTIONS]
 **使用例:**
 ```bash
 # 除外パターンの推奨を表示
-backup-suite ai suggest-exclude ~/projects
+backup-suite smart suggest-exclude ~/projects
 
 # 推奨パターンを自動的に設定ファイルに適用
-backup-suite ai suggest-exclude ~/projects --apply
+backup-suite smart suggest-exclude ~/projects --apply
 
 # 最小信頼度を50%に設定（より多くの候補を表示）
-backup-suite ai suggest-exclude ~/projects --confidence 0.5
+backup-suite smart suggest-exclude ~/projects --confidence 0.5
 ```
 
 **実行例と出力:**
 ```bash
-$ backup-suite ai suggest-exclude ~/projects
+$ backup-suite smart suggest-exclude ~/projects
 🤖 AI除外パターン推奨: ~/projects
 
 ┌──────────────────┬──────────┬──────────┬─────────────────────┐
@@ -818,7 +818,7 @@ $ backup-suite ai suggest-exclude ~/projects
 
 💡 総削減量: 4.66 GB（バックアップ時間を約30%短縮）
 
-$ backup-suite ai suggest-exclude ~/projects --apply
+$ backup-suite smart suggest-exclude ~/projects --apply
 🤖 AI除外パターン推奨: ~/projects
 
 ┌──────────────────┬──────────┬──────────┬─────────────────────┐
@@ -847,7 +847,7 @@ $ backup-suite ai suggest-exclude ~/projects --apply
 
 **基本構文:**
 ```bash
-backup-suite ai auto-configure <PATHS>... [OPTIONS]
+backup-suite smart auto-configure <PATHS>... [OPTIONS]
 ```
 
 **引数:**
@@ -861,19 +861,19 @@ backup-suite ai auto-configure <PATHS>... [OPTIONS]
 **使用例:**
 ```bash
 # 自動分析・設定（サブディレクトリを個別に評価）
-backup-suite ai auto-configure ~/data
+backup-suite smart auto-configure ~/data
 
 # 対話的に確認しながら設定（サブディレクトリと除外パターンを確認）
-backup-suite ai auto-configure ~/data --interactive
+backup-suite smart auto-configure ~/data --interactive
 
 # ドライラン（設定を適用せず確認のみ）
-backup-suite ai auto-configure ~/data --dry-run
+backup-suite smart auto-configure ~/data --dry-run
 
 # サブディレクトリの探索深度を指定（2階層まで）
-backup-suite ai auto-configure ~/data --max-depth 2
+backup-suite smart auto-configure ~/data --max-depth 2
 
 # 複数ディレクトリを一度に設定
-backup-suite ai auto-configure ~/projects ~/documents ~/photos
+backup-suite smart auto-configure ~/projects ~/documents ~/photos
 ```
 
 **機能:**
@@ -884,7 +884,7 @@ backup-suite ai auto-configure ~/projects ~/documents ~/photos
 
 **実行例と出力:**
 ```bash
-$ backup-suite ai auto-configure ~/projects
+$ backup-suite smart auto-configure ~/projects
 🤖 AI自動設定
 分析中: "/Users/user/projects"
   📁 3個のサブディレクトリを発見: 3
@@ -911,7 +911,7 @@ $ backup-suite ai auto-configure ~/projects
   追加された項目: 3
   総削減量: 4.78 GB（バックアップ時間を約35%短縮）
 
-$ backup-suite ai auto-configure ~/projects --interactive
+$ backup-suite smart auto-configure ~/projects --interactive
 🤖 AI自動設定
 分析中: "/Users/user/projects"
   📁 3個のサブディレクトリを発見: 3
@@ -945,7 +945,7 @@ $ backup-suite ai auto-configure ~/projects --interactive
   追加された項目: 2
   総削減量: 4.78 GB（バックアップ時間を約35%短縮）
 
-$ backup-suite ai auto-configure ~/projects --dry-run
+$ backup-suite smart auto-configure ~/projects --dry-run
 🤖 AI自動設定
 [ドライラン モード]
 
@@ -985,17 +985,17 @@ $ backup-suite ai auto-configure ~/projects --dry-run
 
 1. **初回は `--dry-run` で確認**: 設定内容を確認してから適用
    ```bash
-   backup-suite ai auto-configure ~/projects --dry-run
+   backup-suite smart auto-configure ~/projects --dry-run
    ```
 
 2. **対話モードで細かく制御**: 重要なプロジェクトは対話モードで確認
    ```bash
-   backup-suite ai auto-configure ~/projects --interactive
+   backup-suite smart auto-configure ~/projects --interactive
    ```
 
 3. **深度を調整**: サブプロジェクトが多い場合は深度を増やす
    ```bash
-   backup-suite ai auto-configure ~/projects --max-depth 2
+   backup-suite smart auto-configure ~/projects --max-depth 2
    ```
 
 4. **除外パターンの確認**: 設定後は `backup-suite list` で除外パターンを確認

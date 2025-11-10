@@ -2,9 +2,9 @@
 //!
 //! バックアップ失敗の頻発パターンを検出します。
 
-use crate::ai::error::{AiError, AiResult};
-use crate::ai::types::FailureRate;
 use crate::core::history::{BackupHistory, BackupStatus};
+use crate::smart::error::{SmartError, SmartResult};
+use crate::smart::types::FailureRate;
 use chrono::Timelike;
 use std::collections::HashMap;
 
@@ -15,7 +15,7 @@ use std::collections::HashMap;
 /// # 使用例
 ///
 /// ```rust,no_run
-/// use backup_suite::ai::anomaly::PatternAnalyzer;
+/// use backup_suite::smart::anomaly::PatternAnalyzer;
 /// use backup_suite::BackupHistory;
 ///
 /// let analyzer = PatternAnalyzer::new();
@@ -50,9 +50,9 @@ impl PatternAnalyzer {
     /// # Errors
     ///
     /// データが不足している場合はエラーを返します。
-    pub fn calculate_failure_rate(&self, histories: &[BackupHistory]) -> AiResult<FailureRate> {
+    pub fn calculate_failure_rate(&self, histories: &[BackupHistory]) -> SmartResult<FailureRate> {
         if histories.is_empty() {
-            return Err(AiError::InsufficientData {
+            return Err(SmartError::InsufficientData {
                 required: 1,
                 actual: 0,
             });
@@ -65,7 +65,7 @@ impl PatternAnalyzer {
             .count();
 
         let rate = failed as f64 / total as f64;
-        FailureRate::new(rate).map_err(AiError::InvalidParameter)
+        FailureRate::new(rate).map_err(SmartError::InvalidParameter)
     }
 
     /// 失敗パターンを検出
@@ -76,7 +76,7 @@ impl PatternAnalyzer {
     pub fn detect_failure_patterns(
         &self,
         histories: &[BackupHistory],
-    ) -> AiResult<Vec<FailurePattern>> {
+    ) -> SmartResult<Vec<FailurePattern>> {
         // 失敗したバックアップのみを対象
         let failed_histories: Vec<_> = histories
             .iter()
@@ -120,7 +120,7 @@ impl PatternAnalyzer {
     pub fn calculate_failure_rate_by_category(
         &self,
         histories: &[BackupHistory],
-    ) -> AiResult<HashMap<String, FailureRate>> {
+    ) -> SmartResult<HashMap<String, FailureRate>> {
         if histories.is_empty() {
             return Ok(HashMap::new());
         }
@@ -145,7 +145,7 @@ impl PatternAnalyzer {
         let mut result = HashMap::new();
         for (category, (total, failed)) in category_stats {
             let rate = failed as f64 / total as f64;
-            let failure_rate = FailureRate::new(rate).map_err(AiError::InvalidParameter)?;
+            let failure_rate = FailureRate::new(rate).map_err(SmartError::InvalidParameter)?;
             result.insert(category, failure_rate);
         }
 
@@ -160,7 +160,7 @@ impl PatternAnalyzer {
     pub fn analyze_failure_by_hour(
         &self,
         histories: &[BackupHistory],
-    ) -> AiResult<HashMap<u32, FailureRate>> {
+    ) -> SmartResult<HashMap<u32, FailureRate>> {
         if histories.is_empty() {
             return Ok(HashMap::new());
         }
@@ -181,7 +181,7 @@ impl PatternAnalyzer {
         let mut result = HashMap::new();
         for (hour, (total, failed)) in hour_stats {
             let rate = failed as f64 / total as f64;
-            let failure_rate = FailureRate::new(rate).map_err(AiError::InvalidParameter)?;
+            let failure_rate = FailureRate::new(rate).map_err(SmartError::InvalidParameter)?;
             result.insert(hour, failure_rate);
         }
 

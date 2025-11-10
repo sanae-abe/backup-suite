@@ -271,14 +271,14 @@
 //! ```
 
 // モジュール宣言
-#[cfg(feature = "ai")]
-pub mod ai;
 pub mod compression;
 pub mod core;
 pub mod crypto;
 pub mod error;
 pub mod i18n;
 pub mod security;
+#[cfg(feature = "smart")]
+pub mod smart;
 pub mod ui;
 
 // 主要な型を再エクスポート

@@ -1,8 +1,8 @@
-# AI機能 実機テスト手順書
+# Smart機能 実機テスト手順書
 
 ## 📋 テスト概要
 
-- **対象**: backup-suite AI機能 (Phase 1)
+- **対象**: backup-suite Smart機能 (Phase 1)
 - **テスト環境**: macOS/Linux/Windows
 - **所要時間**: 約15-20分
 - **前提条件**: `cargo install --path . --all-features` 実行済み
@@ -45,10 +45,10 @@ backup-suite --version
 
 ### Test 1: AI helpコマンド
 
-**目的**: AI機能のヘルプ表示確認
+**目的**: Smart機能のヘルプ表示確認
 
 ```bash
-backup-suite ai help
+backup-suite smart help
 ```
 
 **期待される出力**:
@@ -62,13 +62,13 @@ backup-suite ai help
 
 使用例:
   # 直近7日間の異常検知
-  backup-suite ai detect --days 7
+  backup-suite smart detect --days 7
 
   # ファイル重要度分析
-  backup-suite ai analyze /path/to/file
+  backup-suite smart analyze /path/to/file
 
   # AI除外推奨を取得
-  backup-suite ai suggest-exclude /path/to/dir
+  backup-suite smart suggest-exclude /path/to/dir
 ```
 
 **チェックポイント**:
@@ -88,7 +88,7 @@ backup-suite ai help
 
 **方法1: ワンライナー（推奨）**
 ```bash
-[ -f ~/.config/backup-suite/history.toml ] && mv ~/.config/backup-suite/history.toml ~/.config/backup-suite/history.toml.backup; backup-suite ai detect --days 7; [ -f ~/.config/backup-suite/history.toml.backup ] && mv ~/.config/backup-suite/history.toml.backup ~/.config/backup-suite/history.toml
+[ -f ~/.config/backup-suite/history.toml ] && mv ~/.config/backup-suite/history.toml ~/.config/backup-suite/history.toml.backup; backup-suite smart detect --days 7; [ -f ~/.config/backup-suite/history.toml.backup ] && mv ~/.config/backup-suite/history.toml.backup ~/.config/backup-suite/history.toml
 ```
 
 **方法2: スクリプト形式**
@@ -99,7 +99,7 @@ if [ -f ~/.config/backup-suite/history.toml ]; then
 fi
 
 # データなしケースのテスト
-backup-suite ai detect --days 7
+backup-suite smart detect --days 7
 
 # 履歴を復元（バックアップが存在する場合のみ）
 if [ -f ~/.config/backup-suite/history.toml.backup ]; then
@@ -116,7 +116,7 @@ if (Test-Path $historyPath) {
 }
 
 # データなしケースのテスト
-backup-suite ai detect --days 7
+backup-suite smart detect --days 7
 
 # 履歴を復元
 if (Test-Path "$historyPath.backup") {
@@ -145,7 +145,7 @@ backup-suite add ~/backup-suite-test/project --priority high
 backup-suite run --priority high
 
 # 異常検知実行
-backup-suite ai detect --days 7
+backup-suite smart detect --days 7
 ```
 
 **期待される出力**:
@@ -170,7 +170,7 @@ backup-suite ai detect --days 7
 #### 3-1. ソースコードファイル
 
 ```bash
-backup-suite ai analyze ~/backup-suite-test/project/src/index.js
+backup-suite smart analyze ~/backup-suite-test/project/src/index.js
 ```
 
 **期待される出力**:
@@ -189,7 +189,7 @@ backup-suite ai analyze ~/backup-suite-test/project/src/index.js
 #### 3-2. OS固有ファイル
 
 ```bash
-backup-suite ai analyze ~/backup-suite-test/project/.DS_Store
+backup-suite smart analyze ~/backup-suite-test/project/.DS_Store
 ```
 
 **期待される出力**:
@@ -211,7 +211,7 @@ backup-suite ai analyze ~/backup-suite-test/project/.DS_Store
 #### 3-3. 存在しないファイル
 
 ```bash
-backup-suite ai analyze /nonexistent/file.txt
+backup-suite smart analyze /nonexistent/file.txt
 ```
 
 **期待される出力**:
@@ -232,7 +232,7 @@ backup-suite ai analyze /nonexistent/file.txt
 #### 4-1. 基本的な除外パターン提案（信頼度80%以上）
 
 ```bash
-backup-suite ai suggest-exclude ~/backup-suite-test/project
+backup-suite smart suggest-exclude ~/backup-suite-test/project
 ```
 
 **期待される出力**:
@@ -261,7 +261,7 @@ backup-suite ai suggest-exclude ~/backup-suite-test/project
 #### 4-2. より多くの提案を表示（信頼度60%以上）
 
 ```bash
-backup-suite ai suggest-exclude ~/backup-suite-test/project --confidence 0.6
+backup-suite smart suggest-exclude ~/backup-suite-test/project --confidence 0.6
 ```
 
 **期待される出力**:
@@ -303,7 +303,7 @@ backup-suite remove ~/backup-suite-test/project
 #### 5-1. 基本的な自動設定
 
 ```bash
-backup-suite ai auto-configure ~/backup-suite-test/project
+backup-suite smart auto-configure ~/backup-suite-test/project
 ```
 
 **期待される出力**:
@@ -330,7 +330,7 @@ backup-suite ai auto-configure ~/backup-suite-test/project
 #### 5-2. ドライランモード
 
 ```bash
-backup-suite ai auto-configure ~/backup-suite-test/project2 --dry-run
+backup-suite smart auto-configure ~/backup-suite-test/project2 --dry-run
 ```
 
 **期待される出力**:
@@ -368,7 +368,7 @@ done
 #### 6-2. 除外パターン推奨（パフォーマンス測定）
 
 ```bash
-time backup-suite ai suggest-exclude ~/backup-suite-test/large-project
+time backup-suite smart suggest-exclude ~/backup-suite-test/large-project
 ```
 
 **期待される結果**:
@@ -384,7 +384,7 @@ time backup-suite ai suggest-exclude ~/backup-suite-test/large-project
 #### 7-1. 無効なパス
 
 ```bash
-backup-suite ai analyze /invalid/path/file.txt
+backup-suite smart analyze /invalid/path/file.txt
 ```
 
 **チェックポイント**:
@@ -394,7 +394,7 @@ backup-suite ai analyze /invalid/path/file.txt
 #### 7-2. パストラバーサル攻撃
 
 ```bash
-backup-suite ai suggest-exclude "../../etc"
+backup-suite smart suggest-exclude "../../etc"
 ```
 
 **チェックポイント**:
@@ -406,7 +406,7 @@ backup-suite ai suggest-exclude "../../etc"
 ```bash
 # 100階層のディレクトリ作成
 mkdir -p ~/backup-suite-test/deep/$(printf 'a/%.0s' {1..100})
-backup-suite ai suggest-exclude ~/backup-suite-test/deep
+backup-suite smart suggest-exclude ~/backup-suite-test/deep
 ```
 
 **チェックポイント**:
@@ -422,7 +422,7 @@ backup-suite ai suggest-exclude ~/backup-suite-test/deep
 #### 8-1. 英語
 
 ```bash
-LANG=en_US.UTF-8 backup-suite ai help
+LANG=en_US.UTF-8 backup-suite smart help
 ```
 
 **期待される出力**:
@@ -440,7 +440,7 @@ LANG=en_US.UTF-8 backup-suite ai help
 #### 8-2. 中国語（簡体字）
 
 ```bash
-LANG=zh_CN.UTF-8 backup-suite ai help
+LANG=zh_CN.UTF-8 backup-suite smart help
 ```
 
 **期待される出力**:
@@ -463,16 +463,16 @@ LANG=zh_CN.UTF-8 backup-suite ai help
 
 ```bash
 # 1. ディレクトリ分析
-backup-suite ai suggest-exclude ~/backup-suite-test/project
+backup-suite smart suggest-exclude ~/backup-suite-test/project
 
 # 2. ファイル重要度分析
-backup-suite ai analyze ~/backup-suite-test/project/src/index.js
+backup-suite smart analyze ~/backup-suite-test/project/src/index.js
 
 # 3. バックアップ実行
 backup-suite run --priority high
 
 # 4. 異常検知
-backup-suite ai detect --days 7
+backup-suite smart detect --days 7
 ```
 
 **チェックポイント**:
@@ -491,7 +491,7 @@ backup-suite ai detect --days 7
 # シンボリックリンク作成
 ln -s /etc/passwd ~/backup-suite-test/project/symlink
 
-backup-suite ai suggest-exclude ~/backup-suite-test/project
+backup-suite smart suggest-exclude ~/backup-suite-test/project
 ```
 
 **チェックポイント**:
@@ -502,7 +502,7 @@ backup-suite ai suggest-exclude ~/backup-suite-test/project
 
 ```bash
 # 存在しないファイルでエラー
-backup-suite ai analyze ~/.ssh/id_rsa 2>&1 | grep -i "password\|key\|secret"
+backup-suite smart analyze ~/.ssh/id_rsa 2>&1 | grep -i "password\|key\|secret"
 ```
 
 **チェックポイント**:

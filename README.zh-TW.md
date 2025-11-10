@@ -17,7 +17,7 @@
 - [安裝方法](#安裝方法)
 - [快速入門](#快速入門)
 - [基本使用](#基本使用)
-- [AI 功能（智慧備份）](#-ai-功能智慧備份)
+- [AI 功能（智慧備份）](#-smart-功能智慧備份)
 - [設定檔](#設定檔)
 - [指令參考](#指令參考)
 - [更新與移除](#更新與移除)
@@ -117,7 +117,7 @@ brew install backup-suite
 
 ```bash
 # 啟用 AI 功能安裝（推薦）
-cargo install backup-suite --features ai
+cargo install backup-suite --features smart
 
 # 不啟用 AI 功能安裝（輕量版）
 cargo install backup-suite
@@ -135,8 +135,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.cargo/env
 
 # 3. 建置並安裝（含 AI 功能）
-cargo build --release --features ai
-cargo install --path . --features ai
+cargo build --release --features smart
+cargo install --path . --features smart
 
 # 4. 驗證執行
 backup-suite --version
@@ -220,15 +220,15 @@ backup-suite schedule enable
 
 ### 安裝
 
-要使用 AI 功能，需要在建置時使用 `--features ai` 旗標。
+要使用 AI 功能，需要在建置時使用 `--features smart` 旗標。
 
 ```bash
 # 啟用 AI 功能建置
-cargo build --release --features ai
-cargo install --path . --features ai
+cargo build --release --features smart
+cargo install --path . --features smart
 
 # 或透過 Cargo 安裝
-cargo install backup-suite --features ai
+cargo install backup-suite --features smart
 ```
 
 ### 主要功能
@@ -239,16 +239,16 @@ cargo install backup-suite --features ai
 
 ```bash
 # 自動分析和設定（分別評估子目錄）
-backup-suite ai auto-configure ~/data
+backup-suite smart auto-configure ~/data
 
 # 以互動方式確認並設定（確認子目錄和排除模式）
-backup-suite ai auto-configure ~/data --interactive
+backup-suite smart auto-configure ~/data --interactive
 
 # 試執行（不套用設定，僅確認）
-backup-suite ai auto-configure ~/data --dry-run
+backup-suite smart auto-configure ~/data --dry-run
 
 # 指定子目錄探索深度（預設：1）
-backup-suite ai auto-configure ~/data --max-depth 2
+backup-suite smart auto-configure ~/data --max-depth 2
 ```
 
 **功能**：
@@ -292,13 +292,13 @@ backup-suite ai auto-configure ~/data --max-depth 2
 
 ```bash
 # 分析目錄重要性
-backup-suite ai analyze ~/documents
+backup-suite smart analyze ~/documents
 
 # 顯示詳細的重要性分數
-backup-suite ai analyze ~/documents --detailed
+backup-suite smart analyze ~/documents --detailed
 
 # 僅分析特定檔案類型
-backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
+backup-suite smart analyze ~/projects --filter "*.rs,*.toml"
 ```
 
 **評估標準**：
@@ -328,13 +328,13 @@ backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
 
 ```bash
 # 顯示排除模式建議
-backup-suite ai suggest-exclude ~/projects
+backup-suite smart suggest-exclude ~/projects
 
 # 自動將建議模式套用到設定檔
-backup-suite ai suggest-exclude ~/projects --apply
+backup-suite smart suggest-exclude ~/projects --apply
 
 # 指定最小檔案大小（預設：100MB）
-backup-suite ai suggest-exclude ~/projects --min-size 50MB
+backup-suite smart suggest-exclude ~/projects --min-size 50MB
 ```
 
 **偵測目標**：
@@ -364,10 +364,10 @@ backup-suite ai suggest-exclude ~/projects --min-size 50MB
 
 ```bash
 # 偵測過去 7 天的異常
-backup-suite ai detect --days 7
+backup-suite smart detect --days 7
 
 # 更詳細的分析（也顯示統計資訊）
-backup-suite ai detect --days 14 --detailed
+backup-suite smart detect --days 14 --detailed
 ```
 
 **偵測內容**：
@@ -410,7 +410,7 @@ cargo install --path .
 - ✅ 敏感資訊傳輸：零
 - ✅ 資料收集：無
 
-詳情請參閱 [AI 功能文件](docs/ai/features.md)。
+詳情請參閱 [AI 功能文件](docs/smart/features.md)。
 
 ## 設定檔
 
@@ -492,7 +492,7 @@ backup-suite schedule status
 | **config**     | 設定管理                   | `backup-suite config set-destination ~/backups` |
 | **open**       | 開啟備份目錄               | `backup-suite open`                             |
 | **completion** | 產生 shell 補完            | `backup-suite completion zsh`                   |
-| **ai**         | AI 功能（需要 `--features ai`）| `backup-suite ai detect --days 7`            |
+| **smart**         | AI 功能（需要 `--features smart`）| `backup-suite smart detect --days 7`            |
 
 ## 更新與移除
 
@@ -503,12 +503,12 @@ backup-suite schedule status
 brew upgrade backup-suite
 
 # Cargo
-cargo install backup-suite --force --features ai
+cargo install backup-suite --force --features smart
 
 # 從原始碼
 cd backup-suite
 git pull origin main
-cargo install --path . --force --features ai
+cargo install --path . --force --features smart
 ```
 
 ### 移除
@@ -556,7 +556,7 @@ rm -rf ~/.local/share/backup-suite/
 - **加密**：AES-256-GCM、Argon2
 - **設定**：TOML（人類可讀的設定格式）
 - **排程任務**：macOS launchctl、Linux systemd
-- **AI/ML**：statrs（統計計算）、rayon（並行處理）
+- **Smart/統計分析**：statrs（統計計算）、rayon（並行處理）
 
 ## 支援平台
 

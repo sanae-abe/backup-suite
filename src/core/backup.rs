@@ -287,9 +287,9 @@ impl BackupRunner {
         let (_key_manager, master_key, encryption_salt) =
             if self.enable_encryption && self.password.is_some() {
                 let km = KeyManager::default();
-                // SAFETY: Checked by is_some() above
-                #[allow(clippy::unwrap_used)]
-                let password = self.password.as_ref().unwrap();
+                let password = self.password.as_ref().ok_or_else(|| {
+                    anyhow::anyhow!("暗号化が有効ですがパスワードが設定されていません")
+                })?;
                 let (mk, salt) = km
                     .create_master_key(password)
                     .context("マスターキー生成失敗")?;
@@ -343,6 +343,21 @@ impl BackupRunner {
                             }
                         }
 
+                        // ファイルサイズチェック（100GB超の警告）
+                        if let Ok(metadata) = target.path.metadata() {
+                            let file_size = metadata.len();
+                            const LARGE_FILE_THRESHOLD: u64 = 100 * 1024 * 1024 * 1024; // 100GB
+
+                            if file_size > LARGE_FILE_THRESHOLD {
+                                eprintln!(
+                                    "⚠️  警告: 大容量ファイル検出 ({}GB): {:?}",
+                                    file_size / (1024 * 1024 * 1024),
+                                    target.path
+                                );
+                                eprintln!("    メモリ不足のリスクがあります。処理を続行しますが、システム監視を推奨します。");
+                            }
+                        }
+
                         // ファイル名を安全に取得してバックアップ先を決定
                         if let Some(file_name) = target.path.file_name() {
                             // safe_joinを使用してディレクトリトラバーサル対策
@@ -360,6 +375,21 @@ impl BackupRunner {
                     {
                         if entry.file_type().is_file() {
                             let source = entry.path().to_path_buf();
+
+                            // ファイルサイズチェック（100GB超の警告）
+                            if let Ok(metadata) = entry.metadata() {
+                                let file_size = metadata.len();
+                                const LARGE_FILE_THRESHOLD: u64 = 100 * 1024 * 1024 * 1024; // 100GB
+
+                                if file_size > LARGE_FILE_THRESHOLD {
+                                    eprintln!(
+                                        "⚠️  警告: 大容量ファイル検出 ({}GB): {:?}",
+                                        file_size / (1024 * 1024 * 1024),
+                                        source
+                                    );
+                                    eprintln!("    メモリ不足のリスクがあります。処理を続行しますが、システム監視を推奨します。");
+                                }
+                            }
 
                             // 相対パスを保持してバックアップ先を決定（セキュリティ強化版）
                             match source.strip_prefix(&target.path) {

@@ -586,14 +586,14 @@ EDITOR=code backup-suite config open  # VS Code
 
 ---
 
-### `ai` - AI 驅動的智慧備份管理（需要 `--features ai`）
+### `ai` - AI 驅動的智慧備份管理（需要 `--features smart`）
 
-要使用 AI 功能，需要在建置時使用 `--features ai` 旗標。
+要使用 AI 功能，需要在建置時使用 `--features smart` 旗標。
 
 ```bash
 # 啟用 AI 功能建置
-cargo build --release --features ai
-cargo install --path . --features ai
+cargo build --release --features smart
+cargo install --path . --features smart
 ```
 
 #### 子指令
@@ -604,7 +604,7 @@ cargo install --path . --features ai
 
 **基本語法：**
 ```bash
-backup-suite ai detect [OPTIONS]
+backup-suite smart detect [OPTIONS]
 ```
 
 **選項：**
@@ -614,13 +614,13 @@ backup-suite ai detect [OPTIONS]
 **使用範例：**
 ```bash
 # 偵測過去 7 天的異常（預設）
-backup-suite ai detect
+backup-suite smart detect
 
 # 詳細分析過去 14 天
-backup-suite ai detect --days 14 --format detailed
+backup-suite smart detect --days 14 --format detailed
 
 # 以 JSON 格式輸出
-backup-suite ai detect --format json
+backup-suite smart detect --format json
 ```
 
 **執行範例和輸出：**
@@ -647,7 +647,7 @@ backup-suite ai detect --format json
 
 **基本語法：**
 ```bash
-backup-suite ai analyze <PATH> [OPTIONS]
+backup-suite smart analyze <PATH> [OPTIONS]
 ```
 
 **參數：**
@@ -660,13 +660,13 @@ backup-suite ai analyze <PATH> [OPTIONS]
 **使用範例：**
 ```bash
 # 分析目錄重要性
-backup-suite ai analyze ~/documents
+backup-suite smart analyze ~/documents
 
 # 顯示詳細的重要性分數
-backup-suite ai analyze ~/documents --detailed
+backup-suite smart analyze ~/documents --detailed
 
 # 顯示優先順序建議
-backup-suite ai analyze ~/projects --suggest-priority
+backup-suite smart analyze ~/projects --suggest-priority
 ```
 
 **評估標準：**
@@ -683,7 +683,7 @@ backup-suite ai analyze ~/projects --suggest-priority
   類別：文件
   理由：PDF 檔案（頻繁更新）
 
-$ backup-suite ai analyze ~/projects --suggest-priority
+$ backup-suite smart analyze ~/projects --suggest-priority
 🤖 AI 檔案重要性分析：~/projects
 
   重要性分數：95/100
@@ -702,7 +702,7 @@ $ backup-suite ai analyze ~/projects --suggest-priority
 
 **基本語法：**
 ```bash
-backup-suite ai suggest-exclude <PATH> [OPTIONS]
+backup-suite smart suggest-exclude <PATH> [OPTIONS]
 ```
 
 **參數：**
@@ -715,18 +715,18 @@ backup-suite ai suggest-exclude <PATH> [OPTIONS]
 **使用範例：**
 ```bash
 # 顯示排除模式建議
-backup-suite ai suggest-exclude ~/projects
+backup-suite smart suggest-exclude ~/projects
 
 # 自動將建議模式套用到設定
-backup-suite ai suggest-exclude ~/projects --apply
+backup-suite smart suggest-exclude ~/projects --apply
 
 # 將最小信賴度設為 50%（顯示更多候選）
-backup-suite ai suggest-exclude ~/projects --confidence 0.5
+backup-suite smart suggest-exclude ~/projects --confidence 0.5
 ```
 
 **執行範例和輸出：**
 ```bash
-$ backup-suite ai suggest-exclude ~/projects
+$ backup-suite smart suggest-exclude ~/projects
 🤖 AI 排除模式建議：~/projects
 
 ┌──────────────────┬──────────┬──────────┬─────────────────────┐
@@ -748,7 +748,7 @@ $ backup-suite ai suggest-exclude ~/projects
 
 **基本語法：**
 ```bash
-backup-suite ai auto-configure <PATHS>... [OPTIONS]
+backup-suite smart auto-configure <PATHS>... [OPTIONS]
 ```
 
 **參數：**
@@ -762,19 +762,19 @@ backup-suite ai auto-configure <PATHS>... [OPTIONS]
 **使用範例：**
 ```bash
 # 自動分析和設定（分別評估子目錄）
-backup-suite ai auto-configure ~/data
+backup-suite smart auto-configure ~/data
 
 # 以互動方式確認並設定（確認子目錄和排除模式）
-backup-suite ai auto-configure ~/data --interactive
+backup-suite smart auto-configure ~/data --interactive
 
 # 試執行（不套用設定，僅確認）
-backup-suite ai auto-configure ~/data --dry-run
+backup-suite smart auto-configure ~/data --dry-run
 
 # 指定子目錄探索深度（最多 2 層）
-backup-suite ai auto-configure ~/data --max-depth 2
+backup-suite smart auto-configure ~/data --max-depth 2
 
 # 一次設定多個目錄
-backup-suite ai auto-configure ~/projects ~/documents ~/photos
+backup-suite smart auto-configure ~/projects ~/documents ~/photos
 ```
 
 **功能：**
@@ -816,17 +816,17 @@ backup-suite ai auto-configure ~/projects ~/documents ~/photos
 
 1. **首次使用 `--dry-run` 確認**：確認設定內容後再套用
    ```bash
-   backup-suite ai auto-configure ~/projects --dry-run
+   backup-suite smart auto-configure ~/projects --dry-run
    ```
 
 2. **使用互動模式進行細粒度控制**：對重要專案使用互動模式確認
    ```bash
-   backup-suite ai auto-configure ~/projects --interactive
+   backup-suite smart auto-configure ~/projects --interactive
    ```
 
 3. **調整深度**：如果子專案較多，可增加深度
    ```bash
-   backup-suite ai auto-configure ~/projects --max-depth 2
+   backup-suite smart auto-configure ~/projects --max-depth 2
    ```
 
 4. **確認排除模式**：設定後使用 `backup-suite list` 確認排除模式

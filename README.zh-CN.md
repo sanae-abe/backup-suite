@@ -17,7 +17,7 @@
 - [安装方法](#安装方法)
 - [快速入门](#快速入门)
 - [基本使用](#基本使用)
-- [AI 功能（智能备份）](#-ai-功能智能备份)
+- [AI 功能（智能备份）](#-smart-功能智能备份)
 - [配置文件](#配置文件)
 - [命令参考](#命令参考)
 - [更新与卸载](#更新与卸载)
@@ -117,7 +117,7 @@ brew install backup-suite
 
 ```bash
 # 启用 AI 功能安装（推荐）
-cargo install backup-suite --features ai
+cargo install backup-suite --features smart
 
 # 不启用 AI 功能安装（轻量版）
 cargo install backup-suite
@@ -135,8 +135,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.cargo/env
 
 # 3. 构建并安装（带 AI 功能）
-cargo build --release --features ai
-cargo install --path . --features ai
+cargo build --release --features smart
+cargo install --path . --features smart
 
 # 4. 验证运行
 backup-suite --version
@@ -220,15 +220,15 @@ backup-suite schedule enable
 
 ### 安装
 
-要使用 AI 功能，需要在构建时使用 `--features ai` 标志。
+要使用 AI 功能，需要在构建时使用 `--features smart` 标志。
 
 ```bash
 # 启用 AI 功能构建
-cargo build --release --features ai
-cargo install --path . --features ai
+cargo build --release --features smart
+cargo install --path . --features smart
 
 # 或通过 Cargo 安装
-cargo install backup-suite --features ai
+cargo install backup-suite --features smart
 ```
 
 ### 主要功能
@@ -239,16 +239,16 @@ cargo install backup-suite --features ai
 
 ```bash
 # 自动分析和配置（分别评估子目录）
-backup-suite ai auto-configure ~/data
+backup-suite smart auto-configure ~/data
 
 # 以交互方式确认并配置（确认子目录和排除模式）
-backup-suite ai auto-configure ~/data --interactive
+backup-suite smart auto-configure ~/data --interactive
 
 # 试运行（不应用配置，仅确认）
-backup-suite ai auto-configure ~/data --dry-run
+backup-suite smart auto-configure ~/data --dry-run
 
 # 指定子目录探索深度（默认：1）
-backup-suite ai auto-configure ~/data --max-depth 2
+backup-suite smart auto-configure ~/data --max-depth 2
 ```
 
 **功能**：
@@ -292,13 +292,13 @@ backup-suite ai auto-configure ~/data --max-depth 2
 
 ```bash
 # 分析目录重要性
-backup-suite ai analyze ~/documents
+backup-suite smart analyze ~/documents
 
 # 显示详细的重要性分数
-backup-suite ai analyze ~/documents --detailed
+backup-suite smart analyze ~/documents --detailed
 
 # 仅分析特定文件类型
-backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
+backup-suite smart analyze ~/projects --filter "*.rs,*.toml"
 ```
 
 **评估标准**：
@@ -328,13 +328,13 @@ backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
 
 ```bash
 # 显示排除模式推荐
-backup-suite ai suggest-exclude ~/projects
+backup-suite smart suggest-exclude ~/projects
 
 # 自动将推荐模式应用到配置文件
-backup-suite ai suggest-exclude ~/projects --apply
+backup-suite smart suggest-exclude ~/projects --apply
 
 # 指定最小文件大小（默认：100MB）
-backup-suite ai suggest-exclude ~/projects --min-size 50MB
+backup-suite smart suggest-exclude ~/projects --min-size 50MB
 ```
 
 **检测目标**：
@@ -364,10 +364,10 @@ backup-suite ai suggest-exclude ~/projects --min-size 50MB
 
 ```bash
 # 检测过去 7 天的异常
-backup-suite ai detect --days 7
+backup-suite smart detect --days 7
 
 # 更详细的分析（也显示统计信息）
-backup-suite ai detect --days 14 --detailed
+backup-suite smart detect --days 14 --detailed
 ```
 
 **检测内容**：
@@ -410,7 +410,7 @@ cargo install --path .
 - ✅ 敏感信息传输：零
 - ✅ 数据收集：无
 
-详情请参阅 [AI 功能文档](docs/ai/features.md)。
+详情请参阅 [AI 功能文档](docs/smart/features.md)。
 
 ## 配置文件
 
@@ -492,7 +492,7 @@ backup-suite schedule status
 | **config**     | 配置管理                   | `backup-suite config set-destination ~/backups` |
 | **open**       | 打开备份目录               | `backup-suite open`                             |
 | **completion** | 生成 shell 补全            | `backup-suite completion zsh`                   |
-| **ai**         | AI 功能（需要 `--features ai`）| `backup-suite ai detect --days 7`            |
+| **smart**         | AI 功能（需要 `--features smart`）| `backup-suite smart detect --days 7`            |
 
 ## 更新与卸载
 
@@ -503,12 +503,12 @@ backup-suite schedule status
 brew upgrade backup-suite
 
 # Cargo
-cargo install backup-suite --force --features ai
+cargo install backup-suite --force --features smart
 
 # 从源码
 cd backup-suite
 git pull origin main
-cargo install --path . --force --features ai
+cargo install --path . --force --features smart
 ```
 
 ### 卸载
@@ -556,7 +556,7 @@ rm -rf ~/.local/share/backup-suite/
 - **加密**：AES-256-GCM、Argon2
 - **配置**：TOML（人类可读的配置格式）
 - **计划任务**：macOS launchctl、Linux systemd
-- **AI/ML**：statrs（统计计算）、rayon（并行处理）
+- **Smart/统计分析**：statrs（统计计算）、rayon（并行处理）
 
 ## 支持平台
 

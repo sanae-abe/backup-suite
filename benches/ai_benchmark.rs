@@ -10,28 +10,28 @@
 //! - 統計計算: < 1ms（1000件）
 //! - メモリ使用量: < 50MB（10,000件処理時）
 
-#[cfg(feature = "ai")]
-use backup_suite::ai::anomaly::{AnomalyDetector, PatternAnalyzer, Predictor};
-#[cfg(feature = "ai")]
-use backup_suite::ai::recommendation::{ExcludeRecommendationEngine, ImportanceEvaluator};
-#[cfg(feature = "ai")]
-use backup_suite::ai::types::{BackupSize, DiskCapacity};
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 use backup_suite::core::history::{BackupHistory, BackupStatus};
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
+use backup_suite::smart::anomaly::{AnomalyDetector, PatternAnalyzer, Predictor};
+#[cfg(feature = "smart")]
+use backup_suite::smart::recommendation::{ExcludeRecommendationEngine, ImportanceEvaluator};
+#[cfg(feature = "smart")]
+use backup_suite::smart::types::{BackupSize, DiskCapacity};
+#[cfg(feature = "smart")]
 use backup_suite::Priority;
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 use chrono::{Duration, Utc};
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 use std::hint::black_box;
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 use std::path::PathBuf;
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 use tempfile::TempDir;
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// モック履歴データ生成ヘルパー
 #[allow(clippy::cast_possible_wrap)]
 fn create_mock_histories(count: usize, base_size: u64) -> Vec<BackupHistory> {
@@ -57,7 +57,7 @@ fn create_mock_histories(count: usize, base_size: u64) -> Vec<BackupHistory> {
         .collect()
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// 異常検知ベンチマーク（目標: < 5ms）
 fn bench_anomaly_detection(c: &mut Criterion) {
     let mut group = c.benchmark_group("anomaly_detection");
@@ -85,7 +85,7 @@ fn bench_anomaly_detection(c: &mut Criterion) {
     group.finish();
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// ディスク容量予測ベンチマーク（目標: < 50ms）
 fn bench_disk_prediction(c: &mut Criterion) {
     let mut group = c.benchmark_group("disk_prediction");
@@ -117,7 +117,7 @@ fn bench_disk_prediction(c: &mut Criterion) {
     group.finish();
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// パターン分析ベンチマーク
 fn bench_pattern_analysis(c: &mut Criterion) {
     let mut group = c.benchmark_group("pattern_analysis");
@@ -151,7 +151,7 @@ fn bench_pattern_analysis(c: &mut Criterion) {
     group.finish();
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// ファイル重要度評価ベンチマーク（目標: < 100μs/ファイル）
 fn bench_importance_evaluation(c: &mut Criterion) {
     let mut group = c.benchmark_group("importance_evaluation");
@@ -173,7 +173,7 @@ fn bench_importance_evaluation(c: &mut Criterion) {
     group.finish();
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// ファイル重要度評価（キャッシュ）ベンチマーク
 fn bench_importance_cached(c: &mut Criterion) {
     let mut group = c.benchmark_group("importance_cached");
@@ -196,7 +196,7 @@ fn bench_importance_cached(c: &mut Criterion) {
     group.finish();
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// 除外パターン推奨ベンチマーク
 fn bench_exclude_recommendation(c: &mut Criterion) {
     let mut group = c.benchmark_group("exclude_recommendation");
@@ -226,7 +226,7 @@ fn bench_exclude_recommendation(c: &mut Criterion) {
     group.finish();
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// 統計計算パフォーマンスベンチマーク（目標: < 1ms/1000件）
 fn bench_statistics_computation(c: &mut Criterion) {
     let mut group = c.benchmark_group("statistics_computation");
@@ -294,7 +294,7 @@ fn bench_statistics_computation(c: &mut Criterion) {
     group.finish();
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// 大規模データ処理ベンチマーク（スケーラビリティ検証）
 fn bench_large_scale_processing(c: &mut Criterion) {
     let mut group = c.benchmark_group("large_scale_processing");
@@ -347,7 +347,7 @@ fn bench_large_scale_processing(c: &mut Criterion) {
     group.finish();
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// エンドツーエンド推奨エンジンベンチマーク
 fn bench_recommendation_pipeline(c: &mut Criterion) {
     let mut group = c.benchmark_group("recommendation_pipeline");
@@ -405,7 +405,7 @@ fn bench_recommendation_pipeline(c: &mut Criterion) {
     group.finish();
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// メモリ使用量ベンチマーク（定性的評価）
 fn bench_memory_usage(c: &mut Criterion) {
     let mut group = c.benchmark_group("memory_usage");
@@ -447,7 +447,7 @@ fn bench_memory_usage(c: &mut Criterion) {
     group.finish();
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 /// キャッシュ効率性ベンチマーク
 fn bench_cache_efficiency(c: &mut Criterion) {
     let mut group = c.benchmark_group("cache_efficiency");
@@ -483,7 +483,7 @@ fn bench_cache_efficiency(c: &mut Criterion) {
     group.finish();
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 criterion_group!(
     benches,
     bench_anomaly_detection,
@@ -499,10 +499,10 @@ criterion_group!(
     bench_cache_efficiency
 );
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 criterion_main!(benches);
 
-#[cfg(not(feature = "ai"))]
+#[cfg(not(feature = "smart"))]
 fn main() {
     eprintln!("AI benchmarks require the 'ai' feature to be enabled");
     eprintln!("Run with: cargo bench --features ai");

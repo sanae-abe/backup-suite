@@ -17,7 +17,7 @@
 - [インストール](#インストール)
 - [クイックスタート](#クイックスタート)
 - [基本的な使用方法](#基本的な使用方法)
-- [AI機能（インテリジェントバックアップ）](#-ai機能インテリジェントバックアップ)
+- [Smart機能（インテリジェントバックアップ）](#-smart機能インテリジェントバックアップ)
 - [設定ファイル](#設定ファイル)
 - [コマンドリファレンス](#コマンドリファレンス)
 - [アップデート・アンインストール](#アップデートアンインストール)
@@ -33,12 +33,12 @@
 - **写真や個人ファイル**は週次バックアップ
 - **アーカイブファイル**は月次バックアップ
 
-### 🤖 AI駆動のインテリジェント管理
+### 🤖 Smart駆動のインテリジェント管理
 - **自動最適化**: ディレクトリ分析による最適なバックアップ設定の自動生成
 - **ファイル重要度分析**: ディレクトリ内のファイルを重要度別に自動分類（~8秒/10,000ファイル）
 - **除外パターン推奨**: 不要ファイル（キャッシュ、ビルド成果物）を自動検出・除外提案
 - **異常検知**: 統計的分析でバックアップサイズ異常を自動検知（< 1ms）
-- **完全オフライン**: すべてのAI機能はローカルで動作、プライバシー完全保護
+- **完全オフライン**: すべてのSmart機能はローカルで動作、プライバシー完全保護
 
 ### 🔐 軍事レベルの暗号化保護
 - **AES-256-GCM暗号化**で解読は事実上不可能
@@ -116,10 +116,10 @@ brew install backup-suite
 ### Cargoでインストール
 
 ```bash
-# AI機能を有効化してインストール（推奨）
-cargo install backup-suite --features ai
+# Smart機能を有効化してインストール（推奨）
+cargo install backup-suite --features smart
 
-# AI機能なしでインストール（軽量版）
+# Smart機能なしでインストール（軽量版）
 cargo install backup-suite
 ```
 
@@ -134,9 +134,9 @@ cd backup-suite
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.cargo/env
 
-# 3. ビルド＆インストール（AI機能あり）
-cargo build --release --features ai
-cargo install --path . --features ai
+# 3. ビルド＆インストール（Smart機能あり）
+cargo build --release --features smart
+cargo install --path . --features smart
 
 # 4. 動作確認
 backup-suite --version
@@ -214,41 +214,41 @@ backup-suite schedule setup --high daily --medium weekly --low monthly
 backup-suite schedule enable
 ```
 
-## 🤖 AI機能（インテリジェントバックアップ）
+## 🤖 Smart機能（インテリジェントバックアップ）
 
 統計的異常検知・ファイル重要度分析でバックアップを最適化します。
 
 ### インストール
 
-AI機能を使用するには、`--features ai`フラグを付けてビルドする必要があります。
+Smart機能を使用するには、`--features smart`フラグを付けてビルドする必要があります。
 
 ```bash
-# AI機能を有効化してビルド
-cargo build --release --features ai
-cargo install --path . --features ai
+# Smart機能を有効化してビルド
+cargo build --release --features smart
+cargo install --path . --features smart
 
 # または Cargo経由でインストール
-cargo install backup-suite --features ai
+cargo install backup-suite --features smart
 ```
 
 ### 主要機能
 
-#### 1. AI自動設定
+#### 1. Smart自動設定
 
 ディレクトリを分析し、最適なバックアップ設定を自動生成します。
 
 ```bash
 # 自動分析・設定（サブディレクトリを個別に評価）
-backup-suite ai auto-configure ~/data
+backup-suite smart auto-configure ~/data
 
 # 対話的に確認しながら設定（サブディレクトリと除外パターンを確認）
-backup-suite ai auto-configure ~/data --interactive
+backup-suite smart auto-configure ~/data --interactive
 
 # ドライラン（設定を適用せず確認のみ）
-backup-suite ai auto-configure ~/data --dry-run
+backup-suite smart auto-configure ~/data --dry-run
 
 # サブディレクトリの探索深度を指定（デフォルト: 1）
-backup-suite ai auto-configure ~/data --max-depth 2
+backup-suite smart auto-configure ~/data --max-depth 2
 ```
 
 **機能**:
@@ -259,7 +259,7 @@ backup-suite ai auto-configure ~/data --max-depth 2
 
 **出力例**:
 ```
-🤖 AI自動設定
+🤖 Smart自動設定
 分析中: "/Users/user/projects"
   📁 3個のサブディレクトリを発見: 3
     評価中: "/Users/user/projects/web-app"
@@ -292,13 +292,13 @@ backup-suite ai auto-configure ~/data --max-depth 2
 
 ```bash
 # ディレクトリの重要度分析
-backup-suite ai analyze ~/documents
+backup-suite smart analyze ~/documents
 
 # 詳細な重要度スコア表示
-backup-suite ai analyze ~/documents --detailed
+backup-suite smart analyze ~/documents --detailed
 
 # 特定のファイル種別のみ分析
-backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
+backup-suite smart analyze ~/projects --filter "*.rs,*.toml"
 ```
 
 **評価基準**:
@@ -308,7 +308,7 @@ backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
 
 **出力例**:
 ```
-🤖 AIファイル重要度分析: ~/Documents
+🤖 Smartファイル重要度分析: ~/Documents
 
 ┌─────────────────────────┬──────────────┬──────────┬─────────────────────┐
 │ ファイル/ディレクトリ     │ 重要度スコア   │ 提案優先度 │ 理由                 │
@@ -328,13 +328,13 @@ backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
 
 ```bash
 # 除外パターンの推奨を表示
-backup-suite ai suggest-exclude ~/projects
+backup-suite smart suggest-exclude ~/projects
 
 # 推奨パターンを自動的に設定ファイルに適用
-backup-suite ai suggest-exclude ~/projects --apply
+backup-suite smart suggest-exclude ~/projects --apply
 
 # 最小ファイルサイズを指定（デフォルト: 100MB）
-backup-suite ai suggest-exclude ~/projects --min-size 50MB
+backup-suite smart suggest-exclude ~/projects --min-size 50MB
 ```
 
 **検出対象**:
@@ -345,7 +345,7 @@ backup-suite ai suggest-exclude ~/projects --min-size 50MB
 
 **出力例**:
 ```
-🤖 AI除外パターン推奨: ~/projects
+🤖 Smart除外パターン推奨: ~/projects
 
 ┌──────────────────┬──────────┬──────────┬─────────────────────┐
 │ パターン          │ 削減量    │ 信頼度    │ 理由                 │
@@ -364,10 +364,10 @@ backup-suite ai suggest-exclude ~/projects --min-size 50MB
 
 ```bash
 # 過去7日間の異常検知
-backup-suite ai detect --days 7
+backup-suite smart detect --days 7
 
 # より詳細な分析（統計情報も表示）
-backup-suite ai detect --days 14 --detailed
+backup-suite smart detect --days 14 --detailed
 ```
 
 **検知内容**:
@@ -377,7 +377,7 @@ backup-suite ai detect --days 14 --detailed
 
 **出力例**:
 ```
-🤖 AI異常検知レポート（過去7日間）
+🤖 Smart異常検知レポート（過去7日間）
 
 ┌────┬──────────────────┬──────────┬──────────┬─────────────────────┐
 │ No │ 検出日時          │ 異常種別  │ 信頼度    │ 説明                 │
@@ -391,26 +391,26 @@ backup-suite ai detect --days 14 --detailed
 
 **パフォーマンス**: < 1ms（100件履歴）
 
-### AI機能の無効化
+### Smart機能の無効化
 
-AI機能が不要な場合は、通常のビルドを使用してください。
+Smart機能が不要な場合は、通常のビルドを使用してください。
 
 ```bash
-# 通常ビルド（AI機能なし）
+# 通常ビルド（Smart機能なし）
 cargo build --release
 cargo install --path .
 ```
 
 ### セキュリティとプライバシー
 
-すべてのAI機能は**完全にオフライン**で動作します：
+すべてのSmart機能は**完全にオフライン**で動作します：
 
 - ✅ 外部APIコール: なし
 - ✅ クラウドサービス: 不要
 - ✅ 機密情報の送信: ゼロ
 - ✅ データ収集: なし
 
-詳細は [AI機能ドキュメント](docs/ai/features.md) を参照してください。
+詳細は [Smart機能ドキュメント](docs/smart/features.md) を参照してください。
 
 ## 設定ファイル
 
@@ -492,7 +492,7 @@ backup-suite schedule status
 | **config**     | 設定管理                       | `backup-suite config set-destination ~/backups` |
 | **open**       | バックアップディレクトリを開く | `backup-suite open`                             |
 | **completion** | シェル補完生成                 | `backup-suite completion zsh`                   |
-| **ai**         | AI機能（要`--features ai`）    | `backup-suite ai detect --days 7`               |
+| **smart**         | Smart機能（要`--features smart`）    | `backup-suite smart detect --days 7`               |
 
 ## アップデート・アンインストール
 
@@ -503,12 +503,12 @@ backup-suite schedule status
 brew upgrade backup-suite
 
 # Cargo
-cargo install backup-suite --force --features ai
+cargo install backup-suite --force --features smart
 
 # ソースから
 cd backup-suite
 git pull origin main
-cargo install --path . --force --features ai
+cargo install --path . --force --features smart
 ```
 
 ### アンインストール
@@ -556,7 +556,7 @@ rm -rf ~/.local/share/backup-suite/
 - **暗号化**: AES-256-GCM、Argon2
 - **設定**: TOML （人間にとって読みやすい設定形式）
 - **スケジューリング**: macOS launchctl、Linux systemd
-- **AI/ML**: statrs（統計計算）、rayon（並列処理）
+- **Smart/統計分析**: statrs（統計計算）、rayon（並列処理）
 
 ## 対応プラットフォーム
 

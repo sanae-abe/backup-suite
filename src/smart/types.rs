@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::BackupSize;
+/// use backup_suite::smart::BackupSize;
 ///
 /// let size = BackupSize::new(1_048_576); // 1 MiB
 /// assert_eq!(size.get(), 1_048_576);
@@ -81,7 +81,7 @@ impl std::fmt::Display for BackupSize {
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::PredictionConfidence;
+/// use backup_suite::smart::PredictionConfidence;
 ///
 /// let confidence = PredictionConfidence::new(0.95).unwrap();
 /// assert_eq!(confidence.get(), 0.95);
@@ -148,7 +148,7 @@ impl std::fmt::Display for PredictionConfidence {
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::FileImportance;
+/// use backup_suite::smart::FileImportance;
 ///
 /// let importance = FileImportance::new(85).unwrap();
 /// assert_eq!(importance.get(), 85);
@@ -216,7 +216,7 @@ impl std::fmt::Display for FileImportance {
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::DiskCapacity;
+/// use backup_suite::smart::DiskCapacity;
 ///
 /// let capacity = DiskCapacity::new(536_870_912_000); // 500 GiB
 /// assert!((capacity.as_gb() - 500.0).abs() < 0.1); // 約500 GB
@@ -290,7 +290,7 @@ impl std::fmt::Display for DiskCapacity {
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::FailureRate;
+/// use backup_suite::smart::FailureRate;
 ///
 /// let rate = FailureRate::new(0.05).unwrap();
 /// assert_eq!(rate.get(), 0.05);
@@ -357,7 +357,7 @@ impl std::fmt::Display for FailureRate {
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::TimeSeriesPoint;
+/// use backup_suite::smart::TimeSeriesPoint;
 /// use chrono::Utc;
 ///
 /// let point = TimeSeriesPoint::new(Utc::now(), 1024.0);

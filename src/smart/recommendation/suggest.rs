@@ -2,10 +2,10 @@
 //!
 //! ファイルシステムを走査し、バックアップ対象の自動提案を行います。
 
-use crate::ai::error::{AiError, AiResult};
-use crate::ai::recommendation::ImportanceEvaluator;
-use crate::ai::types::FileImportance;
 use crate::core::Priority;
+use crate::smart::error::{SmartError, SmartResult};
+use crate::smart::recommendation::ImportanceEvaluator;
+use crate::smart::types::FileImportance;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
@@ -14,8 +14,8 @@ use walkdir::WalkDir;
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::recommendation::BackupSuggestion;
-/// use backup_suite::ai::FileImportance;
+/// use backup_suite::smart::recommendation::BackupSuggestion;
+/// use backup_suite::smart::FileImportance;
 /// use backup_suite::Priority;
 /// use std::path::PathBuf;
 ///
@@ -84,7 +84,7 @@ impl BackupSuggestion {
 /// # 使用例
 ///
 /// ```rust,no_run
-/// use backup_suite::ai::recommendation::SuggestEngine;
+/// use backup_suite::smart::recommendation::SuggestEngine;
 /// use std::path::Path;
 ///
 /// let engine = SuggestEngine::new();
@@ -123,16 +123,16 @@ impl SuggestEngine {
     /// # Errors
     ///
     /// ファイルシステムアクセスに失敗した場合はエラーを返します。
-    pub fn suggest_backup_targets(&self, base_path: &Path) -> AiResult<Vec<BackupSuggestion>> {
+    pub fn suggest_backup_targets(&self, base_path: &Path) -> SmartResult<Vec<BackupSuggestion>> {
         if !base_path.exists() {
-            return Err(AiError::InvalidParameter(format!(
+            return Err(SmartError::InvalidParameter(format!(
                 "パスが存在しません: {:?}",
                 base_path
             )));
         }
 
         if !base_path.is_dir() {
-            return Err(AiError::InvalidParameter(format!(
+            return Err(SmartError::InvalidParameter(format!(
                 "ディレクトリではありません: {:?}",
                 base_path
             )));
@@ -145,7 +145,7 @@ impl SuggestEngine {
             .max_depth(self.max_depth)
             .follow_links(false)
         {
-            let entry = entry.map_err(|e| AiError::IoError(e.into()))?;
+            let entry = entry.map_err(|e| SmartError::IoError(e.into()))?;
 
             // ディレクトリのみを対象
             if !entry.file_type().is_dir() {
@@ -213,12 +213,12 @@ impl SuggestEngine {
     }
 
     /// ディレクトリ内のファイルを評価
-    fn evaluate_directory(&self, dir_path: &Path) -> AiResult<(FileImportance, usize)> {
+    fn evaluate_directory(&self, dir_path: &Path) -> SmartResult<(FileImportance, usize)> {
         let mut total_score = 0u64;
         let mut file_count = 0usize;
 
         for entry in WalkDir::new(dir_path).max_depth(1).follow_links(false) {
-            let entry = entry.map_err(|e| AiError::IoError(e.into()))?;
+            let entry = entry.map_err(|e| SmartError::IoError(e.into()))?;
 
             if entry.file_type().is_file() {
                 match self.evaluator.evaluate(entry.path()) {
@@ -236,14 +236,14 @@ impl SuggestEngine {
 
         if file_count == 0 {
             return Ok((
-                FileImportance::new(0).map_err(AiError::InvalidParameter)?,
+                FileImportance::new(0).map_err(SmartError::InvalidParameter)?,
                 0,
             ));
         }
 
         let avg_score = (total_score / file_count as u64) as u8;
         let importance =
-            FileImportance::new(avg_score.min(100)).map_err(AiError::InvalidParameter)?;
+            FileImportance::new(avg_score.min(100)).map_err(SmartError::InvalidParameter)?;
 
         Ok((importance, file_count))
     }

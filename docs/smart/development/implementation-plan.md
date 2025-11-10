@@ -83,7 +83,7 @@ src/
 ### 2.2 型設計（Newtype Pattern活用）
 
 ```rust
-// src/ai/types.rs
+// src/smart/types.rs
 
 /// バックアップサイズ（バイト単位）
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -116,7 +116,7 @@ pub struct TimeSeriesPoint {
 ### 2.3 エラー型設計
 
 ```rust
-// src/ai/error.rs
+// src/smart/error.rs
 
 #[derive(Error, Debug)]
 pub enum AiError {
@@ -169,7 +169,7 @@ pub type AiResult<T> = std::result::Result<T, AiError>;
 - 移動平均・標準偏差（トレンド分析）
 - 線形回帰（ディスク容量予測）
 
-**実装ファイル**: `src/ai/anomaly/detector.rs`
+**実装ファイル**: `src/smart/anomaly/detector.rs`
 
 #### 3.1.2 主要コンポーネント
 
@@ -237,7 +237,7 @@ proptest! {
 - 変更頻度分析（頻繁に変更されるファイルは重要度高）
 - ファイルサイズ・アクセス時刻分析
 
-**実装ファイル**: `src/ai/recommendation/importance.rs`
+**実装ファイル**: `src/smart/recommendation/importance.rs`
 
 #### 3.2.2 主要コンポーネント
 
@@ -292,16 +292,16 @@ pub struct ExcludeRecommendation {
 
 ```bash
 # 異常検知レポート
-backup-suite ai detect [--days N] [--format table|json|detailed]
+backup-suite smart detect [--days N] [--format table|json|detailed]
 
 # ファイル重要度分析
-backup-suite ai analyze <PATH> [--suggest-priority] [--detailed]
+backup-suite smart analyze <PATH> [--suggest-priority] [--detailed]
 
 # 除外ファイル提案
-backup-suite ai suggest-exclude <PATH> [--apply] [--confidence 0.8]
+backup-suite smart suggest-exclude <PATH> [--apply] [--confidence 0.8]
 
 # AI駆動の自動設定
-backup-suite ai auto-configure <PATH>... [--dry-run] [--interactive]
+backup-suite smart auto-configure <PATH>... [--dry-run] [--interactive]
 ```
 
 #### 3.3.2 出力フォーマット例
@@ -342,7 +342,7 @@ backup-suite ai auto-configure <PATH>... [--dry-run] [--interactive]
 
 **目的**: Ollama HTTP API呼び出し、Graceful degradation
 
-**実装ファイル**: `src/ai/llm/ollama_client.rs`
+**実装ファイル**: `src/smart/llm/ollama_client.rs`
 
 #### 4.1.2 主要コンポーネント
 
@@ -409,7 +409,7 @@ pub fn check_ollama_status() -> Result<OllamaStatus> {
 
 **目的**: 自然言語入力からバックアップ設定を自動生成
 
-**実装ファイル**: `src/ai/llm/parser.rs`
+**実装ファイル**: `src/smart/llm/parser.rs`
 
 #### 4.2.2 プロンプトエンジニアリング
 
@@ -442,7 +442,7 @@ JSON のみを出力してください（説明不要）。
 
 **目的**: バックアップ統計の自然言語サマリー生成、改善提案
 
-**実装ファイル**: `src/ai/llm/report.rs`
+**実装ファイル**: `src/smart/llm/report.rs`
 
 #### 4.3.2 レポートフォーマット
 
@@ -469,13 +469,13 @@ JSON のみを出力してください（説明不要）。
 
 ```bash
 # 自然言語でバックアップ設定
-backup-suite ai setup "毎日午前2時に重要なプロジェクトをバックアップ"
+backup-suite smart setup "毎日午前2時に重要なプロジェクトをバックアップ"
 
 # AI駆動レポート生成
-backup-suite ai report --days 30 --format markdown
+backup-suite smart report --days 30 --format markdown
 
 # インタラクティブな設定アシスタント
-backup-suite ai assistant
+backup-suite smart assistant
 ```
 
 ---
@@ -611,7 +611,7 @@ pub fn analyze_importance(&self, path: &Path) -> AiResult<FileImportance> {
 - [ ] Ollama API呼び出しには厳密なタイムアウト設定（5秒）
 - [ ] エラーメッセージからファイルパスの機密情報を除外
 - [ ] 統計計算のオーバーフロー対策（checked arithmetic）
-- [ ] AI機能の無効化でも基本機能は正常動作（Feature gate）
+- [ ] Smart機能の無効化でも基本機能は正常動作（Feature gate）
 - [ ] プロンプトインジェクション対策（入力検証）
 - [ ] パストラバーサル対策（既存のセキュリティ機能活用）
 
@@ -761,23 +761,23 @@ criterion_main!(benches);
 #### Week 1: 基盤整備
 
 **Day 1-2**: 型定義・エラー処理
-- [ ] `src/ai/types.rs` 実装
-- [ ] `src/ai/error.rs` 実装
+- [ ] `src/smart/types.rs` 実装
+- [ ] `src/smart/error.rs` 実装
 - [ ] 単体テスト（proptest活用）
 
 **Day 3-5**: 異常検知エンジン
-- [ ] `src/ai/anomaly/detector.rs` 実装
-- [ ] `src/ai/anomaly/predictor.rs` 実装
+- [ ] `src/smart/anomaly/detector.rs` 実装
+- [ ] `src/smart/anomaly/predictor.rs` 実装
 - [ ] 統合テスト
 
 #### Week 2: 推奨エンジン・CLI統合
 
 **Day 6-7**: 推奨エンジン
-- [ ] `src/ai/recommendation/importance.rs` 実装
-- [ ] `src/ai/recommendation/exclude.rs` 実装
+- [ ] `src/smart/recommendation/importance.rs` 実装
+- [ ] `src/smart/recommendation/exclude.rs` 実装
 
 **Day 8-10**: CLI統合
-- [ ] `src/main.rs` に `ai` サブコマンド追加
+- [ ] `src/main.rs` に `smart` サブコマンド追加
 - [ ] `src/i18n.rs` にメッセージキー追加
 - [ ] 出力フォーマット実装（テーブル・JSON）
 
@@ -791,12 +791,12 @@ criterion_main!(benches);
 #### Week 3: Ollama統合
 
 **Day 15-16**: Ollama クライアント
-- [ ] `src/ai/llm/client.rs` 実装
+- [ ] `src/smart/llm/client.rs` 実装
 - [ ] Graceful degradation実装
 
 **Day 17-18**: 自然言語処理
-- [ ] `src/ai/llm/parser.rs` 実装
-- [ ] `src/ai/llm/report.rs` 実装
+- [ ] `src/smart/llm/parser.rs` 実装
+- [ ] `src/smart/llm/report.rs` 実装
 
 **Day 19-21**: CLI統合・テスト
 - [ ] `ai setup/report/assistant` コマンド実装
@@ -869,7 +869,7 @@ fn test_ai_detect_command_integration() {
 
     // コマンド実行
     let output = Command::new("backup-suite")
-        .arg("ai")
+        .arg("smart")
         .arg("detect")
         .arg("--format")
         .arg("json")
@@ -911,13 +911,13 @@ statrs = "0.17"
 # ndarray は statrs に含まれるため不要
 
 [features]
-default = ["ai"]  # デフォルトでAI機能を有効化
+default = ["smart"]  # デフォルトでSmart機能を有効化
 
 # Phase 1: 軽量ML機能
 ai = ["statrs"]
 
 # Phase 2: Ollama LLM統合
-llm = ["ai", "reqwest", "tokio"]
+llm = ["smart", "reqwest", "tokio"]
 
 [dependencies.reqwest]
 version = "0.12"
@@ -965,7 +965,7 @@ features = ["full"]
 | リスク | 影響 | 確率 | 対策 |
 |--------|------|------|------|
 | Ollama未インストール | 低 | 高 | Graceful degradation、インストールガイド |
-| AI機能の誤動作 | 中 | 低 | ドライランモード、ユーザー確認 |
+| Smart機能の誤動作 | 中 | 低 | ドライランモード、ユーザー確認 |
 | ユーザーの混乱 | 低 | 中 | 詳細なドキュメント、対話的UI |
 
 ---

@@ -1,4 +1,4 @@
-# AI機能 - 包括的ガイド
+# Smart機能 - 包括的ガイド
 
 **バージョン**: 1.0.0 (Phase 1完成)
 **最終更新**: 2025-11-09
@@ -20,7 +20,7 @@
 
 ## 概要
 
-backup-suite のAI機能は、統計的機械学習とルールベースの推論を組み合わせた**インテリジェントバックアップ管理システム**です。
+backup-suite のSmart機能は、統計的機械学習とルールベースの推論を組み合わせた**インテリジェントバックアップ管理システム**です。
 
 ### 主要な価値提案
 
@@ -48,7 +48,7 @@ backup-suite のAI機能は、統計的機械学習とルールベースの推�
 ### モジュール構造
 
 ```
-src/ai/
+src/smart/
 ├── mod.rs                       # 公開APIエクスポート
 ├── types.rs                     # 型定義（Newtype Pattern）
 ├── error.rs                     # AI固有のエラー型
@@ -94,7 +94,7 @@ src/ai/
 
 ### 型安全性（Newtype Pattern）
 
-すべてのAI機能で強い型付けを採用し、実行時エラーを防止：
+すべてのSmart機能で強い型付けを採用し、実行時エラーを防止：
 
 ```rust
 pub struct BackupSize(u64);           // バックアップサイズ（バイト）
@@ -129,7 +129,7 @@ Z = (current_size - mean) / std_dev
 **CLI使用例**:
 ```bash
 # 過去7日間の異常検知
-backup-suite ai detect --days 7
+backup-suite smart detect --days 7
 
 # 出力例:
 # 🤖 AI異常検知レポート（過去7日間）
@@ -146,7 +146,7 @@ backup-suite ai detect --days 7
 
 **詳細分析モード**:
 ```bash
-backup-suite ai detect --days 14 --detailed
+backup-suite smart detect --days 14 --detailed
 
 # 出力に追加される統計情報:
 # - 平均バックアップサイズ: 1.23 GB
@@ -169,7 +169,7 @@ y = slope * x + intercept
 
 **CLI使用例**:
 ```bash
-backup-suite ai detect --days 30 --detailed
+backup-suite smart detect --days 30 --detailed
 
 # 出力例:
 # ⚠️ ディスク容量予測:
@@ -188,7 +188,7 @@ backup-suite ai detect --days 30 --detailed
 
 **CLI使用例**:
 ```bash
-backup-suite ai detect --days 30 --detailed
+backup-suite smart detect --days 30 --detailed
 
 # 出力例:
 # 📉 失敗パターン分析:
@@ -230,7 +230,7 @@ backup-suite ai detect --days 30 --detailed
 **CLI使用例**:
 ```bash
 # ディレクトリの重要度分析
-backup-suite ai analyze ~/Documents
+backup-suite smart analyze ~/Documents
 
 # 出力例:
 # 🤖 AIファイル重要度分析: ~/Documents
@@ -248,7 +248,7 @@ backup-suite ai analyze ~/Documents
 #### 2.2 詳細分析モード
 
 ```bash
-backup-suite ai analyze ~/Documents --detailed
+backup-suite smart analyze ~/Documents --detailed
 
 # 追加される情報:
 # - ファイル数統計（カテゴリ別）
@@ -261,7 +261,7 @@ backup-suite ai analyze ~/Documents --detailed
 
 ```bash
 # 特定のファイル種別のみ分析
-backup-suite ai analyze ~/projects --filter "*.rs,*.toml,Cargo.lock"
+backup-suite smart analyze ~/projects --filter "*.rs,*.toml,Cargo.lock"
 
 # 出力例: Rustプロジェクトのソースファイルのみ分析
 ```
@@ -289,7 +289,7 @@ backup-suite ai analyze ~/projects --filter "*.rs,*.toml,Cargo.lock"
 **CLI使用例**:
 ```bash
 # 除外パターンの推奨を表示
-backup-suite ai suggest-exclude ~/projects
+backup-suite smart suggest-exclude ~/projects
 
 # 出力例:
 # 🤖 AI除外パターン推奨: ~/projects
@@ -309,7 +309,7 @@ backup-suite ai suggest-exclude ~/projects
 
 ```bash
 # 推奨パターンを自動的に設定ファイルに適用
-backup-suite ai suggest-exclude ~/projects --apply
+backup-suite smart suggest-exclude ~/projects --apply
 
 # 確認メッセージ:
 # ✅ 以下の除外パターンを設定ファイルに追加しました:
@@ -324,7 +324,7 @@ backup-suite ai suggest-exclude ~/projects --apply
 
 ```bash
 # 最小ファイルサイズを指定（デフォルト: 100MB）
-backup-suite ai suggest-exclude ~/projects --min-size 50MB
+backup-suite smart suggest-exclude ~/projects --min-size 50MB
 
 # 50MB以上の除外候補のみ推奨
 ```
@@ -337,7 +337,7 @@ backup-suite ai suggest-exclude ~/projects --min-size 50MB
 
 ```bash
 # 自動分析・設定
-backup-suite ai auto-configure ~/data
+backup-suite smart auto-configure ~/data
 
 # 処理フロー:
 # 1. ディレクトリ走査・ファイル分析
@@ -377,7 +377,7 @@ backup-suite ai auto-configure ~/data
 
 ```bash
 # 対話的に確認しながら設定
-backup-suite ai auto-configure ~/data --interactive
+backup-suite smart auto-configure ~/data --interactive
 
 # 各ステップで確認プロンプトを表示:
 # ❓ 推奨優先度は「High」ですが、変更しますか？ [y/N]
@@ -388,7 +388,7 @@ backup-suite ai auto-configure ~/data --interactive
 
 ```bash
 # 設定を適用せず確認のみ
-backup-suite ai auto-configure ~/data --dry-run
+backup-suite smart auto-configure ~/data --dry-run
 
 # 設定内容を表示するが、ファイルには書き込まない
 ```
@@ -403,7 +403,7 @@ backup-suite ai auto-configure ~/data --dry-run
 
 ```bash
 # 1. ディレクトリ分析
-backup-suite ai analyze ~/projects/my-app
+backup-suite smart analyze ~/projects/my-app
 
 # 分析結果:
 # - src/: 重要度95（高優先度）
@@ -412,7 +412,7 @@ backup-suite ai analyze ~/projects/my-app
 # - .cache/: 重要度10（除外推奨）
 
 # 2. 除外パターン推奨
-backup-suite ai suggest-exclude ~/projects/my-app --apply
+backup-suite smart suggest-exclude ~/projects/my-app --apply
 
 # 除外パターン追加:
 # - target/（1.2GB削減）
@@ -432,7 +432,7 @@ backup-suite run --priority high --compress zstd
 
 ```bash
 # 1. 異常検知レポート
-backup-suite ai detect --days 7 --detailed
+backup-suite smart detect --days 7 --detailed
 
 # 検出結果:
 # ⚠️ 2025-11-09 03:15 - サイズ急増（Z-score: 3.8、信頼度95%）
@@ -441,7 +441,7 @@ backup-suite ai detect --days 7 --detailed
 #    - 原因候補: ~/Downloads に大容量ファイル（2.4GB）
 
 # 2. 除外パターン追加
-backup-suite ai suggest-exclude ~/Downloads --apply
+backup-suite smart suggest-exclude ~/Downloads --apply
 
 # 3. 次回バックアップで正常化確認
 backup-suite run --dry-run
@@ -453,7 +453,7 @@ backup-suite run --dry-run
 
 ```bash
 # 1. ディスク容量予測
-backup-suite ai detect --days 30 --detailed
+backup-suite smart detect --days 30 --detailed
 
 # 予測結果:
 # ⚠️ ディスク容量予測:
@@ -465,7 +465,7 @@ backup-suite ai detect --days 30 --detailed
 backup-suite cleanup --days 30
 
 # 3. 除外パターン最適化
-backup-suite ai suggest-exclude ~/backups --min-size 100MB --apply
+backup-suite smart suggest-exclude ~/backups --min-size 100MB --apply
 
 # 結果:
 # - 4.5GB削減
@@ -478,7 +478,7 @@ backup-suite ai suggest-exclude ~/backups --min-size 100MB --apply
 
 ```bash
 # 1. AI自動設定（対話モード）
-backup-suite ai auto-configure ~/new-project --interactive
+backup-suite smart auto-configure ~/new-project --interactive
 
 # 対話プロンプト:
 # 🤖 ディレクトリ分析中... [完了]
@@ -546,7 +546,7 @@ let results: Vec<_> = entries
 
 ### プライバシー保護
 
-**完全オフライン動作** - すべてのAI機能はローカルで実行：
+**完全オフライン動作** - すべてのSmart機能はローカルで実行：
 
 - ✅ 外部APIコール: なし
 - ✅ クラウドサービス: 不要
@@ -566,13 +566,13 @@ validate_path_safety(path)?;
 
 ### ファイルアクセス権限
 
-- **読み取り専用操作**: AI機能はファイル内容を変更しない
+- **読み取り専用操作**: Smart機能はファイル内容を変更しない
 - **シンボリックリンク追跡なし**: `follow_links(false)`
 - **セキュアオープン**: `safe_open()`による安全なファイルオープン
 
 ### セキュリティ監査
 
-すべてのAI機能モジュールは以下を遵守：
+すべてのSmart機能モジュールは以下を遵守：
 
 - ✅ パストラバーサル対策
 - ✅ 型安全性（Newtype Pattern）
@@ -604,26 +604,26 @@ anyhow = "1.0"     # エラー伝播
 
 ### MSRV互換性
 
-- **Rust 1.82.0+**: すべてのAI機能で動作保証
+- **Rust 1.82.0+**: すべてのSmart機能で動作保証
 - **statrs 0.17**: Rust 1.70+ 対応
 
 ### Feature Gate
 
-AI機能はオプション機能として実装：
+Smart機能はオプション機能として実装：
 
 ```bash
-# AI機能を有効化してビルド
-cargo build --release --features ai
-cargo install --path . --features ai
+# Smart機能を有効化してビルド
+cargo build --release --features smart
+cargo install --path . --features smart
 
-# AI機能なしでビルド（軽量バイナリ）
+# Smart機能なしでビルド（軽量バイナリ）
 cargo build --release
 cargo install --path .
 ```
 
 **バイナリサイズ**:
-- AI機能あり: 約5.2MB（strip後）
-- AI機能なし: 約4.8MB（strip後）
+- Smart機能あり: 約5.2MB（strip後）
+- Smart機能なし: 約4.8MB（strip後）
 
 ---
 
@@ -631,13 +631,13 @@ cargo install --path .
 
 ### Q1. `backup-suite ai` コマンドが見つからない
 
-**原因**: AI機能なしでビルドされている
+**原因**: Smart機能なしでビルドされている
 
 **解決策**:
 ```bash
-# AI機能を有効化して再ビルド
-cargo build --release --features ai
-cargo install --path . --features ai --force
+# Smart機能を有効化して再ビルド
+cargo build --release --features smart
+cargo install --path . --features smart --force
 ```
 
 ### Q2. 異常検知で「データ不足」エラー
@@ -656,7 +656,7 @@ Error: データ不足: 最低7件必要ですが、3件しかありません
 
 ### Q3. ファイル重要度分析が遅い
 
-**症状**: `backup-suite ai analyze` が10秒以上かかる
+**症状**: `backup-suite smart analyze` が10秒以上かかる
 
 **原因**: ファイル数が非常に多い（10,000ファイル以上）
 
@@ -667,7 +667,7 @@ Error: データ不足: 最低7件必要ですが、3件しかありません
 
 ```bash
 # 並列度を8に設定
-RAYON_NUM_THREADS=8 backup-suite ai analyze ~/large-dir
+RAYON_NUM_THREADS=8 backup-suite smart analyze ~/large-dir
 ```
 
 ### Q4. 除外パターンが適用されない
@@ -695,7 +695,7 @@ ls -la ~/.config/backup-suite/config.toml
 
 ### Q5. メモリ使用量が多い
 
-**症状**: AI機能実行時にメモリ使用量が100MB以上
+**症状**: Smart機能実行時にメモリ使用量が100MB以上
 
 **原因**: 大量のファイルをキャッシュしている
 
@@ -731,7 +731,7 @@ ls -la ~/.config/backup-suite/config.toml
 - [AI実装計画書](./AI_IMPLEMENTATION_PLAN.md): 詳細な実装仕様
 - [AI推奨エンジン実装報告](./AI_RECOMMENDATION_ENGINE.md): 推奨エンジンの詳細
 - [AIテストレポート](./AI_TEST_REPORT.md): テストカバレッジとベンチマーク
-- [ソースコード](../src/ai/): AI機能の実装
+- [ソースコード](../src/smart/): Smart機能の実装
 
 ---
 

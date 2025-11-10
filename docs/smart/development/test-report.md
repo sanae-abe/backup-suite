@@ -1,8 +1,8 @@
-# AI機能テストレポート
+# Smart機能テストレポート
 
 **作成日**: 2025-11-09
 **テスト実行環境**: Rust 1.82.0, backup-suite v1.0.0
-**テスト対象**: AI機能モジュール (Phase 1: 軽量ML機能)
+**テスト対象**: Smart機能モジュール (Phase 1: 軽量ML機能)
 
 ---
 
@@ -330,8 +330,8 @@
    # .github/workflows/ci.yml
    - name: Check coverage
      run: |
-       cargo tarpaulin --features ai --out Lcov
-       if [ $(cargo tarpaulin --features ai --out Stdout | grep "coverage" | awk '{print $1}' | cut -d'%' -f1) -lt 95 ]; then
+       cargo tarpaulin --features smart --out Lcov
+       if [ $(cargo tarpaulin --features smart --out Stdout | grep "coverage" | awk '{print $1}' | cut -d'%' -f1) -lt 95 ]; then
          echo "カバレッジが95%未満です"
          exit 1
        fi
@@ -369,22 +369,22 @@
 
 ```bash
 # すべてのAIテスト実行
-cargo test --features ai --test ai_tests
+cargo test --features smart --test ai_tests
 
 # カバレッジ計測
-cargo tarpaulin --features ai --lib --timeout 600 --out Html
+cargo tarpaulin --features smart --lib --timeout 600 --out Html
 
 # ベンチマーク実行
-cargo bench --features ai ai_
+cargo bench --features smart ai_
 
 # Property-based Testing（大量ケース）
-cargo test --features ai --release -- --test-threads=1 proptest
+cargo test --features smart --release -- --test-threads=1 proptest
 ```
 
 ### ドキュメント
 
 - [AI実装計画](./AI_IMPLEMENTATION_PLAN.md)
-- [AI機能ソースコード](../src/ai/)
+- [Smart機能ソースコード](../src/smart/)
 - [統合テスト](../tests/ai_tests.rs)
 - [ベンチマーク](../benches/ai_benchmark.rs)
 

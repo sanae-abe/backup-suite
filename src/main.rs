@@ -203,13 +203,13 @@ enum Commands {
         #[command(subcommand)]
         action: ConfigAction,
     },
-    /// AI-driven intelligent backup management
-    #[cfg(feature = "ai")]
-    Ai {
+    /// Smart rule-based intelligent backup management
+    #[cfg(feature = "smart")]
+    Smart {
         #[command(subcommand)]
-        action: Option<AiAction>,
+        action: Option<SmartAction>,
 
-        /// Show help for AI commands
+        /// Show help for Smart commands
         #[arg(short = 'h', long = "help")]
         help: bool,
     },
@@ -260,9 +260,9 @@ enum ConfigAction {
     Help,
 }
 
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 #[derive(Subcommand)]
-enum AiAction {
+enum SmartAction {
     /// Detect anomalies in backup history
     Detect {
         #[arg(long, default_value = "7")]
@@ -294,7 +294,7 @@ enum AiAction {
         /// Minimum confidence (0.0-1.0)
         confidence: f64,
     },
-    /// Auto-configure backup settings with AI
+    /// Auto-configure backup settings with smart rules
     AutoConfigure {
         /// Paths to configure
         paths: Vec<PathBuf>,
@@ -666,20 +666,20 @@ fn print_help(lang: Language) {
     );
     println!();
 
-    #[cfg(feature = "ai")]
+    #[cfg(feature = "smart")]
     {
         println!(
             "{}{}{}",
             magenta,
-            get_message(MessageKey::AiCommands, lang),
+            get_message(MessageKey::SmartCommands, lang),
             reset
         );
         println!(
             "  {}{}{}           {}",
             yellow,
-            get_message(MessageKey::CmdAi, lang),
+            get_message(MessageKey::CmdSmart, lang),
             reset,
-            get_message(MessageKey::DescAi, lang)
+            get_message(MessageKey::DescSmart, lang)
         );
         println!();
     }
@@ -1042,9 +1042,9 @@ fn print_schedule_help(lang: Language) {
     );
 }
 
-/// AI サブコマンド専用のヘルプを表示
-#[cfg(feature = "ai")]
-fn print_ai_help(lang: Language) {
+/// Smart サブコマンド専用のヘルプを表示
+#[cfg(feature = "smart")]
+fn print_smart_help(lang: Language) {
     let magenta = get_color("magenta", false);
     let yellow = get_color("yellow", false);
     let reset = get_color("reset", false);
@@ -1053,7 +1053,7 @@ fn print_ai_help(lang: Language) {
     println!(
         "{}{} {}{}",
         magenta,
-        get_message(MessageKey::AiCommands, lang),
+        get_message(MessageKey::SmartCommands, lang),
         if lang == Language::English {
             "Help"
         } else if lang == Language::Japanese {
@@ -1072,25 +1072,25 @@ fn print_ai_help(lang: Language) {
         "  {}detect{}           {}",
         yellow,
         reset,
-        get_message(MessageKey::DescAiDetect, lang)
+        get_message(MessageKey::DescSmartDetect, lang)
     );
     println!(
         "  {}analyze{}          {}",
         yellow,
         reset,
-        get_message(MessageKey::DescAiAnalyze, lang)
+        get_message(MessageKey::DescSmartAnalyze, lang)
     );
     println!(
         "  {}suggest-exclude{}  {}",
         yellow,
         reset,
-        get_message(MessageKey::DescAiSuggestExclude, lang)
+        get_message(MessageKey::DescSmartSuggestExclude, lang)
     );
     println!(
         "  {}auto-configure{}   {}",
         yellow,
         reset,
-        get_message(MessageKey::DescAiAutoConfigure, lang)
+        get_message(MessageKey::DescSmartAutoConfigure, lang)
     );
     println!();
 
@@ -1104,27 +1104,27 @@ fn print_ai_help(lang: Language) {
             .unwrap_or("Examples"),
         reset
     );
-    println!("  {}", get_message(MessageKey::ExampleAiDetect, lang));
-    println!("  backup-suite ai detect --days 7");
+    println!("  {}", get_message(MessageKey::ExampleSmartDetect, lang));
+    println!("  backup-suite smart detect --days 7");
     println!();
-    println!("  {}", get_message(MessageKey::ExampleAiAnalyze, lang));
-    println!("  backup-suite ai analyze /path/to/dir");
+    println!("  {}", get_message(MessageKey::ExampleSmartAnalyze, lang));
+    println!("  backup-suite smart analyze /path/to/dir");
     println!();
     println!(
         "  {}",
-        get_message(MessageKey::ExampleAiSuggestExclude, lang)
+        get_message(MessageKey::ExampleSmartSuggestExclude, lang)
     );
-    println!("  backup-suite ai suggest-exclude /path/to/dir");
+    println!("  backup-suite smart suggest-exclude /path/to/dir");
     println!();
     println!(
         "  {}",
         if lang == Language::Japanese {
-            "# AI自動設定（サブディレクトリを個別に評価・除外パターン自動適用）"
+            "# Smart自動設定（サブディレクトリを個別に評価・除外パターン自動適用）"
         } else {
-            "# AI auto-configure (evaluate subdirectories individually with auto-exclusion)"
+            "# Smart auto-configure (evaluate subdirectories individually with auto-exclusion)"
         }
     );
-    println!("  backup-suite ai auto-configure ~/projects");
+    println!("  backup-suite smart auto-configure ~/projects");
     println!();
     println!(
         "  {}",
@@ -1134,7 +1134,7 @@ fn print_ai_help(lang: Language) {
             "# Dry-run (show recommendations only)"
         }
     );
-    println!("  backup-suite ai auto-configure ~/projects --dry-run");
+    println!("  backup-suite smart auto-configure ~/projects --dry-run");
     println!();
     println!(
         "  {}",
@@ -1144,7 +1144,7 @@ fn print_ai_help(lang: Language) {
             "# Interactive mode (confirm each subdirectory and exclusion pattern)"
         }
     );
-    println!("  backup-suite ai auto-configure ~/projects --interactive");
+    println!("  backup-suite smart auto-configure ~/projects --interactive");
     println!();
     println!(
         "  {}",
@@ -1154,7 +1154,7 @@ fn print_ai_help(lang: Language) {
             "# Specify subdirectory depth (up to 2 levels)"
         }
     );
-    println!("  backup-suite ai auto-configure ~/projects --max-depth 2");
+    println!("  backup-suite smart auto-configure ~/projects --max-depth 2");
     println!();
     println!(
         "{}{}:{}",
@@ -1364,13 +1364,16 @@ fn print_config_help(lang: Language) {
 ///
 /// # Returns
 /// Vector of subdirectory paths
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 fn enumerate_subdirs(path: &std::path::Path, max_depth: u8) -> Result<Vec<PathBuf>> {
     use walkdir::WalkDir;
 
     if max_depth == 0 {
         return Ok(Vec::new());
     }
+
+    // 大量のディレクトリがある場合に固まるのを防ぐため、最大数を制限
+    const MAX_SUBDIRS: usize = 20;
 
     let subdirs: Vec<PathBuf> = WalkDir::new(path)
         .min_depth(1)
@@ -1379,6 +1382,7 @@ fn enumerate_subdirs(path: &std::path::Path, max_depth: u8) -> Result<Vec<PathBu
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path().is_dir())
+        .take(MAX_SUBDIRS) // 早期停止：20個見つけたら即座に停止
         .map(|e| e.path().to_path_buf())
         .collect();
 
@@ -2354,8 +2358,10 @@ fn main() -> Result<()> {
                             let home = dirs::home_dir().ok_or_else(|| {
                                 anyhow::anyhow!("ホームディレクトリが見つかりません")
                             })?;
-                            let relative =
-                                path_str.strip_prefix("~").unwrap().trim_start_matches('/');
+                            let relative = path_str
+                                .strip_prefix("~")
+                                .ok_or_else(|| anyhow::anyhow!("チルダプレフィックスの除去に失敗"))?
+                                .trim_start_matches('/');
                             home.join(relative)
                         } else {
                             path
@@ -2517,25 +2523,26 @@ fn main() -> Result<()> {
                 }
             }
         }
-        #[cfg(feature = "ai")]
-        Some(Commands::Ai { action, help }) => {
-            use backup_suite::ai::anomaly::AnomalyDetector;
-            use backup_suite::ai::recommendation::{
+        #[cfg(feature = "smart")]
+        Some(Commands::Smart { action, help }) => {
+            use backup_suite::smart::anomaly::AnomalyDetector;
+            use backup_suite::smart::recommendation::{
                 ExcludeRecommendationEngine, ImportanceEvaluator,
             };
-            use backup_suite::ai::types::BackupSize;
+            use backup_suite::smart::types::BackupSize;
             use comfy_table::{Cell, Table};
 
             // --help フラグまたは引数なしの場合はヘルプを表示
             if help || action.is_none() {
-                print_ai_help(lang);
+                print_smart_help(lang);
                 return Ok(());
             }
 
-            let action = action.unwrap();
+            let action =
+                action.ok_or_else(|| anyhow::anyhow!("Smartアクションが指定されていません"))?;
 
             match action {
-                AiAction::Detect { days, format } => {
+                SmartAction::Detect { days, format } => {
                     // Validate days range
                     if days == 0 || days > 365 {
                         eprintln!(
@@ -2551,7 +2558,7 @@ fn main() -> Result<()> {
                     println!(
                         "{}{}{}",
                         get_color("magenta", false),
-                        get_message(MessageKey::AiDetectTitle, lang),
+                        get_message(MessageKey::SmartDetectTitle, lang),
                         get_color("reset", false)
                     );
                     println!(
@@ -2591,7 +2598,7 @@ fn main() -> Result<()> {
                                 println!(
                                     "{}🚨 {}{}",
                                     get_color("red", false),
-                                    get_message(MessageKey::AiDetectAnomalyFound, lang),
+                                    get_message(MessageKey::SmartDetectAnomalyFound, lang),
                                     get_color("reset", false)
                                 );
                                 println!("  Z-score: {:.2}", result.z_score());
@@ -2657,7 +2664,7 @@ fn main() -> Result<()> {
                                 println!(
                                     "{}🚨 {}{}\n",
                                     get_color("red", false),
-                                    get_message(MessageKey::AiDetectAnomalyFound, lang),
+                                    get_message(MessageKey::SmartDetectAnomalyFound, lang),
                                     get_color("reset", false)
                                 );
                                 println!("{table}");
@@ -2668,14 +2675,14 @@ fn main() -> Result<()> {
                             if format == "json" {
                                 let json_output = serde_json::json!({
                                     "anomaly_detected": false,
-                                    "message": get_message(MessageKey::AiDetectNoAnomalies, lang)
+                                    "message": get_message(MessageKey::SmartDetectNoAnomalies, lang)
                                 });
                                 println!("{}", serde_json::to_string_pretty(&json_output)?);
                             } else {
                                 println!(
                                     "{}✅ {}{}",
                                     get_color("green", false),
-                                    get_message(MessageKey::AiDetectNoAnomalies, lang),
+                                    get_message(MessageKey::SmartDetectNoAnomalies, lang),
                                     get_color("reset", false)
                                 );
                             }
@@ -2759,7 +2766,7 @@ fn main() -> Result<()> {
                         }
                     }
                 }
-                AiAction::Analyze {
+                SmartAction::Analyze {
                     path,
                     suggest_priority,
                     detailed,
@@ -2776,7 +2783,7 @@ fn main() -> Result<()> {
                     println!(
                         "{}{}{}",
                         get_color("magenta", false),
-                        get_message(MessageKey::AiAnalyzeTitle, lang),
+                        get_message(MessageKey::SmartAnalyzeTitle, lang),
                         get_color("reset", false)
                     );
                     println!(
@@ -2897,14 +2904,14 @@ fn main() -> Result<()> {
                             println!(
                                 "{}⚠️  {}: {}{}",
                                 get_color("red", false),
-                                get_message(MessageKey::AiErrorAnalysisFailed, lang),
+                                get_message(MessageKey::SmartErrorAnalysisFailed, lang),
                                 e,
                                 get_color("reset", false)
                             );
                         }
                     }
                 }
-                AiAction::SuggestExclude {
+                SmartAction::SuggestExclude {
                     path,
                     apply,
                     confidence,
@@ -2933,7 +2940,7 @@ fn main() -> Result<()> {
                     println!(
                         "{}{}{}",
                         get_color("magenta", false),
-                        get_message(MessageKey::AiSuggestExcludeTitle, lang),
+                        get_message(MessageKey::SmartSuggestExcludeTitle, lang),
                         get_color("reset", false)
                     );
                     println!(
@@ -3045,14 +3052,14 @@ fn main() -> Result<()> {
                             println!(
                                 "{}⚠️  {}: {}{}",
                                 get_color("red", false),
-                                get_message(MessageKey::AiErrorAnalysisFailed, lang),
+                                get_message(MessageKey::SmartErrorAnalysisFailed, lang),
                                 e,
                                 get_color("reset", false)
                             );
                         }
                     }
                 }
-                AiAction::AutoConfigure {
+                SmartAction::AutoConfigure {
                     paths,
                     dry_run,
                     interactive,
@@ -3086,7 +3093,7 @@ fn main() -> Result<()> {
                     println!(
                         "{}{}{}",
                         get_color("magenta", false),
-                        get_message(MessageKey::AiAutoConfigureTitle, lang),
+                        get_message(MessageKey::SmartAutoConfigureTitle, lang),
                         get_color("reset", false)
                     );
                     if dry_run {
@@ -3213,7 +3220,7 @@ fn main() -> Result<()> {
 
                         // ディレクトリの場合はサブディレクトリを列挙
                         let targets_to_evaluate: Vec<PathBuf> = if normalized_path.is_dir() {
-                            let mut subdirs = enumerate_subdirs(&normalized_path, max_depth)?;
+                            let subdirs = enumerate_subdirs(&normalized_path, max_depth)?;
                             if subdirs.is_empty() {
                                 println!(
                                     "  {}💡 {}: {:?}{}",
@@ -3228,34 +3235,6 @@ fn main() -> Result<()> {
                                 );
                                 vec![]
                             } else {
-                                // Limit to 20 subdirectories to prevent timeout
-                                const MAX_SUBDIRS: usize = 20;
-                                if subdirs.len() > MAX_SUBDIRS {
-                                    println!(
-                                        "  {}⚠️  {}: {} ({}){}\n",
-                                        get_color("yellow", false),
-                                        if lang == Language::Japanese {
-                                            format!(
-                                                "サブディレクトリ数が多すぎます: {}個検出",
-                                                subdirs.len()
-                                            )
-                                        } else {
-                                            format!(
-                                                "Too many subdirectories: {} found",
-                                                subdirs.len()
-                                            )
-                                        },
-                                        subdirs.len(),
-                                        if lang == Language::Japanese {
-                                            format!("最初の{}個のみ処理します", MAX_SUBDIRS)
-                                        } else {
-                                            format!("processing first {} only", MAX_SUBDIRS)
-                                        },
-                                        get_color("reset", false)
-                                    );
-                                    subdirs.truncate(MAX_SUBDIRS);
-                                }
-
                                 println!(
                                     "  {}📁 {}: {}{}",
                                     get_color("cyan", false),
@@ -3376,25 +3355,26 @@ fn main() -> Result<()> {
                                         }
                                     }
 
+                                    // Interactive モードでは追加するかどうかを確認（優先度はAI推奨をそのまま使用）
                                     if interactive {
                                         use dialoguer::Confirm;
-                                        let prompt = format!(
-                                            "{}{:?} {} {:?} {}{}",
-                                            get_color("yellow", false),
-                                            target_path,
-                                            if lang == Language::Japanese {
-                                                "を優先度"
-                                            } else {
-                                                "with priority"
-                                            },
-                                            *result.priority(),
-                                            if lang == Language::Japanese {
-                                                "で追加しますか？"
-                                            } else {
-                                                "?"
-                                            },
-                                            get_color("reset", false)
-                                        );
+                                        let prompt = if lang == Language::Japanese {
+                                            format!(
+                                                "{}AI推奨: {:?} (優先度: {:?}) を追加しますか？{}",
+                                                get_color("yellow", false),
+                                                target_path,
+                                                *result.priority(),
+                                                get_color("reset", false)
+                                            )
+                                        } else {
+                                            format!(
+                                                "{}AI recommends: Add {:?} (priority: {:?})?{}",
+                                                get_color("yellow", false),
+                                                target_path,
+                                                *result.priority(),
+                                                get_color("reset", false)
+                                            )
+                                        };
 
                                         if !Confirm::new().with_prompt(prompt).interact()? {
                                             continue;
@@ -3465,7 +3445,7 @@ fn main() -> Result<()> {
                         println!(
                             "\n{}{}{}",
                             get_color("green", false),
-                            get_message(MessageKey::AiAutoConfigureSuccess, lang),
+                            get_message(MessageKey::SmartAutoConfigureSuccess, lang),
                             get_color("reset", false)
                         );
                         println!(
@@ -3479,8 +3459,8 @@ fn main() -> Result<()> {
                         );
                     }
                 }
-                AiAction::Help => {
-                    print_ai_help(lang);
+                SmartAction::Help => {
+                    print_smart_help(lang);
                 }
             }
         }

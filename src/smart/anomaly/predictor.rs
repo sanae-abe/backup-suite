@@ -2,9 +2,9 @@
 //!
 //! 線形回帰による容量予測を提供します。
 
-use crate::ai::error::{AiError, AiResult};
-use crate::ai::types::{DiskCapacity, PredictionConfidence, TimeSeriesPoint};
 use crate::core::history::BackupHistory;
+use crate::smart::error::{SmartError, SmartResult};
+use crate::smart::types::{DiskCapacity, PredictionConfidence, TimeSeriesPoint};
 use statrs::statistics::{Data, Distribution};
 
 /// 予測結果
@@ -12,8 +12,8 @@ use statrs::statistics::{Data, Distribution};
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::anomaly::PredictionResult;
-/// use backup_suite::ai::{DiskCapacity, PredictionConfidence};
+/// use backup_suite::smart::anomaly::PredictionResult;
+/// use backup_suite::smart::{DiskCapacity, PredictionConfidence};
 ///
 /// let result = PredictionResult::new(
 ///     DiskCapacity::new(500_000_000_000),
@@ -120,8 +120,8 @@ impl RiskLevel {
 /// # 使用例
 ///
 /// ```rust,no_run
-/// use backup_suite::ai::anomaly::Predictor;
-/// use backup_suite::ai::DiskCapacity;
+/// use backup_suite::smart::anomaly::Predictor;
+/// use backup_suite::smart::DiskCapacity;
 /// use backup_suite::BackupHistory;
 ///
 /// let predictor = Predictor::new();
@@ -169,7 +169,7 @@ impl Predictor {
         histories: &[BackupHistory],
         total_capacity: DiskCapacity,
         days_ahead: u32,
-    ) -> AiResult<Option<PredictionResult>> {
+    ) -> SmartResult<Option<PredictionResult>> {
         // データ不足チェック
         if histories.len() < self.min_data_points {
             return Ok(None);
@@ -202,7 +202,7 @@ impl Predictor {
         // 信頼度計算（決定係数から導出）
         let confidence_value = r_squared.clamp(0.5, 0.99);
         let confidence =
-            PredictionConfidence::new(confidence_value).map_err(AiError::PredictionError)?;
+            PredictionConfidence::new(confidence_value).map_err(SmartError::PredictionError)?;
 
         // 満杯までの日数を計算
         let days_until_full = if slope > 0.0 {
@@ -251,9 +251,9 @@ impl Predictor {
     /// # Errors
     ///
     /// データ不足または計算エラーの場合はエラーを返します。
-    fn linear_regression(&self, time_series: &[TimeSeriesPoint]) -> AiResult<(f64, f64, f64)> {
+    fn linear_regression(&self, time_series: &[TimeSeriesPoint]) -> SmartResult<(f64, f64, f64)> {
         if time_series.len() < 2 {
-            return Err(AiError::InsufficientData {
+            return Err(SmartError::InsufficientData {
                 required: 2,
                 actual: time_series.len(),
             });
@@ -283,7 +283,7 @@ impl Predictor {
 
         // 分散が0の場合（全て同じタイムスタンプ）
         if variance == 0.0 {
-            return Err(AiError::StatisticsError(
+            return Err(SmartError::StatisticsError(
                 "分散が0です（全てのデータポイントが同じタイムスタンプ）".to_string(),
             ));
         }
@@ -302,7 +302,7 @@ impl Predictor {
             ss_total += (y - y_mean) * (y - y_mean);
         }
 
-        let r_squared = if ss_total == 0.0 {
+        let r_squared: f64 = if ss_total == 0.0 {
             1.0
         } else {
             1.0 - (ss_residual / ss_total)
@@ -316,7 +316,7 @@ impl Predictor {
     /// # Errors
     ///
     /// データ不足または計算エラーの場合はエラーを返します。
-    pub fn analyze_trend(&self, histories: &[BackupHistory]) -> AiResult<Option<Trend>> {
+    pub fn analyze_trend(&self, histories: &[BackupHistory]) -> SmartResult<Option<Trend>> {
         if histories.len() < self.min_data_points {
             return Ok(None);
         }

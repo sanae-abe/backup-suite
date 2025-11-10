@@ -104,11 +104,23 @@ impl EncryptionEngine {
         Self { config }
     }
 
-    /// ランダムなナンスを生成
+    /// ランダムなナンスを生成（内部用）
     fn generate_nonce() -> [u8; 12] {
         let mut nonce = [0u8; 12];
         rand::rng().fill_bytes(&mut nonce);
         nonce
+    }
+
+    /// ランダムなナンスを生成（公開API、pipeline.rsから使用）
+    #[must_use]
+    pub fn generate_nonce_internal() -> [u8; 12] {
+        Self::generate_nonce()
+    }
+
+    /// チャンクサイズを取得（公開API、pipeline.rsから使用）
+    #[must_use]
+    pub fn get_chunk_size(&self) -> usize {
+        self.config.chunk_size
     }
 
     /// データを暗号化

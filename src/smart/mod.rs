@@ -1,4 +1,4 @@
-//! AI機能モジュール
+//! Smart機能モジュール
 //!
 //! 統計的異常検知、ファイル重要度判定、インテリジェント推奨を提供します。
 
@@ -8,7 +8,7 @@ pub mod recommendation;
 pub mod types;
 
 // 公開API
-pub use error::{AiError, AiResult};
+pub use error::{SmartError, SmartResult};
 pub use types::{
     BackupSize, DiskCapacity, FailureRate, FileImportance, PredictionConfidence, TimeSeriesPoint,
 };

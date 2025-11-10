@@ -2,9 +2,9 @@
 //!
 //! 統計的手法によるバックアップサイズの異常検知を提供します。
 
-use crate::ai::error::{AiError, AiResult};
-use crate::ai::types::{BackupSize, PredictionConfidence};
 use crate::core::history::BackupHistory;
+use crate::smart::error::{SmartError, SmartResult};
+use crate::smart::types::{BackupSize, PredictionConfidence};
 use statrs::statistics::{Data, Distribution};
 
 /// 異常検知閾値
@@ -12,7 +12,7 @@ use statrs::statistics::{Data, Distribution};
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::anomaly::AnomalyThreshold;
+/// use backup_suite::smart::anomaly::AnomalyThreshold;
 ///
 /// let threshold = AnomalyThreshold::default();
 /// assert_eq!(threshold.z_score(), 3.0);
@@ -30,15 +30,15 @@ impl AnomalyThreshold {
     /// # Errors
     ///
     /// Z-scoreが負の値、またはウィンドウサイズが0の場合はエラーを返します
-    pub fn new(z_score: f64, window_size: usize) -> AiResult<Self> {
+    pub fn new(z_score: f64, window_size: usize) -> SmartResult<Self> {
         if z_score < 0.0 {
-            return Err(AiError::InvalidParameter(format!(
+            return Err(SmartError::InvalidParameter(format!(
                 "Z-scoreは正の値である必要があります: {}",
                 z_score
             )));
         }
         if window_size == 0 {
-            return Err(AiError::InvalidParameter(
+            return Err(SmartError::InvalidParameter(
                 "ウィンドウサイズは1以上である必要があります".to_string(),
             ));
         }
@@ -75,8 +75,8 @@ impl Default for AnomalyThreshold {
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::anomaly::AnomalyResult;
-/// use backup_suite::ai::PredictionConfidence;
+/// use backup_suite::smart::anomaly::AnomalyResult;
+/// use backup_suite::smart::PredictionConfidence;
 ///
 /// let result = AnomalyResult::new(
 ///     true,
@@ -153,8 +153,8 @@ impl AnomalyResult {
 /// # 使用例
 ///
 /// ```rust,no_run
-/// use backup_suite::ai::anomaly::{AnomalyDetector, AnomalyThreshold};
-/// use backup_suite::ai::BackupSize;
+/// use backup_suite::smart::anomaly::{AnomalyDetector, AnomalyThreshold};
+/// use backup_suite::smart::BackupSize;
 /// use backup_suite::BackupHistory;
 ///
 /// let detector = AnomalyDetector::new(AnomalyThreshold::default());
@@ -207,7 +207,7 @@ impl AnomalyDetector {
         &self,
         histories: &[BackupHistory],
         current_size: BackupSize,
-    ) -> AiResult<Option<AnomalyResult>> {
+    ) -> SmartResult<Option<AnomalyResult>> {
         // データ不足チェック
         if histories.len() < 3 {
             return Ok(None);
@@ -237,7 +237,7 @@ impl AnomalyDetector {
                 return Ok(Some(AnomalyResult::new(
                     false,
                     0.0,
-                    PredictionConfidence::new(1.0).map_err(AiError::StatisticsError)?,
+                    PredictionConfidence::new(1.0).map_err(SmartError::StatisticsError)?,
                     "サイズは通常範囲内です".to_string(),
                     None,
                 )));
@@ -245,7 +245,7 @@ impl AnomalyDetector {
             return Ok(Some(AnomalyResult::new(
                 true,
                 f64::INFINITY,
-                PredictionConfidence::new(0.99).map_err(AiError::StatisticsError)?,
+                PredictionConfidence::new(0.99).map_err(SmartError::StatisticsError)?,
                 format!(
                     "サイズが急変しました（通常: {:.2}MB → 現在: {:.2}MB）",
                     mean / 1_048_576.0,
@@ -267,11 +267,11 @@ impl AnomalyDetector {
             (z_score / (self.threshold.z_score + 3.0)).min(0.99)
         } else {
             // 正常の場合: Z-scoreが小さいほど信頼度が高い
-            (1.0 - (z_score / self.threshold.z_score)).max(0.5)
+            (1.0_f64 - (z_score / self.threshold.z_score)).max(0.5)
         };
 
         let confidence =
-            PredictionConfidence::new(confidence_value).map_err(AiError::StatisticsError)?;
+            PredictionConfidence::new(confidence_value).map_err(SmartError::StatisticsError)?;
 
         // 説明文生成
         let description = if is_anomaly {
@@ -334,9 +334,9 @@ impl AnomalyDetector {
     /// # Errors
     ///
     /// データ不足の場合はエラーを返します。
-    pub fn calculate_moving_average(&self, histories: &[BackupHistory]) -> AiResult<Vec<f64>> {
+    pub fn calculate_moving_average(&self, histories: &[BackupHistory]) -> SmartResult<Vec<f64>> {
         if histories.len() < self.threshold.window_size {
-            return Err(AiError::InsufficientData {
+            return Err(SmartError::InsufficientData {
                 required: self.threshold.window_size,
                 actual: histories.len(),
             });

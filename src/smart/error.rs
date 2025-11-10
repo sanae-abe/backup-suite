@@ -1,12 +1,12 @@
-//! AI機能のエラー型定義
+//! Smart機能のエラー型定義
 //!
 //! thiserrorを使用した型安全なエラーハンドリングを提供します。
 
 use thiserror::Error;
 
-/// AI機能のエラー型
+/// Smart機能のエラー型
 #[derive(Error, Debug)]
-pub enum AiError {
+pub enum SmartError {
     /// 統計計算エラー
     #[error("統計計算エラー: {0}")]
     StatisticsError(String),
@@ -60,34 +60,34 @@ pub enum AiError {
     OllamaNotInstalled,
 
     /// その他のエラー
-    #[error("AIエラー: {0}")]
+    #[error("Smartエラー: {0}")]
     Other(#[from] anyhow::Error),
 }
 
-impl From<crate::error::BackupError> for AiError {
+impl From<crate::error::BackupError> for SmartError {
     fn from(err: crate::error::BackupError) -> Self {
         match err {
             crate::error::BackupError::PathTraversalDetected { path } => {
-                AiError::SecurityError(format!("パストラバーサル検出: {:?}", path))
+                SmartError::SecurityError(format!("パストラバーサル検出: {:?}", path))
             }
             crate::error::BackupError::PermissionDenied { path } => {
-                AiError::SecurityError(format!("権限エラー: {:?}", path))
+                SmartError::SecurityError(format!("権限エラー: {:?}", path))
             }
-            crate::error::BackupError::IoError(e) => AiError::IoError(e),
-            other => AiError::Other(anyhow::Error::new(other)),
+            crate::error::BackupError::IoError(e) => SmartError::IoError(e),
+            other => SmartError::Other(anyhow::Error::new(other)),
         }
     }
 }
 
-impl AiError {
+impl SmartError {
     /// ユーザーフレンドリーなエラーメッセージを生成
     ///
     /// # 使用例
     ///
     /// ```rust
-    /// use backup_suite::ai::error::AiError;
+    /// use backup_suite::smart::error::SmartError;
     ///
-    /// let error = AiError::InsufficientData {
+    /// let error = SmartError::InsufficientData {
     ///     required: 10,
     ///     actual: 3,
     /// };
@@ -97,40 +97,40 @@ impl AiError {
     #[must_use]
     pub fn user_friendly_message(&self) -> String {
         match self {
-            AiError::StatisticsError(_) | AiError::PredictionError(_) => {
+            SmartError::StatisticsError(_) | SmartError::PredictionError(_) => {
                 format!("分析処理中にエラーが発生しました: {}", self)
             }
-            AiError::InsufficientData { required, actual } => {
+            SmartError::InsufficientData { required, actual } => {
                 format!(
                     "分析に必要なデータが不足しています。最低{}件必要ですが、{}件しかありません。",
                     required, actual
                 )
             }
-            AiError::InvalidParameter(msg) => {
+            SmartError::InvalidParameter(msg) => {
                 format!("設定値が不正です: {}", msg)
             }
-            AiError::OutOfRange { value, min, max } => {
+            SmartError::OutOfRange { value, min, max } => {
                 format!("値{}が許容範囲({} - {})外です", value, min, max)
             }
-            AiError::ArithmeticError(msg) => {
+            SmartError::ArithmeticError(msg) => {
                 format!("計算処理中にエラーが発生しました: {}", msg)
             }
-            AiError::IoError(e) => {
+            SmartError::IoError(e) => {
                 format!("ファイル操作中にエラーが発生しました: {}", e)
             }
-            AiError::SecurityError(msg) => {
+            SmartError::SecurityError(msg) => {
                 format!("セキュリティエラー: {}", msg)
             }
-            AiError::LlmCommunicationError(msg) => {
+            SmartError::LlmCommunicationError(msg) => {
                 format!(
                     "AI推論エンジンとの通信に失敗しました: {}。Ollamaサービスが起動しているか確認してください。",
                     msg
                 )
             }
-            AiError::OllamaNotInstalled => {
+            SmartError::OllamaNotInstalled => {
                 "Ollamaがインストールされていません。AI機能を使用するには https://ollama.ai からOllamaをインストールしてください。".to_string()
             }
-            AiError::Other(e) => {
+            SmartError::Other(e) => {
                 format!("エラーが発生しました: {}", e)
             }
         }
@@ -141,49 +141,49 @@ impl AiError {
     /// # 使用例
     ///
     /// ```rust
-    /// use backup_suite::ai::error::AiError;
+    /// use backup_suite::smart::error::SmartError;
     ///
-    /// let error = AiError::OllamaNotInstalled;
+    /// let error = SmartError::OllamaNotInstalled;
     /// let message = error.user_friendly_message_en();
     /// assert!(message.contains("Ollama"));
     /// ```
     #[must_use]
     pub fn user_friendly_message_en(&self) -> String {
         match self {
-            AiError::StatisticsError(_) | AiError::PredictionError(_) => {
+            SmartError::StatisticsError(_) | SmartError::PredictionError(_) => {
                 format!("An error occurred during analysis: {}", self)
             }
-            AiError::InsufficientData { required, actual } => {
+            SmartError::InsufficientData { required, actual } => {
                 format!(
                     "Insufficient data for analysis. At least {} items required, but only {} available.",
                     required, actual
                 )
             }
-            AiError::InvalidParameter(msg) => {
+            SmartError::InvalidParameter(msg) => {
                 format!("Invalid parameter: {}", msg)
             }
-            AiError::OutOfRange { value, min, max } => {
+            SmartError::OutOfRange { value, min, max } => {
                 format!("Value {} is out of range ({} - {})", value, min, max)
             }
-            AiError::ArithmeticError(msg) => {
+            SmartError::ArithmeticError(msg) => {
                 format!("Arithmetic error occurred: {}", msg)
             }
-            AiError::IoError(e) => {
+            SmartError::IoError(e) => {
                 format!("I/O error occurred: {}", e)
             }
-            AiError::SecurityError(msg) => {
+            SmartError::SecurityError(msg) => {
                 format!("Security error: {}", msg)
             }
-            AiError::LlmCommunicationError(msg) => {
+            SmartError::LlmCommunicationError(msg) => {
                 format!(
                     "Failed to communicate with AI inference engine: {}. Please check if Ollama service is running.",
                     msg
                 )
             }
-            AiError::OllamaNotInstalled => {
+            SmartError::OllamaNotInstalled => {
                 "Ollama is not installed. Please install Ollama from https://ollama.ai to use AI features.".to_string()
             }
-            AiError::Other(e) => {
+            SmartError::Other(e) => {
                 format!("An error occurred: {}", e)
             }
         }
@@ -194,7 +194,7 @@ impl AiError {
     pub const fn is_recoverable(&self) -> bool {
         matches!(
             self,
-            AiError::IoError(_) | AiError::LlmCommunicationError(_)
+            SmartError::IoError(_) | SmartError::LlmCommunicationError(_)
         )
     }
 
@@ -203,13 +203,13 @@ impl AiError {
     pub const fn is_transient(&self) -> bool {
         matches!(
             self,
-            AiError::IoError(_) | AiError::LlmCommunicationError(_)
+            SmartError::IoError(_) | SmartError::LlmCommunicationError(_)
         )
     }
 }
 
-/// AI機能のResult型エイリアス
-pub type AiResult<T> = std::result::Result<T, AiError>;
+/// Smart機能のResult型エイリアス
+pub type SmartResult<T> = std::result::Result<T, SmartError>;
 
 #[cfg(test)]
 mod tests {
@@ -217,7 +217,7 @@ mod tests {
 
     #[test]
     fn test_insufficient_data_error() {
-        let error = AiError::InsufficientData {
+        let error = SmartError::InsufficientData {
             required: 10,
             actual: 3,
         };
@@ -228,7 +228,7 @@ mod tests {
 
     #[test]
     fn test_out_of_range_error() {
-        let error = AiError::OutOfRange {
+        let error = SmartError::OutOfRange {
             value: 150.0,
             min: 0.0,
             max: 100.0,
@@ -241,18 +241,19 @@ mod tests {
 
     #[test]
     fn test_user_friendly_message() {
-        let error = AiError::InvalidParameter("閾値が負の数です".to_string());
+        let error = SmartError::InvalidParameter("閾値が負の数です".to_string());
         let msg = error.user_friendly_message();
         assert!(msg.contains("設定値が不正"));
     }
 
     #[test]
     fn test_error_recovery() {
-        let io_error = AiError::IoError(std::io::Error::new(std::io::ErrorKind::NotFound, "test"));
+        let io_error =
+            SmartError::IoError(std::io::Error::new(std::io::ErrorKind::NotFound, "test"));
         assert!(io_error.is_recoverable());
         assert!(io_error.is_transient());
 
-        let stat_error = AiError::StatisticsError("test".to_string());
+        let stat_error = SmartError::StatisticsError("test".to_string());
         assert!(!stat_error.is_recoverable());
         assert!(!stat_error.is_transient());
     }
@@ -260,13 +261,13 @@ mod tests {
     #[test]
     fn test_from_io_error() {
         let io_error = std::io::Error::new(std::io::ErrorKind::NotFound, "test");
-        let ai_error: AiError = io_error.into();
-        assert!(matches!(ai_error, AiError::IoError(_)));
+        let smart_error: SmartError = io_error.into();
+        assert!(matches!(smart_error, SmartError::IoError(_)));
     }
 
     #[test]
     fn test_llm_communication_error() {
-        let error = AiError::LlmCommunicationError("connection timeout".to_string());
+        let error = SmartError::LlmCommunicationError("connection timeout".to_string());
         let msg = error.user_friendly_message();
         assert!(msg.contains("AI推論エンジン"));
         assert!(msg.contains("Ollama"));
@@ -281,7 +282,7 @@ mod tests {
 
     #[test]
     fn test_ollama_not_installed() {
-        let error = AiError::OllamaNotInstalled;
+        let error = SmartError::OllamaNotInstalled;
         let msg = error.user_friendly_message();
         assert!(msg.contains("Ollama"));
         assert!(msg.contains("https://ollama.ai"));
@@ -296,7 +297,7 @@ mod tests {
 
     #[test]
     fn test_user_friendly_message_en() {
-        let error = AiError::InsufficientData {
+        let error = SmartError::InsufficientData {
             required: 10,
             actual: 3,
         };

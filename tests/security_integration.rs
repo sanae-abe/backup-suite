@@ -4,6 +4,7 @@
 
 use assert_cmd::prelude::*;
 use predicates::prelude::*;
+use serial_test::serial;
 use std::fs;
 #[cfg(unix)]
 use std::os::unix::fs as unix_fs;
@@ -56,6 +57,7 @@ fn test_remove_rejects_path_traversal() {
 /// safe_join() は .. を除去してベースディレクトリ配下に正規化するため、
 /// セキュリティ的には安全（ベースディレクトリ外にアクセスできない）
 #[test]
+#[serial]
 fn test_config_set_destination_rejects_path_traversal() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
     cmd.arg("--lang")
@@ -71,31 +73,31 @@ fn test_config_set_destination_rejects_path_traversal() {
 /// AI analyze コマンドのパストラバーサル攻撃テスト
 /// safe_join() は .. を除去してベースディレクトリ配下に正規化するため、
 /// セキュリティ的には安全（ベースディレクトリ外にアクセスできない）
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 #[test]
-fn test_ai_analyze_rejects_path_traversal() {
+fn test_smart_analyze_rejects_path_traversal() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
     cmd.arg("--lang")
         .arg("ja")
-        .arg("ai")
+        .arg("smart")
         .arg("analyze")
         .arg("../../../etc/passwd")
         .assert()
         .success()
         .stdout(
             predicate::str::contains("パスが存在しません")
-                .or(predicate::str::contains("AI分析に失敗")),
+                .or(predicate::str::contains("Smart分析に失敗")),
         );
 }
 
 /// AI suggest-exclude コマンドのパストラバーサル攻撃テスト
 /// safe_join() は .. を除去してベースディレクトリ配下に正規化するため、
 /// セキュリティ的には安全（ベースディレクトリ外にアクセスできない）
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 #[test]
-fn test_ai_suggest_exclude_rejects_path_traversal() {
+fn test_smart_suggest_exclude_rejects_path_traversal() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("ai")
+    cmd.arg("smart")
         .arg("suggest-exclude")
         .arg("../../../etc/passwd")
         .assert()
@@ -166,6 +168,7 @@ fn test_add_accepts_valid_path() {
 /// 正常なパスは受け入れられることを確認 - config set-destination コマンド
 /// Note: safe_join() は current_dir をベースとするため、current_dir配下に作成
 #[test]
+#[serial]
 fn test_config_set_destination_accepts_valid_path() {
     use std::env;
 
@@ -246,6 +249,7 @@ fn test_cleanup_days_validation_max() {
 
 /// config set-keep-days のバリデーション範囲テスト
 #[test]
+#[serial]
 fn test_config_set_keep_days_validation_min() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
     cmd.arg("--lang")
@@ -260,6 +264,7 @@ fn test_config_set_keep_days_validation_min() {
 
 /// config set-keep-days のバリデーション範囲テスト（最大値）
 #[test]
+#[serial]
 fn test_config_set_keep_days_validation_max() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
     cmd.arg("--lang")
@@ -341,13 +346,13 @@ fn test_run_compress_level_validation_gzip_max() {
 }
 
 /// AI detect コマンドのdaysバリデーション範囲テスト
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 #[test]
-fn test_ai_detect_days_validation_min() {
+fn test_smart_detect_days_validation_min() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
     cmd.arg("--lang")
         .arg("ja")
-        .arg("ai")
+        .arg("smart")
         .arg("detect")
         .arg("--days")
         .arg("0")
@@ -357,13 +362,13 @@ fn test_ai_detect_days_validation_min() {
 }
 
 /// AI detect コマンドのdaysバリデーション範囲テスト（最大値超過）
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 #[test]
-fn test_ai_detect_days_validation_max() {
+fn test_smart_detect_days_validation_max() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
     cmd.arg("--lang")
         .arg("ja")
-        .arg("ai")
+        .arg("smart")
         .arg("detect")
         .arg("--days")
         .arg("9999")
@@ -374,9 +379,9 @@ fn test_ai_detect_days_validation_max() {
 
 /// AI suggest-exclude コマンドのconfidenceバリデーション範囲テスト
 /// Note: safe_join() は current_dir をベースとするため、相対パスを使用
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 #[test]
-fn test_ai_suggest_exclude_confidence_validation_min() {
+fn test_smart_suggest_exclude_confidence_validation_min() {
     use std::env;
 
     let current_dir = env::current_dir().unwrap();
@@ -392,7 +397,7 @@ fn test_ai_suggest_exclude_confidence_validation_min() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
     cmd.arg("--lang")
         .arg("ja")
-        .arg("ai")
+        .arg("smart")
         .arg("suggest-exclude")
         .arg(relative_path.to_str().unwrap())
         .arg("--confidence=-0.5") // = を使って負の値を渡す
@@ -403,9 +408,9 @@ fn test_ai_suggest_exclude_confidence_validation_min() {
 
 /// AI suggest-exclude コマンドのconfidenceバリデーション範囲テスト（最大値超過）
 /// Note: safe_join() は current_dir をベースとするため、相対パスを使用
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 #[test]
-fn test_ai_suggest_exclude_confidence_validation_max() {
+fn test_smart_suggest_exclude_confidence_validation_max() {
     use std::env;
 
     let current_dir = env::current_dir().unwrap();
@@ -421,7 +426,7 @@ fn test_ai_suggest_exclude_confidence_validation_max() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
     cmd.arg("--lang")
         .arg("ja")
-        .arg("ai")
+        .arg("smart")
         .arg("suggest-exclude")
         .arg(relative_path.to_str().unwrap())
         .arg("--confidence")
@@ -433,9 +438,9 @@ fn test_ai_suggest_exclude_confidence_validation_max() {
 
 /// AI auto-configure コマンドのmax-depthバリデーション（0の場合）
 /// Note: safe_join() は current_dir をベースとするため、相対パスを使用
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 #[test]
-fn test_ai_auto_configure_max_depth_zero() {
+fn test_smart_auto_configure_max_depth_zero() {
     use std::env;
 
     let current_dir = env::current_dir().unwrap();
@@ -451,7 +456,7 @@ fn test_ai_auto_configure_max_depth_zero() {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
     cmd.arg("--lang")
         .arg("ja")
-        .arg("ai")
+        .arg("smart")
         .arg("auto-configure")
         .arg(relative_path.to_str().unwrap())
         .arg("--max-depth")
@@ -464,9 +469,9 @@ fn test_ai_auto_configure_max_depth_zero() {
 
 /// AI auto-configure コマンドのmax-depth正常動作確認
 /// Note: safe_join() は current_dir をベースとするため、相対パスを使用
-#[cfg(feature = "ai")]
+#[cfg(feature = "smart")]
 #[test]
-fn test_ai_auto_configure_max_depth_valid() {
+fn test_smart_auto_configure_max_depth_valid() {
     use std::env;
 
     let current_dir = env::current_dir().unwrap();
@@ -484,7 +489,7 @@ fn test_ai_auto_configure_max_depth_valid() {
         .expect("temp_dir is under current_dir");
 
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_backup-suite"));
-    cmd.arg("ai")
+    cmd.arg("smart")
         .arg("auto-configure")
         .arg(relative_path.to_str().unwrap())
         .arg("--max-depth")

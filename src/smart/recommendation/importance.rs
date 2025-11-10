@@ -2,21 +2,59 @@
 //!
 //! ルールベーススコアリングによるファイル重要度の自動判定を提供します。
 
-use crate::ai::error::{AiError, AiResult};
-use crate::ai::types::FileImportance;
 use crate::core::Priority;
 use crate::security::path::validate_path_safety;
+use crate::smart::error::{SmartError, SmartResult};
+use crate::smart::types::FileImportance;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+
+/// 低優先度ディレクトリパターン（キャッシュ・アーカイブ等）
+const LOW_PRIORITY_DIR_PATTERNS: &[&str] = &[
+    "cache",
+    "archive",
+    "backup",
+    "tmp",
+    "temp",
+    "logs",
+    "log",
+    ".git",
+    "node_modules",
+    "target", // Rustのビルド成果物
+    "dist",   // フロントエンドのビルド成果物
+    "build",
+];
+
+/// 低優先度ディレクトリかどうかを判定
+///
+/// キャッシュ、アーカイブ、ログ、一時ファイル、ビルド成果物などを検出します。
+///
+/// # 引数
+///
+/// * `path` - 判定対象のパス
+///
+/// # 戻り値
+///
+/// 低優先度ディレクトリの場合は `true`、それ以外は `false`
+fn is_low_priority_dir(path: &Path) -> bool {
+    if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+        let name_lower = name.to_lowercase();
+        LOW_PRIORITY_DIR_PATTERNS
+            .iter()
+            .any(|pattern| name_lower.contains(pattern) || name_lower == *pattern)
+    } else {
+        false
+    }
+}
 
 /// ファイル重要度評価結果
 ///
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::recommendation::FileImportanceResult;
-/// use backup_suite::ai::FileImportance;
+/// use backup_suite::smart::recommendation::FileImportanceResult;
+/// use backup_suite::smart::FileImportance;
 /// use backup_suite::Priority;
 /// use std::path::PathBuf;
 ///
@@ -138,7 +176,7 @@ impl ImportanceRule {
 /// # 使用例
 ///
 /// ```rust,no_run
-/// use backup_suite::ai::recommendation::ImportanceEvaluator;
+/// use backup_suite::smart::recommendation::ImportanceEvaluator;
 /// use std::path::Path;
 ///
 /// let evaluator = ImportanceEvaluator::new();
@@ -304,13 +342,13 @@ impl ImportanceEvaluator {
     /// # Errors
     ///
     /// パスが不正な場合やファイルアクセスに失敗した場合はエラーを返します。
-    pub fn evaluate(&self, path: &Path) -> AiResult<FileImportanceResult> {
+    pub fn evaluate(&self, path: &Path) -> SmartResult<FileImportanceResult> {
         // パストラバーサル対策
         validate_path_safety(path)?;
 
         // ファイル/ディレクトリの存在確認
         if !path.exists() {
-            return Err(AiError::InvalidParameter(format!(
+            return Err(SmartError::InvalidParameter(format!(
                 "File or directory does not exist: {}",
                 path.display()
             )));
@@ -410,7 +448,7 @@ impl ImportanceEvaluator {
         let bonus = self.calculate_bonus_score(path);
         let final_score = (best_score.saturating_add(bonus)).min(100);
 
-        let importance = FileImportance::new(final_score).map_err(AiError::InvalidParameter)?;
+        let importance = FileImportance::new(final_score).map_err(SmartError::InvalidParameter)?;
 
         // キャッシュ更新
         {
@@ -426,7 +464,7 @@ impl ImportanceEvaluator {
     /// # Errors
     ///
     /// パスが不正な場合やファイルアクセスに失敗した場合はエラーを返します。
-    pub fn evaluate_cached(&self, path: &Path) -> AiResult<FileImportance> {
+    pub fn evaluate_cached(&self, path: &Path) -> SmartResult<FileImportance> {
         // パストラバーサル対策
         validate_path_safety(path)?;
 
@@ -448,8 +486,27 @@ impl ImportanceEvaluator {
     /// # Errors
     ///
     /// パスが不正な場合やファイルアクセスに失敗した場合はエラーを返します。
-    fn evaluate_directory(&self, path: &Path) -> AiResult<FileImportanceResult> {
+    fn evaluate_directory(&self, path: &Path) -> SmartResult<FileImportanceResult> {
         use walkdir::WalkDir;
+
+        // 低優先度ディレクトリの早期検出（cache, archive, logs等）
+        if is_low_priority_dir(path) {
+            let importance = FileImportance::new(20).map_err(SmartError::InvalidParameter)?;
+            let dir_name = path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("unknown");
+            return Ok(FileImportanceResult::new(
+                path.to_path_buf(),
+                importance,
+                Priority::Low,
+                "低優先度ディレクトリ".to_string(),
+                format!(
+                    "キャッシュ/ログ/アーカイブ等 (ディレクトリ: {}, スコア: 20)",
+                    dir_name
+                ),
+            ));
+        }
 
         let mut score = 30u8; // デフォルトスコア
         let mut category = "ディレクトリ".to_string();
@@ -521,7 +578,7 @@ impl ImportanceEvaluator {
             }
         }
 
-        let importance = FileImportance::new(score).map_err(AiError::InvalidParameter)?;
+        let importance = FileImportance::new(score).map_err(SmartError::InvalidParameter)?;
 
         // キャッシュ更新
         {
@@ -581,7 +638,7 @@ impl ImportanceEvaluator {
         &self,
         path: &Path,
         importance: FileImportance,
-    ) -> AiResult<FileImportanceResult> {
+    ) -> SmartResult<FileImportanceResult> {
         let priority = if importance.is_high() {
             Priority::High
         } else if importance.is_medium() {
@@ -760,18 +817,32 @@ mod tests {
 
         let evaluator = ImportanceEvaluator::new();
 
-        // 一時ファイルを作成
+        // 一時ファイルを作成（確実に低スコアになるように）
         let temp_dir = std::env::temp_dir();
-        let path = temp_dir.join("test_eval_temp_temp.tmp");
+
+        // Windows環境でも確実に一時ファイルとして認識されるように
+        // ディレクトリ名に "temp" または "cache" を含むパスを使用
+        let test_temp_dir = temp_dir.join("temp_test_backup_suite");
+        let _ = fs::create_dir_all(&test_temp_dir);
+
+        let path = test_temp_dir.join("test_eval_temp_temp.tmp");
         let mut file = fs::File::create(&path).unwrap();
         file.write_all(b"temporary data").unwrap();
 
         let result = evaluator.evaluate(&path).unwrap();
-        assert!(result.score().is_low());
+
+        // 一時ファイル（.tmpかつtempディレクトリ内）なので低スコアであるべき
+        assert!(
+            result.score().is_low(),
+            "Expected low score for temp file, but got score: {} (path: {})",
+            result.score().get(),
+            path.display()
+        );
         assert_eq!(result.priority(), &Priority::Low);
 
         // クリーンアップ
         let _ = fs::remove_file(&path);
+        let _ = fs::remove_dir(&test_temp_dir);
     }
 
     #[test]

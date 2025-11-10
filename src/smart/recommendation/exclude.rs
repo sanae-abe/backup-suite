@@ -2,8 +2,8 @@
 //!
 //! 一時ファイル、キャッシュ、再生成可能なファイルを検出して除外を提案します。
 
-use crate::ai::error::{AiError, AiResult};
-use crate::ai::types::PredictionConfidence;
+use crate::smart::error::{SmartError, SmartResult};
+use crate::smart::types::PredictionConfidence;
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
@@ -12,8 +12,8 @@ use walkdir::WalkDir;
 /// # 使用例
 ///
 /// ```rust
-/// use backup_suite::ai::recommendation::ExcludeRecommendation;
-/// use backup_suite::ai::PredictionConfidence;
+/// use backup_suite::smart::recommendation::ExcludeRecommendation;
+/// use backup_suite::smart::PredictionConfidence;
 ///
 /// let recommendation = ExcludeRecommendation::new(
 ///     "node_modules/".to_string(),
@@ -90,7 +90,7 @@ struct ExcludePattern {
 /// # 使用例
 ///
 /// ```rust,no_run
-/// use backup_suite::ai::recommendation::ExcludeRecommendationEngine;
+/// use backup_suite::smart::recommendation::ExcludeRecommendationEngine;
 /// use std::path::Path;
 ///
 /// let engine = ExcludeRecommendationEngine::new();
@@ -250,16 +250,16 @@ impl ExcludeRecommendationEngine {
     pub fn suggest_exclude_patterns(
         &self,
         base_path: &Path,
-    ) -> AiResult<Vec<ExcludeRecommendation>> {
+    ) -> SmartResult<Vec<ExcludeRecommendation>> {
         if !base_path.exists() {
-            return Err(AiError::InvalidParameter(format!(
+            return Err(SmartError::InvalidParameter(format!(
                 "パスが存在しません: {:?}",
                 base_path
             )));
         }
 
         if !base_path.is_dir() {
-            return Err(AiError::InvalidParameter(format!(
+            return Err(SmartError::InvalidParameter(format!(
                 "ディレクトリではありません: {:?}",
                 base_path
             )));
@@ -279,7 +279,7 @@ impl ExcludeRecommendationEngine {
                 // 推奨が意味のあるサイズの場合のみ追加（1KB以上）
                 if size_gb >= 0.000001 || total_size > 0 {
                     let confidence = PredictionConfidence::new(pattern_def.confidence)
-                        .map_err(AiError::InvalidParameter)?;
+                        .map_err(SmartError::InvalidParameter)?;
 
                     recommendations.push(ExcludeRecommendation::new(
                         pattern_def.pattern.clone(),
@@ -306,7 +306,7 @@ impl ExcludeRecommendationEngine {
         &self,
         base_path: &Path,
         pattern: &ExcludePattern,
-    ) -> AiResult<Vec<PathBuf>> {
+    ) -> SmartResult<Vec<PathBuf>> {
         let mut matches = Vec::new();
 
         for entry in WalkDir::new(base_path)
@@ -359,7 +359,7 @@ impl ExcludeRecommendationEngine {
     }
 
     /// 合計サイズを計算
-    fn calculate_total_size(&self, paths: &[PathBuf]) -> AiResult<u64> {
+    fn calculate_total_size(&self, paths: &[PathBuf]) -> SmartResult<u64> {
         let mut total_size = 0u64;
 
         for path in paths {

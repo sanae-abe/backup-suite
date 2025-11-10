@@ -775,14 +775,14 @@ backup-suite completion fish > ~/.config/fish/completions/backup-suite.fish
 
 ---
 
-### `ai` - AI-Driven Intelligent Backup Management (requires `--features ai`)
+### `ai` - AI-Driven Intelligent Backup Management (requires `--features smart`)
 
-AI features require building with the `--features ai` flag.
+AI features require building with the `--features smart` flag.
 
 ```bash
 # Build with AI features enabled
-cargo build --release --features ai
-cargo install --path . --features ai
+cargo build --release --features smart
+cargo install --path . --features smart
 ```
 
 #### Subcommands
@@ -793,7 +793,7 @@ Detect statistically abnormal backups from historical data.
 
 **Basic Syntax:**
 ```bash
-backup-suite ai detect [OPTIONS]
+backup-suite smart detect [OPTIONS]
 ```
 
 **Options:**
@@ -803,13 +803,13 @@ backup-suite ai detect [OPTIONS]
 **Usage Examples:**
 ```bash
 # Detect anomalies in the last 7 days (default)
-backup-suite ai detect
+backup-suite smart detect
 
 # Detailed analysis of the last 14 days
-backup-suite ai detect --days 14 --format detailed
+backup-suite smart detect --days 14 --format detailed
 
 # Output in JSON format
-backup-suite ai detect --format json
+backup-suite smart detect --format json
 ```
 
 **Example Output:**
@@ -836,7 +836,7 @@ Classify files in a directory by importance level to optimize backup strategy.
 
 **Basic Syntax:**
 ```bash
-backup-suite ai analyze <PATH> [OPTIONS]
+backup-suite smart analyze <PATH> [OPTIONS]
 ```
 
 **Arguments:**
@@ -849,13 +849,13 @@ backup-suite ai analyze <PATH> [OPTIONS]
 **Usage Examples:**
 ```bash
 # Analyze directory importance
-backup-suite ai analyze ~/documents
+backup-suite smart analyze ~/documents
 
 # Show detailed importance scores
-backup-suite ai analyze ~/documents --detailed
+backup-suite smart analyze ~/documents --detailed
 
 # Display with priority suggestion
-backup-suite ai analyze ~/projects --suggest-priority
+backup-suite smart analyze ~/projects --suggest-priority
 ```
 
 **Evaluation Criteria:**
@@ -888,7 +888,7 @@ Automatically detect unnecessary files and suggest exclusion patterns.
 
 **Basic Syntax:**
 ```bash
-backup-suite ai suggest-exclude <PATH> [OPTIONS]
+backup-suite smart suggest-exclude <PATH> [OPTIONS]
 ```
 
 **Arguments:**
@@ -901,13 +901,13 @@ backup-suite ai suggest-exclude <PATH> [OPTIONS]
 **Usage Examples:**
 ```bash
 # Show suggested exclusion patterns
-backup-suite ai suggest-exclude ~/projects
+backup-suite smart suggest-exclude ~/projects
 
 # Automatically apply suggested patterns to config
-backup-suite ai suggest-exclude ~/projects --apply
+backup-suite smart suggest-exclude ~/projects --apply
 
 # Set minimum confidence to 50% (show more candidates)
-backup-suite ai suggest-exclude ~/projects --confidence 0.5
+backup-suite smart suggest-exclude ~/projects --confidence 0.5
 ```
 
 **Detection Targets:**
@@ -940,7 +940,7 @@ Analyze directories and automatically generate optimal backup configuration.
 
 **Basic Syntax:**
 ```bash
-backup-suite ai auto-configure <PATHS>... [OPTIONS]
+backup-suite smart auto-configure <PATHS>... [OPTIONS]
 ```
 
 **Arguments:**
@@ -954,19 +954,19 @@ backup-suite ai auto-configure <PATHS>... [OPTIONS]
 **Usage Examples:**
 ```bash
 # Auto-analyze and configure (evaluate each subdirectory individually)
-backup-suite ai auto-configure ~/data
+backup-suite smart auto-configure ~/data
 
 # Interactive mode (confirm each subdirectory and exclusion pattern)
-backup-suite ai auto-configure ~/data --interactive
+backup-suite smart auto-configure ~/data --interactive
 
 # Dry run (preview only, don't apply changes)
-backup-suite ai auto-configure ~/data --dry-run
+backup-suite smart auto-configure ~/data --dry-run
 
 # Specify subdirectory scan depth (up to 2 levels)
-backup-suite ai auto-configure ~/data --max-depth 2
+backup-suite smart auto-configure ~/data --max-depth 2
 
 # Configure multiple directories at once
-backup-suite ai auto-configure ~/projects ~/documents ~/photos
+backup-suite smart auto-configure ~/projects ~/documents ~/photos
 ```
 
 **Features:**
@@ -1017,17 +1017,17 @@ Auto-configuration completed
 
 1. **Start with `--dry-run`**: Check recommendations before applying
    ```bash
-   backup-suite ai auto-configure ~/projects --dry-run
+   backup-suite smart auto-configure ~/projects --dry-run
    ```
 
 2. **Use interactive mode for important projects**: Fine-tune control
    ```bash
-   backup-suite ai auto-configure ~/projects --interactive
+   backup-suite smart auto-configure ~/projects --interactive
    ```
 
 3. **Adjust depth for nested projects**: Increase depth for complex structures
    ```bash
-   backup-suite ai auto-configure ~/projects --max-depth 2
+   backup-suite smart auto-configure ~/projects --max-depth 2
    ```
 
 4. **Verify exclusion patterns**: Check with `backup-suite list` after configuration

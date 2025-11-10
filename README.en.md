@@ -17,7 +17,7 @@
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Basic Usage](#basic-usage)
-- [AI Features (Intelligent Backup)](#-ai-features-intelligent-backup)
+- [Smart Features (Intelligent Backup)](#-smart-features-intelligent-backup)
 - [Configuration File](#configuration-file)
 - [Command Reference](#command-reference)
 - [Update & Uninstall](#update--uninstall)
@@ -33,12 +33,12 @@
 - **Photos and personal files** backed up weekly
 - **Archive files** backed up monthly
 
-### 🤖 AI-Driven Intelligent Management
+### 🤖 Smart-Driven Intelligent Management
 - **Auto-Optimization**: Automatically generate optimal backup configuration through directory analysis
 - **File Importance Analysis**: Automatically classify files in directories by importance level (~8s/10,000 files)
 - **Exclude Pattern Suggestions**: Auto-detect and suggest exclusion of unnecessary files (cache, build artifacts)
 - **Anomaly Detection**: Automatically detect backup size anomalies using statistical analysis (< 1ms)
-- **Fully Offline**: All AI features run locally, complete privacy protection
+- **Fully Offline**: All Smart features run locally, complete privacy protection
 
 ### 🔐 Military-Grade Encryption Protection
 - **AES-256-GCM encryption** virtually impossible to decrypt
@@ -116,10 +116,10 @@ brew install backup-suite
 ### Install via Cargo
 
 ```bash
-# Install with AI features enabled (recommended)
-cargo install backup-suite --features ai
+# Install with Smart features enabled (recommended)
+cargo install backup-suite --features smart
 
-# Install without AI features (lightweight version)
+# Install without Smart features (lightweight version)
 cargo install backup-suite
 ```
 
@@ -134,9 +134,9 @@ cd backup-suite
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.cargo/env
 
-# 3. Build & Install (with AI features)
-cargo build --release --features ai
-cargo install --path . --features ai
+# 3. Build & Install (with Smart features)
+cargo build --release --features smart
+cargo install --path . --features smart
 
 # 4. Verify operation
 backup-suite --version
@@ -214,41 +214,41 @@ backup-suite schedule setup --high daily --medium weekly --low monthly
 backup-suite schedule enable
 ```
 
-## 🤖 AI Features (Intelligent Backup)
+## 🤖 Smart Features (Intelligent Backup)
 
 Optimize your backups with statistical anomaly detection and file importance analysis.
 
 ### Installation
 
-To use AI features, you need to build with the `--features ai` flag.
+To use Smart features, you need to build with the `--features smart` flag.
 
 ```bash
-# Build with AI features enabled
-cargo build --release --features ai
-cargo install --path . --features ai
+# Build with Smart features enabled
+cargo build --release --features smart
+cargo install --path . --features smart
 
 # Or install via Cargo
-cargo install backup-suite --features ai
+cargo install backup-suite --features smart
 ```
 
 ### Key Features
 
-#### 1. AI Auto-Configuration
+#### 1. Smart Auto-Configuration
 
 Analyze directories and automatically generate optimal backup configuration.
 
 ```bash
 # Auto-analyze and configure (evaluate each subdirectory individually)
-backup-suite ai auto-configure ~/data
+backup-suite smart auto-configure ~/data
 
 # Interactive mode (confirm each subdirectory and exclusion pattern)
-backup-suite ai auto-configure ~/data --interactive
+backup-suite smart auto-configure ~/data --interactive
 
 # Dry run (preview only, don't apply changes)
-backup-suite ai auto-configure ~/data --dry-run
+backup-suite smart auto-configure ~/data --dry-run
 
 # Specify subdirectory scan depth (default: 1)
-backup-suite ai auto-configure ~/data --max-depth 2
+backup-suite smart auto-configure ~/data --max-depth 2
 ```
 
 **Features**:
@@ -259,7 +259,7 @@ backup-suite ai auto-configure ~/data --max-depth 2
 
 **Example Output**:
 ```
-🤖 AI Auto-Configuration
+🤖 Smart Auto-Configuration
 Analyzing: "/Users/user/projects"
   📁 Found 3 subdirectories: 3
     Evaluating: "/Users/user/projects/web-app"
@@ -292,13 +292,13 @@ Classify files in a directory by importance level to optimize backup strategy.
 
 ```bash
 # Analyze directory importance
-backup-suite ai analyze ~/documents
+backup-suite smart analyze ~/documents
 
 # Show detailed importance scores
-backup-suite ai analyze ~/documents --detailed
+backup-suite smart analyze ~/documents --detailed
 
 # Analyze only specific file types
-backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
+backup-suite smart analyze ~/projects --filter "*.rs,*.toml"
 ```
 
 **Evaluation Criteria**:
@@ -308,7 +308,7 @@ backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
 
 **Example Output**:
 ```
-🤖 AI File Importance Analysis: ~/Documents
+🤖 Smart File Importance Analysis: ~/Documents
 
 ┌─────────────────────────┬──────────────────┬──────────────┬─────────────────────┐
 │ File/Directory          │ Importance Score │ Suggested    │ Reason              │
@@ -329,13 +329,13 @@ Automatically detect unnecessary files and suggest exclusion patterns.
 
 ```bash
 # Show suggested exclusion patterns
-backup-suite ai suggest-exclude ~/projects
+backup-suite smart suggest-exclude ~/projects
 
 # Automatically apply suggested patterns to config
-backup-suite ai suggest-exclude ~/projects --apply
+backup-suite smart suggest-exclude ~/projects --apply
 
 # Specify minimum file size (default: 100MB)
-backup-suite ai suggest-exclude ~/projects --min-size 50MB
+backup-suite smart suggest-exclude ~/projects --min-size 50MB
 ```
 
 **Detection Targets**:
@@ -346,7 +346,7 @@ backup-suite ai suggest-exclude ~/projects --min-size 50MB
 
 **Example Output**:
 ```
-🤖 AI Exclusion Pattern Suggestions: ~/projects
+🤖 Smart Exclusion Pattern Suggestions: ~/projects
 
 ┌──────────────────┬──────────┬──────────┬─────────────────────┐
 │ Pattern          │ Size     │ Confidence │ Reason                  │
@@ -366,10 +366,10 @@ Detect statistically abnormal backups from historical data.
 
 ```bash
 # Detect anomalies in the last 7 days
-backup-suite ai detect --days 7
+backup-suite smart detect --days 7
 
 # More detailed analysis (also shows statistics)
-backup-suite ai detect --days 14 --detailed
+backup-suite smart detect --days 14 --detailed
 ```
 
 **Detection Contents**:
@@ -379,7 +379,7 @@ backup-suite ai detect --days 14 --detailed
 
 **Example Output**:
 ```
-🤖 AI Anomaly Detection Report (Last 7 Days)
+🤖 Smart Anomaly Detection Report (Last 7 Days)
 
 ┌────┬──────────────────┬──────────────┬────────────┬────────────────────────┐
 │ No │ Detection Time   │ Anomaly Type │ Confidence │ Description            │
@@ -393,26 +393,26 @@ backup-suite ai detect --days 14 --detailed
 
 **Performance**: < 1ms (100 history entries)
 
-### Disabling AI Features
+### Disabling Smart Features
 
-If AI features are not needed, use the standard build.
+If Smart features are not needed, use the standard build.
 
 ```bash
-# Standard build (without AI features)
+# Standard build (without Smart features)
 cargo build --release
 cargo install --path .
 ```
 
 ### Security and Privacy
 
-All AI features operate **completely offline**:
+All Smart features operate **completely offline**:
 
 - ✅ External API calls: None
 - ✅ Cloud services: Not required
 - ✅ Sensitive data transmission: Zero
 - ✅ Data collection: None
 
-For more details, see [AI Features Documentation](docs/ai/features.md).
+For more details, see [Smart Features Documentation](docs/smart/features.md).
 
 ## Configuration File
 
@@ -465,7 +465,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 | **config**     | Manage configuration      | `backup-suite config set-destination ~/backups` |
 | **open**       | Open backup directory     | `backup-suite open`                             |
 | **completion** | Generate shell completion | `backup-suite completion zsh`                   |
-| **ai**         | AI features (requires `--features ai`) | `backup-suite ai detect --days 7`    |
+| **smart**         | Smart features (requires `--features smart`) | `backup-suite smart detect --days 7`    |
 
 ## Update & Uninstall
 
@@ -476,12 +476,12 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 brew upgrade backup-suite
 
 # Cargo
-cargo install backup-suite --force --features ai
+cargo install backup-suite --force --features smart
 
 # From source
 cd backup-suite
 git pull origin main
-cargo install --path . --force --features ai
+cargo install --path . --force --features smart
 ```
 
 ### Uninstall
@@ -518,7 +518,7 @@ rm -rf ~/.local/share/backup-suite/
 - **Encryption**: AES-256-GCM, Argon2
 - **Configuration**: TOML (human-readable configuration format)
 - **Scheduling**: macOS launchctl, Linux systemd
-- **AI/ML**: statrs (statistical computing), rayon (parallel processing)
+- **Smart/Statistical Analysis**: statrs (statistical computing), rayon (parallel processing)
 
 ## Supported Platforms
 

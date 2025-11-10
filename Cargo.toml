@@ -106,7 +106,7 @@ harness = false
 [[bench]]
 name = "ai_benchmark"
 harness = false
-required-features = ["ai"]
+required-features = ["smart"]
 
 [profile.release]
 opt-level = 3
@@ -120,5 +120,5 @@ opt-level = 3
 lto = true
 
 [features]
-default = ["ai"]
-ai = ["statrs"]
+default = ["smart"]
+smart = ["statrs"]
