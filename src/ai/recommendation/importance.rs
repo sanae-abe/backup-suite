@@ -265,7 +265,11 @@ impl ImportanceEvaluator {
                     "cache".to_string(),
                     "bak".to_string(),
                 ],
-                vec![".cache".to_string(), "cache".to_string(), "temp".to_string()],
+                vec![
+                    ".cache".to_string(),
+                    "cache".to_string(),
+                    "temp".to_string(),
+                ],
                 10,
                 "一時ファイル".to_string(),
             ),
