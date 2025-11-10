@@ -278,16 +278,17 @@ impl Config {
     /// );
     /// config.add_target(target);
     /// ```
-    pub fn add_target(&mut self, target: Target) {
+    pub fn add_target(&mut self, target: Target) -> bool {
         // 重複チェック：同じパスがすでに存在する場合は追加しない
         if self.targets.iter().any(|t| t.path == target.path) {
             eprintln!(
                 "警告: {:?} は既に登録されています。スキップします。",
                 target.path
             );
-            return;
+            return false;
         }
         self.targets.push(target);
+        true
     }
 
     /// バックアップ対象を削除

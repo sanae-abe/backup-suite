@@ -1373,15 +1373,16 @@ fn main() -> Result<()> {
                 );
             }
 
-            config.add_target(target);
-            config.save()?;
-            println!(
-                "{}✅ {}{}: {:?}",
-                get_color("green", false),
-                get_message(MessageKey::Added, lang),
-                get_color("reset", false),
-                target_path
-            );
+            if config.add_target(target) {
+                config.save()?;
+                println!(
+                    "{}✅ {}{}: {:?}",
+                    get_color("green", false),
+                    get_message(MessageKey::Added, lang),
+                    get_color("reset", false),
+                    target_path
+                );
+            }
         }
         Some(Commands::List { priority }) => {
             let config = Config::load()?;
@@ -2889,18 +2890,19 @@ fn main() -> Result<()> {
                                     *result.priority(),
                                     result.category().to_string(),
                                 );
-                                config.add_target(target);
-                                added_count += 1;
-                                println!(
-                                    "  {}✅ {}{}",
-                                    get_color("green", false),
-                                    if lang == Language::Japanese {
-                                        "設定に追加しました"
-                                    } else {
-                                        "Added to configuration"
-                                    },
-                                    get_color("reset", false)
-                                );
+                                if config.add_target(target) {
+                                    added_count += 1;
+                                    println!(
+                                        "  {}✅ {}{}",
+                                        get_color("green", false),
+                                        if lang == Language::Japanese {
+                                            "設定に追加しました"
+                                        } else {
+                                            "Added to configuration"
+                                        },
+                                        get_color("reset", false)
+                                    );
+                                }
                             }
                             }
                             Err(e) => {
