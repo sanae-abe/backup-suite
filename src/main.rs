@@ -1665,7 +1665,7 @@ fn main() -> Result<()> {
             // Validate compress-level based on compression type
             match compression_type {
                 CompressionType::Zstd => {
-                    if compress_level < 1 || compress_level > 22 {
+                    if !(1..=22).contains(&compress_level) {
                         println!(
                             "{}❌ {}{}: zstd の compress-level は 1-22 の範囲で指定してください（指定値: {}）",
                             get_color("red", false),
@@ -1677,7 +1677,7 @@ fn main() -> Result<()> {
                     }
                 }
                 CompressionType::Gzip => {
-                    if compress_level < 1 || compress_level > 9 {
+                    if !(1..=9).contains(&compress_level) {
                         println!(
                             "{}❌ {}{}: gzip の compress-level は 1-9 の範囲で指定してください（指定値: {}）",
                             get_color("red", false),
