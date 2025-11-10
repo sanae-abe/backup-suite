@@ -775,6 +775,268 @@ backup-suite completion fish > ~/.config/fish/completions/backup-suite.fish
 
 ---
 
+### `ai` - AI-Driven Intelligent Backup Management (requires `--features ai`)
+
+AI features require building with the `--features ai` flag.
+
+```bash
+# Build with AI features enabled
+cargo build --release --features ai
+cargo install --path . --features ai
+```
+
+#### Subcommands
+
+##### `ai detect` - Anomaly Detection
+
+Detect statistically abnormal backups from historical data.
+
+**Basic Syntax:**
+```bash
+backup-suite ai detect [OPTIONS]
+```
+
+**Options:**
+- `--days <DAYS>` - Number of days to analyze (default: 7)
+- `--format <FORMAT>` - Output format: table, json, detailed (default: table)
+
+**Usage Examples:**
+```bash
+# Detect anomalies in the last 7 days (default)
+backup-suite ai detect
+
+# Detailed analysis of the last 14 days
+backup-suite ai detect --days 14 --format detailed
+
+# Output in JSON format
+backup-suite ai detect --format json
+```
+
+**Example Output:**
+```
+🤖 AI Anomaly Detection Report (Last 7 Days)
+
+┌────┬──────────────────┬──────────────┬────────────┬────────────────────────┐
+│ No │ Detection Time   │ Anomaly Type │ Confidence │ Description            │
+├────┼──────────────────┼──────────────┼────────────┼────────────────────────┤
+│ 1  │ 2025-11-09 03:15 │ Size Surge   │ 95.3%      │ File size 3x normal    │
+└────┴──────────────────┴──────────────┴────────────┴────────────────────────┘
+
+📊 Summary: 1 anomaly detected
+💡 Recommended Action: Add temporary files in ~/Downloads to exclusion settings
+```
+
+**Performance**: < 1ms (100 history entries)
+
+---
+
+##### `ai analyze` - File Importance Analysis
+
+Classify files in a directory by importance level to optimize backup strategy.
+
+**Basic Syntax:**
+```bash
+backup-suite ai analyze <PATH> [OPTIONS]
+```
+
+**Arguments:**
+- `<PATH>` - Directory path to analyze
+
+**Options:**
+- `--suggest-priority` - Suggest backup command based on recommended priority
+- `--detailed` - Show detailed analysis results
+
+**Usage Examples:**
+```bash
+# Analyze directory importance
+backup-suite ai analyze ~/documents
+
+# Show detailed importance scores
+backup-suite ai analyze ~/documents --detailed
+
+# Display with priority suggestion
+backup-suite ai analyze ~/projects --suggest-priority
+```
+
+**Evaluation Criteria:**
+- **High Importance (80-100 points)**: Source code, documents, configuration files
+- **Medium Importance (40-79 points)**: Images, data files
+- **Low Importance (0-39 points)**: Logs, temporary files
+
+**Example Output:**
+```
+🤖 AI File Importance Analysis: ~/Documents
+
+┌─────────────────────────┬──────────────────┬──────────────┬─────────────────────┐
+│ File/Directory          │ Importance Score │ Suggested    │ Reason              │
+│                         │                  │ Priority     │                     │
+├─────────────────────────┼──────────────────┼──────────────┼─────────────────────┤
+│ src/                    │ ████████ 95      │ High         │ Source code (frequent updates) │
+│ reports/                │ ████████ 90      │ High         │ Documents (important) │
+│ photos/                 │ ████░░░░ 60      │ Medium       │ Image files         │
+│ .cache/                 │ █░░░░░░░ 10      │ Exclude      │ Cache directory     │
+└─────────────────────────┴──────────────────┴──────────────┴─────────────────────┘
+```
+
+**Performance**: ~8 seconds (10,000 files)
+
+---
+
+##### `ai suggest-exclude` - Exclusion Pattern Suggestions
+
+Automatically detect unnecessary files and suggest exclusion patterns.
+
+**Basic Syntax:**
+```bash
+backup-suite ai suggest-exclude <PATH> [OPTIONS]
+```
+
+**Arguments:**
+- `<PATH>` - Directory path to analyze
+
+**Options:**
+- `--apply` - Automatically apply suggested patterns to configuration
+- `--confidence <VALUE>` - Minimum confidence threshold (0.0-1.0, default: 0.8)
+
+**Usage Examples:**
+```bash
+# Show suggested exclusion patterns
+backup-suite ai suggest-exclude ~/projects
+
+# Automatically apply suggested patterns to config
+backup-suite ai suggest-exclude ~/projects --apply
+
+# Set minimum confidence to 50% (show more candidates)
+backup-suite ai suggest-exclude ~/projects --confidence 0.5
+```
+
+**Detection Targets:**
+- Build artifacts (`target/`, `dist/`, `build/`)
+- Dependency caches (`node_modules/`, `.cargo/`)
+- Temporary files (`*.tmp`, `*.cache`)
+- Large media files (above threshold size)
+
+**Example Output:**
+```
+🤖 AI Exclusion Pattern Suggestions: ~/projects
+
+┌──────────────────┬──────────┬──────────┬─────────────────────┐
+│ Pattern          │ Size     │ Confidence │ Reason                  │
+│                  │ Saved    │            │                         │
+├──────────────────┼──────────┼──────────┼─────────────────────┤
+│ node_modules/    │ 2.34 GB  │ 99%      │ npm dependencies (regenerable) │
+│ target/          │ 1.87 GB  │ 99%      │ Rust build artifacts    │
+│ .cache/          │ 0.45 GB  │ 95%      │ Cache directory         │
+└──────────────────┴──────────┴──────────┴─────────────────────┘
+
+💡 Total Reduction: 4.66 GB (approx. 30% faster backup time)
+```
+
+---
+
+##### `ai auto-configure` - AI Auto-Configuration
+
+Analyze directories and automatically generate optimal backup configuration.
+
+**Basic Syntax:**
+```bash
+backup-suite ai auto-configure <PATHS>... [OPTIONS]
+```
+
+**Arguments:**
+- `<PATHS>...` - Directory paths to configure (multiple paths allowed)
+
+**Options:**
+- `--dry-run` - Dry run (show recommendations only, don't apply changes)
+- `--interactive` - Interactive mode (confirm each subdirectory and exclusion pattern)
+- `--max-depth <DEPTH>` - Subdirectory scan depth (1 = direct children only, default: 1)
+
+**Usage Examples:**
+```bash
+# Auto-analyze and configure (evaluate each subdirectory individually)
+backup-suite ai auto-configure ~/data
+
+# Interactive mode (confirm each subdirectory and exclusion pattern)
+backup-suite ai auto-configure ~/data --interactive
+
+# Dry run (preview only, don't apply changes)
+backup-suite ai auto-configure ~/data --dry-run
+
+# Specify subdirectory scan depth (up to 2 levels)
+backup-suite ai auto-configure ~/data --max-depth 2
+
+# Configure multiple directories at once
+backup-suite ai auto-configure ~/projects ~/documents ~/photos
+```
+
+**Features:**
+- **Individual evaluation of each subdirectory** (optimal priority for each directory)
+- **Automatic exclusion pattern detection** (auto-exclude `node_modules/`, `target/`, `.cache/`, etc.)
+- **Project type auto-detection** (Rust, Node.js, Python, etc.)
+- **Only patterns with 80%+ confidence applied** (prevents false positives)
+
+**Example Output:**
+```
+🤖 AI Auto-Configuration
+Analyzing: "/Users/user/projects"
+  📁 Found 3 subdirectories: 3
+    Evaluating: "/Users/user/projects/web-app"
+      Recommended Priority: High (Score: 95)
+      📋 Exclusion pattern suggestions: 3
+        - node_modules (99.0%, 2.34 GB estimated reduction)
+        - .cache (95.0%, 0.45 GB estimated reduction)
+        - .*\.tmp$ (99.0%, 0.00 GB estimated reduction)
+      📝 Exclusion patterns: node_modules, .cache, .*\.tmp$
+      ✅ Added to configuration
+    Evaluating: "/Users/user/projects/rust-cli"
+      Recommended Priority: High (Score: 95)
+      📋 Exclusion pattern suggestions: 2
+        - target (99.0%, 1.87 GB estimated reduction)
+        - .cache (95.0%, 0.12 GB estimated reduction)
+      📝 Exclusion patterns: target, .cache
+      ✅ Added to configuration
+    Evaluating: "/Users/user/projects/archive"
+      Recommended Priority: Low (Score: 30)
+      ✅ Added to configuration
+
+Auto-configuration completed
+  Items added: 3
+  Total reduction: 4.78 GB (approx. 35% faster backup time)
+```
+
+**Project Type Detection Patterns:**
+
+| Project Type | Marker Files | Auto-Exclusion Patterns |
+|--------------|-------------|------------------------|
+| **Rust** | `Cargo.toml` | `target/`, `.cache/` |
+| **Node.js** | `package.json` | `node_modules/`, `.cache/`, `dist/`, `build/` |
+| **Python** | `requirements.txt` | `__pycache__/`, `.venv/`, `.pytest_cache/` |
+| **Git-managed** | `.git/` | `.git/` (history excluded) |
+
+**Best Practices:**
+
+1. **Start with `--dry-run`**: Check recommendations before applying
+   ```bash
+   backup-suite ai auto-configure ~/projects --dry-run
+   ```
+
+2. **Use interactive mode for important projects**: Fine-tune control
+   ```bash
+   backup-suite ai auto-configure ~/projects --interactive
+   ```
+
+3. **Adjust depth for nested projects**: Increase depth for complex structures
+   ```bash
+   backup-suite ai auto-configure ~/projects --max-depth 2
+   ```
+
+4. **Verify exclusion patterns**: Check with `backup-suite list` after configuration
+   ```bash
+   backup-suite list
+   ```
+
+---
+
 ## 🎯 Practical Workflows
 
 ### Developer Workflow
