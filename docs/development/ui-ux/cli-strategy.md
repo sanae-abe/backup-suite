@@ -1231,7 +1231,7 @@ impl Dashboard {
 
     fn print_footer() {
         println!("\n{}", "─".repeat(60));
-        println!("{}", style("💡 ヒント: 'backup-suite help' でインタラクティブヘルプを表示").dim());
+        println!("{}", style("💡 ヒント: 'backup-suite --help' でインタラクティブヘルプを表示").dim());
         println!();
     }
 }
@@ -2088,7 +2088,7 @@ backup-suite list --color=always
 backup-suite run --verbose
 
 # ヘルプシステム直接起動
-backup-suite help
+backup-suite --help
 ```
 
 ---
