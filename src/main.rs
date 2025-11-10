@@ -1458,8 +1458,7 @@ fn main() -> Result<()> {
             let normalized_path = safe_join(&current_dir, &target_path)
                 .context("指定されたパスは許可されていません")?;
 
-            validate_path_safety(&normalized_path)
-                .context("指定されたパスは許可されていません")?;
+            validate_path_safety(&normalized_path).context("指定されたパスは許可されていません")?;
 
             // ファイル/ディレクトリの存在確認
             if !normalized_path.exists() {
@@ -1554,8 +1553,7 @@ fn main() -> Result<()> {
             let normalized_path = safe_join(&current_dir, &target_path)
                 .context("指定されたパスは許可されていません")?;
 
-            validate_path_safety(&normalized_path)
-                .context("指定されたパスは許可されていません")?;
+            validate_path_safety(&normalized_path).context("指定されたパスは許可されていません")?;
 
             // 削除前の確認プロンプト
             use dialoguer::Confirm;
@@ -1563,10 +1561,7 @@ fn main() -> Result<()> {
                 .file_name()
                 .and_then(|n| n.to_str())
                 .unwrap_or("(不明)");
-            let prompt = format!(
-                "本当に {} をバックアップ対象から削除しますか？",
-                file_name
-            );
+            let prompt = format!("本当に {} をバックアップ対象から削除しますか？", file_name);
 
             if !Confirm::new()
                 .with_prompt(prompt)
@@ -2390,8 +2385,7 @@ fn main() -> Result<()> {
 
                     // 書き込み権限を確認
                     use backup_suite::security::check_write_permission;
-                    check_write_permission(&normalized_path)
-                        .context("書き込み権限エラー")?;
+                    check_write_permission(&normalized_path).context("書き込み権限エラー")?;
 
                     // 設定を更新
                     let old_destination = config.backup.destination.clone();
@@ -2409,7 +2403,11 @@ fn main() -> Result<()> {
                         get_message(MessageKey::Before, lang),
                         old_destination
                     );
-                    println!("  {}: {:?}", get_message(MessageKey::After, lang), normalized_path);
+                    println!(
+                        "  {}: {:?}",
+                        get_message(MessageKey::After, lang),
+                        normalized_path
+                    );
                 }
                 ConfigAction::GetDestination => {
                     println!(
@@ -3113,7 +3111,10 @@ fn main() -> Result<()> {
                             "\n{}⚠️  {}{}",
                             get_color("yellow", false),
                             if lang == Language::Japanese {
-                                format!("現在{}個のバックアップ対象が登録されています", config.targets.len())
+                                format!(
+                                    "現在{}個のバックアップ対象が登録されています",
+                                    config.targets.len()
+                                )
                             } else {
                                 format!("You have {} existing backup targets", config.targets.len())
                             },
@@ -3125,7 +3126,11 @@ fn main() -> Result<()> {
                             "Add new targets? (existing targets will be preserved)"
                         };
 
-                        if !Confirm::new().with_prompt(prompt).default(true).interact()? {
+                        if !Confirm::new()
+                            .with_prompt(prompt)
+                            .default(true)
+                            .interact()?
+                        {
                             println!(
                                 "{}キャンセルしました{}",
                                 get_color("yellow", false),
@@ -3143,7 +3148,8 @@ fn main() -> Result<()> {
                     for path in paths {
                         // セキュリティ検証（パストラバーサル対策）
                         // 重要: safe_join → validate_path_safety の順序で実行
-                        let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
+                        let current_dir =
+                            env::current_dir().context("カレントディレクトリ取得失敗")?;
                         let normalized_path = match safe_join(&current_dir, &path) {
                             Ok(p) => p,
                             Err(e) => {
@@ -3227,9 +3233,15 @@ fn main() -> Result<()> {
                                         "  {}⚠️  {}: {} ({}){}\n",
                                         get_color("yellow", false),
                                         if lang == Language::Japanese {
-                                            format!("サブディレクトリ数が多すぎます: {}個検出", subdirs.len())
+                                            format!(
+                                                "サブディレクトリ数が多すぎます: {}個検出",
+                                                subdirs.len()
+                                            )
                                         } else {
-                                            format!("Too many subdirectories: {} found", subdirs.len())
+                                            format!(
+                                                "Too many subdirectories: {} found",
+                                                subdirs.len()
+                                            )
                                         },
                                         subdirs.len(),
                                         if lang == Language::Japanese {

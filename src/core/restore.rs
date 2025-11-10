@@ -284,7 +284,9 @@ impl RestoreEngine {
                     }
                 }
                 Err(e) => {
-                    errors.push(format!("ファイルオープン失敗（シンボリックリンク検出の可能性）: {e}"));
+                    errors.push(format!(
+                        "ファイルオープン失敗（シンボリックリンク検出の可能性）: {e}"
+                    ));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                     if let Some(ref pb) = progress {
                         pb.inc(1);
