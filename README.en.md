@@ -6,7 +6,7 @@
 [![Rust](https://img.shields.io/badge/rust-1.82%2B-blue.svg)](https://www.rust-lang.org)
 [![CI](https://github.com/sanae-abe/backup-suite/workflows/CI/badge.svg)](https://github.com/sanae-abe/backup-suite/actions)
 
-[日本語](README.md) | [English](README.en.md)
+[日本語](README.md) | [English](README.en.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md)
 
 > **Fast, Secure & Intelligent Local Backup Tool**
 
@@ -33,11 +33,11 @@
 - **Photos and personal files** backed up weekly
 - **Archive files** backed up monthly
 
-### 🤖 AI-Driven Intelligent Management (New Feature)
-- **Anomaly Detection**: Automatically detect backup size anomalies using statistical analysis (< 1ms)
+### 🤖 AI-Driven Intelligent Management
+- **Auto-Optimization**: Automatically generate optimal backup configuration through directory analysis
 - **File Importance Analysis**: Automatically classify files in directories by importance level (~8s/10,000 files)
 - **Exclude Pattern Suggestions**: Auto-detect and suggest exclusion of unnecessary files (cache, build artifacts)
-- **Auto-Optimization**: Automatically generate optimal backup configuration through directory analysis
+- **Anomaly Detection**: Automatically detect backup size anomalies using statistical analysis (< 1ms)
 - **Fully Offline**: All AI features run locally, complete privacy protection
 
 ### 🔐 Military-Grade Encryption Protection
@@ -233,38 +233,58 @@ cargo install backup-suite --features ai
 
 ### Key Features
 
-#### 1. Anomaly Detection
+#### 1. AI Auto-Configuration
 
-Detect statistically abnormal backups from historical data.
+Analyze directories and automatically generate optimal backup configuration.
 
 ```bash
-# Detect anomalies in the last 7 days
-backup-suite ai detect --days 7
+# Auto-analyze and configure (evaluate each subdirectory individually)
+backup-suite ai auto-configure ~/data
 
-# More detailed analysis (with statistics)
-backup-suite ai detect --days 14 --detailed
+# Interactive mode (confirm each subdirectory and exclusion pattern)
+backup-suite ai auto-configure ~/data --interactive
+
+# Dry run (preview only, don't apply changes)
+backup-suite ai auto-configure ~/data --dry-run
+
+# Specify subdirectory scan depth (default: 1)
+backup-suite ai auto-configure ~/data --max-depth 2
 ```
 
-**Detection Content**:
-- Backup size surge/drop (Z-score statistical analysis)
-- Disk capacity depletion prediction (linear regression)
-- Failure pattern analysis (by category and time)
+**Features**:
+- **Individual evaluation of each subdirectory** (optimal priority for each directory)
+- **Automatic exclusion pattern detection** (auto-exclude `node_modules/`, `target/`, `.cache/`, etc.)
+- **Project type auto-detection** (Rust, Node.js, Python, etc.)
+- **Only patterns with 80%+ confidence applied** (prevents false positives)
 
 **Example Output**:
 ```
-🤖 AI Anomaly Detection Report (Last 7 Days)
+🤖 AI Auto-Configuration
+Analyzing: "/Users/user/projects"
+  📁 Found 3 subdirectories: 3
+    Evaluating: "/Users/user/projects/web-app"
+      Recommended Priority: High (Score: 95)
+      📋 Exclusion pattern suggestions: 3
+        - node_modules (99.0%, 2.34 GB estimated reduction)
+        - .cache (95.0%, 0.45 GB estimated reduction)
+        - .*\.tmp$ (99.0%, 0.00 GB estimated reduction)
+      📝 Exclusion patterns: node_modules, .cache, .*\.tmp$
+      ✅ Added to configuration
+    Evaluating: "/Users/user/projects/rust-cli"
+      Recommended Priority: High (Score: 95)
+      📋 Exclusion pattern suggestions: 2
+        - target (99.0%, 1.87 GB estimated reduction)
+        - .cache (95.0%, 0.12 GB estimated reduction)
+      📝 Exclusion patterns: target, .cache
+      ✅ Added to configuration
+    Evaluating: "/Users/user/projects/archive"
+      Recommended Priority: Low (Score: 30)
+      ✅ Added to configuration
 
-┌────┬──────────────────┬──────────────┬────────────┬────────────────────────┐
-│ No │ Detection Time   │ Anomaly Type │ Confidence │ Description            │
-├────┼──────────────────┼──────────────┼────────────┼────────────────────────┤
-│ 1  │ 2025-11-09 03:15 │ Size Surge   │ 95.3%      │ File size 3x normal    │
-└────┴──────────────────┴──────────────┴────────────┴────────────────────────┘
-
-📊 Summary: 1 anomaly detected
-💡 Recommended Action: Add temporary files in ~/Downloads to exclusion settings
+Auto-configuration completed
+  Items added: 3
+  Total reduction: 4.78 GB (approx. 35% faster backup time)
 ```
-
-**Performance**: < 1ms (100 history entries)
 
 #### 2. File Importance Analysis
 
@@ -303,7 +323,7 @@ backup-suite ai analyze ~/projects --filter "*.rs,*.toml"
 
 **Performance**: ~8 seconds (10,000 files)
 
-#### 3. Exclude Pattern Suggestions
+#### 3. Exclusion Pattern Suggestions
 
 Automatically detect unnecessary files and suggest exclusion patterns.
 
@@ -326,65 +346,52 @@ backup-suite ai suggest-exclude ~/projects --min-size 50MB
 
 **Example Output**:
 ```
-🤖 AI Exclude Pattern Suggestions: ~/projects
+🤖 AI Exclusion Pattern Suggestions: ~/projects
 
-┌──────────────────┬──────────┬────────────┬─────────────────────────┐
+┌──────────────────┬──────────┬──────────┬─────────────────────┐
 │ Pattern          │ Size     │ Confidence │ Reason                  │
 │                  │ Saved    │            │                         │
-├──────────────────┼──────────┼────────────┼─────────────────────────┤
-│ node_modules/    │ 2.34 GB  │ 99%        │ npm dependencies (regenerable) │
-│ target/          │ 1.87 GB  │ 99%        │ Rust build artifacts    │
-│ .cache/          │ 0.45 GB  │ 95%        │ Cache directory         │
-└──────────────────┴──────────┴────────────┴─────────────────────────┘
+├──────────────────┼──────────┼──────────┼─────────────────────┤
+│ node_modules/    │ 2.34 GB  │ 99%      │ npm dependencies (regenerable) │
+│ target/          │ 1.87 GB  │ 99%      │ Rust build artifacts    │
+│ .cache/          │ 0.45 GB  │ 95%      │ Cache directory         │
+└──────────────────┴──────────┴──────────┴─────────────────────┘
 
 💡 Total Reduction: 4.66 GB (approx. 30% faster backup time)
 ```
 
-#### 4. AI Auto-Configuration
+#### 4. Anomaly Detection
 
-Analyze directories and automatically generate optimal backup configuration.
+Detect statistically abnormal backups from historical data.
 
 ```bash
-# Auto-analyze and configure
-backup-suite ai auto-configure ~/data
+# Detect anomalies in the last 7 days
+backup-suite ai detect --days 7
 
-# Interactive confirmation during configuration
-backup-suite ai auto-configure ~/data --interactive
-
-# Dry run (preview only, don't apply)
-backup-suite ai auto-configure ~/data --dry-run
+# More detailed analysis (also shows statistics)
+backup-suite ai detect --days 14 --detailed
 ```
 
-**Features**:
-- Automatic priority setting based on file type analysis
-- Optimal compression level recommendations
-- Automatic exclusion pattern generation
-- Backup schedule suggestions
+**Detection Contents**:
+- Backup size spikes/drops (Z-score statistical analysis)
+- Disk capacity depletion prediction (linear regression)
+- Failure pattern analysis (by category and time)
 
 **Example Output**:
 ```
-🤖 AI Auto-Configuration Report: ~/data
+🤖 AI Anomaly Detection Report (Last 7 Days)
 
-📊 Analysis Results:
-  - Total Files: 12,345 files
-  - Total Size: 15.6 GB
-  - Suggested Priority: High (many important source code & documents)
-  - Excludable Size: 3.2 GB (node_modules, .cache, etc.)
+┌────┬──────────────────┬──────────────┬────────────┬────────────────────────┐
+│ No │ Detection Time   │ Anomaly Type │ Confidence │ Description            │
+├────┼──────────────────┼──────────────┼────────────┼────────────────────────┤
+│ 1  │ 2025-11-09 03:15 │ Size Surge   │ 95.3%      │ File size 3x normal    │
+└────┴──────────────────┴──────────────┴────────────┴────────────────────────┘
 
-⚙️ Recommended Settings:
-  - Backup Target: ~/data
-  - Priority: high
-  - Schedule: Daily at 2:00 AM
-  - Compression: zstd (level 3)
-  - Encryption: Recommended
-  - Exclude Patterns:
-    * node_modules/
-    * target/
-    * .cache/
-    * *.tmp
-
-✅ Settings saved to ~/.config/backup-suite/config.toml
+📊 Summary: 1 anomaly detected
+💡 Recommended Action: Add temporary files in ~/Downloads to exclusion settings
 ```
+
+**Performance**: < 1ms (100 history entries)
 
 ### Disabling AI Features
 
