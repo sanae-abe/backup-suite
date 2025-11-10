@@ -2907,6 +2907,31 @@ fn main() -> Result<()> {
                     interactive,
                     max_depth,
                 } => {
+                    // Check if paths are provided
+                    if paths.is_empty() {
+                        eprintln!(
+                            "{}{}{}",
+                            get_color("red", false),
+                            if lang == Language::Japanese {
+                                "エラー: 分析対象のパスを指定してください"
+                            } else {
+                                "Error: Please specify paths to analyze"
+                            },
+                            get_color("reset", false)
+                        );
+                        eprintln!(
+                            "\n{}{}{}",
+                            get_color("yellow", false),
+                            if lang == Language::Japanese {
+                                "使用例:\n  backup-suite ai auto-configure ~/projects\n  backup-suite ai auto-configure ~/Documents ~/projects --dry-run\n  backup-suite ai auto-configure ~/projects --interactive"
+                            } else {
+                                "Examples:\n  backup-suite ai auto-configure ~/projects\n  backup-suite ai auto-configure ~/Documents ~/projects --dry-run\n  backup-suite ai auto-configure ~/projects --interactive"
+                            },
+                            get_color("reset", false)
+                        );
+                        return Ok(());
+                    }
+
                     println!(
                         "{}{}{}",
                         get_color("magenta", false),
@@ -2927,6 +2952,37 @@ fn main() -> Result<()> {
                     }
 
                     let mut config = Config::load()?;
+
+                    // Warn if existing backup targets will be affected
+                    if !config.targets.is_empty() && !dry_run && !interactive {
+                        use dialoguer::Confirm;
+                        println!(
+                            "\n{}⚠️  {}{}",
+                            get_color("yellow", false),
+                            if lang == Language::Japanese {
+                                format!("現在{}個のバックアップ対象が登録されています", config.targets.len())
+                            } else {
+                                format!("You have {} existing backup targets", config.targets.len())
+                            },
+                            get_color("reset", false)
+                        );
+                        let prompt = if lang == Language::Japanese {
+                            "新しいターゲットを追加しますか？（既存のターゲットは保持されます）"
+                        } else {
+                            "Add new targets? (existing targets will be preserved)"
+                        };
+
+                        if !Confirm::new().with_prompt(prompt).default(true).interact()? {
+                            println!(
+                                "{}キャンセルしました{}",
+                                get_color("yellow", false),
+                                get_color("reset", false)
+                            );
+                            return Ok(());
+                        }
+                        println!();
+                    }
+
                     let evaluator = ImportanceEvaluator::default();
                     let exclude_engine = ExcludeRecommendationEngine::default();
                     let mut added_count = 0;
@@ -2960,7 +3016,7 @@ fn main() -> Result<()> {
 
                         // ディレクトリの場合はサブディレクトリを列挙
                         let targets_to_evaluate: Vec<PathBuf> = if path.is_dir() {
-                            let subdirs = enumerate_subdirs(&path, max_depth)?;
+                            let mut subdirs = enumerate_subdirs(&path, max_depth)?;
                             if subdirs.is_empty() {
                                 println!(
                                     "  {}💡 {}: {:?}{}",
@@ -2975,6 +3031,28 @@ fn main() -> Result<()> {
                                 );
                                 vec![]
                             } else {
+                                // Limit to 20 subdirectories to prevent timeout
+                                const MAX_SUBDIRS: usize = 20;
+                                if subdirs.len() > MAX_SUBDIRS {
+                                    println!(
+                                        "  {}⚠️  {}: {} ({}){}\n",
+                                        get_color("yellow", false),
+                                        if lang == Language::Japanese {
+                                            format!("サブディレクトリ数が多すぎます: {}個検出", subdirs.len())
+                                        } else {
+                                            format!("Too many subdirectories: {} found", subdirs.len())
+                                        },
+                                        subdirs.len(),
+                                        if lang == Language::Japanese {
+                                            format!("最初の{}個のみ処理します", MAX_SUBDIRS)
+                                        } else {
+                                            format!("processing first {} only", MAX_SUBDIRS)
+                                        },
+                                        get_color("reset", false)
+                                    );
+                                    subdirs.truncate(MAX_SUBDIRS);
+                                }
+
                                 println!(
                                     "  {}📁 {}: {}{}",
                                     get_color("cyan", false),
