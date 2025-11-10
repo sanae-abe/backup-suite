@@ -302,6 +302,9 @@ enum AiAction {
         #[arg(long)]
         /// Interactive mode (confirm each change)
         interactive: bool,
+        #[arg(long, default_value = "1")]
+        /// Maximum depth for subdirectory analysis (1 = direct children only)
+        max_depth: u8,
     },
     Help,
 }
@@ -1119,6 +1122,89 @@ fn print_ai_help(lang: Language) {
         get_message(MessageKey::ExampleAiSuggestExclude, lang)
     );
     println!("  backup-suite ai suggest-exclude /path/to/dir");
+    println!();
+    println!(
+        "  {}",
+        if lang == Language::Japanese {
+            "# AI自動設定（サブディレクトリを個別に評価・除外パターン自動適用）"
+        } else {
+            "# AI auto-configure (evaluate subdirectories individually with auto-exclusion)"
+        }
+    );
+    println!("  backup-suite ai auto-configure ~/projects");
+    println!();
+    println!(
+        "  {}",
+        if lang == Language::Japanese {
+            "# ドライラン（確認のみ、設定適用なし）"
+        } else {
+            "# Dry-run (show recommendations only)"
+        }
+    );
+    println!("  backup-suite ai auto-configure ~/projects --dry-run");
+    println!();
+    println!(
+        "  {}",
+        if lang == Language::Japanese {
+            "# 対話モード（各サブディレクトリと除外パターンを確認）"
+        } else {
+            "# Interactive mode (confirm each subdirectory and exclusion pattern)"
+        }
+    );
+    println!("  backup-suite ai auto-configure ~/projects --interactive");
+    println!();
+    println!(
+        "  {}",
+        if lang == Language::Japanese {
+            "# サブディレクトリの探索深度を指定（2階層まで）"
+        } else {
+            "# Specify subdirectory depth (up to 2 levels)"
+        }
+    );
+    println!("  backup-suite ai auto-configure ~/projects --max-depth 2");
+    println!();
+    println!(
+        "{}{}:{}",
+        magenta,
+        if lang == Language::Japanese {
+            "auto-configure の機能"
+        } else {
+            "auto-configure features"
+        },
+        reset
+    );
+    println!(
+        "  - {}",
+        if lang == Language::Japanese {
+            "サブディレクトリごとに重要度を個別評価"
+        } else {
+            "Evaluate importance for each subdirectory individually"
+        }
+    );
+    println!(
+        "  - {}",
+        if lang == Language::Japanese {
+            "除外パターンを自動検出・提案（node_modules, target, .cache等）"
+        } else {
+            "Auto-detect exclusion patterns (node_modules, target, .cache, etc.)"
+        }
+    );
+    println!(
+        "  - {}",
+        if lang == Language::Japanese {
+            "信頼度80%以上のパターンのみを適用"
+        } else {
+            "Apply only patterns with 80%+ confidence"
+        }
+    );
+    println!(
+        "  - {}",
+        if lang == Language::Japanese {
+            "プロジェクトタイプを自動判定（Rust, Node.js, Python等）"
+        } else {
+            "Auto-detect project types (Rust, Node.js, Python, etc.)"
+        }
+    );
 }
 
 /// config サブコマンド専用のヘルプを表示
@@ -1275,6 +1361,35 @@ fn print_config_help(lang: Language) {
             "設定ファイル"
         }
     );
+}
+
+/// Enumerate subdirectories up to a specified depth
+///
+/// # Arguments
+/// * `path` - Root directory to enumerate
+/// * `max_depth` - Maximum depth (1 = direct children only, 0 = return empty vec)
+///
+/// # Returns
+/// Vector of subdirectory paths
+#[cfg(feature = "ai")]
+fn enumerate_subdirs(path: &std::path::Path, max_depth: u8) -> Result<Vec<PathBuf>> {
+    use walkdir::WalkDir;
+
+    if max_depth == 0 {
+        return Ok(Vec::new());
+    }
+
+    let subdirs: Vec<PathBuf> = WalkDir::new(path)
+        .min_depth(1)
+        .max_depth(max_depth as usize)
+        .follow_links(false)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().is_dir())
+        .map(|e| e.path().to_path_buf())
+        .collect();
+
+    Ok(subdirs)
 }
 
 fn main() -> Result<()> {
@@ -2790,6 +2905,7 @@ fn main() -> Result<()> {
                     paths,
                     dry_run,
                     interactive,
+                    max_depth,
                 } => {
                     println!(
                         "{}{}{}",
@@ -2812,6 +2928,7 @@ fn main() -> Result<()> {
 
                     let mut config = Config::load()?;
                     let evaluator = ImportanceEvaluator::default();
+                    let exclude_engine = ExcludeRecommendationEngine::default();
                     let mut added_count = 0;
 
                     for path in paths {
@@ -2841,85 +2958,226 @@ fn main() -> Result<()> {
                             continue;
                         }
 
-                        match evaluator.evaluate(&path) {
-                            Ok(result) => {
+                        // ディレクトリの場合はサブディレクトリを列挙
+                        let targets_to_evaluate: Vec<PathBuf> = if path.is_dir() {
+                            let subdirs = enumerate_subdirs(&path, max_depth)?;
+                            if subdirs.is_empty() {
                                 println!(
-                                    "  {}: {:?} ({}: {})",
-                                    if lang == Language::Japanese {
-                                        "推奨優先度"
-                                    } else {
-                                        "Recommended Priority"
-                                    },
-                                    *result.priority(),
-                                    if lang == Language::Japanese {
-                                        "スコア"
-                                    } else {
-                                        "Score"
-                                    },
-                                    result.score().get()
-                                );
-
-                            if interactive {
-                                use dialoguer::Confirm;
-                                let prompt = format!(
-                                    "{}{:?} {} {:?} {}{}",
+                                    "  {}💡 {}: {:?}{}",
                                     get_color("yellow", false),
+                                    if lang == Language::Japanese {
+                                        "サブディレクトリが見つかりません"
+                                    } else {
+                                        "No subdirectories found"
+                                    },
                                     path,
-                                    if lang == Language::Japanese {
-                                        "を優先度"
-                                    } else {
-                                        "with priority"
-                                    },
-                                    *result.priority(),
-                                    if lang == Language::Japanese {
-                                        "で追加しますか？"
-                                    } else {
-                                        "?"
-                                    },
                                     get_color("reset", false)
                                 );
-
-                                if !Confirm::new().with_prompt(prompt).interact()? {
-                                    continue;
-                                }
-                            }
-
-                            if !dry_run {
-                                let target = Target::new(
-                                    path.clone(),
-                                    *result.priority(),
-                                    result.category().to_string(),
+                                vec![]
+                            } else {
+                                println!(
+                                    "  {}📁 {}: {}{}",
+                                    get_color("cyan", false),
+                                    if lang == Language::Japanese {
+                                        format!("{}個のサブディレクトリを発見", subdirs.len())
+                                    } else {
+                                        format!("Found {} subdirectories", subdirs.len())
+                                    },
+                                    subdirs.len(),
+                                    get_color("reset", false)
                                 );
-                                if config.add_target(target) {
-                                    added_count += 1;
+                                subdirs
+                            }
+                        } else {
+                            // ファイルの場合はそのまま
+                            vec![path.clone()]
+                        };
+
+                        // 各ターゲットを評価
+                        for target_path in targets_to_evaluate {
+                            println!(
+                                "    {}: {:?}",
+                                if lang == Language::Japanese {
+                                    "評価中"
+                                } else {
+                                    "Evaluating"
+                                },
+                                target_path
+                            );
+
+                            match evaluator.evaluate(&target_path) {
+                                Ok(result) => {
                                     println!(
-                                        "  {}✅ {}{}",
-                                        get_color("green", false),
+                                        "      {}: {:?} ({}: {})",
                                         if lang == Language::Japanese {
-                                            "設定に追加しました"
+                                            "推奨優先度"
                                         } else {
-                                            "Added to configuration"
+                                            "Recommended Priority"
                                         },
+                                        *result.priority(),
+                                        if lang == Language::Japanese {
+                                            "スコア"
+                                        } else {
+                                            "Score"
+                                        },
+                                        result.score().get()
+                                    );
+
+                                    // 除外パターンの提案
+                                    let mut exclude_patterns = Vec::new();
+                                    if target_path.is_dir() {
+                                        match exclude_engine.suggest_exclude_patterns(&target_path)
+                                        {
+                                            Ok(recommendations) => {
+                                                let filtered: Vec<_> = recommendations
+                                                    .into_iter()
+                                                    .filter(|r| r.confidence().get() >= 0.8)
+                                                    .collect();
+
+                                                if !filtered.is_empty() {
+                                                    println!(
+                                                        "      {}📋 {}: {}{}",
+                                                        get_color("cyan", false),
+                                                        if lang == Language::Japanese {
+                                                            "除外パターン提案"
+                                                        } else {
+                                                            "Exclude pattern suggestions"
+                                                        },
+                                                        filtered.len(),
+                                                        get_color("reset", false)
+                                                    );
+
+                                                    for rec in &filtered {
+                                                        println!(
+                                                            "        - {} ({:.1}%, {:.2} GB {})",
+                                                            rec.pattern(),
+                                                            rec.confidence().get() * 100.0,
+                                                            rec.size_reduction_gb(),
+                                                            if lang == Language::Japanese {
+                                                                "削減見込"
+                                                            } else {
+                                                                "reduction"
+                                                            }
+                                                        );
+
+                                                        if interactive {
+                                                            use dialoguer::Confirm;
+                                                            let prompt = format!(
+                                                                "{}\"{}\" {}{}",
+                                                                get_color("yellow", false),
+                                                                rec.pattern(),
+                                                                if lang == Language::Japanese {
+                                                                    "を除外リストに追加しますか？"
+                                                                } else {
+                                                                    "to exclude list?"
+                                                                },
+                                                                get_color("reset", false)
+                                                            );
+
+                                                            if Confirm::new()
+                                                                .with_prompt(prompt)
+                                                                .interact()?
+                                                            {
+                                                                exclude_patterns.push(
+                                                                    rec.pattern().to_string(),
+                                                                );
+                                                            }
+                                                        } else {
+                                                            exclude_patterns
+                                                                .push(rec.pattern().to_string());
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            Err(_) => {
+                                                // 除外パターン提案の失敗は無視（重要ではない）
+                                            }
+                                        }
+                                    }
+
+                                    if interactive {
+                                        use dialoguer::Confirm;
+                                        let prompt = format!(
+                                            "{}{:?} {} {:?} {}{}",
+                                            get_color("yellow", false),
+                                            target_path,
+                                            if lang == Language::Japanese {
+                                                "を優先度"
+                                            } else {
+                                                "with priority"
+                                            },
+                                            *result.priority(),
+                                            if lang == Language::Japanese {
+                                                "で追加しますか？"
+                                            } else {
+                                                "?"
+                                            },
+                                            get_color("reset", false)
+                                        );
+
+                                        if !Confirm::new().with_prompt(prompt).interact()? {
+                                            continue;
+                                        }
+                                    }
+
+                                    // 除外パターンの表示（dry_run でも表示）
+                                    if !exclude_patterns.is_empty() {
+                                        println!(
+                                            "      {}📝 {}: {}{}",
+                                            get_color("gray", false),
+                                            if lang == Language::Japanese {
+                                                "除外パターン"
+                                            } else {
+                                                "Exclude patterns"
+                                            },
+                                            exclude_patterns.join(", "),
+                                            get_color("reset", false)
+                                        );
+                                    }
+
+                                    if !dry_run {
+                                        let mut target = Target::new(
+                                            target_path.clone(),
+                                            *result.priority(),
+                                            result.category().to_string(),
+                                        );
+
+                                        // 除外パターンを設定
+                                        if !exclude_patterns.is_empty() {
+                                            target.exclude_patterns = exclude_patterns.clone();
+                                        }
+
+                                        if config.add_target(target) {
+                                            added_count += 1;
+                                            println!(
+                                                "      {}✅ {}{}",
+                                                get_color("green", false),
+                                                if lang == Language::Japanese {
+                                                    "設定に追加しました"
+                                                } else {
+                                                    "Added to configuration"
+                                                },
+                                                get_color("reset", false)
+                                            );
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    println!(
+                                        "      {}⚠️  {}: {}{}",
+                                        get_color("yellow", false),
+                                        if lang == Language::Japanese {
+                                            "分析失敗"
+                                        } else {
+                                            "Analysis failed"
+                                        },
+                                        e,
                                         get_color("reset", false)
                                     );
                                 }
                             }
-                            }
-                            Err(e) => {
-                                println!(
-                                    "  {}⚠️  {}: {}{}",
-                                    get_color("yellow", false),
-                                    if lang == Language::Japanese {
-                                        "分析失敗"
-                                    } else {
-                                        "Analysis failed"
-                                    },
-                                    e,
-                                    get_color("reset", false)
-                                );
-                            }
-                        }
-                    }
+                        } // end of for target_path in targets_to_evaluate
+                    } // end of for path in paths
 
                     if !dry_run && added_count > 0 {
                         config.save()?;
