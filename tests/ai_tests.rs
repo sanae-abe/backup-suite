@@ -1019,6 +1019,7 @@ mod integration_tests {
     /// 【統合テスト1】異常検知フロー全体テスト
     /// 履歴データ読み込み → 統計計算 → 異常検知の完全なワークフロー
     #[test]
+    #[allow(clippy::cast_possible_wrap)]
     fn test_anomaly_detection_full_workflow() {
         // 正常な履歴データの準備（10日分）
         let mut histories = vec![];
@@ -1192,6 +1193,7 @@ mod integration_tests {
 
     /// 【統合テスト8】パフォーマンステスト: 大量データ処理（1000件以上の履歴）
     #[test]
+    #[allow(clippy::cast_possible_wrap)]
     fn test_performance_large_history_dataset() {
         use std::time::Instant;
 
@@ -1257,6 +1259,7 @@ mod integration_tests {
 
     /// 【統合テスト10】予測エンジン: ディスク容量予測の完全フロー
     #[test]
+    #[allow(clippy::cast_possible_wrap)]
     fn test_prediction_full_workflow() {
         let predictor = Predictor::new();
 
