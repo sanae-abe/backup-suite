@@ -1661,26 +1661,26 @@ fn main() -> Result<()> {
             match compression_type {
                 CompressionType::Zstd => {
                     if !(1..=22).contains(&compress_level) {
-                        println!(
+                        eprintln!(
                             "{}❌ {}{}: zstd の compress-level は 1-22 の範囲で指定してください（指定値: {}）",
                             get_color("red", false),
                             get_message(MessageKey::Error, lang),
                             get_color("reset", false),
                             compress_level
                         );
-                        return Ok(());
+                        std::process::exit(1);
                     }
                 }
                 CompressionType::Gzip => {
                     if !(1..=9).contains(&compress_level) {
-                        println!(
+                        eprintln!(
                             "{}❌ {}{}: gzip の compress-level は 1-9 の範囲で指定してください（指定値: {}）",
                             get_color("red", false),
                             get_message(MessageKey::Error, lang),
                             get_color("reset", false),
                             compress_level
                         );
-                        return Ok(());
+                        std::process::exit(1);
                     }
                 }
                 CompressionType::None => {
@@ -1938,14 +1938,14 @@ fn main() -> Result<()> {
 
             // Validate days range
             if days == 0 || days > 3650 {
-                println!(
+                eprintln!(
                     "{}❌ {}{}: days は 1-3650 の範囲で指定してください（指定値: {}）",
                     get_color("red", false),
                     get_message(MessageKey::Error, lang),
                     get_color("reset", false),
                     days
                 );
-                return Ok(());
+                std::process::exit(1);
             }
 
             // パフォーマンス最適化: 確認プロンプトをスキャン前に表示
@@ -2420,7 +2420,7 @@ fn main() -> Result<()> {
                 }
                 ConfigAction::SetKeepDays { days } => {
                     if days == 0 || days > 3650 {
-                        println!(
+                        eprintln!(
                             "{}❌ {}{}: {} {}）",
                             get_color("red", false),
                             get_message(MessageKey::Error, lang),
@@ -2428,7 +2428,7 @@ fn main() -> Result<()> {
                             get_message(MessageKey::KeepDaysOutOfRange, lang),
                             days
                         );
-                        return Ok(());
+                        std::process::exit(1);
                     }
 
                     let old_days = config.backup.keep_days;
@@ -2538,14 +2538,14 @@ fn main() -> Result<()> {
                 AiAction::Detect { days, format } => {
                     // Validate days range
                     if days == 0 || days > 365 {
-                        println!(
+                        eprintln!(
                             "{}❌ {}{}: days は 1-365 の範囲で指定してください（指定値: {}）",
                             get_color("red", false),
                             get_message(MessageKey::Error, lang),
                             get_color("reset", false),
                             days
                         );
-                        return Ok(());
+                        std::process::exit(1);
                     }
 
                     println!(
@@ -3107,23 +3107,25 @@ fn main() -> Result<()> {
                     // Warn if existing backup targets will be affected
                     if !config.targets.is_empty() && !dry_run && !interactive {
                         use dialoguer::Confirm;
+                        let message = if lang == Language::Japanese {
+                            format!(
+                                "現在{}個のバックアップ対象が登録されています",
+                                config.targets.len()
+                            )
+                        } else {
+                            format!("You have {} existing backup targets", config.targets.len())
+                        };
                         println!(
                             "\n{}⚠️  {}{}",
                             get_color("yellow", false),
-                            if lang == Language::Japanese {
-                                format!(
-                                    "現在{}個のバックアップ対象が登録されています",
-                                    config.targets.len()
-                                )
-                            } else {
-                                format!("You have {} existing backup targets", config.targets.len())
-                            },
+                            message,
                             get_color("reset", false)
                         );
+
                         let prompt = if lang == Language::Japanese {
-                            "新しいターゲットを追加しますか？（既存のターゲットは保持されます）"
+                            "新しいターゲットを追加しますか？"
                         } else {
-                            "Add new targets? (existing targets will be preserved)"
+                            "Add new targets?"
                         };
 
                         if !Confirm::new()

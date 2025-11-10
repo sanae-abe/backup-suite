@@ -225,8 +225,8 @@ fn test_cleanup_days_validation_min() {
         .arg("0")
         .arg("--dry-run")
         .assert()
-        .success()
-        .stdout(predicate::str::contains("1-3650 の範囲で指定してください"));
+        .failure()
+        .stderr(predicate::str::contains("1-3650 の範囲で指定してください"));
 }
 
 /// cleanup コマンドのバリデーション範囲テスト（最大値）
@@ -240,8 +240,8 @@ fn test_cleanup_days_validation_max() {
         .arg("9999")
         .arg("--dry-run")
         .assert()
-        .success()
-        .stdout(predicate::str::contains("1-3650 の範囲で指定してください"));
+        .failure()
+        .stderr(predicate::str::contains("1-3650 の範囲で指定してください"));
 }
 
 /// config set-keep-days のバリデーション範囲テスト
@@ -254,8 +254,8 @@ fn test_config_set_keep_days_validation_min() {
         .arg("set-keep-days")
         .arg("0")
         .assert()
-        .success()
-        .stdout(predicate::str::contains("1-3650 の範囲"));
+        .failure()
+        .stderr(predicate::str::contains("1-3650 の範囲"));
 }
 
 /// config set-keep-days のバリデーション範囲テスト（最大値）
@@ -268,8 +268,8 @@ fn test_config_set_keep_days_validation_max() {
         .arg("set-keep-days")
         .arg("9999")
         .assert()
-        .success()
-        .stdout(predicate::str::contains("1-3650 の範囲"));
+        .failure()
+        .stderr(predicate::str::contains("1-3650 の範囲"));
 }
 
 /// run コマンドの圧縮レベルバリデーション（zstd範囲外）
@@ -285,8 +285,8 @@ fn test_run_compress_level_validation_zstd_min() {
         .arg("0")
         .arg("--dry-run")
         .assert()
-        .success()
-        .stdout(predicate::str::contains("1-22 の範囲で指定してください"));
+        .failure()
+        .stderr(predicate::str::contains("1-22 の範囲で指定してください"));
 }
 
 /// run コマンドの圧縮レベルバリデーション（zstd範囲外最大値）
@@ -302,8 +302,8 @@ fn test_run_compress_level_validation_zstd_max() {
         .arg("99")
         .arg("--dry-run")
         .assert()
-        .success()
-        .stdout(predicate::str::contains("1-22 の範囲で指定してください"));
+        .failure()
+        .stderr(predicate::str::contains("1-22 の範囲で指定してください"));
 }
 
 /// run コマンドの圧縮レベルバリデーション（gzip範囲外）
@@ -319,8 +319,8 @@ fn test_run_compress_level_validation_gzip_min() {
         .arg("0")
         .arg("--dry-run")
         .assert()
-        .success()
-        .stdout(predicate::str::contains("1-9 の範囲で指定してください"));
+        .failure()
+        .stderr(predicate::str::contains("1-9 の範囲で指定してください"));
 }
 
 /// run コマンドの圧縮レベルバリデーション（gzip範囲外最大値）
@@ -336,8 +336,8 @@ fn test_run_compress_level_validation_gzip_max() {
         .arg("99")
         .arg("--dry-run")
         .assert()
-        .success()
-        .stdout(predicate::str::contains("1-9 の範囲で指定してください"));
+        .failure()
+        .stderr(predicate::str::contains("1-9 の範囲で指定してください"));
 }
 
 /// AI detect コマンドのdaysバリデーション範囲テスト
@@ -352,8 +352,8 @@ fn test_ai_detect_days_validation_min() {
         .arg("--days")
         .arg("0")
         .assert()
-        .success()
-        .stdout(predicate::str::contains("1-365 の範囲で指定してください"));
+        .failure()
+        .stderr(predicate::str::contains("1-365 の範囲で指定してください"));
 }
 
 /// AI detect コマンドのdaysバリデーション範囲テスト（最大値超過）
@@ -368,8 +368,8 @@ fn test_ai_detect_days_validation_max() {
         .arg("--days")
         .arg("9999")
         .assert()
-        .success()
-        .stdout(predicate::str::contains("1-365 の範囲で指定してください"));
+        .failure()
+        .stderr(predicate::str::contains("1-365 の範囲で指定してください"));
 }
 
 /// AI suggest-exclude コマンドのconfidenceバリデーション範囲テスト

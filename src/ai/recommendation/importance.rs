@@ -353,7 +353,7 @@ impl ImportanceEvaluator {
             .unwrap_or_default();
 
         // ファイル名マッチング（最優先）
-        let mut best_score = 30u8; // デフォルトスコア
+        let mut best_score = 0u8; // ルールマッチ前は0、マッチしなければ後でデフォルト30を設定
         let mut file_name_matched = false;
 
         for rule in &self.rules {
@@ -386,10 +386,18 @@ impl ImportanceEvaluator {
                     matched = true;
                 }
 
-                if matched && rule.base_score > best_score {
-                    best_score = rule.base_score;
+                if matched {
+                    // マッチしたルールのスコアを採用（高いスコアを優先）
+                    if rule.base_score > best_score {
+                        best_score = rule.base_score;
+                    }
                 }
             }
+        }
+
+        // どのルールにもマッチしなかった場合はデフォルトスコア
+        if best_score == 0 {
+            best_score = 30;
         }
 
         // dotfiles は設定ファイルとして扱う（デフォルトスコアの場合のみ）
