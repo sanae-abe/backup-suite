@@ -2824,22 +2824,39 @@ fn main() -> Result<()> {
                             path
                         );
 
-                        if let Ok(result) = evaluator.evaluate(&path) {
+                        // パスの存在確認
+                        if !path.exists() {
                             println!(
-                                "  {}: {:?} ({}: {})",
+                                "  {}❌ {}: {:?}{}",
+                                get_color("red", false),
                                 if lang == Language::Japanese {
-                                    "推奨優先度"
+                                    "パスが存在しません"
                                 } else {
-                                    "Recommended Priority"
+                                    "Path does not exist"
                                 },
-                                *result.priority(),
-                                if lang == Language::Japanese {
-                                    "スコア"
-                                } else {
-                                    "Score"
-                                },
-                                result.score().get()
+                                path,
+                                get_color("reset", false)
                             );
+                            continue;
+                        }
+
+                        match evaluator.evaluate(&path) {
+                            Ok(result) => {
+                                println!(
+                                    "  {}: {:?} ({}: {})",
+                                    if lang == Language::Japanese {
+                                        "推奨優先度"
+                                    } else {
+                                        "Recommended Priority"
+                                    },
+                                    *result.priority(),
+                                    if lang == Language::Japanese {
+                                        "スコア"
+                                    } else {
+                                        "Score"
+                                    },
+                                    result.score().get()
+                                );
 
                             if interactive {
                                 use dialoguer::Confirm;
@@ -2882,6 +2899,20 @@ fn main() -> Result<()> {
                                     } else {
                                         "Added to configuration"
                                     },
+                                    get_color("reset", false)
+                                );
+                            }
+                            }
+                            Err(e) => {
+                                println!(
+                                    "  {}⚠️  {}: {}{}",
+                                    get_color("yellow", false),
+                                    if lang == Language::Japanese {
+                                        "分析失敗"
+                                    } else {
+                                        "Analysis failed"
+                                    },
+                                    e,
                                     get_color("reset", false)
                                 );
                             }
