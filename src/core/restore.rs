@@ -7,7 +7,7 @@ use walkdir::WalkDir;
 use super::incremental::resolve_backup_chain;
 use super::integrity::BackupMetadata;
 use crate::crypto::{EncryptedData, KeyManager};
-use crate::security::{safe_join, AuditEvent, AuditLog};
+use crate::security::{safe_join, safe_open, AuditEvent, AuditLog};
 use crate::ui::progress::BackupProgress;
 
 /// 復元結果
@@ -267,11 +267,24 @@ impl RestoreEngine {
                 }
             }
 
-            // ファイルを読み込み
-            let file_data = match std::fs::read(source_path) {
-                Ok(d) => d,
+            // ファイルを安全に読み込み（シンボリックリンク攻撃対策）
+            let file_data = match safe_open(source_path) {
+                Ok(mut file) => {
+                    let mut buffer = Vec::new();
+                    match file.read_to_end(&mut buffer) {
+                        Ok(_) => buffer,
+                        Err(e) => {
+                            errors.push(format!("ファイル読み込み失敗: {e}"));
+                            failed_count.fetch_add(1, Ordering::Relaxed);
+                            if let Some(ref pb) = progress {
+                                pb.inc(1);
+                            }
+                            continue;
+                        }
+                    }
+                }
                 Err(e) => {
-                    errors.push(format!("ファイル読み込み失敗: source_path.display(): {e}"));
+                    errors.push(format!("ファイルオープン失敗（シンボリックリンク検出の可能性）: {e}"));
                     failed_count.fetch_add(1, Ordering::Relaxed);
                     if let Some(ref pb) = progress {
                         pb.inc(1);

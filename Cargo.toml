@@ -75,6 +75,7 @@ winapi = { version = "0.3", features = ["winbase", "fileapi"] }
 proptest = "1.4"
 tempfile = "3.10"
 assert_fs = "1.1"
+assert_cmd = "2.0"
 predicates = "3.1"
 serial_test = "3.1"
 

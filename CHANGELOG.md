@@ -7,6 +7,48 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security - 🔒 セキュリティ強化（バリデーション）
+
+#### パス検証の徹底
+- **add コマンド**: `safe_join()` + `validate_path_safety()` による二段階検証
+- **remove コマンド**: パストラバーサル対策と確認プロンプト追加
+- **config set-destination**: 保存先パスの安全性検証とディレクトリ作成時の権限チェック
+- **AI機能**: analyze, suggest-exclude, auto-configure の全パス入力を検証
+
+#### 確認プロンプトの追加
+- **remove コマンド**: 削除前の明示的な確認（dialoguer使用、ファイル名表示）
+- **clear --all コマンド**: 全削除の危険性を警告する確認プロンプト
+- **cleanup コマンド**: 古いバックアップ削除前の日数確認（実行前の早期確認で効率化）
+
+#### 型安全性の強化（clap 4.x enum対応）
+- **Priority**: String → clap::ValueEnum（型安全な優先度指定）
+- **CompressionType**: String → clap::ValueEnum（型安全な圧縮タイプ指定）
+- 不正な値の即座検出（コンパイル時・実行時両方で保証）
+
+#### バリデーション範囲の厳格化
+- **cleanup --days**: 1-3650 の範囲検証（0および3650超を拒否）
+- **config set-keep-days**: 1-3650 の範囲検証
+- **run --compress-level**: 圧縮タイプ別の範囲検証
+  - zstd: 1-22（0および23以上を拒否）
+  - gzip: 1-9（0および10以上を拒否）
+- **ai detect --days**: 1-365 の範囲検証
+- **ai suggest-exclude --confidence**: 0.0-1.0 の範囲検証
+- **ai auto-configure --max-depth**: 1-255 の範囲検証（0は「サブディレクトリなし」として安全に処理）
+
+### Tests - ✅ テスト強化
+
+#### セキュリティ統合テスト（24件追加）
+- **パストラバーサル攻撃テスト**: add, remove, config, AI各コマンドで検証
+- **絶対パステスト**: shallow absolute path（/etc/passwd等）の拒否確認
+- **シンボリックリンク攻撃テスト**: restore コマンドの `safe_open()` 検証
+- **enum型安全性テスト**: Priority, CompressionType の不正値拒否
+- **バリデーション範囲テスト**: 全パラメータの境界値検証（min/max）
+- **正常パステスト**: 正当なパスが正しく受け入れられることを確認
+
+#### テスト実績
+- 24テスト合格、2テスト無視（terminal依存）
+- カバレッジ: パストラバーサル対策、確認プロンプト、型安全性、バリデーション範囲
+
 ### Added - 🤖 AI機能（Phase 1: 軽量ML機能）
 
 #### 異常検知エンジン

@@ -35,11 +35,13 @@ use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Generator, Shell};
 use dialoguer::FuzzySelect;
 use is_terminal::IsTerminal;
+use std::env;
 use std::io::{self};
 use std::path::PathBuf;
 
 use backup_suite::core::{BackupHistory, BackupRunner, Scheduler};
 use backup_suite::i18n::{get_message, Language, MessageKey};
+use backup_suite::security::{safe_join, validate_path_safety};
 use backup_suite::ui::{
     display_backup_result, display_dashboard, display_history, display_targets, ColorTheme,
 };
@@ -101,8 +103,8 @@ enum Commands {
     Add {
         /// File or directory path to add (optional - will open file selector if not provided)
         path: Option<PathBuf>,
-        #[arg(long, default_value = "medium")]
-        priority: String,
+        #[arg(long, default_value_t = Priority::Medium, value_enum)]
+        priority: Priority,
         #[arg(long, default_value = "user")]
         category: String,
         #[arg(long)]
@@ -114,8 +116,8 @@ enum Commands {
     },
     #[command(alias = "ls")]
     List {
-        #[arg(long)]
-        priority: Option<String>,
+        #[arg(long, value_enum)]
+        priority: Option<Priority>,
     },
     Remove {
         /// File or directory path to remove (optional - will show selector if not provided)
@@ -126,14 +128,14 @@ enum Commands {
     },
     #[command(alias = "rm")]
     Clear {
-        #[arg(long)]
-        priority: Option<String>,
+        #[arg(long, value_enum)]
+        priority: Option<Priority>,
         #[arg(long)]
         all: bool,
     },
     Run {
-        #[arg(long)]
-        priority: Option<String>,
+        #[arg(long, value_enum)]
+        priority: Option<Priority>,
         #[arg(long)]
         category: Option<String>,
         #[arg(long)]
@@ -147,9 +149,9 @@ enum Commands {
         #[arg(long)]
         /// Generate a strong random password (use with --encrypt)
         generate_password: bool,
-        #[arg(long, default_value = "zstd")]
+        #[arg(long, default_value_t = backup_suite::compression::CompressionType::Zstd, value_enum)]
         /// Compression algorithm: zstd, gzip, none
-        compress: String,
+        compress: backup_suite::compression::CompressionType,
         #[arg(long, default_value = "3")]
         /// Compression level (1-22 for zstd, 1-9 for gzip)
         compress_level: i32,
@@ -176,8 +178,8 @@ enum Commands {
     History {
         #[arg(long, default_value = "7")]
         days: u32,
-        #[arg(long)]
-        priority: Option<String>,
+        #[arg(long, value_enum)]
+        priority: Option<Priority>,
         #[arg(long)]
         category: Option<String>,
         #[arg(long)]
@@ -217,12 +219,12 @@ enum Commands {
 #[command(disable_help_subcommand = true)]
 enum ScheduleAction {
     Enable {
-        #[arg(long)]
-        priority: Option<String>,
+        #[arg(long, value_enum)]
+        priority: Option<Priority>,
     },
     Disable {
-        #[arg(long)]
-        priority: Option<String>,
+        #[arg(long, value_enum)]
+        priority: Option<Priority>,
     },
     Status,
     Setup {
@@ -420,15 +422,6 @@ fn select_target_with_fuzzy(config: &Config, lang: Language) -> Result<Option<Pa
         Ok(Some(config.targets[index].path.clone()))
     } else {
         Ok(None)
-    }
-}
-
-fn parse_priority(s: &str) -> Result<Priority> {
-    match s.to_lowercase().as_str() {
-        "high" => Ok(Priority::High),
-        "medium" => Ok(Priority::Medium),
-        "low" => Ok(Priority::Low),
-        _ => Err(anyhow::anyhow!("不明な優先度: {s}")),
     }
 }
 
@@ -1424,8 +1417,6 @@ fn main() -> Result<()> {
             interactive,
             exclude_patterns,
         }) => {
-            let priority = parse_priority(&priority)?;
-
             // パスを決定（pathが指定されていない場合、またはinteractiveフラグが立っている場合はskin選択）
             let target_path = if let Some(p) = path {
                 if interactive {
@@ -1461,21 +1452,29 @@ fn main() -> Result<()> {
                 }
             };
 
+            // セキュリティ検証（パストラバーサル対策）
+            // 重要: safe_join → validate_path_safety の順序で実行
+            let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
+            let normalized_path = safe_join(&current_dir, &target_path)
+                .context("指定されたパスは許可されていません")?;
+
+            validate_path_safety(&normalized_path)
+                .context("指定されたパスは許可されていません")?;
+
             // ファイル/ディレクトリの存在確認
-            if !target_path.exists() {
+            if !normalized_path.exists() {
                 println!(
-                    "{}❌ {}{}: {}: {:?}",
+                    "{}❌ {}{}: {}",
                     get_color("red", false),
                     get_message(MessageKey::Error, lang),
                     get_color("reset", false),
-                    get_message(MessageKey::PathNotExists, lang),
-                    target_path
+                    get_message(MessageKey::PathNotExists, lang)
                 );
                 return Ok(());
             }
 
             let mut config = Config::load()?;
-            let mut target = Target::new(target_path.clone(), priority, category);
+            let mut target = Target::new(normalized_path.clone(), priority, category);
 
             // 除外パターンを追加
             if !exclude_patterns.is_empty() {
@@ -1491,11 +1490,10 @@ fn main() -> Result<()> {
             if config.add_target(target) {
                 config.save()?;
                 println!(
-                    "{}✅ {}{}: {:?}",
+                    "{}✅ {}{}",
                     get_color("green", false),
                     get_message(MessageKey::Added, lang),
-                    get_color("reset", false),
-                    target_path
+                    get_color("reset", false)
                 );
             }
         }
@@ -1503,9 +1501,8 @@ fn main() -> Result<()> {
             let config = Config::load()?;
             let theme = ColorTheme::auto();
 
-            let targets = if let Some(p) = priority {
-                let prio = parse_priority(&p)?;
-                config.filter_by_priority(&prio)
+            let targets = if let Some(ref prio) = priority {
+                config.filter_by_priority(prio)
             } else {
                 config.targets.iter().collect()
             };
@@ -1551,22 +1548,53 @@ fn main() -> Result<()> {
                 }
             };
 
-            if config.remove_target(&target_path) {
+            // セキュリティ検証（パストラバーサル対策）
+            // 重要: safe_join → validate_path_safety の順序で実行
+            let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
+            let normalized_path = safe_join(&current_dir, &target_path)
+                .context("指定されたパスは許可されていません")?;
+
+            validate_path_safety(&normalized_path)
+                .context("指定されたパスは許可されていません")?;
+
+            // 削除前の確認プロンプト
+            use dialoguer::Confirm;
+            let file_name = normalized_path
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("(不明)");
+            let prompt = format!(
+                "本当に {} をバックアップ対象から削除しますか？",
+                file_name
+            );
+
+            if !Confirm::new()
+                .with_prompt(prompt)
+                .default(false)
+                .interact()?
+            {
+                println!(
+                    "{}キャンセルしました{}",
+                    get_color("yellow", false),
+                    get_color("reset", false)
+                );
+                return Ok(());
+            }
+
+            if config.remove_target(&normalized_path) {
                 config.save()?;
                 println!(
-                    "{}✅ {}{}: {:?}",
+                    "{}✅ {}{}",
                     get_color("green", false),
                     get_message(MessageKey::Removed, lang),
-                    get_color("reset", false),
-                    target_path
+                    get_color("reset", false)
                 );
             } else {
                 println!(
-                    "{}❌ {}{}: {:?}",
+                    "{}❌ {}{}",
                     get_color("red", false),
                     get_message(MessageKey::NotInBackupConfig, lang),
-                    get_color("reset", false),
-                    target_path
+                    get_color("reset", false)
                 );
             }
         }
@@ -1574,10 +1602,29 @@ fn main() -> Result<()> {
             let mut config = Config::load()?;
             let before = config.targets.len();
             if all {
+                // 全削除前の確認（必須）
+                use dialoguer::Confirm;
+                let prompt = format!(
+                    "⚠️  警告: {}個すべてのバックアップ対象を削除します。本当によろしいですか？",
+                    config.targets.len()
+                );
+
+                if !Confirm::new()
+                    .with_prompt(prompt)
+                    .default(false)
+                    .interact()?
+                {
+                    println!(
+                        "{}キャンセルしました{}",
+                        get_color("yellow", false),
+                        get_color("reset", false)
+                    );
+                    return Ok(());
+                }
+
                 config.targets.clear();
             } else if let Some(p) = priority {
-                let prio = parse_priority(&p)?;
-                config.targets.retain(|t| t.priority != prio);
+                config.targets.retain(|t| t.priority != p);
             } else {
                 println!(
                     "{}❌ {}{}",
@@ -1608,18 +1655,43 @@ fn main() -> Result<()> {
             compress_level,
             incremental,
         }) => {
-            let priority = priority.as_ref().map(|s| parse_priority(s)).transpose()?;
             let config = Config::load()?;
             let theme = ColorTheme::auto();
 
-            // 圧縮タイプを変換（表示用に先に実行）
+            // 圧縮タイプ（既に CompressionType 型）
             use backup_suite::compression::CompressionType;
-            let compression_type = match compress.as_str() {
-                "zstd" => CompressionType::Zstd,
-                "gzip" => CompressionType::Gzip,
-                "none" => CompressionType::None,
-                _ => CompressionType::Zstd,
-            };
+            let compression_type = compress;
+
+            // Validate compress-level based on compression type
+            match compression_type {
+                CompressionType::Zstd => {
+                    if compress_level < 1 || compress_level > 22 {
+                        println!(
+                            "{}❌ {}{}: zstd の compress-level は 1-22 の範囲で指定してください（指定値: {}）",
+                            get_color("red", false),
+                            get_message(MessageKey::Error, lang),
+                            get_color("reset", false),
+                            compress_level
+                        );
+                        return Ok(());
+                    }
+                }
+                CompressionType::Gzip => {
+                    if compress_level < 1 || compress_level > 9 {
+                        println!(
+                            "{}❌ {}{}: gzip の compress-level は 1-9 の範囲で指定してください（指定値: {}）",
+                            get_color("red", false),
+                            get_message(MessageKey::Error, lang),
+                            get_color("reset", false),
+                            compress_level
+                        );
+                        return Ok(());
+                    }
+                }
+                CompressionType::None => {
+                    // No validation needed for no compression
+                }
+            }
 
             // 暗号化・圧縮オプションの表示
             let mut options_info: Vec<String> = Vec::new();
@@ -1869,6 +1941,40 @@ fn main() -> Result<()> {
         Some(Commands::Cleanup { days, dry_run }) => {
             use backup_suite::{CleanupEngine, CleanupPolicy};
 
+            // Validate days range
+            if days == 0 || days > 3650 {
+                println!(
+                    "{}❌ {}{}: days は 1-3650 の範囲で指定してください（指定値: {}）",
+                    get_color("red", false),
+                    get_message(MessageKey::Error, lang),
+                    get_color("reset", false),
+                    days
+                );
+                return Ok(());
+            }
+
+            // パフォーマンス最適化: 確認プロンプトをスキャン前に表示
+            if !dry_run {
+                use dialoguer::Confirm;
+                let prompt = format!(
+                    "{}日以前の古いバックアップを削除します。よろしいですか？",
+                    days
+                );
+
+                if !Confirm::new()
+                    .with_prompt(prompt)
+                    .default(true)
+                    .interact()?
+                {
+                    println!(
+                        "{}キャンセルしました{}",
+                        get_color("yellow", false),
+                        get_color("reset", false)
+                    );
+                    return Ok(());
+                }
+            }
+
             let policy = CleanupPolicy::retention_days(days);
             let mut engine = CleanupEngine::new(policy, dry_run);
             let result = engine.cleanup()?;
@@ -1958,9 +2064,8 @@ fn main() -> Result<()> {
             let theme = ColorTheme::auto();
 
             // 優先度フィルタ適用
-            if let Some(p_str) = priority {
-                let prio = parse_priority(&p_str)?;
-                let filtered = BackupHistory::filter_by_priority(&history, &prio);
+            if let Some(ref prio) = priority {
+                let filtered = BackupHistory::filter_by_priority(&history, prio);
                 history = filtered.into_iter().cloned().collect();
             }
 
@@ -2061,16 +2166,15 @@ fn main() -> Result<()> {
 
                     let scheduler = Scheduler::new(config)?;
 
-                    if let Some(p) = priority {
-                        let prio = parse_priority(&p)?;
-                        scheduler.setup_priority(&prio)?;
-                        scheduler.enable_priority(&prio)?;
+                    if let Some(ref prio) = priority {
+                        scheduler.setup_priority(prio)?;
+                        scheduler.enable_priority(prio)?;
                         println!(
-                            "{}✅ {}{} ({})",
+                            "{}✅ {}{} ({:?})",
                             get_color("green", false),
                             get_message(MessageKey::AutoBackupEnabled, lang),
                             get_color("reset", false),
-                            p
+                            prio
                         );
                     } else {
                         scheduler.setup_all()?;
@@ -2086,15 +2190,14 @@ fn main() -> Result<()> {
                 ScheduleAction::Disable { priority } => {
                     let scheduler = Scheduler::new(Config::load()?)?;
 
-                    if let Some(p) = priority {
-                        let prio = parse_priority(&p)?;
-                        scheduler.disable_priority(&prio)?;
+                    if let Some(ref prio) = priority {
+                        scheduler.disable_priority(prio)?;
                         println!(
-                            "{}⏸️  {}{} ({})",
+                            "{}⏸️  {}{} ({:?})",
                             get_color("yellow", false),
                             get_message(MessageKey::AutoBackupDisabled, lang),
                             get_color("reset", false),
-                            p
+                            prio
                         );
                     } else {
                         config.schedule.enabled = false;
@@ -2264,27 +2367,35 @@ fn main() -> Result<()> {
                         }
                     };
 
+                    // セキュリティ検証（パストラバーサル対策）
+                    // 重要: safe_join → validate_path_safety の順序で実行
+                    let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
+                    let normalized_path = safe_join(&current_dir, &path)
+                        .context("指定されたパスは許可されていません")?;
+
+                    validate_path_safety(&normalized_path)
+                        .context("指定されたパスは許可されていません")?;
+
                     // ディレクトリが存在しない場合は作成を試みる
-                    if !path.exists() {
+                    if !normalized_path.exists() {
                         println!(
-                            "{}📁 {}{}: {:?}",
+                            "{}📁 {}{}",
                             get_color("yellow", false),
                             get_message(MessageKey::DirectoryNotExists, lang),
-                            get_color("reset", false),
-                            path
+                            get_color("reset", false)
                         );
-                        std::fs::create_dir_all(&path)
-                            .map_err(|e| anyhow::anyhow!("ディレクトリ作成失敗: {path:?} - {e}"))?;
+                        std::fs::create_dir_all(&normalized_path)
+                            .context("ディレクトリ作成失敗")?;
                     }
 
                     // 書き込み権限を確認
                     use backup_suite::security::check_write_permission;
-                    check_write_permission(&path)
-                        .map_err(|e| anyhow::anyhow!("書き込み権限エラー: {path:?} - {e}"))?;
+                    check_write_permission(&normalized_path)
+                        .context("書き込み権限エラー")?;
 
                     // 設定を更新
                     let old_destination = config.backup.destination.clone();
-                    config.backup.destination = path.clone();
+                    config.backup.destination = normalized_path.clone();
                     config.save()?;
 
                     println!(
@@ -2298,7 +2409,7 @@ fn main() -> Result<()> {
                         get_message(MessageKey::Before, lang),
                         old_destination
                     );
-                    println!("  {}: {:?}", get_message(MessageKey::After, lang), path);
+                    println!("  {}: {:?}", get_message(MessageKey::After, lang), normalized_path);
                 }
                 ConfigAction::GetDestination => {
                     println!(
@@ -2427,6 +2538,18 @@ fn main() -> Result<()> {
 
             match action {
                 AiAction::Detect { days, format } => {
+                    // Validate days range
+                    if days == 0 || days > 365 {
+                        println!(
+                            "{}❌ {}{}: days は 1-365 の範囲で指定してください（指定値: {}）",
+                            get_color("red", false),
+                            get_message(MessageKey::Error, lang),
+                            get_color("reset", false),
+                            days
+                        );
+                        return Ok(());
+                    }
+
                     println!(
                         "{}{}{}",
                         get_color("magenta", false),
@@ -2643,6 +2766,15 @@ fn main() -> Result<()> {
                     suggest_priority,
                     detailed,
                 } => {
+                    // セキュリティ検証（パストラバーサル対策）
+                    // 重要: safe_join → validate_path_safety の順序で実行
+                    let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
+                    let normalized_path = safe_join(&current_dir, &path)
+                        .context("指定されたパスは許可されていません")?;
+
+                    validate_path_safety(&normalized_path)
+                        .context("指定されたパスは許可されていません")?;
+
                     println!(
                         "{}{}{}",
                         get_color("magenta", false),
@@ -2656,11 +2788,11 @@ fn main() -> Result<()> {
                         } else {
                             "Path"
                         },
-                        path
+                        normalized_path
                     );
 
                     let evaluator = ImportanceEvaluator::default();
-                    match evaluator.evaluate(&path) {
+                    match evaluator.evaluate(&normalized_path) {
                         Ok(result) => {
                             if detailed {
                                 let mut table = Table::new();
@@ -2757,7 +2889,7 @@ fn main() -> Result<()> {
                                     } else {
                                         "Recommended command"
                                     },
-                                    path,
+                                    normalized_path,
                                     *result.priority(),
                                     get_color("reset", false)
                                 );
@@ -2779,6 +2911,27 @@ fn main() -> Result<()> {
                     apply,
                     confidence,
                 } => {
+                    // Validate confidence range
+                    if !(0.0..=1.0).contains(&confidence) {
+                        println!(
+                            "{}❌ {}{}: confidence は 0.0-1.0 の範囲で指定してください（指定値: {}）",
+                            get_color("red", false),
+                            get_message(MessageKey::Error, lang),
+                            get_color("reset", false),
+                            confidence
+                        );
+                        return Ok(());
+                    }
+
+                    // セキュリティ検証（パストラバーサル対策）
+                    // 重要: safe_join → validate_path_safety の順序で実行
+                    let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
+                    let normalized_path = safe_join(&current_dir, &path)
+                        .context("指定されたパスは許可されていません")?;
+
+                    validate_path_safety(&normalized_path)
+                        .context("指定されたパスは許可されていません")?;
+
                     println!(
                         "{}{}{}",
                         get_color("magenta", false),
@@ -2792,11 +2945,11 @@ fn main() -> Result<()> {
                         } else {
                             "Path"
                         },
-                        path
+                        normalized_path
                     );
 
                     let engine = ExcludeRecommendationEngine::default();
-                    match engine.suggest_exclude_patterns(&path) {
+                    match engine.suggest_exclude_patterns(&normalized_path) {
                         Ok(recommendations) => {
                             let filtered: Vec<_> = recommendations
                                 .into_iter()
@@ -2988,6 +3141,42 @@ fn main() -> Result<()> {
                     let mut added_count = 0;
 
                     for path in paths {
+                        // セキュリティ検証（パストラバーサル対策）
+                        // 重要: safe_join → validate_path_safety の順序で実行
+                        let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
+                        let normalized_path = match safe_join(&current_dir, &path) {
+                            Ok(p) => p,
+                            Err(e) => {
+                                println!(
+                                    "  {}❌ {}: {:?}{}",
+                                    get_color("red", false),
+                                    if lang == Language::Japanese {
+                                        "パスの検証に失敗しました"
+                                    } else {
+                                        "Path validation failed"
+                                    },
+                                    e,
+                                    get_color("reset", false)
+                                );
+                                continue;
+                            }
+                        };
+
+                        if let Err(e) = validate_path_safety(&normalized_path) {
+                            println!(
+                                "  {}❌ {}: {:?}{}",
+                                get_color("red", false),
+                                if lang == Language::Japanese {
+                                    "パスの安全性検証に失敗しました"
+                                } else {
+                                    "Path safety validation failed"
+                                },
+                                e,
+                                get_color("reset", false)
+                            );
+                            continue;
+                        }
+
                         println!(
                             "{}: {:?}",
                             if lang == Language::Japanese {
@@ -2995,11 +3184,11 @@ fn main() -> Result<()> {
                             } else {
                                 "Analyzing"
                             },
-                            path
+                            normalized_path
                         );
 
                         // パスの存在確認
-                        if !path.exists() {
+                        if !normalized_path.exists() {
                             println!(
                                 "  {}❌ {}: {:?}{}",
                                 get_color("red", false),
@@ -3008,15 +3197,15 @@ fn main() -> Result<()> {
                                 } else {
                                     "Path does not exist"
                                 },
-                                path,
+                                normalized_path,
                                 get_color("reset", false)
                             );
                             continue;
                         }
 
                         // ディレクトリの場合はサブディレクトリを列挙
-                        let targets_to_evaluate: Vec<PathBuf> = if path.is_dir() {
-                            let mut subdirs = enumerate_subdirs(&path, max_depth)?;
+                        let targets_to_evaluate: Vec<PathBuf> = if normalized_path.is_dir() {
+                            let mut subdirs = enumerate_subdirs(&normalized_path, max_depth)?;
                             if subdirs.is_empty() {
                                 println!(
                                     "  {}💡 {}: {:?}{}",
@@ -3026,7 +3215,7 @@ fn main() -> Result<()> {
                                     } else {
                                         "No subdirectories found"
                                     },
-                                    path,
+                                    normalized_path,
                                     get_color("reset", false)
                                 );
                                 vec![]
@@ -3068,7 +3257,7 @@ fn main() -> Result<()> {
                             }
                         } else {
                             // ファイルの場合はそのまま
-                            vec![path.clone()]
+                            vec![normalized_path.clone()]
                         };
 
                         // 各ターゲットを評価

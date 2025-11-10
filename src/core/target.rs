@@ -1,3 +1,4 @@
+use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
@@ -24,7 +25,7 @@ use std::path::PathBuf;
 ///     "重要データ".to_string()
 /// );
 /// ```
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 #[serde(rename_all = "lowercase")]
 pub enum Priority {
     Low,

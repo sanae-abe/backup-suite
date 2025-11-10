@@ -3,13 +3,14 @@
 //! zstd と gzip アルゴリズムによる高性能データ圧縮システム
 
 use crate::error::{BackupError, Result};
+use clap::ValueEnum;
 use flate2::{read::GzDecoder, write::GzEncoder, Compression};
 use std::io::{Read, Write};
 use std::str::FromStr;
 use zstd::{Decoder as ZstdDecoder, Encoder as ZstdEncoder};
 
 /// 圧縮アルゴリズムタイプ
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum CompressionType {
     /// zstd 圧縮（高速・高圧縮率）
     Zstd,
@@ -538,15 +539,15 @@ mod tests {
     #[test]
     fn test_compression_types() {
         assert_eq!(
-            CompressionType::from_str("zstd").unwrap(),
+            "zstd".parse::<CompressionType>().unwrap(),
             CompressionType::Zstd
         );
         assert_eq!(
-            CompressionType::from_str("gzip").unwrap(),
+            "gzip".parse::<CompressionType>().unwrap(),
             CompressionType::Gzip
         );
         assert_eq!(
-            CompressionType::from_str("none").unwrap(),
+            "none".parse::<CompressionType>().unwrap(),
             CompressionType::None
         );
 
