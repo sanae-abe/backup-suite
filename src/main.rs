@@ -55,11 +55,7 @@ fn supports_color() -> bool {
 }
 
 // カラーコードを返す関数（カラーサポートに応じて切り替え）
-fn get_color(color_code: &str) -> &'static str {
-    get_color_with_override(color_code, false)
-}
-
-fn get_color_with_override(color_code: &str, no_color: bool) -> &'static str {
+fn get_color(color_code: &str, no_color: bool) -> &'static str {
     if no_color || !supports_color() {
         return "";
     }
@@ -188,14 +184,6 @@ enum Commands {
         /// Show detailed information
         detailed: bool,
     },
-    Enable {
-        #[arg(long)]
-        priority: Option<String>,
-    },
-    Disable {
-        #[arg(long)]
-        priority: Option<String>,
-    },
     Dashboard,
     Open,
     /// Generate shell completion scripts
@@ -223,9 +211,6 @@ enum Commands {
         #[arg(short = 'h', long = "help")]
         help: bool,
     },
-    /// ヘルプを表示（--help を使用してください）
-    #[command(hide = true)]
-    Help,
 }
 
 #[derive(Subcommand)]
@@ -338,8 +323,8 @@ fn select_file_with_fuzzy(prompt: &str) -> Result<Option<PathBuf>> {
         // Windows: dir /s /b (recursive list)
         "dir /s /b 2>nul"
     } else {
-        // Unix: find command
-        "find . -type f -o -type d 2>/dev/null | head -1000"
+        // Unix: find command with depth limit for better performance
+        "find . -maxdepth 3 -type f -o -type d 2>/dev/null | head -1000"
     };
 
     let output = if cfg!(windows) {
@@ -396,9 +381,9 @@ fn select_target_with_fuzzy(config: &Config, lang: Language) -> Result<Option<Pa
     if config.targets.is_empty() {
         println!(
             "{}⚠️ {}{}",
-            get_color("yellow"),
+            get_color("yellow", false),
             get_message(MessageKey::NoTargetsRegistered, lang),
-            get_color("reset")
+            get_color("reset", false)
         );
         return Ok(None);
     }
@@ -456,11 +441,11 @@ fn detect_language(lang_arg: Option<&str>) -> Language {
 
 /// Display multilingual help
 fn print_help(lang: Language) {
-    let green = get_color("green");
-    let yellow = get_color("yellow");
-    let magenta = get_color("magenta");
-    let gray = get_color("gray");
-    let reset = get_color("reset");
+    let green = get_color("green", false);
+    let yellow = get_color("yellow", false);
+    let magenta = get_color("magenta", false);
+    let gray = get_color("gray", false);
+    let reset = get_color("reset", false);
 
     println!(
         "{}{}{}",
@@ -807,11 +792,11 @@ fn print_help(lang: Language) {
 
 /// schedule サブコマンド専用のヘルプを表示
 fn print_schedule_help(lang: Language) {
-    let green = get_color("green");
-    let yellow = get_color("yellow");
-    let magenta = get_color("magenta");
-    let gray = get_color("gray");
-    let reset = get_color("reset");
+    let green = get_color("green", false);
+    let yellow = get_color("yellow", false);
+    let magenta = get_color("magenta", false);
+    let gray = get_color("gray", false);
+    let reset = get_color("reset", false);
 
     println!(
         "{}{}{}",
@@ -1064,9 +1049,9 @@ fn print_schedule_help(lang: Language) {
 /// AI サブコマンド専用のヘルプを表示
 #[cfg(feature = "ai")]
 fn print_ai_help(lang: Language) {
-    let magenta = get_color("magenta");
-    let yellow = get_color("yellow");
-    let reset = get_color("reset");
+    let magenta = get_color("magenta", false);
+    let yellow = get_color("yellow", false);
+    let reset = get_color("reset", false);
 
     // Title
     println!(
@@ -1138,11 +1123,11 @@ fn print_ai_help(lang: Language) {
 
 /// config サブコマンド専用のヘルプを表示
 fn print_config_help(lang: Language) {
-    let green = get_color("green");
-    let yellow = get_color("yellow");
-    let magenta = get_color("magenta");
-    let gray = get_color("gray");
-    let reset = get_color("reset");
+    let green = get_color("green", false);
+    let yellow = get_color("yellow", false);
+    let magenta = get_color("magenta", false);
+    let gray = get_color("gray", false);
+    let reset = get_color("reset", false);
 
     println!(
         "{}{}{}",
@@ -1308,9 +1293,9 @@ fn main() -> Result<()> {
     if cli.version {
         println!(
             "{}{}{}",
-            get_color_with_override("green", cli.no_color),
+            get_color("green", cli.no_color),
             get_message(MessageKey::AppVersion, lang),
-            get_color_with_override("reset", cli.no_color)
+            get_color("reset", cli.no_color)
         );
         println!("{}", get_message(MessageKey::RustFastTypeSafe, lang));
         return Ok(());
@@ -1335,9 +1320,9 @@ fn main() -> Result<()> {
                         None => {
                             println!(
                                 "{}⚠️ {}{}",
-                                get_color("yellow"),
+                                get_color("yellow", false),
                                 get_message(MessageKey::SelectionCancelled, lang),
-                                get_color("reset")
+                                get_color("reset", false)
                             );
                             return Ok(());
                         }
@@ -1352,9 +1337,9 @@ fn main() -> Result<()> {
                     None => {
                         println!(
                             "{}⚠️ {}{}",
-                            get_color("yellow"),
+                            get_color("yellow", false),
                             get_message(MessageKey::SelectionCancelled, lang),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                         return Ok(());
                     }
@@ -1365,9 +1350,9 @@ fn main() -> Result<()> {
             if !target_path.exists() {
                 println!(
                     "{}❌ {}{}: {}: {:?}",
-                    get_color("red"),
+                    get_color("red", false),
                     get_message(MessageKey::Error, lang),
-                    get_color("reset"),
+                    get_color("reset", false),
                     get_message(MessageKey::PathNotExists, lang),
                     target_path
                 );
@@ -1382,9 +1367,9 @@ fn main() -> Result<()> {
                 target.exclude_patterns = exclude_patterns.clone();
                 println!(
                     "{}📝 除外パターン: {}{}",
-                    get_color("gray"),
+                    get_color("gray", false),
                     exclude_patterns.join(", "),
-                    get_color("reset")
+                    get_color("reset", false)
                 );
             }
 
@@ -1392,9 +1377,9 @@ fn main() -> Result<()> {
             config.save()?;
             println!(
                 "{}✅ {}{}: {:?}",
-                get_color("green"),
+                get_color("green", false),
                 get_message(MessageKey::Added, lang),
-                get_color("reset"),
+                get_color("reset", false),
                 target_path
             );
         }
@@ -1425,9 +1410,9 @@ fn main() -> Result<()> {
                         None => {
                             println!(
                                 "{}⚠️ {}{}",
-                                get_color("yellow"),
+                                get_color("yellow", false),
                                 get_message(MessageKey::SelectionCancelled, lang),
-                                get_color("reset")
+                                get_color("reset", false)
                             );
                             return Ok(());
                         }
@@ -1441,9 +1426,9 @@ fn main() -> Result<()> {
                     None => {
                         println!(
                             "{}⚠️ {}{}",
-                            get_color("yellow"),
+                            get_color("yellow", false),
                             get_message(MessageKey::SelectionCancelled, lang),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                         return Ok(());
                     }
@@ -1454,17 +1439,17 @@ fn main() -> Result<()> {
                 config.save()?;
                 println!(
                     "{}✅ {}{}: {:?}",
-                    get_color("green"),
+                    get_color("green", false),
                     get_message(MessageKey::Removed, lang),
-                    get_color("reset"),
+                    get_color("reset", false),
                     target_path
                 );
             } else {
                 println!(
                     "{}❌ {}{}: {:?}",
-                    get_color("red"),
+                    get_color("red", false),
                     get_message(MessageKey::NotInBackupConfig, lang),
-                    get_color("reset"),
+                    get_color("reset", false),
                     target_path
                 );
             }
@@ -1480,9 +1465,9 @@ fn main() -> Result<()> {
             } else {
                 println!(
                     "{}❌ {}{}",
-                    get_color("red"),
+                    get_color("red", false),
                     get_message(MessageKey::SpecifyPriorityOrAll, lang),
-                    get_color("reset")
+                    get_color("reset", false)
                 );
                 return Ok(());
             }
@@ -1490,10 +1475,10 @@ fn main() -> Result<()> {
             config.save()?;
             println!(
                 "{}✅ {} {}{}",
-                get_color("green"),
+                get_color("green", false),
                 removed,
                 get_message(MessageKey::CountDeleted, lang),
-                get_color("reset")
+                get_color("reset", false)
             );
         }
         Some(Commands::Run {
@@ -1556,10 +1541,10 @@ fn main() -> Result<()> {
 
             println!(
                 "{}{}{}{}",
-                get_color("green"),
+                get_color("green", false),
                 get_message(MessageKey::BackupRunning, lang),
                 options_str,
-                get_color("reset")
+                get_color("reset", false)
             );
 
             // BackupRunnerを構築
@@ -1585,16 +1570,16 @@ fn main() -> Result<()> {
 
                     println!(
                         "{}🔐 {}{}: {}",
-                        get_color("green"),
+                        get_color("green", false),
                         get_message(MessageKey::EncryptionPassword, lang),
-                        get_color("reset"),
+                        get_color("reset", false),
                         pwd_str
                     );
                     println!(
                         "{}{}{}",
-                        get_color("yellow"),
+                        get_color("yellow", false),
                         get_message(MessageKey::SavePasswordSecurely, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
 
                     pwd_str
@@ -1606,16 +1591,16 @@ fn main() -> Result<()> {
                     if !matches!(strength, PasswordStrength::Strong) {
                         println!(
                             "{}{}{}",
-                            get_color("yellow"),
+                            get_color("yellow", false),
                             policy.display_report(&p),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                     } else {
                         println!(
                             "{}✅ Password Strength: {}{}",
-                            get_color("green"),
+                            get_color("green", false),
                             strength.display(),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                     }
 
@@ -1627,9 +1612,9 @@ fn main() -> Result<()> {
                     let input = Password::new()
                         .with_prompt(format!(
                             "{}{}{}",
-                            get_color("yellow"),
+                            get_color("yellow", false),
                             get_message(MessageKey::EncryptionPassword, lang),
-                            get_color("reset")
+                            get_color("reset", false)
                         ))
                         .interact()?;
 
@@ -1640,16 +1625,16 @@ fn main() -> Result<()> {
                     if !matches!(strength, PasswordStrength::Strong) {
                         println!(
                             "{}{}{}",
-                            get_color("yellow"),
+                            get_color("yellow", false),
                             policy.display_report(&input),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                     } else {
                         println!(
                             "{}✅ Password Strength: {}{}",
-                            get_color("green"),
+                            get_color("green", false),
                             strength.display(),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                     }
 
@@ -1672,9 +1657,9 @@ fn main() -> Result<()> {
                 if !result.errors.is_empty() {
                     println!(
                         "\n{}⚠️ {}{}",
-                        get_color("yellow"),
+                        get_color("yellow", false),
                         get_message(MessageKey::ErrorDetails, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
                     for (i, error) in result.errors.iter().enumerate() {
                         println!("  {}. {}", i + 1, error);
@@ -1683,9 +1668,9 @@ fn main() -> Result<()> {
             } else {
                 println!(
                     "{}📋 {}{}: {} {}",
-                    get_color("gray"),
+                    get_color("gray", false),
                     get_message(MessageKey::Detected, lang),
-                    get_color("reset"),
+                    get_color("reset", false),
                     result.total_files,
                     get_message(MessageKey::Files, lang)
                 );
@@ -1698,9 +1683,9 @@ fn main() -> Result<()> {
             if dirs.is_empty() {
                 println!(
                     "{}❌ {}{}",
-                    get_color("red"),
+                    get_color("red", false),
                     get_message(MessageKey::NoBackups, lang),
-                    get_color("reset")
+                    get_color("reset", false)
                 );
                 return Ok(());
             }
@@ -1725,9 +1710,9 @@ fn main() -> Result<()> {
 
             println!(
                 "{}🔄 {}{}: {:?} → {:?}",
-                get_color("green"),
+                get_color("green", false),
                 get_message(MessageKey::RestoreStart, lang),
-                get_color("reset"),
+                get_color("reset", false),
                 backup_dir,
                 dest
             );
@@ -1738,10 +1723,10 @@ fn main() -> Result<()> {
 
             println!(
                 "\n{}✅ {} {:?}{}",
-                get_color("green"),
+                get_color("green", false),
                 get_message(MessageKey::RestoredSuccess, lang),
                 dest,
-                get_color("reset")
+                get_color("reset", false)
             );
             println!(
                 "  {}: {} ({} {} {})",
@@ -1755,10 +1740,10 @@ fn main() -> Result<()> {
             if result.failed > 0 {
                 println!(
                     "{}⚠️ {} {}{}",
-                    get_color("yellow"),
+                    get_color("yellow", false),
                     result.failed,
                     get_message(MessageKey::CountDeleted, lang),
-                    get_color("reset")
+                    get_color("reset", false)
                 );
                 for error in &result.errors {
                     println!("  - {error}");
@@ -1774,7 +1759,7 @@ fn main() -> Result<()> {
 
             println!(
                 "{}✅ {} {}{}{}",
-                get_color("green"),
+                get_color("green", false),
                 result.deleted,
                 get_message(MessageKey::CountDeleted, lang),
                 if dry_run {
@@ -1782,25 +1767,25 @@ fn main() -> Result<()> {
                 } else {
                     ""
                 },
-                get_color("reset")
+                get_color("reset", false)
             );
 
             if result.freed_bytes > 0 {
                 let freed_mb = result.freed_bytes as f64 / 1024.0 / 1024.0;
                 println!(
                     "  {}解放容量: {:.2} MB{}",
-                    get_color("gray"),
+                    get_color("gray", false),
                     freed_mb,
-                    get_color("reset")
+                    get_color("reset", false)
                 );
             }
 
             if !result.errors.is_empty() {
                 println!(
                     "{}⚠️ エラー: {}件{}",
-                    get_color("yellow"),
+                    get_color("yellow", false),
                     result.errors.len(),
-                    get_color("reset")
+                    get_color("reset", false)
                 );
                 for error in &result.errors {
                     println!("  - {error}");
@@ -1811,9 +1796,9 @@ fn main() -> Result<()> {
             let config = Config::load()?;
             println!(
                 "{}📊 {}{}",
-                get_color("magenta"),
+                get_color("magenta", false),
                 get_message(MessageKey::StatusTitle, lang),
-                get_color("reset")
+                get_color("reset", false)
             );
             println!(
                 "  {}: {:?}",
@@ -1827,23 +1812,23 @@ fn main() -> Result<()> {
             );
             println!(
                 "    {}{}{}: {}",
-                get_color("red"),
+                get_color("red", false),
                 get_message(MessageKey::High, lang),
-                get_color("reset"),
+                get_color("reset", false),
                 config.filter_by_priority(&Priority::High).len()
             );
             println!(
                 "    {}{}{}: {}",
-                get_color("yellow"),
+                get_color("yellow", false),
                 get_message(MessageKey::Medium, lang),
-                get_color("reset"),
+                get_color("reset", false),
                 config.filter_by_priority(&Priority::Medium).len()
             );
             println!(
                 "    {}{}{}: {}",
-                get_color("gray"),
+                get_color("gray", false),
                 get_message(MessageKey::Low, lang),
-                get_color("reset"),
+                get_color("reset", false),
                 config.filter_by_priority(&Priority::Low).len()
             );
         }
@@ -1871,9 +1856,9 @@ fn main() -> Result<()> {
 
             println!(
                 "\n{}📜 {}{}（{}{}）",
-                get_color("magenta"),
+                get_color("magenta", false),
                 get_message(MessageKey::BackupHistory, lang),
-                get_color("reset"),
+                get_color("reset", false),
                 days,
                 get_message(MessageKey::Days, lang)
             );
@@ -1883,9 +1868,9 @@ fn main() -> Result<()> {
                 for entry in &history {
                     println!(
                         "\n{}{}{}",
-                        get_color("green"),
+                        get_color("green", false),
                         "=".repeat(60),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
                     println!(
                         "🕒 {}: {}",
@@ -1917,9 +1902,9 @@ fn main() -> Result<()> {
                     if let Some(ref err) = entry.error_message {
                         println!(
                             "{}❌ エラー: {}{}",
-                            get_color("red"),
+                            get_color("red", false),
                             err,
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                     }
                 }
@@ -1927,36 +1912,6 @@ fn main() -> Result<()> {
                 // テーブル表示
                 display_history(&history, &theme);
             }
-        }
-        Some(Commands::Enable { priority }) => {
-            let mut config = Config::load()?;
-            config.backup.auto_cleanup = true;
-            config.save()?;
-            println!(
-                "{}✅ {}{}{}",
-                get_color("green"),
-                get_message(MessageKey::AutoBackupEnabled, lang),
-                priority
-                    .as_ref()
-                    .map(|p| format!(" ({p})"))
-                    .unwrap_or_default(),
-                get_color("reset")
-            );
-        }
-        Some(Commands::Disable { priority }) => {
-            let mut config = Config::load()?;
-            config.backup.auto_cleanup = false;
-            config.save()?;
-            println!(
-                "{}⏸️  {}{}{}",
-                get_color("yellow"),
-                get_message(MessageKey::AutoBackupDisabled, lang),
-                priority
-                    .as_ref()
-                    .map(|p| format!(" ({p})"))
-                    .unwrap_or_default(),
-                get_color("reset")
-            );
         }
         Some(Commands::Dashboard) => {
             display_dashboard()?;
@@ -1971,9 +1926,9 @@ fn main() -> Result<()> {
             }
             println!(
                 "{}📂 {}{}: {:?}",
-                get_color("green"),
+                get_color("green", false),
                 get_message(MessageKey::OpenDirectory, lang),
-                get_color("reset"),
+                get_color("reset", false),
                 config.backup.destination
             );
         }
@@ -1996,9 +1951,9 @@ fn main() -> Result<()> {
                         scheduler.enable_priority(&prio)?;
                         println!(
                             "{}✅ {}{} ({})",
-                            get_color("green"),
+                            get_color("green", false),
                             get_message(MessageKey::AutoBackupEnabled, lang),
-                            get_color("reset"),
+                            get_color("reset", false),
                             p
                         );
                     } else {
@@ -2006,9 +1961,9 @@ fn main() -> Result<()> {
                         scheduler.enable_all()?;
                         println!(
                             "{}✅ {}{}",
-                            get_color("green"),
+                            get_color("green", false),
                             get_message(MessageKey::AutoBackupEnabled, lang),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                     }
                 }
@@ -2020,9 +1975,9 @@ fn main() -> Result<()> {
                         scheduler.disable_priority(&prio)?;
                         println!(
                             "{}⏸️  {}{} ({})",
-                            get_color("yellow"),
+                            get_color("yellow", false),
                             get_message(MessageKey::AutoBackupDisabled, lang),
-                            get_color("reset"),
+                            get_color("reset", false),
                             p
                         );
                     } else {
@@ -2031,18 +1986,18 @@ fn main() -> Result<()> {
                         scheduler.disable_all()?;
                         println!(
                             "{}⏸️  {}{}",
-                            get_color("yellow"),
+                            get_color("yellow", false),
                             get_message(MessageKey::AutoBackupDisabled, lang),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                     }
                 }
                 ScheduleAction::Status => {
                     println!(
                         "{}📅 {}{}",
-                        get_color("magenta"),
+                        get_color("magenta", false),
                         get_message(MessageKey::ScheduleSettings, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
                     println!(
                         "  {}: {}",
@@ -2076,17 +2031,17 @@ fn main() -> Result<()> {
                     println!();
                     println!(
                         "{}📋 {}{}",
-                        get_color("magenta"),
+                        get_color("magenta", false),
                         get_message(MessageKey::ActualScheduleStatus, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
 
                     println!(
                         "  high: {}{}{}",
                         if status.high_enabled {
-                            get_color("green")
+                            get_color("green", false)
                         } else {
-                            get_color("red")
+                            get_color("red", false)
                         },
                         if status.high_enabled { "✅ " } else { "❌ " },
                         if status.high_enabled {
@@ -2095,14 +2050,14 @@ fn main() -> Result<()> {
                             get_message(MessageKey::Disabled, lang)
                         }
                     );
-                    println!("{}", get_color("reset"));
+                    println!("{}", get_color("reset", false));
 
                     println!(
                         "  medium: {}{}{}",
                         if status.medium_enabled {
-                            get_color("green")
+                            get_color("green", false)
                         } else {
-                            get_color("red")
+                            get_color("red", false)
                         },
                         if status.medium_enabled {
                             "✅ "
@@ -2115,14 +2070,14 @@ fn main() -> Result<()> {
                             get_message(MessageKey::Disabled, lang)
                         }
                     );
-                    println!("{}", get_color("reset"));
+                    println!("{}", get_color("reset", false));
 
                     println!(
                         "  low: {}{}{}",
                         if status.low_enabled {
-                            get_color("green")
+                            get_color("green", false)
                         } else {
-                            get_color("red")
+                            get_color("red", false)
                         },
                         if status.low_enabled { "✅ " } else { "❌ " },
                         if status.low_enabled {
@@ -2131,7 +2086,7 @@ fn main() -> Result<()> {
                             get_message(MessageKey::Disabled, lang)
                         }
                     );
-                    println!("{}", get_color("reset"));
+                    println!("{}", get_color("reset", false));
                 }
                 ScheduleAction::Setup { high, medium, low } => {
                     config.schedule.high_frequency = high.clone();
@@ -2144,16 +2099,16 @@ fn main() -> Result<()> {
                         scheduler.setup_all()?;
                         println!(
                             "{}✅ {}{}",
-                            get_color("green"),
+                            get_color("green", false),
                             get_message(MessageKey::ScheduleUpdated, lang),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                     } else {
                         println!(
                             "{}✅ {}{}",
-                            get_color("green"),
+                            get_color("green", false),
                             get_message(MessageKey::ScheduleUpdatedEnableLater, lang),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                     }
 
@@ -2197,9 +2152,9 @@ fn main() -> Result<()> {
                     if !path.exists() {
                         println!(
                             "{}📁 {}{}: {:?}",
-                            get_color("yellow"),
+                            get_color("yellow", false),
                             get_message(MessageKey::DirectoryNotExists, lang),
-                            get_color("reset"),
+                            get_color("reset", false),
                             path
                         );
                         std::fs::create_dir_all(&path)
@@ -2218,9 +2173,9 @@ fn main() -> Result<()> {
 
                     println!(
                         "{}✅ {}{}",
-                        get_color("green"),
+                        get_color("green", false),
                         get_message(MessageKey::DestinationChanged, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
                     println!(
                         "  {}: {:?}",
@@ -2232,9 +2187,9 @@ fn main() -> Result<()> {
                 ConfigAction::GetDestination => {
                     println!(
                         "{}📁 {}{}",
-                        get_color("magenta"),
+                        get_color("magenta", false),
                         get_message(MessageKey::CurrentDestination, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
                     println!("  {:?}", config.backup.destination);
                 }
@@ -2242,9 +2197,9 @@ fn main() -> Result<()> {
                     if days == 0 || days > 3650 {
                         println!(
                             "{}❌ {}{}: {} {}）",
-                            get_color("red"),
+                            get_color("red", false),
                             get_message(MessageKey::Error, lang),
-                            get_color("reset"),
+                            get_color("reset", false),
                             get_message(MessageKey::KeepDaysOutOfRange, lang),
                             days
                         );
@@ -2257,9 +2212,9 @@ fn main() -> Result<()> {
 
                     println!(
                         "{}✅ {}{}",
-                        get_color("green"),
+                        get_color("green", false),
                         get_message(MessageKey::KeepDaysChanged, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
                     println!(
                         "  {}: {}{}",
@@ -2277,9 +2232,9 @@ fn main() -> Result<()> {
                 ConfigAction::GetKeepDays => {
                     println!(
                         "{}📅 {}{}",
-                        get_color("magenta"),
+                        get_color("magenta", false),
                         get_message(MessageKey::CurrentKeepDays, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
                     println!(
                         "  {}{}",
@@ -2292,9 +2247,9 @@ fn main() -> Result<()> {
 
                     println!(
                         "{}📝 {}{}: {:?}",
-                        get_color("green"),
+                        get_color("green", false),
                         get_message(MessageKey::OpeningConfigFile, lang),
-                        get_color("reset"),
+                        get_color("reset", false),
                         config_path
                     );
 
@@ -2326,9 +2281,9 @@ fn main() -> Result<()> {
                     if !status.success() {
                         println!(
                             "{}⚠️ {}{}",
-                            get_color("yellow"),
+                            get_color("yellow", false),
                             get_message(MessageKey::EditorDidNotExitCleanly, lang),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                     }
                 }
@@ -2358,9 +2313,9 @@ fn main() -> Result<()> {
                 AiAction::Detect { days, format } => {
                     println!(
                         "{}{}{}",
-                        get_color("magenta"),
+                        get_color("magenta", false),
                         get_message(MessageKey::AiDetectTitle, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
                     println!(
                         "{}{}{}...\n",
@@ -2398,9 +2353,9 @@ fn main() -> Result<()> {
                             "detailed" => {
                                 println!(
                                     "{}🚨 {}{}",
-                                    get_color("red"),
+                                    get_color("red", false),
                                     get_message(MessageKey::AiDetectAnomalyFound, lang),
-                                    get_color("reset")
+                                    get_color("reset", false)
                                 );
                                 println!("  Z-score: {:.2}", result.z_score());
                                 println!(
@@ -2464,9 +2419,9 @@ fn main() -> Result<()> {
                                 ]);
                                 println!(
                                     "{}🚨 {}{}\n",
-                                    get_color("red"),
+                                    get_color("red", false),
                                     get_message(MessageKey::AiDetectAnomalyFound, lang),
-                                    get_color("reset")
+                                    get_color("reset", false)
                                 );
                                 println!("{table}");
                             }
@@ -2482,9 +2437,9 @@ fn main() -> Result<()> {
                             } else {
                                 println!(
                                     "{}✅ {}{}",
-                                    get_color("green"),
+                                    get_color("green", false),
                                     get_message(MessageKey::AiDetectNoAnomalies, lang),
-                                    get_color("reset")
+                                    get_color("reset", false)
                                 );
                             }
                         }
@@ -2527,7 +2482,7 @@ fn main() -> Result<()> {
                             } else {
                                 println!(
                                     "{}⚠️  {}{}",
-                                    get_color("yellow"),
+                                    get_color("yellow", false),
                                     if lang == Language::Japanese {
                                         format!(
                                             "データが不足しています（最低3件必要、{}件しかありません）",
@@ -2539,7 +2494,7 @@ fn main() -> Result<()> {
                                             history.len()
                                         )
                                     },
-                                    get_color("reset")
+                                    get_color("reset", false)
                                 );
                             }
                         }
@@ -2554,14 +2509,14 @@ fn main() -> Result<()> {
                             } else {
                                 println!(
                                     "{}❌ {}: {}{}",
-                                    get_color("red"),
+                                    get_color("red", false),
                                     if lang == Language::Japanese {
                                         "分析エラー"
                                     } else {
                                         "Analysis error"
                                     },
                                     e,
-                                    get_color("reset")
+                                    get_color("reset", false)
                                 );
                             }
                         }
@@ -2574,9 +2529,9 @@ fn main() -> Result<()> {
                 } => {
                     println!(
                         "{}{}{}",
-                        get_color("magenta"),
+                        get_color("magenta", false),
                         get_message(MessageKey::AiAnalyzeTitle, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
                     println!(
                         "{}: {:?}\n",
@@ -2680,7 +2635,7 @@ fn main() -> Result<()> {
                             if suggest_priority {
                                 println!(
                                     "\n{}💡 {}: backup-suite add {:?} --priority {:?}{}",
-                                    get_color("yellow"),
+                                    get_color("yellow", false),
                                     if lang == Language::Japanese {
                                         "推奨コマンド"
                                     } else {
@@ -2688,17 +2643,17 @@ fn main() -> Result<()> {
                                     },
                                     path,
                                     *result.priority(),
-                                    get_color("reset")
+                                    get_color("reset", false)
                                 );
                             }
                         }
                         Err(e) => {
                             println!(
                                 "{}⚠️  {}: {}{}",
-                                get_color("red"),
+                                get_color("red", false),
                                 get_message(MessageKey::AiErrorAnalysisFailed, lang),
                                 e,
-                                get_color("reset")
+                                get_color("reset", false)
                             );
                         }
                     }
@@ -2710,9 +2665,9 @@ fn main() -> Result<()> {
                 } => {
                     println!(
                         "{}{}{}",
-                        get_color("magenta"),
+                        get_color("magenta", false),
                         get_message(MessageKey::AiSuggestExcludeTitle, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
                     println!(
                         "{}: {:?}\n",
@@ -2735,13 +2690,13 @@ fn main() -> Result<()> {
                             if filtered.is_empty() {
                                 println!(
                                     "{}✅ {}{}",
-                                    get_color("green"),
+                                    get_color("green", false),
                                     if lang == Language::Japanese {
                                         "除外推奨なし（すべて最適化済み）"
                                     } else {
                                         "No exclusions recommended (already optimized)"
                                     },
-                                    get_color("reset")
+                                    get_color("reset", false)
                                 );
                             } else {
                                 let mut table = Table::new();
@@ -2786,7 +2741,7 @@ fn main() -> Result<()> {
                                     for rec in &filtered {
                                         let prompt = format!(
                                             "{}\"{}\" {} ({:.2}GB {}){}",
-                                            get_color("yellow"),
+                                            get_color("yellow", false),
                                             rec.pattern(),
                                             if lang == Language::Japanese {
                                                 "を除外リストに追加しますか？"
@@ -2799,20 +2754,20 @@ fn main() -> Result<()> {
                                             } else {
                                                 "reduction"
                                             },
-                                            get_color("reset")
+                                            get_color("reset", false)
                                         );
 
                                         if Confirm::new().with_prompt(prompt).interact()? {
                                             println!(
                                                 "{}✅ \"{}\" {}{}",
-                                                get_color("green"),
+                                                get_color("green", false),
                                                 rec.pattern(),
                                                 if lang == Language::Japanese {
                                                     "を追加しました"
                                                 } else {
                                                     "added"
                                                 },
-                                                get_color("reset")
+                                                get_color("reset", false)
                                             );
                                         }
                                     }
@@ -2822,10 +2777,10 @@ fn main() -> Result<()> {
                         Err(e) => {
                             println!(
                                 "{}⚠️  {}: {}{}",
-                                get_color("red"),
+                                get_color("red", false),
                                 get_message(MessageKey::AiErrorAnalysisFailed, lang),
                                 e,
-                                get_color("reset")
+                                get_color("reset", false)
                             );
                         }
                     }
@@ -2837,20 +2792,20 @@ fn main() -> Result<()> {
                 } => {
                     println!(
                         "{}{}{}",
-                        get_color("magenta"),
+                        get_color("magenta", false),
                         get_message(MessageKey::AiAutoConfigureTitle, lang),
-                        get_color("reset")
+                        get_color("reset", false)
                     );
                     if dry_run {
                         println!(
                             "{}[{}]{}\n",
-                            get_color("yellow"),
+                            get_color("yellow", false),
                             if lang == Language::Japanese {
                                 "ドライラン モード"
                             } else {
                                 "DRY RUN Mode"
                             },
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                     }
 
@@ -2890,7 +2845,7 @@ fn main() -> Result<()> {
                                 use dialoguer::Confirm;
                                 let prompt = format!(
                                     "{}{:?} {} {:?} {}{}",
-                                    get_color("yellow"),
+                                    get_color("yellow", false),
                                     path,
                                     if lang == Language::Japanese {
                                         "を優先度"
@@ -2903,7 +2858,7 @@ fn main() -> Result<()> {
                                     } else {
                                         "?"
                                     },
-                                    get_color("reset")
+                                    get_color("reset", false)
                                 );
 
                                 if !Confirm::new().with_prompt(prompt).interact()? {
@@ -2921,13 +2876,13 @@ fn main() -> Result<()> {
                                 added_count += 1;
                                 println!(
                                     "  {}✅ {}{}",
-                                    get_color("green"),
+                                    get_color("green", false),
                                     if lang == Language::Japanese {
                                         "設定に追加しました"
                                     } else {
                                         "Added to configuration"
                                     },
-                                    get_color("reset")
+                                    get_color("reset", false)
                                 );
                             }
                         }
@@ -2937,9 +2892,9 @@ fn main() -> Result<()> {
                         config.save()?;
                         println!(
                             "\n{}{}{}",
-                            get_color("green"),
+                            get_color("green", false),
                             get_message(MessageKey::AiAutoConfigureSuccess, lang),
-                            get_color("reset")
+                            get_color("reset", false)
                         );
                         println!(
                             "  {}: {}",
@@ -2956,9 +2911,6 @@ fn main() -> Result<()> {
                     print_ai_help(lang);
                 }
             }
-        }
-        Some(Commands::Help) => {
-            print_help(lang);
         }
         None => {
             print_help(lang);
