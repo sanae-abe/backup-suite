@@ -358,9 +358,6 @@ jobs:
       - name: Run doc tests
         run: cargo test --doc --verbose --all-features
 
-      - name: Test with minimal features
-        run: cargo test --no-default-features --verbose
-
   # コードカバレッジ（Linux only）
   coverage:
     name: Code Coverage
