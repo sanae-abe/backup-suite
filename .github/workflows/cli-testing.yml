@@ -1,0 +1,243 @@
+name: CLI Testing with cli-testing-specialist
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  cli-testing:
+    name: CLI Testing (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            binary: target/release/backup-suite
+          - os: macos-latest
+            binary: target/release/backup-suite
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Build backup-suite (release)
+        run: cargo build --release
+
+      - name: Verify backup-suite binary
+        run: |
+          ${{ matrix.binary }} --version
+          ${{ matrix.binary }} --help
+
+      # ========== cli-testing-specialist installation ==========
+
+      - name: Install cli-testing-specialist
+        run: |
+          # Install from crates.io (when published)
+          # cargo install cli-testing-specialist
+
+          # Or install from GitHub (current method)
+          cargo install --git https://github.com/sanae-abe/cli-testing-specialist --tag v1.0.2 cli-testing-specialist
+
+      - name: Verify cli-testing-specialist installation
+        run: cli-testing-specialist --version
+
+      # ========== CLI Analysis Phase ==========
+
+      - name: Analyze backup-suite CLI
+        run: |
+          cli-testing-specialist analyze \
+            ${{ matrix.binary }} \
+            --output backup-suite-analysis.json
+
+      - name: Display analysis summary
+        run: |
+          echo "📊 Analysis Results:"
+          jq -r '.binary_name + " v" + .version' backup-suite-analysis.json || true
+          jq -r '"Global Options: " + (.global_options | length | tostring)' backup-suite-analysis.json
+          jq -r '"Subcommands: " + (.subcommands | length | tostring)' backup-suite-analysis.json
+
+      - name: Upload analysis results
+        uses: actions/upload-artifact@v3
+        with:
+          name: cli-analysis-${{ matrix.os }}
+          path: backup-suite-analysis.json
+          retention-days: 30
+
+      # ========== Test Generation Phase ==========
+
+      - name: Generate CLI tests (default categories)
+        run: |
+          # Generate tests excluding resource-intensive categories
+          cli-testing-specialist generate \
+            backup-suite-analysis.json \
+            --output cli-tests \
+            --categories all
+
+      - name: List generated test files
+        run: |
+          echo "📝 Generated Test Files:"
+          ls -lh cli-tests/
+
+      - name: Upload generated tests
+        uses: actions/upload-artifact@v3
+        with:
+          name: cli-tests-${{ matrix.os }}
+          path: cli-tests/
+          retention-days: 30
+
+      # ========== Test Execution Phase ==========
+
+      - name: Install BATS
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y bats
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            brew install bats-core
+          fi
+
+      - name: Verify BATS installation
+        run: bats --version
+
+      - name: Run CLI tests
+        run: |
+          cli-testing-specialist run \
+            cli-tests \
+            --format all \
+            --output cli-reports \
+            --timeout 60
+
+      - name: Display test results summary
+        if: always()
+        run: |
+          if [ -f cli-reports/cli-tests-report.json ]; then
+            echo "📊 Test Results:"
+            jq -r '"Total: " + (.total_tests | tostring)' cli-reports/cli-tests-report.json
+            jq -r '"Passed: " + (.total_passed | tostring)' cli-reports/cli-tests-report.json
+            jq -r '"Failed: " + (.total_failed | tostring)' cli-reports/cli-tests-report.json
+            jq -r '"Success Rate: " + ((.success_rate * 100) | tostring) + "%"' cli-reports/cli-tests-report.json
+          fi
+
+      # ========== Report Upload ==========
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: cli-test-reports-${{ matrix.os }}
+          path: cli-reports/
+          retention-days: 30
+
+      - name: Upload JUnit XML for test reporting
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: junit-report-${{ matrix.os }}
+          path: cli-reports/*-junit.xml
+          retention-days: 30
+
+      # ========== Test Results Check ==========
+
+      - name: Check test results (fail on errors)
+        if: always()
+        run: |
+          if [ -f cli-reports/cli-tests-report.json ]; then
+            FAILED=$(jq -r '.total_failed' cli-reports/cli-tests-report.json)
+
+            if [ "$FAILED" -gt 0 ]; then
+              echo "::error::❌ $FAILED CLI tests failed"
+              exit 1
+            else
+              echo "✅ All CLI tests passed"
+            fi
+          else
+            echo "::warning::No test report found"
+          fi
+
+  # Optional: Security-focused CLI testing
+  cli-security-testing:
+    name: CLI Security Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build backup-suite
+        run: cargo build --release
+
+      - name: Install cli-testing-specialist
+        run: |
+          cargo install --git https://github.com/sanae-abe/cli-testing-specialist --tag v1.0.2 cli-testing-specialist
+
+      - name: Analyze CLI
+        run: |
+          cli-testing-specialist analyze \
+            target/release/backup-suite \
+            --output backup-suite-analysis.json
+
+      - name: Generate security tests only
+        run: |
+          cli-testing-specialist generate \
+            backup-suite-analysis.json \
+            --output security-tests \
+            --categories security,input-validation
+
+      - name: Install BATS
+        run: sudo apt-get update && sudo apt-get install -y bats
+
+      - name: Run security tests
+        run: |
+          cli-testing-specialist run \
+            security-tests \
+            --format markdown,json \
+            --output security-reports
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-test-reports
+          path: security-reports/
+          retention-days: 90
+
+      - name: Check for security failures
+        if: always()
+        run: |
+          if [ -f security-reports/security-tests-report.json ]; then
+            FAILED=$(jq -r '.total_failed' security-reports/security-tests-report.json)
+
+            if [ "$FAILED" -gt 0 ]; then
+              echo "::error::❌ Security tests failed: $FAILED tests"
+              cat security-reports/security-tests-report.md || true
+              exit 1
+            fi
+          fi
