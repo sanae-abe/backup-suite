@@ -81,7 +81,7 @@ jobs:
           jq -r '"Subcommands: " + (.subcommands | length | tostring)' backup-suite-analysis.json
 
       - name: Upload analysis results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cli-analysis-${{ matrix.os }}
           path: backup-suite-analysis.json
@@ -103,7 +103,7 @@ jobs:
           ls -lh cli-tests/
 
       - name: Upload generated tests
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cli-tests-${{ matrix.os }}
           path: cli-tests/
@@ -145,7 +145,7 @@ jobs:
       # ========== Report Upload ==========
 
       - name: Upload test reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: cli-test-reports-${{ matrix.os }}
@@ -153,7 +153,7 @@ jobs:
           retention-days: 30
 
       - name: Upload JUnit XML for test reporting
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: junit-report-${{ matrix.os }}
@@ -222,7 +222,7 @@ jobs:
             --output security-reports
 
       - name: Upload security reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: security-test-reports
