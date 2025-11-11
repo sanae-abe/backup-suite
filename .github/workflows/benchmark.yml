@@ -58,6 +58,7 @@ jobs:
         output-file-path: benchmark-results.txt
         github-token: ${{ secrets.GITHUB_TOKEN }}
         auto-push: false
+        skip-fetch-gh-pages: true
         alert-threshold: '120%'
         comment-on-alert: true
         fail-on-alert: false
