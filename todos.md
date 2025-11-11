@@ -3,6 +3,11 @@
 ## 🔴 高優先度（緊急・重要）
 
 - [ ] Phase 1カバレッジ目標達成 - 46.30% → 66-70%（残り+19.7%必要） | Priority: critical | Context: test | Due: 2025-11-11
+- [ ] CLI Testing CI統合 - BATS 70% → 85%+ pass rate目標 | Priority: critical | Context: ci | Due: 2025-11-11
+  - [x] GitHub Actions workflow作成 (.github/workflows/cli-testing-enhanced.yml)
+  - [ ] セキュリティテスト修正 (4 failures: injection, null byte, traversal, long input)
+  - [ ] Directory traversalテスト修正 (3 failures: 1000 files, 50 levels, symlinks)
+  - [ ] Destructive opsテスト修正 (2 failures: remove, cleanup confirmations)
 - [ ] CI環境でのWindowsテスト確認 | Priority: critical | Context: test | Due: 2025-11-11
 - [ ] 統合テスト失敗の原因調査と修正 | Priority: high | Context: test | Due: 2025-11-11
 
