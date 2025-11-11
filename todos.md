@@ -7,9 +7,8 @@
 
 ## 🟡 中優先度（1ヶ月以内実施）
 
-- [ ] CLI補完機能の強化 - Zsh/Fish/Bash対応 | Priority: medium | Context: ui | Due: 2025-12-10
-- [ ] typo修正サジェスト機能 - Levenshtein距離検出 | Priority: medium | Context: ui | Due: 2025-12-10
-- [ ] パスワードポリシー実装 - 最小長12文字・複雑性チェック | Priority: medium | Context: security | Due: 2025-12-15
+- [ ] CLI補完機能のドキュメント整備 - インストール手順とトラブルシューティング | Priority: medium | Context: docs | Due: 2025-11-25
+- [ ] typo修正サジェスト機能（簡素化版） - コマンド名のみ・英語のみ | Priority: medium | Context: ui | Due: 2025-11-30
 - [ ] Nonce衝突検出機構 - デバッグビルド追跡 | Priority: medium | Context: security | Due: 2025-12-15
 
 ## 🟢 低優先度（Phase 3以降）
@@ -24,12 +23,15 @@
 ## 📚 ドキュメント・リリース準備
 
 - [ ] Phase 2リリースノート作成 | Priority: low | Context: docs | Due: 2026-01-31
-- [ ] CI/CD Smart機能テスト追加 | Priority: medium | Context: build | Due: 2025-11-20
 - [ ] セキュリティ監査レポート作成推奨 | Priority: medium | Context: security | Due: 2025-12-01
 - [ ] 脆弱性テストレポート作成推奨 | Priority: medium | Context: security | Due: 2025-12-01
 
 ## ✅ 完了済み（最近完了）
 
+- [x] CI/CD Smart機能テスト追加（既に実装済み確認） | Priority: medium | Context: build | Due: 2025-11-20 | Completed: 2025-11-11
+- [x] CLI補完機能インストール - Zsh環境設定完了 | Priority: medium | Context: ui | Due: 2025-11-25 | Completed: 2025-11-11
+- [x] .zshrcエラー修正 - smart-shortcuts.sh参照削除 | Priority: high | Context: config | Due: 2025-11-11 | Completed: 2025-11-11
+- [x] パスワードポリシー実装 - Shannon entropy・パターン検出・NIST SP 800-63B準拠 | Priority: medium | Context: security | Due: 2025-11-11
 - [x] Windows環境テスト修正 - test_evaluate_temp_file | Priority: high | Context: test | Due: 2025-11-10
 - [x] ai → smart モジュールリネーム対応 | Priority: high | Context: build | Due: 2025-11-10
 - [x] 型エラー修正 - 浮動小数点型明示化 | Priority: high | Context: build | Due: 2025-11-10
