@@ -352,17 +352,8 @@ jobs:
       - name: Build all targets
         run: cargo build --verbose --all-targets --all-features
 
-      - name: Run unit tests
-        run: cargo test --lib --verbose --all-features
-
-      - name: Run integration tests
-        run: cargo test --test integration_tests --verbose --all-features || true
-
-      - name: Run property-based tests
-        run: cargo test --test proptest --verbose --all-features || true
-
-      - name: Run Smart tests
-        run: cargo test --features smart --test smart_tests --verbose
+      - name: Run all tests (including all test files)
+        run: cargo test --all --all-features --verbose
 
       - name: Run doc tests
         run: cargo test --doc --verbose --all-features
