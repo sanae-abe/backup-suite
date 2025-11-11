@@ -2,6 +2,7 @@
 
 ## 🔴 高優先度（緊急・重要）
 
+- [ ] Phase 1カバレッジ目標達成 - 46.30% → 66-70%（残り+19.7%必要） | Priority: critical | Context: test | Due: 2025-11-11
 - [ ] CI環境でのWindowsテスト確認 | Priority: critical | Context: test | Due: 2025-11-11
 - [ ] 統合テスト失敗の原因調査と修正 | Priority: high | Context: test | Due: 2025-11-11
 
@@ -28,6 +29,10 @@
 
 ## ✅ 完了済み（最近完了）
 
+- [x] UIモジュールテストカバレッジ向上 - 40.8% → 56.3% (+15.5%) | Priority: critical | Context: test | Due: 2025-11-11 | Completed: 2025-11-11
+  - table.rs: 39.7% → 98.3% (+58.6%) - 16テスト追加
+  - dashboard.rs: 12.4% → 29.5% (+17.1%) - 12テスト追加
+  - 全体: 45.08% → 46.30% (+1.22%)
 - [x] CI/CD Smart機能テスト追加（既に実装済み確認） | Priority: medium | Context: build | Due: 2025-11-20 | Completed: 2025-11-11
 - [x] CLI補完機能インストール - Zsh環境設定完了 | Priority: medium | Context: ui | Due: 2025-11-25 | Completed: 2025-11-11
 - [x] .zshrcエラー修正 - smart-shortcuts.sh参照削除 | Priority: high | Context: config | Due: 2025-11-11 | Completed: 2025-11-11
