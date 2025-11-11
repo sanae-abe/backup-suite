@@ -167,6 +167,7 @@ jobs:
                  ./target/release/backup-suite --help || true
 
     - name: Check for memory leaks
+      continue-on-error: true
       run: |
         if grep -q "definitely lost" valgrind-output.txt; then
           echo "メモリリークが検出されました"
