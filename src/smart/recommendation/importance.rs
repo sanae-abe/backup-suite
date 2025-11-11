@@ -423,16 +423,18 @@ impl ImportanceEvaluator {
                 for pattern in &rule.dir_patterns {
                     // パスをディレクトリ成分に分割してパターンマッチング
                     // Unix: '/', Windows: '\'
-                    let path_components: Vec<&str> = path_str
-                        .split(&['/', '\\'][..])
-                        .collect();
+                    let path_components: Vec<&str> = path_str.split(&['/', '\\'][..]).collect();
 
                     // いずれかのディレクトリ成分が以下のいずれかを満たすか確認：
                     // 1. パターンと完全一致
                     // 2. パターンで始まる（例: "temp_test"は"temp"で始まる）
                     // 3. パターンで終わる（例: "mydata"は"data"で終わる）
                     if path_components.iter().any(|comp| {
-                        *comp == pattern || comp.starts_with(&format!("{}_", pattern)) || comp.starts_with(&format!("{}-", pattern)) || comp.ends_with(&format!("_{}", pattern)) || comp.ends_with(&format!("-{}", pattern))
+                        *comp == pattern
+                            || comp.starts_with(&format!("{}_", pattern))
+                            || comp.starts_with(&format!("{}-", pattern))
+                            || comp.ends_with(&format!("_{}", pattern))
+                            || comp.ends_with(&format!("-{}", pattern))
                     }) {
                         matched = true;
                     }
