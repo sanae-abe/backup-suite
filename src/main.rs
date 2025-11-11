@@ -76,15 +76,11 @@ fn get_color(color_code: &str, no_color: bool) -> &'static str {
 #[command(name = "backup-suite")]
 #[command(about = "Backup Suite - 高速ローカルバックアップツール")]
 #[command(version = "1.0.0")]
-#[command(disable_help_flag = true)]
 #[command(disable_version_flag = true)]
 #[command(disable_help_subcommand = true)]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
-
-    #[arg(short = 'h', long = "help")]
-    help: bool,
 
     #[arg(short = 'V', long = "version")]
     version: bool,
@@ -100,6 +96,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
+    /// Add backup target (with interactive file selector)
     Add {
         /// File or directory path to add (optional - will open file selector if not provided)
         path: Option<PathBuf>,
@@ -114,11 +111,13 @@ enum Commands {
         /// Exclude patterns (regex or glob, can be specified multiple times)
         exclude_patterns: Vec<String>,
     },
+    /// List backup targets
     #[command(alias = "ls")]
     List {
         #[arg(long, value_enum)]
         priority: Option<Priority>,
     },
+    /// Remove backup target
     Remove {
         /// File or directory path to remove (optional - will show selector if not provided)
         path: Option<PathBuf>,
@@ -126,6 +125,7 @@ enum Commands {
         /// Use interactive target selector
         interactive: bool,
     },
+    /// Clear all backup targets
     #[command(alias = "rm")]
     Clear {
         #[arg(long, value_enum)]
@@ -133,6 +133,7 @@ enum Commands {
         #[arg(long)]
         all: bool,
     },
+    /// Run backup (with encryption and compression support)
     Run {
         #[arg(long, value_enum)]
         priority: Option<Priority>,
@@ -159,6 +160,7 @@ enum Commands {
         /// Enable incremental backup (only changed files)
         incremental: bool,
     },
+    /// Restore from backup
     Restore {
         #[arg(long)]
         from: Option<String>,
@@ -168,13 +170,16 @@ enum Commands {
         /// Password for decryption (will prompt if not provided and file is encrypted)
         password: Option<String>,
     },
+    /// Clean up old backups
     Cleanup {
         #[arg(long, default_value = "30")]
         days: u32,
         #[arg(long)]
         dry_run: bool,
     },
+    /// Show backup status
     Status,
+    /// Show backup history
     History {
         #[arg(long, default_value = "7")]
         days: u32,
@@ -186,7 +191,9 @@ enum Commands {
         /// Show detailed information
         detailed: bool,
     },
+    /// Show interactive dashboard
     Dashboard,
+    /// Open backup directory
     Open,
     /// Generate shell completion scripts
     Completion {
@@ -194,6 +201,7 @@ enum Commands {
         #[arg(value_enum)]
         shell: Shell,
     },
+    /// Manage backup schedule
     Schedule {
         #[command(subcommand)]
         action: ScheduleAction,
@@ -207,26 +215,26 @@ enum Commands {
     #[cfg(feature = "smart")]
     Smart {
         #[command(subcommand)]
-        action: Option<SmartAction>,
-
-        /// Show help for Smart commands
-        #[arg(short = 'h', long = "help")]
-        help: bool,
+        action: SmartAction,
     },
 }
 
 #[derive(Subcommand)]
 #[command(disable_help_subcommand = true)]
 enum ScheduleAction {
+    /// Enable automatic backup
     Enable {
         #[arg(long, value_enum)]
         priority: Option<Priority>,
     },
+    /// Disable automatic backup
     Disable {
         #[arg(long, value_enum)]
         priority: Option<Priority>,
     },
+    /// Show schedule status
     Status,
+    /// Setup backup schedule
     Setup {
         #[arg(long, default_value = "daily")]
         high: String,
@@ -235,6 +243,7 @@ enum ScheduleAction {
         #[arg(long, default_value = "monthly")]
         low: String,
     },
+    /// Show help for schedule commands
     Help,
 }
 
@@ -257,11 +266,13 @@ enum ConfigAction {
     GetKeepDays,
     /// Open configuration file in default editor
     Open,
+    /// Show help for config commands
     Help,
 }
 
 #[cfg(feature = "smart")]
 #[derive(Subcommand)]
+#[command(disable_help_flag = false)]
 enum SmartAction {
     /// Detect anomalies in backup history
     Detect {
@@ -307,8 +318,10 @@ enum SmartAction {
         #[arg(long, default_value = "1")]
         /// Maximum depth for subdirectory analysis (1 = direct children only)
         max_depth: u8,
+        #[arg(long, default_value = "100")]
+        /// Maximum number of subdirectories to process (default: 100)
+        max_subdirs: usize,
     },
-    Help,
 }
 
 fn print_completions<G: Generator>(generator: G, cmd: &mut clap::Command) {
@@ -436,6 +449,7 @@ fn detect_language(lang_arg: Option<&str>) -> Language {
 }
 
 /// Display multilingual help
+#[allow(dead_code)]
 fn print_help(lang: Language) {
     let green = get_color("green", false);
     let yellow = get_color("yellow", false);
@@ -1044,6 +1058,7 @@ fn print_schedule_help(lang: Language) {
 
 /// Smart サブコマンド専用のヘルプを表示
 #[cfg(feature = "smart")]
+#[allow(dead_code)]
 fn print_smart_help(lang: Language) {
     let magenta = get_color("magenta", false);
     let yellow = get_color("yellow", false);
@@ -1155,6 +1170,30 @@ fn print_smart_help(lang: Language) {
         }
     );
     println!("  backup-suite smart auto-configure ~/projects --max-depth 2");
+    println!();
+    println!(
+        "  {}",
+        match lang {
+            Language::Japanese => "# 処理するサブディレクトリの最大数を指定（デフォルト: 100）",
+            Language::English =>
+                "# Specify maximum number of subdirectories to process (default: 100)",
+            Language::SimplifiedChinese => "# 指定要处理的子目录最大数（默认：100）",
+            Language::TraditionalChinese => "# 指定要處理的子目錄最大數（預設：100）",
+        }
+    );
+    println!("  backup-suite smart auto-configure ~/projects --max-subdirs 50");
+    println!();
+    println!(
+        "  {}",
+        match lang {
+            Language::Japanese => "# 大量のサブディレクトリがある場合の処理数上限を増やす",
+            Language::English =>
+                "# Increase subdirectory processing limit for large directory trees",
+            Language::SimplifiedChinese => "# 大量子目录时增加处理数上限",
+            Language::TraditionalChinese => "# 大量子目錄時增加處理數上限",
+        }
+    );
+    println!("  backup-suite smart auto-configure ~/projects --max-subdirs 200");
     println!();
     println!(
         "{}{}:{}",
@@ -1361,32 +1400,43 @@ fn print_config_help(lang: Language) {
 /// # Arguments
 /// * `path` - Root directory to enumerate
 /// * `max_depth` - Maximum depth (1 = direct children only, 0 = return empty vec)
+/// * `max_subdirs` - Maximum number of subdirectories to enumerate
 ///
 /// # Returns
-/// Vector of subdirectory paths
+/// Tuple of (subdirectory paths, whether limit was reached)
 #[cfg(feature = "smart")]
-fn enumerate_subdirs(path: &std::path::Path, max_depth: u8) -> Result<Vec<PathBuf>> {
+fn enumerate_subdirs(
+    path: &std::path::Path,
+    max_depth: u8,
+    max_subdirs: usize,
+) -> Result<(Vec<PathBuf>, bool)> {
     use walkdir::WalkDir;
 
     if max_depth == 0 {
-        return Ok(Vec::new());
+        return Ok((Vec::new(), false));
     }
 
-    // 大量のディレクトリがある場合に固まるのを防ぐため、最大数を制限
-    const MAX_SUBDIRS: usize = 20;
+    let mut all_subdirs: Vec<PathBuf> = Vec::new();
+    let mut count = 0;
+    let mut limit_reached = false;
 
-    let subdirs: Vec<PathBuf> = WalkDir::new(path)
+    for entry in WalkDir::new(path)
         .min_depth(1)
         .max_depth(max_depth as usize)
         .follow_links(false)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path().is_dir())
-        .take(MAX_SUBDIRS) // 早期停止：20個見つけたら即座に停止
-        .map(|e| e.path().to_path_buf())
-        .collect();
+    {
+        if count >= max_subdirs {
+            limit_reached = true;
+            break;
+        }
+        all_subdirs.push(entry.path().to_path_buf());
+        count += 1;
+    }
 
-    Ok(subdirs)
+    Ok((all_subdirs, limit_reached))
 }
 
 fn main() -> Result<()> {
@@ -1394,12 +1444,6 @@ fn main() -> Result<()> {
 
     // Detect language from CLI arg or environment
     let lang = detect_language(cli.lang.as_deref());
-
-    // --help フラグの処理
-    if cli.help {
-        print_help(lang);
-        return Ok(());
-    }
 
     // --version フラグの処理
     if cli.version {
@@ -2524,22 +2568,13 @@ fn main() -> Result<()> {
             }
         }
         #[cfg(feature = "smart")]
-        Some(Commands::Smart { action, help }) => {
+        Some(Commands::Smart { action }) => {
             use backup_suite::smart::anomaly::AnomalyDetector;
             use backup_suite::smart::recommendation::{
                 ExcludeRecommendationEngine, ImportanceEvaluator,
             };
             use backup_suite::smart::types::BackupSize;
             use comfy_table::{Cell, Table};
-
-            // --help フラグまたは引数なしの場合はヘルプを表示
-            if help || action.is_none() {
-                print_smart_help(lang);
-                return Ok(());
-            }
-
-            let action =
-                action.ok_or_else(|| anyhow::anyhow!("Smartアクションが指定されていません"))?;
 
             match action {
                 SmartAction::Detect { days, format } => {
@@ -3064,6 +3099,7 @@ fn main() -> Result<()> {
                     dry_run,
                     interactive,
                     max_depth,
+                    max_subdirs,
                 } => {
                     // Check if paths are provided
                     if paths.is_empty() {
@@ -3220,7 +3256,8 @@ fn main() -> Result<()> {
 
                         // ディレクトリの場合はサブディレクトリを列挙
                         let targets_to_evaluate: Vec<PathBuf> = if normalized_path.is_dir() {
-                            let subdirs = enumerate_subdirs(&normalized_path, max_depth)?;
+                            let (subdirs, limit_reached) =
+                                enumerate_subdirs(&normalized_path, max_depth, max_subdirs)?;
                             if subdirs.is_empty() {
                                 println!(
                                     "  {}💡 {}: {:?}{}",
@@ -3246,6 +3283,25 @@ fn main() -> Result<()> {
                                     subdirs.len(),
                                     get_color("reset", false)
                                 );
+                                // 制限到達時の警告メッセージ
+                                if limit_reached {
+                                    println!(
+                                        "  {}⚠️  {}: {} (--max-subdirs {}){}",
+                                        get_color("yellow", false),
+                                        if lang == Language::Japanese {
+                                            "制限に達したため、一部のサブディレクトリは処理されませんでした"
+                                        } else {
+                                            "Limit reached, some subdirectories were not processed"
+                                        },
+                                        max_subdirs,
+                                        if lang == Language::Japanese {
+                                            "で変更可能"
+                                        } else {
+                                            "to change"
+                                        },
+                                        get_color("reset", false)
+                                    );
+                                }
                                 subdirs
                             }
                         } else {
@@ -3459,13 +3515,10 @@ fn main() -> Result<()> {
                         );
                     }
                 }
-                SmartAction::Help => {
-                    print_smart_help(lang);
-                }
             }
         }
         None => {
-            print_help(lang);
+            // clap が自動でヘルプを表示
         }
     }
 
