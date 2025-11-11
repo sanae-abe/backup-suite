@@ -59,6 +59,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         auto-push: false
         skip-fetch-gh-pages: true
+        save-data-file: false
         alert-threshold: '120%'
         comment-on-alert: true
         fail-on-alert: false
