@@ -453,9 +453,9 @@ impl ImportanceEvaluator {
             best_score = 30;
         }
 
-        // dotfiles は設定ファイルとして扱う（デフォルトスコアの場合のみ）
-        // OS固有ファイル等の極低重要度ファイル（スコア < 30）は除外
-        if is_dotfile && (30..80).contains(&best_score) {
+        // dotfiles は設定ファイルとして扱う
+        // 既に高スコア（80以上）のファイルは除外（上書きしない）
+        if is_dotfile && best_score < 80 {
             best_score = 85;
         }
 
