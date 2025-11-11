@@ -230,7 +230,7 @@ jobs:
         run: |
           cli-testing-specialist run \
             security-tests \
-            --format markdown,json \
+            --format all \
             --output security-reports
 
       - name: Upload security reports
