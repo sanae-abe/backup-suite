@@ -54,13 +54,17 @@ jobs:
 
       # ========== cli-testing-specialist installation ==========
 
-      - name: Install cli-testing-specialist
-        run: |
-          # Install from crates.io (when published)
-          # cargo install cli-testing-specialist
+      - name: Cache cli-testing-specialist
+        id: cache-cli-testing-specialist
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/cli-testing-specialist
+          key: ${{ runner.os }}-cli-testing-specialist-v1.0.2
 
-          # Or install from GitHub (current method)
-          cargo install --git https://github.com/sanae-abe/cli-testing-specialist --tag v1.0.2 cli-testing-specialist
+      - name: Install cli-testing-specialist
+        if: steps.cache-cli-testing-specialist.outputs.cache-hit != 'true'
+        run: |
+          cargo install --git https://github.com/sanae-abe/cli-testing-specialist --rev 3411fd4f8b2cb4937cb1c62082e4f62cbf783274 cli-testing-specialist
 
       - name: Verify cli-testing-specialist installation
         run: cli-testing-specialist --version
@@ -194,9 +198,17 @@ jobs:
       - name: Build backup-suite
         run: cargo build --release
 
+      - name: Cache cli-testing-specialist
+        id: cache-cli-testing-specialist-security
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/bin/cli-testing-specialist
+          key: ${{ runner.os }}-cli-testing-specialist-v1.0.2
+
       - name: Install cli-testing-specialist
+        if: steps.cache-cli-testing-specialist-security.outputs.cache-hit != 'true'
         run: |
-          cargo install --git https://github.com/sanae-abe/cli-testing-specialist --tag v1.0.2 cli-testing-specialist
+          cargo install --git https://github.com/sanae-abe/cli-testing-specialist --rev 3411fd4f8b2cb4937cb1c62082e4f62cbf783274 cli-testing-specialist
 
       - name: Analyze CLI
         run: |
