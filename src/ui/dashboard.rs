@@ -329,7 +329,7 @@ fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
 }
 
 /// ディレクトリサイズを計算
-fn calculate_directory_size(dir: &std::path::Path) -> Result<(u64, usize)> {
+pub fn calculate_directory_size(dir: &std::path::Path) -> Result<(u64, usize)> {
     let mut total_size = 0u64;
     let mut file_count = 0usize;
 
@@ -354,7 +354,7 @@ fn calculate_directory_size(dir: &std::path::Path) -> Result<(u64, usize)> {
 
 /// ディスク情報を取得（Unix系のみ）
 #[cfg(unix)]
-fn get_disk_info(path: &std::path::Path) -> Result<Option<(u64, u64)>> {
+pub fn get_disk_info(path: &std::path::Path) -> Result<Option<(u64, u64)>> {
     // ディレクトリが存在しない場合はNoneを返す
     if !path.exists() {
         return Ok(None);
@@ -409,7 +409,7 @@ fn get_disk_info(path: &std::path::Path) -> Result<Option<(u64, u64)>> {
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss
 )]
-fn create_usage_graph(percent: f64) -> String {
+pub fn create_usage_graph(percent: f64) -> String {
     let total_bars = 40;
     let filled_bars = ((percent / 100.0) * total_bars as f64) as usize;
     let empty_bars = total_bars - filled_bars;
@@ -552,6 +552,7 @@ fn format_bytes(bytes: u64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tempfile::TempDir;
 
     #[test]
     fn test_format_bytes() {
@@ -562,10 +563,170 @@ mod tests {
     }
 
     #[test]
+    fn test_format_bytes_edge_cases() {
+        assert_eq!(format_bytes(1), "1 B");
+        assert_eq!(format_bytes(1023), "1023 B");
+        assert_eq!(format_bytes(1025), "1.00 KB");
+        assert_eq!(format_bytes(1_048_575), "1024.00 KB");
+        assert_eq!(format_bytes(1_073_741_823), "1024.00 MB");
+        assert_eq!(format_bytes(1_099_511_627_776), "1.00 TB");
+    }
+
+    #[test]
     fn test_create_usage_graph() {
         let graph = create_usage_graph(50.0);
         assert!(graph.contains("50.0%"));
         assert!(graph.contains("█"));
         assert!(graph.contains("░"));
+    }
+
+    #[test]
+    fn test_create_usage_graph_zero_percent() {
+        let graph = create_usage_graph(0.0);
+        assert!(graph.contains("0.0%"));
+        assert!(graph.contains("░"));
+        assert!(!graph.contains("█"));
+    }
+
+    #[test]
+    fn test_create_usage_graph_full() {
+        let graph = create_usage_graph(100.0);
+        assert!(graph.contains("100.0%"));
+        assert!(graph.contains("█"));
+        assert!(!graph.contains("░"));
+    }
+
+    #[test]
+    fn test_create_usage_graph_decimal() {
+        let graph = create_usage_graph(75.5);
+        assert!(graph.contains("75.5%"));
+        assert!(graph.contains("█"));
+        assert!(graph.contains("░"));
+    }
+
+    #[test]
+    fn test_calculate_directory_size_empty() {
+        let temp_dir = TempDir::new().unwrap();
+        let result = calculate_directory_size(temp_dir.path());
+
+        assert!(result.is_ok());
+        let (size, count) = result.unwrap();
+        assert_eq!(size, 0);
+        assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn test_calculate_directory_size_with_files() {
+        let temp_dir = TempDir::new().unwrap();
+
+        // テストファイル作成
+        let file1 = temp_dir.path().join("file1.txt");
+        let file2 = temp_dir.path().join("file2.txt");
+        std::fs::write(&file1, "Hello World").unwrap(); // 11 bytes
+        std::fs::write(&file2, "Rust").unwrap(); // 4 bytes
+
+        let result = calculate_directory_size(temp_dir.path());
+
+        assert!(result.is_ok());
+        let (size, count) = result.unwrap();
+        assert_eq!(size, 15);
+        assert_eq!(count, 2);
+    }
+
+    #[test]
+    fn test_calculate_directory_size_with_subdirs() {
+        let temp_dir = TempDir::new().unwrap();
+
+        // サブディレクトリ作成
+        let subdir = temp_dir.path().join("subdir");
+        std::fs::create_dir(&subdir).unwrap();
+
+        // ファイル作成
+        let file1 = temp_dir.path().join("root.txt");
+        let file2 = subdir.join("sub.txt");
+        std::fs::write(&file1, "Root").unwrap(); // 4 bytes
+        std::fs::write(&file2, "Subdir").unwrap(); // 6 bytes
+
+        let result = calculate_directory_size(temp_dir.path());
+
+        assert!(result.is_ok());
+        let (size, count) = result.unwrap();
+        assert_eq!(size, 10);
+        assert_eq!(count, 2);
+    }
+
+    #[test]
+    fn test_calculate_directory_size_nonexistent() {
+        let nonexistent_path = std::path::PathBuf::from("/nonexistent/directory/path");
+        let result = calculate_directory_size(&nonexistent_path);
+
+        assert!(result.is_ok());
+        let (size, count) = result.unwrap();
+        assert_eq!(size, 0);
+        assert_eq!(count, 0);
+    }
+
+    #[test]
+    fn test_calculate_directory_size_large_file() {
+        let temp_dir = TempDir::new().unwrap();
+
+        // 1MBファイル作成
+        let file = temp_dir.path().join("large.bin");
+        let data = vec![0u8; 1_048_576];
+        std::fs::write(&file, data).unwrap();
+
+        let result = calculate_directory_size(temp_dir.path());
+
+        assert!(result.is_ok());
+        let (size, count) = result.unwrap();
+        assert_eq!(size, 1_048_576);
+        assert_eq!(count, 1);
+    }
+
+    #[test]
+    fn test_calculate_directory_size_many_files() {
+        let temp_dir = TempDir::new().unwrap();
+
+        // 100個のファイル作成
+        for i in 0..100 {
+            let file = temp_dir.path().join(format!("file_{i}.txt"));
+            std::fs::write(&file, format!("File {i}")).unwrap();
+        }
+
+        let result = calculate_directory_size(temp_dir.path());
+
+        assert!(result.is_ok());
+        let (size, count) = result.unwrap();
+        assert!(size > 0);
+        assert_eq!(count, 100);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_get_disk_info_existing_path() {
+        // /tmpは通常存在するため、これを使ってテスト
+        let tmp_path = std::path::PathBuf::from("/tmp");
+        let result = get_disk_info(&tmp_path);
+
+        assert!(result.is_ok());
+
+        if let Ok(Some((total, available))) = result {
+            assert!(total > 0);
+            assert!(available > 0);
+            assert!(available <= total);
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_get_disk_info_nonexistent_path() {
+        let nonexistent_path = std::path::PathBuf::from("/nonexistent/path/to/nowhere");
+        let result = get_disk_info(&nonexistent_path);
+
+        assert!(result.is_ok());
+
+        if let Ok(disk_info) = result {
+            assert!(disk_info.is_none());
+        }
     }
 }
