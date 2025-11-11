@@ -1417,23 +1417,22 @@ fn enumerate_subdirs(
     }
 
     let mut all_subdirs: Vec<PathBuf> = Vec::new();
-    let mut count = 0;
     let mut limit_reached = false;
 
-    for entry in WalkDir::new(path)
+    for (count, entry) in WalkDir::new(path)
         .min_depth(1)
         .max_depth(max_depth as usize)
         .follow_links(false)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path().is_dir())
+        .enumerate()
     {
         if count >= max_subdirs {
             limit_reached = true;
             break;
         }
         all_subdirs.push(entry.path().to_path_buf());
-        count += 1;
     }
 
     Ok((all_subdirs, limit_reached))
