@@ -19,6 +19,7 @@
 - [基本的な使用方法](#基本的な使用方法)
 - [Smart機能（インテリジェントバックアップ）](#-smart機能インテリジェントバックアップ)
 - [設定ファイル](#設定ファイル)
+- [スケジューリング機能](#スケジューリング機能)
 - [コマンドリファレンス](#コマンドリファレンス)
 - [アップデート・アンインストール](#アップデートアンインストール)
 - [セキュリティ・品質](#セキュリティ品質)
@@ -142,6 +143,63 @@ cargo install --path . --features smart
 backup-suite --version
 ```
 
+### 🌍 Zsh補完の多言語対応
+
+Zsh補完説明は4言語に対応しています：
+
+- 🇬🇧 **English** (en) - デフォルト
+- 🇯🇵 **日本語** (ja) - Japanese
+- 🇨🇳 **简体中文** (zh-CN) - Simplified Chinese
+- 🇹🇼 **繁體中文** (zh-TW) - Traditional Chinese
+
+#### 自動言語検出
+
+システムのロケール設定（`$LANG`環境変数）から自動で適切な言語が選択されます：
+
+```bash
+# システムロケールに基づいて自動生成
+backup-suite completion zsh > ~/.zfunc/_backup-suite
+```
+
+#### 手動で言語を指定
+
+特定の言語の補完を生成したい場合：
+
+```bash
+# 日本語
+./scripts/generate-completion.sh ja
+
+# 简体中文
+./scripts/generate-completion.sh zh-CN
+
+# 繁體中文
+./scripts/generate-completion.sh zh-TW
+
+# English
+./scripts/generate-completion.sh en
+```
+
+**初回セットアップ**（Zsh補完を有効化）:
+
+```bash
+# 1. 補完ディレクトリを作成
+mkdir -p ~/.zfunc
+
+# 2. .zshrcに以下を追加
+echo 'fpath=(~/.zfunc $fpath)' >> ~/.zshrc
+echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
+
+# 3. 補完スクリプトを生成
+backup-suite completion zsh > ~/.zfunc/_backup-suite
+# または多言語対応スクリプトを使用
+./scripts/generate-completion.sh ja
+
+# 4. 新しいシェルを起動
+exec zsh
+```
+
+補完が有効になると、`backup-suite <TAB>`でコマンドと説明が選択した言語で表示されます。
+
 ## クイックスタート
 
 ### 1. 基本セットアップ
@@ -161,15 +219,17 @@ backup-suite status
 # Google Driveの保存先を設定
 backup-suite config set-destination "/Users/あなたのユーザー名/Library/CloudStorage/GoogleDrive-your@email.com/マイドライブ/backup-storage"
 
+# ⚠️ 重要: クラウドストレージへのバックアップは必ず暗号化を有効にしてください
+# Google Drive等のクラウドストレージにバックアップを保存する場合、
+# 第三者による不正アクセスを防ぐため、必ず --encrypt オプションを使用してください
+
 # 現在の設定を確認
 backup-suite config get-destination
 ```
 
 ### 3. 設定確認
-```bash
-# バックアップ先ディレクトリの確認
-backup-suite status
-```
+
+設定を確認するには、[1. 基本セットアップ](#1-基本セットアップ)の`backup-suite status`コマンドを使用してください。
 
 ## 基本的な使用方法
 
@@ -200,11 +260,17 @@ backup-suite run --compress zstd   # Zstd圧縮（高速・高圧縮率・推奨
 backup-suite run --compress gzip   # Gzip圧縮（互換性重視）
 backup-suite run --compress none   # 圧縮なし
 
-# 暗号化バックアップ
-backup-suite run --encrypt --password "secure-password"
+# 暗号化バックアップ（推奨: 対話的パスワード入力）
+backup-suite run --encrypt
+# → パスワードプロンプトで安全に入力（シェル履歴に残らない）
+
+# または環境変数を使用（オプション）
+export BACKUP_SUITE_PASSWORD="your-secure-password"
+backup-suite run --encrypt
 
 # 圧縮+暗号化の組み合わせ
-backup-suite run --compress zstd --encrypt --password "secure-password"
+backup-suite run --compress zstd --encrypt
+# → パスワードプロンプトで対話的に入力
 ```
 
 4. **自動化設定**
@@ -422,11 +488,11 @@ log_file = "~/.local/share/backup-suite/logs/backup.log"
 
 [storage]
 type = "local"
-path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/マイドライブ/backup-storage"
+path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/マイドライブ/backup-storage"  # クラウドストレージ使用時は encryption = true 必須
 compression = "zstd"  # 圧縮タイプ: "zstd", "gzip", "none"
 compression_level = 3  # 圧縮レベル: 1-22（Zstd）, 1-9（Gzip）
 encryption = true
-encryption_key_file = "~/.config/backup-suite/keys/backup.key"
+encryption_key_file = "~/.config/backup-suite/keys/backup.key"  # 重要: chmod 600で保護
 
 [schedule]
 enabled = true

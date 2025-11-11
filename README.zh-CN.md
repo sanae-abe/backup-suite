@@ -19,6 +19,7 @@
 - [基本使用](#基本使用)
 - [AI 功能（智能备份）](#-smart-功能智能备份)
 - [配置文件](#配置文件)
+- [调度功能](#调度功能)
 - [命令参考](#命令参考)
 - [更新与卸载](#更新与卸载)
 - [安全与质量](#安全与质量)
@@ -161,15 +162,17 @@ backup-suite status
 # 设置 Google Drive 保存路径
 backup-suite config set-destination "/Users/你的用户名/Library/CloudStorage/GoogleDrive-your@email.com/我的云端硬盘/backup-storage"
 
+# ⚠️ 重要：备份到云存储时必须启用加密
+# 将备份保存到 Google Drive 等云存储时，
+# 为防止第三方未授权访问，请务必使用 --encrypt 选项
+
 # 查看当前配置
 backup-suite config get-destination
 ```
 
 ### 3. 验证配置
-```bash
-# 查看备份目标目录
-backup-suite status
-```
+
+要验证配置，请使用 [1. 基本设置](#1-基本设置) 中的 `backup-suite status` 命令。
 
 ## 基本使用
 
@@ -200,11 +203,17 @@ backup-suite run --compress zstd   # Zstd 压缩（高速·高压缩率·推荐�
 backup-suite run --compress gzip   # Gzip 压缩（注重兼容性）
 backup-suite run --compress none   # 无压缩
 
-# 加密备份
-backup-suite run --encrypt --password "secure-password"
+# 加密备份（推荐：交互式密码提示）
+backup-suite run --encrypt
+# → 通过提示安全输入密码（不会保存在 Shell 历史记录中）
+
+# 或使用环境变量（可选）
+export BACKUP_SUITE_PASSWORD="your-secure-password"
+backup-suite run --encrypt
 
 # 压缩 + 加密组合
-backup-suite run --compress zstd --encrypt --password "secure-password"
+backup-suite run --compress zstd --encrypt
+# → 通过提示交互式输入密码
 ```
 
 4. **自动化设置**
@@ -422,11 +431,11 @@ log_file = "~/.local/share/backup-suite/logs/backup.log"
 
 [storage]
 type = "local"
-path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/我的云端硬盘/backup-storage"
+path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/我的云端硬盘/backup-storage"  # 使用云存储时 encryption = true 是必需的
 compression = "zstd"  # 压缩类型："zstd"、"gzip"、"none"
 compression_level = 3  # 压缩级别：1-22（Zstd）、1-9（Gzip）
 encryption = true
-encryption_key_file = "~/.config/backup-suite/keys/backup.key"
+encryption_key_file = "~/.config/backup-suite/keys/backup.key"  # 重要：使用 chmod 600 保护
 
 [schedule]
 enabled = true

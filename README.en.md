@@ -19,6 +19,7 @@
 - [Basic Usage](#basic-usage)
 - [Smart Features (Intelligent Backup)](#-smart-features-intelligent-backup)
 - [Configuration File](#configuration-file)
+- [Scheduling Features](#scheduling-features)
 - [Command Reference](#command-reference)
 - [Update & Uninstall](#update--uninstall)
 - [Security & Quality](#security--quality)
@@ -161,15 +162,17 @@ backup-suite status
 # Set Google Drive destination
 backup-suite config set-destination "/Users/your-username/Library/CloudStorage/GoogleDrive-your@email.com/My Drive/backup-storage"
 
+# ⚠️ IMPORTANT: Always enable encryption when backing up to cloud storage
+# When storing backups on cloud storage like Google Drive,
+# always use the --encrypt option to protect against unauthorized third-party access
+
 # Check current settings
 backup-suite config get-destination
 ```
 
 ### 3. Verify Configuration
-```bash
-# Check backup destination directory
-backup-suite status
-```
+
+To verify your configuration, use the `backup-suite status` command from [1. Basic Setup](#1-basic-setup).
 
 ## Basic Usage
 
@@ -200,11 +203,17 @@ backup-suite run --compress zstd   # Zstd compression (fast, high ratio, recomme
 backup-suite run --compress gzip   # Gzip compression (compatibility focus)
 backup-suite run --compress none   # No compression
 
-# Encrypted backup
-backup-suite run --encrypt --password "secure-password"
+# Encrypted backup (recommended: interactive password prompt)
+backup-suite run --encrypt
+# → Enter password securely via prompt (won't be saved in shell history)
+
+# Or use environment variable (optional)
+export BACKUP_SUITE_PASSWORD="your-secure-password"
+backup-suite run --encrypt
 
 # Compression + encryption combination
-backup-suite run --compress zstd --encrypt --password "secure-password"
+backup-suite run --compress zstd --encrypt
+# → Enter password interactively via prompt
 ```
 
 4. **Setup Automation**
@@ -424,11 +433,11 @@ log_file = "~/.local/share/backup-suite/logs/backup.log"
 
 [storage]
 type = "local"
-path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/My Drive/backup-storage"
+path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/My Drive/backup-storage"  # When using cloud storage, encryption = true is required
 compression = "zstd"  # Compression type: "zstd", "gzip", "none"
 compression_level = 3  # Compression level: 1-22 (Zstd), 1-9 (Gzip)
 encryption = true
-encryption_key_file = "~/.config/backup-suite/keys/backup.key"
+encryption_key_file = "~/.config/backup-suite/keys/backup.key"  # Important: Protect with chmod 600
 
 [schedule]
 enabled = true
