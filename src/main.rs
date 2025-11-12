@@ -3314,8 +3314,39 @@ fn main() -> Result<()> {
                             vec![normalized_path.clone()]
                         };
 
+                        // プログレス表示：総数とカウンターを出力
+                        let total_targets = targets_to_evaluate.len();
+                        if total_targets > 0 {
+                            println!(
+                                "  {}📊 {}: {}/{}{}",
+                                get_color("cyan", false),
+                                if lang == Language::Japanese {
+                                    "処理進捗"
+                                } else {
+                                    "Progress"
+                                },
+                                0,
+                                total_targets,
+                                get_color("reset", false)
+                            );
+                        }
+
                         // 各ターゲットを評価
-                        for target_path in targets_to_evaluate {
+                        for (idx, target_path) in targets_to_evaluate.iter().enumerate() {
+                            // 進捗カウンター表示（上書き形式）
+                            eprint!(
+                                "\r  {}📊 {}: {}/{}{} ",
+                                get_color("cyan", false),
+                                if lang == Language::Japanese {
+                                    "処理進捗"
+                                } else {
+                                    "Progress"
+                                },
+                                idx + 1,
+                                total_targets,
+                                get_color("reset", false)
+                            );
+
                             println!(
                                 "    {}: {:?}",
                                 if lang == Language::Japanese {
@@ -3347,7 +3378,35 @@ fn main() -> Result<()> {
                                     // 除外パターンの提案
                                     let mut exclude_patterns = Vec::new();
                                     if target_path.is_dir() {
-                                        match exclude_engine.suggest_exclude_patterns(&target_path)
+                                        // ファイル数をカウント（大規模ディレクトリのスキップ判定）
+                                        use walkdir::WalkDir;
+                                        let file_count = WalkDir::new(&target_path)
+                                            .max_depth(3)
+                                            .into_iter()
+                                            .filter_map(|e| e.ok())
+                                            .filter(|e| e.file_type().is_file())
+                                            .take(1001) // 1000件を超えるかだけ確認
+                                            .count();
+
+                                        if file_count > 1000 {
+                                            println!(
+                                                "      {}⚠️  {}: {} {}{}",
+                                                get_color("yellow", false),
+                                                if lang == Language::Japanese {
+                                                    "ディレクトリが大きいため除外パターン分析をスキップ"
+                                                } else {
+                                                    "Skipping exclude pattern analysis (directory too large)"
+                                                },
+                                                file_count,
+                                                if lang == Language::Japanese {
+                                                    "ファイル以上"
+                                                } else {
+                                                    "files"
+                                                },
+                                                get_color("reset", false)
+                                            );
+                                        } else {
+                                            match exclude_engine.suggest_exclude_patterns(&target_path)
                                         {
                                             Ok(recommendations) => {
                                                 let filtered: Vec<_> = recommendations
@@ -3413,6 +3472,7 @@ fn main() -> Result<()> {
                                             Err(_) => {
                                                 // 除外パターン提案の失敗は無視（重要ではない）
                                             }
+                                        }
                                         }
                                     }
 
@@ -3499,6 +3559,21 @@ fn main() -> Result<()> {
                                 }
                             }
                         } // end of for target_path in targets_to_evaluate
+
+                        // 進捗完了メッセージ
+                        if total_targets > 0 {
+                            eprintln!(); // 改行して進捗カウンターをクリア
+                            println!(
+                                "  {}✅ {}{}",
+                                get_color("green", false),
+                                if lang == Language::Japanese {
+                                    "全サブディレクトリの分析完了"
+                                } else {
+                                    "Successfully analyzed all subdirectories"
+                                },
+                                get_color("reset", false)
+                            );
+                        }
                     } // end of for path in paths
 
                     if !dry_run && added_count > 0 {
