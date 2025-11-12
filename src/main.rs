@@ -3334,29 +3334,58 @@ fn main() -> Result<()> {
                             );
                         }
 
+                        // TTY判定（インタラクティブ端末かどうか）
+                        use is_terminal::IsTerminal;
+                        let is_tty = std::io::stderr().is_terminal();
+
                         // 各ターゲットを評価
                         for (idx, target_path) in targets_to_evaluate.iter().enumerate() {
                             // アニメーションスピナー表示（処理が動いていることを明示）
                             let spinner = spinner_frames[idx % spinner_frames.len()];
-                            eprint!(
-                                "\r  {}{} 📊 {}: {}/{} - {}: {:?}{}",
-                                get_color("cyan", false),
-                                spinner,
-                                if lang == Language::Japanese {
-                                    "処理進捗"
-                                } else {
-                                    "Progress"
-                                },
-                                idx + 1,
-                                total_targets,
-                                if lang == Language::Japanese {
-                                    "評価中"
-                                } else {
-                                    "Evaluating"
-                                },
-                                target_path,
-                                get_color("reset", false)
-                            );
+
+                            if is_tty {
+                                // インタラクティブ端末: 同じ行を上書き（\r使用）
+                                eprint!(
+                                    "\r  {}{} 📊 {}: {}/{} - {}: {:?}{}",
+                                    get_color("cyan", false),
+                                    spinner,
+                                    if lang == Language::Japanese {
+                                        "処理進捗"
+                                    } else {
+                                        "Progress"
+                                    },
+                                    idx + 1,
+                                    total_targets,
+                                    if lang == Language::Japanese {
+                                        "評価中"
+                                    } else {
+                                        "Evaluating"
+                                    },
+                                    target_path,
+                                    get_color("reset", false)
+                                );
+                            } else {
+                                // 非インタラクティブ（パイプ等）: 毎回改行
+                                eprintln!(
+                                    "  {}{} 📊 {}: {}/{} - {}: {:?}{}",
+                                    get_color("cyan", false),
+                                    spinner,
+                                    if lang == Language::Japanese {
+                                        "処理進捗"
+                                    } else {
+                                        "Progress"
+                                    },
+                                    idx + 1,
+                                    total_targets,
+                                    if lang == Language::Japanese {
+                                        "評価中"
+                                    } else {
+                                        "Evaluating"
+                                    },
+                                    target_path,
+                                    get_color("reset", false)
+                                );
+                            }
 
                             match evaluator.evaluate(&target_path) {
                                 Ok(result) => {
@@ -3529,7 +3558,9 @@ fn main() -> Result<()> {
 
                         // 進捗完了メッセージ
                         if total_targets > 0 {
-                            eprintln!(); // 改行して進捗カウンターをクリア
+                            if is_tty {
+                                eprintln!(); // TTY環境: 改行して進捗カウンターをクリア
+                            }
                             println!(
                                 "  {}✅ {}{}",
                                 get_color("green", false),
