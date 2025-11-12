@@ -3339,7 +3339,7 @@ fn main() -> Result<()> {
                             // アニメーションスピナー表示（処理が動いていることを明示）
                             let spinner = spinner_frames[idx % spinner_frames.len()];
                             eprint!(
-                                "\r  {}{} 📊 {}: {}/{}{}",
+                                "\r  {}{} 📊 {}: {}/{} - {}: {:?}{}",
                                 get_color("cyan", false),
                                 spinner,
                                 if lang == Language::Japanese {
@@ -3349,17 +3349,13 @@ fn main() -> Result<()> {
                                 },
                                 idx + 1,
                                 total_targets,
-                                get_color("reset", false)
-                            );
-
-                            println!(
-                                "    {}: {:?}",
                                 if lang == Language::Japanese {
                                     "評価中"
                                 } else {
                                     "Evaluating"
                                 },
-                                target_path
+                                target_path,
+                                get_color("reset", false)
                             );
 
                             match evaluator.evaluate(&target_path) {
