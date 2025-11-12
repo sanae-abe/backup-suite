@@ -3192,23 +3192,29 @@ fn main() -> Result<()> {
                     for path in paths {
                         // セキュリティ検証（パストラバーサル対策）
                         // 重要: safe_join → validate_path_safety の順序で実行
-                        let current_dir =
-                            env::current_dir().context("カレントディレクトリ取得失敗")?;
-                        let normalized_path = match safe_join(&current_dir, &path) {
-                            Ok(p) => p,
-                            Err(e) => {
-                                println!(
-                                    "  {}❌ {}: {:?}{}",
-                                    get_color("red", false),
-                                    if lang == Language::Japanese {
-                                        "パスの検証に失敗しました"
-                                    } else {
-                                        "Path validation failed"
-                                    },
-                                    e,
-                                    get_color("reset", false)
-                                );
-                                continue;
+                        let normalized_path = if path.is_absolute() {
+                            // 絶対パスの場合は、そのまま使用（current_dirと結合しない）
+                            path.clone()
+                        } else {
+                            // 相対パスの場合は、current_dirと安全に結合
+                            let current_dir =
+                                env::current_dir().context("カレントディレクトリ取得失敗")?;
+                            match safe_join(&current_dir, &path) {
+                                Ok(p) => p,
+                                Err(e) => {
+                                    println!(
+                                        "  {}❌ {}: {:?}{}",
+                                        get_color("red", false),
+                                        if lang == Language::Japanese {
+                                            "パスの検証に失敗しました"
+                                        } else {
+                                            "Path validation failed"
+                                        },
+                                        e,
+                                        get_color("reset", false)
+                                    );
+                                    continue;
+                                }
                             }
                         };
 
