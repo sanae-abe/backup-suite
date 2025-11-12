@@ -3314,6 +3314,9 @@ fn main() -> Result<()> {
                             vec![normalized_path.clone()]
                         };
 
+                        // アニメーションスピナー用の記号（処理中であることを視覚的に示す）
+                        let spinner_frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
                         // プログレス表示：総数とカウンターを出力
                         let total_targets = targets_to_evaluate.len();
                         if total_targets > 0 {
@@ -3333,10 +3336,12 @@ fn main() -> Result<()> {
 
                         // 各ターゲットを評価
                         for (idx, target_path) in targets_to_evaluate.iter().enumerate() {
-                            // 進捗カウンター表示（上書き形式）
+                            // アニメーションスピナー表示（処理が動いていることを明示）
+                            let spinner = spinner_frames[idx % spinner_frames.len()];
                             eprint!(
-                                "\r  {}📊 {}: {}/{}{} ",
+                                "\r  {}{} 📊 {}: {}/{}{}",
                                 get_color("cyan", false),
+                                spinner,
                                 if lang == Language::Japanese {
                                     "処理進捗"
                                 } else {
