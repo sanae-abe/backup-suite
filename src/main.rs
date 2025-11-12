@@ -3360,21 +3360,7 @@ fn main() -> Result<()> {
 
                             match evaluator.evaluate(&target_path) {
                                 Ok(result) => {
-                                    println!(
-                                        "      {}: {:?} ({}: {})",
-                                        if lang == Language::Japanese {
-                                            "推奨優先度"
-                                        } else {
-                                            "Recommended Priority"
-                                        },
-                                        *result.priority(),
-                                        if lang == Language::Japanese {
-                                            "スコア"
-                                        } else {
-                                            "Score"
-                                        },
-                                        result.score().get()
-                                    );
+                                    // 推奨優先度の詳細表示は省略（スピナー行の上書きを維持）
 
                                     // 除外パターンの提案
                                     let mut exclude_patterns = Vec::new();
@@ -3416,30 +3402,10 @@ fn main() -> Result<()> {
                                                     .collect();
 
                                                 if !filtered.is_empty() {
-                                                    println!(
-                                                        "      {}📋 {}: {}{}",
-                                                        get_color("cyan", false),
-                                                        if lang == Language::Japanese {
-                                                            "除外パターン提案"
-                                                        } else {
-                                                            "Exclude pattern suggestions"
-                                                        },
-                                                        filtered.len(),
-                                                        get_color("reset", false)
-                                                    );
+                                                    // 除外パターン提案の詳細表示は省略（スピナー行の上書きを維持）
 
                                                     for rec in &filtered {
-                                                        println!(
-                                                            "        - {} ({:.1}%, {:.2} GB {})",
-                                                            rec.pattern(),
-                                                            rec.confidence().get() * 100.0,
-                                                            rec.size_reduction_gb(),
-                                                            if lang == Language::Japanese {
-                                                                "削減見込"
-                                                            } else {
-                                                                "reduction"
-                                                            }
-                                                        );
+                                                        // パターン詳細表示は省略（スピナー行の上書きを維持）
 
                                                         if interactive {
                                                             use dialoguer::Confirm;
