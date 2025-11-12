@@ -687,7 +687,7 @@ impl MessageKey {
             MessageKey::CurrentKeepDays => "Current backup retention period",
             MessageKey::OpeningConfigFile => "Opening configuration file",
             MessageKey::EditorDidNotExitCleanly => "Editor did not exit cleanly",
-            MessageKey::RustFastTypeSafe => "Intelligent Backup with AES-256 Encryption & AI",
+            MessageKey::RustFastTypeSafe => "Intelligent Backup with AES-256 Encryption & Smart Analysis",
             MessageKey::ScheduleCommandPlaceholder => "<command>",
             MessageKey::ConfigCommandPlaceholder => "<command>",
             MessageKey::ConfigArgsPlaceholder => "[args]",
@@ -985,7 +985,7 @@ impl MessageKey {
             MessageKey::CurrentKeepDays => "現在のバックアップ保持期間",
             MessageKey::OpeningConfigFile => "設定ファイルを開きます",
             MessageKey::EditorDidNotExitCleanly => "エディタが正常に終了しませんでした",
-            MessageKey::RustFastTypeSafe => "AES-256暗号化 & AI搭載のインテリジェントバックアップ",
+            MessageKey::RustFastTypeSafe => "AES-256暗号化 & Smart分析機能搭載のインテリジェントバックアップ",
             MessageKey::ScheduleCommandPlaceholder => "<コマンド>",
             MessageKey::ConfigCommandPlaceholder => "<コマンド>",
             MessageKey::ConfigArgsPlaceholder => "[引数]",
@@ -1039,7 +1039,7 @@ impl MessageKey {
             MessageKey::ExampleSmartDetect => "# 检测最近7天的异常",
             MessageKey::ExampleSmartAnalyze => "# 分析文件重要性",
             MessageKey::ExampleSmartSuggestExclude => "# 获取Smart排除建议",
-            MessageKey::RustFastTypeSafe => "AES-256加密 & AI驱动的智能备份",
+            MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智能备份",
             // Common messages
             MessageKey::UsageExamples => "使用示例:",
             // Keep all existing Simplified Chinese translations
@@ -1078,7 +1078,7 @@ impl MessageKey {
             MessageKey::ExampleSmartDetect => "# 偵測最近7天的異常",
             MessageKey::ExampleSmartAnalyze => "# 分析檔案重要性",
             MessageKey::ExampleSmartSuggestExclude => "# 取得Smart排除建議",
-            MessageKey::RustFastTypeSafe => "AES-256加密 & AI驅動的智慧備份",
+            MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智慧備份",
             // Common messages
             MessageKey::UsageExamples => "使用範例:",
             // Keep all existing Traditional Chinese translations
