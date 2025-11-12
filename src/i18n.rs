@@ -83,8 +83,17 @@ impl Language {
     }
 
     /// Parse language from string
+    ///
+    /// # Security
+    /// - Rejects null bytes (security vulnerability)
+    /// - Whitelist-based validation (only known language codes accepted)
     #[must_use]
     pub fn parse(s: &str) -> Option<Self> {
+        // Security: Reject null bytes
+        if s.contains('\0') {
+            return None;
+        }
+
         match s.to_lowercase().as_str() {
             "en" | "english" => Some(Language::English),
             "ja" | "japanese" | "日本語" => Some(Language::Japanese),
@@ -1155,6 +1164,14 @@ mod tests {
 
         // Unknown
         assert_eq!(Language::parse("unknown"), None);
+    }
+
+    #[test]
+    fn test_language_parse_null_byte_rejection() {
+        // Security: Null bytes should be rejected
+        assert_eq!(Language::parse("en\0"), None);
+        assert_eq!(Language::parse("\0ja"), None);
+        assert_eq!(Language::parse("test\0malicious"), None);
     }
 
     #[test]
