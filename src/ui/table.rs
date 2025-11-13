@@ -188,7 +188,6 @@ mod tests {
     use super::*;
     use crate::core::history::BackupStatus;
     use chrono::Utc;
-    use std::path::PathBuf;
     use tempfile::TempDir;
 
     #[test]
@@ -273,9 +272,21 @@ mod tests {
     fn test_display_targets_multiple() {
         let temp_dir = TempDir::new().unwrap();
         let targets = vec![
-            Target::new(temp_dir.path().to_path_buf(), Priority::High, "cat1".to_string()),
-            Target::new(temp_dir.path().to_path_buf(), Priority::Medium, "cat2".to_string()),
-            Target::new(temp_dir.path().to_path_buf(), Priority::Low, "cat3".to_string()),
+            Target::new(
+                temp_dir.path().to_path_buf(),
+                Priority::High,
+                "cat1".to_string(),
+            ),
+            Target::new(
+                temp_dir.path().to_path_buf(),
+                Priority::Medium,
+                "cat2".to_string(),
+            ),
+            Target::new(
+                temp_dir.path().to_path_buf(),
+                Priority::Low,
+                "cat3".to_string(),
+            ),
         ];
         let theme = ColorTheme::auto();
 

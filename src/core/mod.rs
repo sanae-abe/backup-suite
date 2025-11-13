@@ -13,6 +13,7 @@
 //! - **[`pipeline`]**: 処理パイプライン（暗号化・圧縮）
 //! - **[`scheduler`]**: スケジューリング機能（macOS/Linux）
 //! - **[`target`]**: バックアップ対象定義
+//! - **[`validation`]**: 入力検証とセキュリティ対策
 //!
 //! # 使用例
 //!
@@ -51,6 +52,7 @@ pub mod pipeline;
 pub mod restore;
 pub mod scheduler;
 pub mod target;
+pub mod validation;
 
 pub use backup::{BackupResult, BackupRunner};
 pub use cleanup::{CleanupEngine, CleanupPolicy, CleanupResult};

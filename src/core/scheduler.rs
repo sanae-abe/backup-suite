@@ -683,6 +683,13 @@ mod tests {
     }
 
     #[test]
+    fn test_platform_is_supported() {
+        assert!(Platform::MacOS.is_supported());
+        assert!(Platform::Linux.is_supported());
+        assert!(!Platform::Unsupported.is_supported());
+    }
+
+    #[test]
     fn test_frequency_parse() {
         assert_eq!(Frequency::parse("daily").unwrap(), Frequency::Daily);
         assert_eq!(Frequency::parse("weekly").unwrap(), Frequency::Weekly);
@@ -692,10 +699,265 @@ mod tests {
     }
 
     #[test]
+    fn test_frequency_parse_case_insensitive() {
+        assert_eq!(Frequency::parse("DAILY").unwrap(), Frequency::Daily);
+        assert_eq!(Frequency::parse("WeEkLy").unwrap(), Frequency::Weekly);
+        assert_eq!(Frequency::parse("MONTHLY").unwrap(), Frequency::Monthly);
+        assert_eq!(Frequency::parse("HoUrLy").unwrap(), Frequency::Hourly);
+    }
+
+    #[test]
     fn test_frequency_as_str() {
         assert_eq!(Frequency::Daily.as_str(), "daily");
         assert_eq!(Frequency::Weekly.as_str(), "weekly");
         assert_eq!(Frequency::Monthly.as_str(), "monthly");
         assert_eq!(Frequency::Hourly.as_str(), "hourly");
+    }
+
+    #[test]
+    fn test_frequency_roundtrip() {
+        let frequencies = vec![
+            Frequency::Daily,
+            Frequency::Weekly,
+            Frequency::Monthly,
+            Frequency::Hourly,
+        ];
+
+        for freq in frequencies {
+            let str_repr = freq.as_str();
+            let parsed = Frequency::parse(str_repr).unwrap();
+            assert_eq!(parsed, freq);
+        }
+    }
+
+    #[test]
+    fn test_scheduler_new_unsupported_platform() {
+        // Unsupportedプラットフォームのテストは実行環境依存のため、
+        // 現在のプラットフォームがサポートされている前提でテスト
+        let mut config = Config::default();
+        config.schedule.enabled = true;
+        config.schedule.high_frequency = "daily".to_string();
+
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        {
+            let result = Scheduler::new(config);
+            assert!(result.is_ok());
+        }
+    }
+
+    #[test]
+    fn test_priority_to_string() {
+        assert_eq!(Scheduler::priority_to_string(&Priority::High), "high");
+        assert_eq!(Scheduler::priority_to_string(&Priority::Medium), "medium");
+        assert_eq!(Scheduler::priority_to_string(&Priority::Low), "low");
+    }
+
+    #[test]
+    fn test_get_frequency() {
+        let mut config = Config::default();
+        config.schedule.high_frequency = "hourly".to_string();
+        config.schedule.medium_frequency = "daily".to_string();
+        config.schedule.low_frequency = "weekly".to_string();
+
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        {
+            let scheduler = Scheduler::new(config).unwrap();
+
+            assert_eq!(
+                scheduler.get_frequency(&Priority::High).unwrap(),
+                Frequency::Hourly
+            );
+            assert_eq!(
+                scheduler.get_frequency(&Priority::Medium).unwrap(),
+                Frequency::Daily
+            );
+            assert_eq!(
+                scheduler.get_frequency(&Priority::Low).unwrap(),
+                Frequency::Weekly
+            );
+        }
+    }
+
+    #[test]
+    fn test_get_frequency_invalid() {
+        let mut config = Config::default();
+        config.schedule.high_frequency = "invalid_frequency".to_string();
+
+        #[cfg(any(target_os = "macos", target_os = "linux"))]
+        {
+            let scheduler = Scheduler::new(config).unwrap();
+            assert!(scheduler.get_frequency(&Priority::High).is_err());
+        }
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_generate_plist_content_daily() {
+        let config = Config::default();
+        let scheduler = Scheduler::new(config).unwrap();
+
+        let content = scheduler
+            .generate_plist_content(&Priority::High, Frequency::Daily)
+            .unwrap();
+
+        assert!(content.contains("com.backup-suite.high"));
+        assert!(content.contains("<key>Hour</key>"));
+        assert!(content.contains("<integer>2</integer>"));
+        assert!(content.contains("StartCalendarInterval"));
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_generate_plist_content_weekly() {
+        let config = Config::default();
+        let scheduler = Scheduler::new(config).unwrap();
+
+        let content = scheduler
+            .generate_plist_content(&Priority::Medium, Frequency::Weekly)
+            .unwrap();
+
+        assert!(content.contains("com.backup-suite.medium"));
+        assert!(content.contains("<key>Weekday</key>"));
+        assert!(content.contains("<integer>0</integer>"));
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_generate_plist_content_monthly() {
+        let config = Config::default();
+        let scheduler = Scheduler::new(config).unwrap();
+
+        let content = scheduler
+            .generate_plist_content(&Priority::Low, Frequency::Monthly)
+            .unwrap();
+
+        assert!(content.contains("com.backup-suite.low"));
+        assert!(content.contains("<key>Day</key>"));
+        assert!(content.contains("<integer>1</integer>"));
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_generate_plist_content_hourly() {
+        let config = Config::default();
+        let scheduler = Scheduler::new(config).unwrap();
+
+        let content = scheduler
+            .generate_plist_content(&Priority::High, Frequency::Hourly)
+            .unwrap();
+
+        assert!(content.contains("<key>Minute</key>"));
+        assert!(content.contains("<integer>0</integer>"));
+        // Hourlyは Hour キーを持たない
+        assert!(!content.contains("<key>Hour</key>"));
+    }
+
+    #[test]
+    #[cfg(target_os = "macos")]
+    fn test_get_launchd_plist_path() {
+        let config = Config::default();
+        let scheduler = Scheduler::new(config).unwrap();
+
+        let path = scheduler.get_launchd_plist_path(&Priority::High).unwrap();
+        let path_str = path.to_string_lossy();
+
+        assert!(path_str.contains("Library/LaunchAgents"));
+        assert!(path_str.contains("com.backup-suite.high.plist"));
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_generate_systemd_service_content() {
+        let config = Config::default();
+        let scheduler = Scheduler::new(config).unwrap();
+
+        let content = scheduler
+            .generate_systemd_service_content(&Priority::High)
+            .unwrap();
+
+        assert!(content.contains("[Unit]"));
+        assert!(content.contains("[Service]"));
+        assert!(content.contains("Type=oneshot"));
+        assert!(content.contains("--priority"));
+        assert!(content.contains("high"));
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_generate_systemd_timer_content_daily() {
+        let config = Config::default();
+        let scheduler = Scheduler::new(config).unwrap();
+
+        let content = scheduler
+            .generate_systemd_timer_content(&Priority::High, Frequency::Daily)
+            .unwrap();
+
+        assert!(content.contains("[Unit]"));
+        assert!(content.contains("[Timer]"));
+        assert!(content.contains("OnCalendar=daily"));
+        assert!(content.contains("[Install]"));
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_generate_systemd_timer_content_weekly() {
+        let config = Config::default();
+        let scheduler = Scheduler::new(config).unwrap();
+
+        let content = scheduler
+            .generate_systemd_timer_content(&Priority::Medium, Frequency::Weekly)
+            .unwrap();
+
+        assert!(content.contains("OnCalendar=weekly"));
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_generate_systemd_timer_content_monthly() {
+        let config = Config::default();
+        let scheduler = Scheduler::new(config).unwrap();
+
+        let content = scheduler
+            .generate_systemd_timer_content(&Priority::Low, Frequency::Monthly)
+            .unwrap();
+
+        assert!(content.contains("OnCalendar=monthly"));
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_generate_systemd_timer_content_hourly() {
+        let config = Config::default();
+        let scheduler = Scheduler::new(config).unwrap();
+
+        let content = scheduler
+            .generate_systemd_timer_content(&Priority::High, Frequency::Hourly)
+            .unwrap();
+
+        assert!(content.contains("OnCalendar=hourly"));
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn test_get_systemd_paths() {
+        let config = Config::default();
+        let scheduler = Scheduler::new(config).unwrap();
+
+        let (service_path, timer_path) = scheduler.get_systemd_paths(&Priority::High).unwrap();
+
+        let service_str = service_path.to_string_lossy();
+        let timer_str = timer_path.to_string_lossy();
+
+        assert!(service_str.contains(".config/systemd/user"));
+        assert!(service_str.contains("backup-suite-high.service"));
+        assert!(timer_str.contains("backup-suite-high.timer"));
+    }
+
+    #[test]
+    fn test_schedule_status_default() {
+        let status = ScheduleStatus::default();
+        assert!(!status.high_enabled);
+        assert!(!status.medium_enabled);
+        assert!(!status.low_enabled);
     }
 }

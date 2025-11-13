@@ -136,7 +136,10 @@ fn test_partial_backup_completion_handling() -> Result<()> {
 
     // Create normal files
     for i in 0..10 {
-        fs::write(source.join(format!("normal_{i}.txt")), format!("content {i}"))?;
+        fs::write(
+            source.join(format!("normal_{i}.txt")),
+            format!("content {i}"),
+        )?;
     }
 
     let mut config = Config::default();
@@ -617,7 +620,10 @@ fn test_permission_denied_recovery() -> Result<()> {
 
     // Create accessible files
     for i in 0..3 {
-        fs::write(source.join(format!("accessible_{i}.txt")), format!("ok {i}"))?;
+        fs::write(
+            source.join(format!("accessible_{i}.txt")),
+            format!("ok {i}"),
+        )?;
     }
 
     #[cfg(unix)]
@@ -701,8 +707,546 @@ fn test_cleanup_after_partial_failures() -> Result<()> {
 
     // Check that successful files exist
     if result.successful > 0 {
-        assert!(category_path.join("good1.txt").exists() || category_path.join("good2.txt").exists());
+        assert!(
+            category_path.join("good1.txt").exists() || category_path.join("good2.txt").exists()
+        );
     }
+
+    Ok(())
+}
+
+// ==================== Priority 6: Encryption & Compression Integration ====================
+
+/// Test 16: Backup with encryption only (no compression)
+///
+/// Tests the `with_encryption` builder method and encryption-only backup flow.
+#[test]
+fn test_backup_encryption_only() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+    fs::write(source.join("secret1.txt"), "confidential data 1")?;
+    fs::write(source.join("secret2.txt"), "confidential data 2")?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest.clone();
+    config.targets.push(Target::new(
+        source.clone(),
+        Priority::High,
+        "encryption-test".to_string(),
+    ));
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_encryption("test-password-123".to_string())
+        .with_compression(CompressionType::None, 0);
+
+    let result = runner.run(None, None)?;
+
+    assert_eq!(result.total_files, 2);
+    assert_eq!(result.successful, 2);
+    assert_eq!(result.failed, 0);
+
+    // Verify backup directory was created
+    let backup_path = backup_dest.join(&result.backup_name);
+    assert!(backup_path.exists());
+
+    Ok(())
+}
+
+/// Test 17: Backup with Zstd compression only (no encryption)
+///
+/// Tests the `with_compression` builder method with Zstd compression.
+#[test]
+fn test_backup_compression_zstd_only() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+
+    // Create compressible files (repetitive data)
+    fs::write(source.join("large1.txt"), "A".repeat(10000))?;
+    fs::write(source.join("large2.txt"), "B".repeat(10000))?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest.clone();
+    config.targets.push(Target::new(
+        source.clone(),
+        Priority::High,
+        "compression-test".to_string(),
+    ));
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_compression(CompressionType::Zstd, 3);
+
+    let result = runner.run(None, None)?;
+
+    assert_eq!(result.total_files, 2);
+    assert_eq!(result.successful, 2);
+    assert!(result.total_bytes > 0);
+
+    Ok(())
+}
+
+/// Test 18: Backup with both encryption and compression
+///
+/// Tests the combined encryption + compression pipeline functionality.
+#[test]
+fn test_backup_encryption_and_compression_combined() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+    fs::write(source.join("data1.txt"), "sensitive data 1".repeat(100))?;
+    fs::write(source.join("data2.txt"), "sensitive data 2".repeat(100))?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest.clone();
+    config.targets.push(Target::new(
+        source.clone(),
+        Priority::High,
+        "enc-comp-test".to_string(),
+    ));
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_encryption("secure-password-456".to_string())
+        .with_compression(CompressionType::Zstd, 5);
+
+    let result = runner.run(None, None)?;
+
+    assert_eq!(result.total_files, 2);
+    assert_eq!(result.successful, 2);
+    assert_eq!(result.failed, 0);
+
+    Ok(())
+}
+
+/// Test 19: Backup with Gzip compression
+///
+/// Tests the `with_compression` builder method with Gzip compression type.
+#[test]
+fn test_backup_compression_gzip() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+    fs::write(source.join("file1.txt"), "test data 1".repeat(50))?;
+    fs::write(source.join("file2.txt"), "test data 2".repeat(50))?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest;
+    config.targets.push(Target::new(
+        source.clone(),
+        Priority::Medium,
+        "gzip-test".to_string(),
+    ));
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_compression(CompressionType::Gzip, 6);
+
+    let result = runner.run(None, None)?;
+
+    assert_eq!(result.total_files, 2);
+    assert_eq!(result.successful, 2);
+
+    Ok(())
+}
+
+// ==================== Priority 7: Incremental Backup & Verification ====================
+
+/// Test 20: Incremental backup - first run (should be full backup)
+///
+/// Tests the `with_incremental` builder method and first-run behavior.
+#[test]
+fn test_incremental_backup_first_run() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+    fs::write(source.join("file1.txt"), "initial content")?;
+    fs::write(source.join("file2.txt"), "initial content 2")?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest;
+    config.targets.push(Target::new(
+        source.clone(),
+        Priority::High,
+        "incremental-test".to_string(),
+    ));
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_incremental(true)
+        .with_compression(CompressionType::None, 0);
+
+    let result = runner.run(None, None)?;
+
+    // First run should backup all files (full backup)
+    assert_eq!(result.total_files, 2);
+    assert_eq!(result.successful, 2);
+
+    Ok(())
+}
+
+/// Test 21: Backup with verification enabled
+///
+/// Tests the `with_verification` builder method and integrity checker integration.
+#[test]
+fn test_backup_with_verification_enabled() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+    fs::write(source.join("verify1.txt"), "data for verification 1")?;
+    fs::write(source.join("verify2.txt"), "data for verification 2")?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest;
+    config.targets.push(Target::new(
+        source.clone(),
+        Priority::High,
+        "verify-test".to_string(),
+    ));
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_verification(true)
+        .with_compression(CompressionType::None, 0);
+
+    let result = runner.run(None, None)?;
+
+    assert_eq!(result.total_files, 2);
+    assert_eq!(result.successful, 2);
+    assert_eq!(result.failed, 0);
+
+    Ok(())
+}
+
+/// Test 22: Backup without verification (default behavior)
+///
+/// Tests that verification is disabled by default.
+#[test]
+fn test_backup_without_verification() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+    fs::write(source.join("noverify1.txt"), "no verification needed 1")?;
+    fs::write(source.join("noverify2.txt"), "no verification needed 2")?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest;
+    config.targets.push(Target::new(
+        source.clone(),
+        Priority::Medium,
+        "noverify-test".to_string(),
+    ));
+
+    // Default BackupRunner has verification disabled
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_compression(CompressionType::None, 0);
+
+    let result = runner.run(None, None)?;
+
+    assert_eq!(result.total_files, 2);
+    assert_eq!(result.successful, 2);
+
+    Ok(())
+}
+
+// ==================== Priority 8: Category Filtering ====================
+
+/// Test 23: Category filter with multiple targets
+///
+/// Tests category filtering logic (lines 264-277 in backup.rs).
+#[test]
+fn test_backup_category_filter_multiple() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+    fs::write(source.join("file1.txt"), "category content")?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest;
+    config.targets.push(Target::new(
+        source.clone(),
+        Priority::High,
+        "documents".to_string(),
+    ));
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_compression(CompressionType::None, 0);
+
+    // Filter by category "documents"
+    let result = runner.run(None, Some("documents"))?;
+
+    assert_eq!(result.total_files, 1);
+    assert_eq!(result.successful, 1);
+
+    Ok(())
+}
+
+/// Test 24: Category filter with no matching targets
+///
+/// Tests early return when no targets match the category filter.
+#[test]
+fn test_backup_category_filter_no_match() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+    fs::write(source.join("file1.txt"), "some content")?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest;
+    config.targets.push(Target::new(
+        source.clone(),
+        Priority::High,
+        "documents".to_string(),
+    ));
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_compression(CompressionType::None, 0);
+
+    // Filter by non-existent category "videos"
+    let result = runner.run(None, Some("videos"))?;
+
+    // No targets match, should return empty result
+    assert_eq!(result.total_files, 0);
+    assert_eq!(result.successful, 0);
+
+    Ok(())
+}
+
+/// Test 25: Combined priority and category filters
+///
+/// Tests filtering with both priority and category specified.
+#[test]
+fn test_backup_priority_and_category_filters() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source1 = temp.path().join("source1");
+    let source2 = temp.path().join("source2");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source1)?;
+    fs::create_dir_all(&source2)?;
+
+    fs::write(source1.join("high_doc.txt"), "high priority document")?;
+    fs::write(source2.join("low_doc.txt"), "low priority document")?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest;
+    config.targets.push(Target::new(
+        source1.clone(),
+        Priority::High,
+        "documents".to_string(),
+    ));
+    config.targets.push(Target::new(
+        source2.clone(),
+        Priority::Low,
+        "documents".to_string(),
+    ));
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_compression(CompressionType::None, 0);
+
+    // Filter by category "documents" - should backup both
+    let result = runner.run(None, Some("documents"))?;
+
+    assert_eq!(result.total_files, 2);
+    assert_eq!(result.successful, 2);
+
+    Ok(())
+}
+
+// ==================== Priority 9: Dry Run & Edge Cases ====================
+
+/// Test 26: Dry run mode - no actual file copies
+///
+/// Tests that dry_run flag prevents actual backup operations.
+#[test]
+fn test_backup_dry_run_no_actual_copy() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+    fs::write(source.join("dryrun1.txt"), "dry run content 1")?;
+    fs::write(source.join("dryrun2.txt"), "dry run content 2")?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest.clone();
+    config.targets.push(Target::new(
+        source.clone(),
+        Priority::High,
+        "dryrun-test".to_string(),
+    ));
+
+    // Create runner with dry_run = true
+    let mut runner = BackupRunner::new(config, true)
+        .with_progress(false)
+        .with_compression(CompressionType::None, 0);
+
+    let result = runner.run(None, None)?;
+
+    // Dry run should report files
+    assert_eq!(result.total_files, 2);
+
+    Ok(())
+}
+
+/// Test 27: Empty directory backup
+///
+/// Tests handling of empty directories (no files to backup).
+#[test]
+fn test_backup_empty_directory() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("empty_source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+    // source_dir is empty (no files)
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest;
+    config.targets.push(Target::new(
+        source.clone(),
+        Priority::High,
+        "empty-test".to_string(),
+    ));
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_compression(CompressionType::None, 0);
+
+    let result = runner.run(None, None)?;
+
+    // Empty directory should result in 0 files backed up
+    assert_eq!(result.total_files, 0);
+    assert_eq!(result.successful, 0);
+
+    Ok(())
+}
+
+/// Test 28: Nonexistent file target
+///
+/// Tests graceful handling of nonexistent backup targets.
+#[test]
+fn test_backup_nonexistent_file() -> Result<()> {
+    let temp = TempDir::new()?;
+    let backup_dest = temp.path().join("backup");
+
+    let nonexistent_path = temp.path().join("nonexistent_dir");
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest;
+    config.targets.push(Target::new(
+        nonexistent_path.clone(),
+        Priority::High,
+        "nonexistent-test".to_string(),
+    ));
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_compression(CompressionType::None, 0);
+
+    // This should handle gracefully (no panic)
+    let result = runner.run(None, None);
+
+    // Depending on implementation, might return error or empty result
+    // Verify it doesn't panic at least
+    match result {
+        Ok(r) => {
+            assert_eq!(r.total_files, 0);
+        }
+        Err(_) => {
+            // Error is acceptable for nonexistent paths
+        }
+    }
+
+    Ok(())
+}
+
+/// Test 29: Backup with exclude patterns
+///
+/// Tests that exclude_patterns configuration is accepted (actual filtering
+/// may require additional FileFilter setup).
+#[test]
+fn test_backup_with_exclude_patterns() -> Result<()> {
+    let temp = TempDir::new()?;
+    let source = temp.path().join("source");
+    let backup_dest = temp.path().join("backup");
+
+    fs::create_dir_all(&source)?;
+    fs::write(source.join("include.txt"), "should be backed up")?;
+    fs::write(source.join("include2.txt"), "should be backed up too")?;
+
+    let mut config = Config::default();
+    config.backup.destination = backup_dest.clone();
+
+    let mut target = Target::new(source.clone(), Priority::High, "exclude-test".to_string());
+    // Set exclude patterns (filtering implementation may vary)
+    target.exclude_patterns = vec!["node_modules".to_string(), ".git".to_string()];
+    config.targets.push(target);
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_compression(CompressionType::None, 0);
+
+    let result = runner.run(None, None)?;
+
+    // Verify backup completed successfully with exclude patterns configured
+    assert_eq!(result.total_files, 2);
+    assert_eq!(result.successful, 2);
+
+    // Verify backup directory structure was created
+    let backup_path = backup_dest.join(&result.backup_name).join("exclude-test");
+    assert!(backup_path.exists());
+
+    Ok(())
+}
+
+/// Test 30: BackupResult::new() when no targets match filters
+///
+/// Tests that BackupResult::new() is returned when all targets are filtered out.
+#[test]
+fn test_backup_result_no_targets_match() -> Result<()> {
+    let temp = TempDir::new()?;
+    let backup_dest = temp.path().join("backup");
+
+    // Config with no targets
+    let mut config = Config::default();
+    config.backup.destination = backup_dest;
+
+    let mut runner = BackupRunner::new(config, false)
+        .with_progress(false)
+        .with_compression(CompressionType::None, 0);
+
+    let result = runner.run(None, None)?;
+
+    // BackupResult::new() should be returned
+    assert_eq!(result.total_files, 0);
+    assert_eq!(result.successful, 0);
+    assert_eq!(result.failed, 0);
+    assert_eq!(result.total_bytes, 0);
 
     Ok(())
 }

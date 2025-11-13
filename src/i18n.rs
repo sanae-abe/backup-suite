@@ -687,7 +687,9 @@ impl MessageKey {
             MessageKey::CurrentKeepDays => "Current backup retention period",
             MessageKey::OpeningConfigFile => "Opening configuration file",
             MessageKey::EditorDidNotExitCleanly => "Editor did not exit cleanly",
-            MessageKey::RustFastTypeSafe => "Intelligent Backup with AES-256 Encryption & Smart Analysis",
+            MessageKey::RustFastTypeSafe => {
+                "Intelligent Backup with AES-256 Encryption & Smart Analysis"
+            }
             MessageKey::ScheduleCommandPlaceholder => "<command>",
             MessageKey::ConfigCommandPlaceholder => "<command>",
             MessageKey::ConfigArgsPlaceholder => "[args]",
@@ -985,7 +987,9 @@ impl MessageKey {
             MessageKey::CurrentKeepDays => "現在のバックアップ保持期間",
             MessageKey::OpeningConfigFile => "設定ファイルを開きます",
             MessageKey::EditorDidNotExitCleanly => "エディタが正常に終了しませんでした",
-            MessageKey::RustFastTypeSafe => "AES-256暗号化 & Smart分析機能搭載のインテリジェントバックアップ",
+            MessageKey::RustFastTypeSafe => {
+                "AES-256暗号化 & Smart分析機能搭載のインテリジェントバックアップ"
+            }
             MessageKey::ScheduleCommandPlaceholder => "<コマンド>",
             MessageKey::ConfigCommandPlaceholder => "<コマンド>",
             MessageKey::ConfigArgsPlaceholder => "[引数]",

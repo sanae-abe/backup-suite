@@ -3387,7 +3387,7 @@ fn main() -> Result<()> {
                                 );
                             }
 
-                            match evaluator.evaluate(&target_path) {
+                            match evaluator.evaluate(target_path) {
                                 Ok(result) => {
                                     // 推奨優先度の詳細表示は省略（スピナー行の上書きを維持）
 
@@ -3396,7 +3396,7 @@ fn main() -> Result<()> {
                                     if target_path.is_dir() {
                                         // ファイル数をカウント（大規模ディレクトリのスキップ判定）
                                         use walkdir::WalkDir;
-                                        let file_count = WalkDir::new(&target_path)
+                                        let file_count = WalkDir::new(target_path)
                                             .max_depth(3)
                                             .into_iter()
                                             .filter_map(|e| e.ok())
@@ -3422,53 +3422,55 @@ fn main() -> Result<()> {
                                                 get_color("reset", false)
                                             );
                                         } else {
-                                            match exclude_engine.suggest_exclude_patterns(&target_path)
-                                        {
-                                            Ok(recommendations) => {
-                                                let filtered: Vec<_> = recommendations
-                                                    .into_iter()
-                                                    .filter(|r| r.confidence().get() >= 0.8)
-                                                    .collect();
+                                            match exclude_engine
+                                                .suggest_exclude_patterns(target_path)
+                                            {
+                                                Ok(recommendations) => {
+                                                    let filtered: Vec<_> = recommendations
+                                                        .into_iter()
+                                                        .filter(|r| r.confidence().get() >= 0.8)
+                                                        .collect();
 
-                                                if !filtered.is_empty() {
-                                                    // 除外パターン提案の詳細表示は省略（スピナー行の上書きを維持）
+                                                    if !filtered.is_empty() {
+                                                        // 除外パターン提案の詳細表示は省略（スピナー行の上書きを維持）
 
-                                                    for rec in &filtered {
-                                                        // パターン詳細表示は省略（スピナー行の上書きを維持）
+                                                        for rec in &filtered {
+                                                            // パターン詳細表示は省略（スピナー行の上書きを維持）
 
-                                                        if interactive {
-                                                            use dialoguer::Confirm;
-                                                            let prompt = format!(
-                                                                "{}\"{}\" {}{}",
-                                                                get_color("yellow", false),
-                                                                rec.pattern(),
-                                                                if lang == Language::Japanese {
-                                                                    "を除外リストに追加しますか？"
-                                                                } else {
-                                                                    "to exclude list?"
-                                                                },
-                                                                get_color("reset", false)
-                                                            );
+                                                            if interactive {
+                                                                use dialoguer::Confirm;
+                                                                let prompt = format!(
+                                                                    "{}\"{}\" {}{}",
+                                                                    get_color("yellow", false),
+                                                                    rec.pattern(),
+                                                                    if lang == Language::Japanese {
+                                                                        "を除外リストに追加しますか？"
+                                                                    } else {
+                                                                        "to exclude list?"
+                                                                    },
+                                                                    get_color("reset", false)
+                                                                );
 
-                                                            if Confirm::new()
-                                                                .with_prompt(prompt)
-                                                                .interact()?
-                                                            {
+                                                                if Confirm::new()
+                                                                    .with_prompt(prompt)
+                                                                    .interact()?
+                                                                {
+                                                                    exclude_patterns.push(
+                                                                        rec.pattern().to_string(),
+                                                                    );
+                                                                }
+                                                            } else {
                                                                 exclude_patterns.push(
                                                                     rec.pattern().to_string(),
                                                                 );
                                                             }
-                                                        } else {
-                                                            exclude_patterns
-                                                                .push(rec.pattern().to_string());
                                                         }
                                                     }
                                                 }
+                                                Err(_) => {
+                                                    // 除外パターン提案の失敗は無視（重要ではない）
+                                                }
                                             }
-                                            Err(_) => {
-                                                // 除外パターン提案の失敗は無視（重要ではない）
-                                            }
-                                        }
                                         }
                                     }
 

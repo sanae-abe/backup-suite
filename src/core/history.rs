@@ -191,7 +191,19 @@ impl BackupHistory {
         }
 
         let content = toml::to_string_pretty(&HistoryFile { history })?;
-        fs::write(&log_path, content)?;
+
+        // 原子的書き込み: 一時ファイルに書き込んでからリネーム
+        // これにより中断時に履歴ファイルが破損しない
+        let temp_path = log_path.with_extension("toml.tmp");
+        fs::write(&temp_path, &content)?;
+
+        // ファイルシステムへの同期を保証（データの永続化）
+        let file = fs::File::open(&temp_path)?;
+        file.sync_all()?;
+
+        // 原子的リネーム（POSIX環境では原子的操作）
+        fs::rename(&temp_path, &log_path)?;
+
         Ok(())
     }
 

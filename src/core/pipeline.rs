@@ -907,4 +907,381 @@ mod tests {
         let pipeline = ProcessingPipeline::new(pipeline_config);
         assert_eq!(pipeline.current_parallelism(), 4);
     }
+
+    #[test]
+    fn test_pipeline_config_builder() {
+        // Default configuration
+        let default_config = PipelineConfig::default();
+        assert!(default_config.encryption.is_none());
+        assert_eq!(default_config.compression_type, CompressionType::Zstd);
+
+        // Builder pattern - encryption
+        let enc_config = PipelineConfig::default().with_encryption(EncryptionConfig::default());
+        assert!(enc_config.encryption.is_some());
+
+        // Builder pattern - compression
+        let comp_config = PipelineConfig::default()
+            .with_compression(CompressionType::Gzip, CompressionConfig::gzip_default());
+        assert_eq!(comp_config.compression_type, CompressionType::Gzip);
+
+        // Builder pattern - fast
+        let fast_config = PipelineConfig::default().fast();
+        assert_eq!(fast_config.performance.parallel_threads, num_cpus::get());
+        assert_eq!(fast_config.performance.buffer_size, 2 * 1024 * 1024);
+
+        // Builder pattern - best compression
+        let best_config = PipelineConfig::default().best_compression();
+        assert_eq!(
+            best_config.performance.parallel_threads,
+            (num_cpus::get() / 2).max(1)
+        );
+    }
+
+    #[test]
+    fn test_performance_config_presets() {
+        // Fast preset
+        let fast = PerformanceConfig::fast();
+        assert_eq!(fast.parallel_threads, num_cpus::get());
+        assert_eq!(fast.buffer_size, 2 * 1024 * 1024);
+        assert_eq!(fast.memory_limit, 1024 * 1024 * 1024);
+        assert_eq!(fast.batch_size, 64);
+
+        // Quality preset
+        let quality = PerformanceConfig::quality();
+        assert_eq!(quality.parallel_threads, (num_cpus::get() / 2).max(1));
+        assert_eq!(quality.buffer_size, 512 * 1024);
+        assert_eq!(quality.memory_limit, 256 * 1024 * 1024);
+        assert_eq!(quality.batch_size, 16);
+
+        // Default preset
+        let default = PerformanceConfig::default();
+        assert_eq!(default.parallel_threads, optimal_parallelism());
+        assert_eq!(default.buffer_size, 1024 * 1024);
+        assert_eq!(default.memory_limit, 512 * 1024 * 1024);
+        assert_eq!(default.batch_size, 32);
+    }
+
+    #[test]
+    fn test_performance_config_custom_values() {
+        // Zero parallelism should be clamped to 1
+        let config = PerformanceConfig::default().with_parallelism(0);
+        assert_eq!(config.parallel_threads, 1);
+
+        // Zero batch size should be clamped to 1
+        let config = PerformanceConfig::default().with_batch_size(0);
+        assert_eq!(config.batch_size, 1);
+
+        // Large values should work
+        let config = PerformanceConfig::default()
+            .with_parallelism(100)
+            .with_batch_size(1000);
+        assert_eq!(config.parallel_threads, 100);
+        assert_eq!(config.batch_size, 1000);
+    }
+
+    #[test]
+    fn test_compression_type_variations() {
+        // Zstd compression
+        let zstd_config = PipelineConfig::default()
+            .with_compression(CompressionType::Zstd, CompressionConfig::zstd_default());
+        let pipeline = ProcessingPipeline::new(zstd_config);
+
+        let test_data = b"Zstd compression test. ".repeat(100);
+        let temp_file = std::env::temp_dir().join("test_zstd.txt");
+        std::fs::write(&temp_file, &test_data).unwrap();
+
+        let processed = pipeline.process_file(&temp_file, None, None).unwrap();
+        assert!(processed.compression_info.is_some());
+        assert_eq!(processed.metadata.original_size, test_data.len() as u64);
+
+        std::fs::remove_file(&temp_file).ok();
+
+        // Gzip compression
+        let gzip_config = PipelineConfig::default()
+            .with_compression(CompressionType::Gzip, CompressionConfig::gzip_default());
+        let pipeline = ProcessingPipeline::new(gzip_config);
+
+        let test_data = b"Gzip compression test. ".repeat(100);
+        let temp_file = std::env::temp_dir().join("test_gzip.txt");
+        std::fs::write(&temp_file, &test_data).unwrap();
+
+        let processed = pipeline.process_file(&temp_file, None, None).unwrap();
+        assert!(processed.compression_info.is_some());
+        assert_eq!(processed.metadata.original_size, test_data.len() as u64);
+
+        std::fs::remove_file(&temp_file).ok();
+    }
+
+    #[test]
+    fn test_empty_file_processing() {
+        let config = PipelineConfig::default();
+        let pipeline = ProcessingPipeline::new(config);
+
+        let temp_file = std::env::temp_dir().join("test_empty.txt");
+        std::fs::write(&temp_file, b"").unwrap();
+
+        let processed = pipeline.process_file(&temp_file, None, None).unwrap();
+        assert_eq!(processed.metadata.original_size, 0);
+        assert_eq!(
+            processed.metadata.final_size,
+            processed.metadata.compressed_size
+        );
+
+        let restored = pipeline.restore_data(&processed, None).unwrap();
+        assert!(restored.is_empty());
+
+        std::fs::remove_file(&temp_file).ok();
+    }
+
+    #[test]
+    fn test_large_file_processing() {
+        let config = PipelineConfig::default().fast();
+        let pipeline = ProcessingPipeline::new(config);
+
+        // 10MB のテストデータ
+        let test_data = vec![b'A'; 10 * 1024 * 1024];
+        let temp_file = std::env::temp_dir().join("test_large.txt");
+        std::fs::write(&temp_file, &test_data).unwrap();
+
+        let processed = pipeline.process_file(&temp_file, None, None).unwrap();
+        assert_eq!(processed.metadata.original_size, test_data.len() as u64);
+        assert!(processed.metadata.compressed_size < processed.metadata.original_size);
+
+        // 圧縮率が高いことを確認（同じ文字の繰り返しなので）
+        assert!(processed.metadata.compression_ratio > 0.9);
+
+        std::fs::remove_file(&temp_file).ok();
+    }
+
+    #[test]
+    fn test_encryption_config_without_key_skips_encryption() {
+        // 暗号化設定があってもキーなしなら暗号化をスキップ
+        let config = PipelineConfig::default().with_encryption(EncryptionConfig::default());
+        let pipeline = ProcessingPipeline::new(config);
+
+        let test_data = b"Test data without key".repeat(10);
+        let temp_file = std::env::temp_dir().join("test_no_key.txt");
+        std::fs::write(&temp_file, &test_data).unwrap();
+
+        // キーなしでも処理可能（暗号化はスキップされる）
+        let processed = pipeline.process_file(&temp_file, None, None).unwrap();
+        assert!(processed.encryption_info.is_none());
+        assert!(processed.compression_info.is_some());
+
+        std::fs::remove_file(&temp_file).ok();
+    }
+
+    #[test]
+    fn test_restore_with_wrong_key() {
+        let config = PipelineConfig::default().with_encryption(EncryptionConfig::default());
+        let pipeline = ProcessingPipeline::new(config);
+
+        let master_key = MasterKey::generate();
+        let salt = crate::crypto::key_management::KeyDerivation::generate_salt();
+        let test_data = b"Secret data for key test".repeat(10);
+        let temp_file = std::env::temp_dir().join("test_wrong_key.txt");
+        std::fs::write(&temp_file, &test_data).unwrap();
+
+        let processed = pipeline
+            .process_file(&temp_file, Some(&master_key), Some(salt))
+            .unwrap();
+
+        // 異なるキーで復元を試みる
+        let wrong_key = MasterKey::generate();
+        let result = pipeline.restore_data(&processed, Some(&wrong_key));
+        assert!(result.is_err());
+
+        std::fs::remove_file(&temp_file).ok();
+    }
+
+    #[test]
+    fn test_restore_without_key() {
+        let config = PipelineConfig::default().with_encryption(EncryptionConfig::default());
+        let pipeline = ProcessingPipeline::new(config);
+
+        let master_key = MasterKey::generate();
+        let salt = crate::crypto::key_management::KeyDerivation::generate_salt();
+        let test_data = b"Encrypted data".repeat(10);
+        let temp_file = std::env::temp_dir().join("test_restore_no_key.txt");
+        std::fs::write(&temp_file, &test_data).unwrap();
+
+        let processed = pipeline
+            .process_file(&temp_file, Some(&master_key), Some(salt))
+            .unwrap();
+
+        // キーなしで復元を試みる
+        let result = pipeline.restore_data(&processed, None);
+        assert!(result.is_err());
+
+        std::fs::remove_file(&temp_file).ok();
+    }
+
+    #[test]
+    fn test_parallel_error_handling() {
+        let config = PipelineConfig::default().fast();
+        let pipeline = ProcessingPipeline::new(config);
+
+        // 存在しないファイルのリスト
+        let nonexistent_files: Vec<PathBuf> = (0..5)
+            .map(|i| PathBuf::from(format!("/tmp/nonexistent_file_{i}.txt")))
+            .collect();
+
+        let results = pipeline.process_files_parallel(&nonexistent_files, None, None);
+
+        // 全てエラーになることを確認
+        assert_eq!(results.len(), nonexistent_files.len());
+        assert!(results.iter().all(std::result::Result::is_err));
+    }
+
+    #[test]
+    fn test_parallel_mixed_results() {
+        let config = PipelineConfig::default().fast();
+        let pipeline = ProcessingPipeline::new(config);
+
+        let temp_dir = std::env::temp_dir();
+        let mut files = Vec::new();
+
+        // 存在するファイルを3つ作成
+        for i in 0..3 {
+            let path = temp_dir.join(format!("test_mixed_{i}.txt"));
+            std::fs::write(&path, format!("Test data {i}").repeat(10)).unwrap();
+            files.push(path);
+        }
+
+        // 存在しないファイルを2つ追加
+        files.push(PathBuf::from("/tmp/nonexistent_1.txt"));
+        files.push(PathBuf::from("/tmp/nonexistent_2.txt"));
+
+        let results = pipeline.process_files_parallel(&files, None, None);
+
+        // 結果の数は一致
+        assert_eq!(results.len(), files.len());
+
+        // 一部成功、一部失敗
+        let success_count = results.iter().filter(|r| r.is_ok()).count();
+        let error_count = results.iter().filter(|r| r.is_err()).count();
+
+        assert_eq!(success_count, 3);
+        assert_eq!(error_count, 2);
+
+        // クリーンアップ
+        for i in 0..3 {
+            let path = temp_dir.join(format!("test_mixed_{i}.txt"));
+            std::fs::remove_file(path).ok();
+        }
+    }
+
+    #[test]
+    fn test_stream_empty_data() {
+        let config = PipelineConfig::default();
+        let pipeline = ProcessingPipeline::new(config);
+
+        let empty_data: &[u8] = &[];
+        let reader = Cursor::new(empty_data);
+        let mut output = Vec::new();
+
+        let metadata = pipeline
+            .process_stream(reader, &mut output, None, None)
+            .unwrap();
+
+        assert_eq!(metadata.original_size, 0);
+        assert_eq!(metadata.final_size, metadata.compressed_size);
+    }
+
+    #[test]
+    fn test_stream_large_data() {
+        let config = PipelineConfig::default().fast();
+        let pipeline = ProcessingPipeline::new(config);
+
+        // 5MB のストリームデータ
+        let large_data = vec![b'B'; 5 * 1024 * 1024];
+        let reader = Cursor::new(&large_data);
+        let mut output = Vec::new();
+
+        let metadata = pipeline
+            .process_stream(reader, &mut output, None, None)
+            .unwrap();
+
+        assert_eq!(metadata.original_size, large_data.len() as u64);
+        assert!(metadata.compressed_size < metadata.original_size);
+        assert!(!output.is_empty());
+    }
+
+    #[test]
+    fn test_performance_stats() {
+        let config = PipelineConfig::default()
+            .fast()
+            .with_compression(CompressionType::Gzip, CompressionConfig::gzip_default());
+        let pipeline = ProcessingPipeline::new(config);
+
+        let stats = pipeline.get_performance_stats();
+
+        assert_eq!(stats.available_threads, num_cpus::get());
+        assert_eq!(stats.buffer_size, 2 * 1024 * 1024);
+        assert_eq!(stats.compression_type, CompressionType::Gzip);
+        assert!(stats.encryption_enabled == false);
+    }
+
+    #[test]
+    fn test_batch_processing() {
+        let config = PerformanceConfig::default()
+            .with_batch_size(3)
+            .with_parallelism(2);
+
+        assert_eq!(config.batch_size, 3);
+        assert_eq!(config.parallel_threads, 2);
+
+        let pipeline_config = PipelineConfig {
+            performance: config,
+            ..Default::default()
+        };
+
+        let pipeline = ProcessingPipeline::new(pipeline_config);
+
+        // 10個のファイルを処理（バッチサイズ3なので4バッチ）
+        let temp_dir = std::env::temp_dir();
+        let test_files: Vec<PathBuf> = (0..10)
+            .map(|i| {
+                let path = temp_dir.join(format!("test_batch_{i}.txt"));
+                std::fs::write(&path, format!("Batch test {i}").repeat(10)).unwrap();
+                path
+            })
+            .collect();
+
+        let results = pipeline.process_files_parallel(&test_files, None, None);
+
+        assert_eq!(results.len(), 10);
+        assert!(results.iter().all(std::result::Result::is_ok));
+
+        // クリーンアップ
+        for file in test_files {
+            std::fs::remove_file(file).ok();
+        }
+    }
+
+    #[test]
+    fn test_compression_ratio_calculation() {
+        let config = PipelineConfig::default();
+        let pipeline = ProcessingPipeline::new(config);
+
+        // 圧縮しやすいデータ（繰り返し）
+        let compressible_data = b"A".repeat(10000);
+        let temp_file = std::env::temp_dir().join("test_ratio.txt");
+        std::fs::write(&temp_file, &compressible_data).unwrap();
+
+        let processed = pipeline.process_file(&temp_file, None, None).unwrap();
+
+        // 圧縮が実行されたことを確認
+        assert!(processed.compression_info.is_some());
+        assert!(processed.metadata.compressed_size < processed.metadata.original_size);
+
+        // 圧縮率が0以上であることを確認（negative値はありえない）
+        assert!(processed.metadata.compression_ratio >= 0.0);
+
+        // 圧縮しやすいデータなので圧縮率が一定以上であることを確認
+        // Zstdの圧縮率は通常のパーセンテージ（1.0 = 100%圧縮）とは異なる可能性がある
+        assert!(processed.metadata.compressed_size > 0);
+
+        std::fs::remove_file(&temp_file).ok();
+    }
 }

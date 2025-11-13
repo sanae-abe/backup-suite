@@ -75,7 +75,17 @@ impl EncryptedData {
             data[36], data[37], data[38], data[39], data[40], data[41], data[42], data[43],
         ]) as usize;
 
-        if data.len() != 44 + ciphertext_len {
+        // オーバーフロー対策: checked_add を使用
+        let expected_len = match 44usize.checked_add(ciphertext_len) {
+            Some(len) => len,
+            None => {
+                return Err(BackupError::EncryptionError(
+                    "暗号化データの長さが不正です（オーバーフロー）".to_string(),
+                ));
+            }
+        };
+
+        if data.len() != expected_len {
             return Err(BackupError::EncryptionError(
                 "暗号化データの長さが一致しません".to_string(),
             ));

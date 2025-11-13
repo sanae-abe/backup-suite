@@ -410,3 +410,34 @@ Argon2:
 - **暗号化処理は慎重に** - penetration-tester で脆弱性テスト必須
 - **パフォーマンス測定を忘れずに** - criterion ベンチマークで定量評価
 - **複雑なタスクは multi-agent-coordinator で複数agentを協調**
+
+## 🔧 Git Hooks
+
+このプロジェクトでは以下の Git hooks を推奨します：
+
+### pre_commit
+```bash
+cargo fmt
+```
+- **目的**: コード自動フォーマット
+- **効果**: コミット前にコードスタイルを自動統一
+- **実行時間**: 1-2秒
+
+### pre_push
+```bash
+# 1. Clippy チェック（高速失敗）
+cargo clippy --all-features -- -D warnings
+
+# 2. 単体テスト・バイナリテスト（統合テスト除外で高速化）
+cargo test --all-features --lib --bins
+```
+
+**実行順序の理由**:
+1. **Clippy を先に実行**: 型エラー・警告を数秒で検出（早期失敗）
+2. **統合テスト除外**: proptest (237秒) や nonce_verification (52秒) を除外し、10-30秒で完了
+3. **CI で全テスト実行**: GitHub Actions で統合テストを含む全テストを実行
+
+**注意事項**:
+- いずれかのコマンドが失敗すると commit/push が中止されます
+- 統合テストは `cargo test --all-features` で手動実行可能
+- CI では全テスト（統合テスト含む）が自動実行されます

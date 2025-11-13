@@ -258,6 +258,12 @@ backup-suite smart auto-configure ~/data --dry-run
 
 # Specify subdirectory scan depth (default: 1)
 backup-suite smart auto-configure ~/data --max-depth 2
+
+# Specify maximum number of subdirectories to process (default: 100)
+backup-suite smart auto-configure ~/data --max-subdirs 50
+
+# Increase subdirectory processing limit for large directory trees
+backup-suite smart auto-configure ~/data --max-subdirs 200
 ```
 
 **Features**:
@@ -265,6 +271,7 @@ backup-suite smart auto-configure ~/data --max-depth 2
 - **Automatic exclusion pattern detection** (auto-exclude `node_modules/`, `target/`, `.cache/`, etc.)
 - **Project type auto-detection** (Rust, Node.js, Python, etc.)
 - **Only patterns with 80%+ confidence applied** (prevents false positives)
+- **Performance optimization with processing limit** (`--max-subdirs` for handling large directory trees, default: 100)
 
 **Example Output**:
 ```
@@ -293,6 +300,14 @@ Analyzing: "/Users/user/projects"
 Auto-configuration completed
   Items added: 3
   Total reduction: 4.78 GB (approx. 35% faster backup time)
+```
+
+**When subdirectory limit is reached**:
+```
+🤖 Smart Auto-Configuration
+Analyzing: "/Users/user/large-project"
+  📁 Found 100 subdirectories: 100
+  ⚠️  Limit reached, some subdirectories were not processed: 100 (use --max-subdirs to change)
 ```
 
 #### 2. File Importance Analysis

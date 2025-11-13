@@ -44,7 +44,7 @@ fn test_calculate_directory_size_with_files() {
     let file1 = temp_dir.path().join("file1.txt");
     let file2 = temp_dir.path().join("file2.txt");
     fs::write(&file1, "Hello World").unwrap(); // 11 bytes
-    fs::write(&file2, "Rust").unwrap();         // 4 bytes
+    fs::write(&file2, "Rust").unwrap(); // 4 bytes
 
     let result = dashboard::calculate_directory_size(temp_dir.path());
 
@@ -66,15 +66,18 @@ fn test_calculate_directory_size_with_subdirs() {
     // ファイル作成
     let file1 = temp_dir.path().join("root.txt");
     let file2 = subdir.join("sub.txt");
-    fs::write(&file1, "Root").unwrap();    // 4 bytes
-    fs::write(&file2, "Subdir").unwrap();  // 6 bytes
+    fs::write(&file1, "Root").unwrap(); // 4 bytes
+    fs::write(&file2, "Subdir").unwrap(); // 6 bytes
 
     let result = dashboard::calculate_directory_size(temp_dir.path());
 
     assert!(result.is_ok());
     let (size, count) = result.unwrap();
     assert_eq!(size, 10, "合計サイズは10バイトであるべき");
-    assert_eq!(count, 2, "ファイル数は2であるべき（ディレクトリは含まない）");
+    assert_eq!(
+        count, 2,
+        "ファイル数は2であるべき（ディレクトリは含まない）"
+    );
 }
 
 /// calculate_directory_size のテスト - 存在しないディレクトリ
@@ -184,7 +187,10 @@ fn test_warnings_for_missing_targets() {
     let target = Target::new(nonexistent.clone(), Priority::High, "test".to_string());
 
     // パスが存在しないことを確認
-    assert!(!target.path.exists(), "テストターゲットのパスは存在しないべき");
+    assert!(
+        !target.path.exists(),
+        "テストターゲットのパスは存在しないべき"
+    );
 
     // 実際のdisplay_warnings_summaryでは、このようなターゲットに対して
     // "バックアップ対象が存在しません" という警告が生成される
@@ -198,7 +204,10 @@ fn test_warnings_for_old_backups() {
     let old_timestamp = Utc::now() - Duration::days(10);
     let days_since = Utc::now().signed_duration_since(old_timestamp).num_days();
 
-    assert!(days_since > 7, "10日前のバックアップは7日以上経過しているべき");
+    assert!(
+        days_since > 7,
+        "10日前のバックアップは7日以上経過しているべき"
+    );
 
     // 実際のdisplay_warnings_summaryでは、このような古いバックアップに対して
     // "最後のバックアップからN日経過しています" という警告が生成される
@@ -234,7 +243,10 @@ fn test_get_disk_info_nonexistent_path() {
     let nonexistent_path = PathBuf::from("/nonexistent/path/to/nowhere");
     let result = dashboard::get_disk_info(&nonexistent_path);
 
-    assert!(result.is_ok(), "get_disk_info は存在しないパスでもエラーにならない");
+    assert!(
+        result.is_ok(),
+        "get_disk_info は存在しないパスでもエラーにならない"
+    );
 
     if let Ok(disk_info) = result {
         assert!(disk_info.is_none(), "存在しないパスではNoneが返るべき");
@@ -304,7 +316,7 @@ fn test_priority_values_are_valid() {
     // すべての値が有効な優先度であることを確認
     for priority in &priorities {
         match *priority {
-            "high" | "medium" | "low" => {},
+            "high" | "medium" | "low" => {}
             _ => panic!("無効な優先度: {priority}"),
         }
     }
@@ -320,10 +332,16 @@ fn test_confirm_backup_message_format() {
     // メッセージフォーマットの検証
     let message = format!("対象ファイル数: {file_count} ファイル");
     assert!(message.contains("150"), "ファイル数を含むべき");
-    assert!(message.contains("ファイル"), "「ファイル」という単語を含むべき");
+    assert!(
+        message.contains("ファイル"),
+        "「ファイル」という単語を含むべき"
+    );
 
     let dest_message = format!("バックアップ先: {destination}");
-    assert!(dest_message.contains("/backup/destination"), "バックアップ先パスを含むべき");
+    assert!(
+        dest_message.contains("/backup/destination"),
+        "バックアップ先パスを含むべき"
+    );
 }
 
 /// confirm_cleanup のテスト - メッセージフォーマット検証
@@ -425,9 +443,21 @@ fn test_display_targets_with_data() {
 
     // テストターゲット作成
     let targets = vec![
-        Target::new(temp_dir.path().to_path_buf(), Priority::High, "test1".to_string()),
-        Target::new(temp_dir.path().to_path_buf(), Priority::Medium, "test2".to_string()),
-        Target::new(temp_dir.path().to_path_buf(), Priority::Low, "test3".to_string()),
+        Target::new(
+            temp_dir.path().to_path_buf(),
+            Priority::High,
+            "test1".to_string(),
+        ),
+        Target::new(
+            temp_dir.path().to_path_buf(),
+            Priority::Medium,
+            "test2".to_string(),
+        ),
+        Target::new(
+            temp_dir.path().to_path_buf(),
+            Priority::Low,
+            "test3".to_string(),
+        ),
     ];
 
     let theme = ColorTheme::auto();
