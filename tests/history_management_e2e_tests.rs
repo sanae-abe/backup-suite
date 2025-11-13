@@ -363,12 +363,12 @@ fn test_e2e_list_backups_chronological() -> Result<()> {
     let medium_priority = BackupHistory::filter_by_priority(&all_history, &Priority::Medium);
     let low_priority = BackupHistory::filter_by_priority(&all_history, &Priority::Low);
 
-    assert!(high_priority.len() >= 1, "At least 1 high priority backup");
+    assert!(!high_priority.is_empty(), "At least 1 high priority backup");
     assert!(
-        medium_priority.len() >= 1,
+        !medium_priority.is_empty(),
         "At least 1 medium priority backup"
     );
-    assert!(low_priority.len() >= 1, "At least 1 low priority backup");
+    assert!(!low_priority.is_empty(), "At least 1 low priority backup");
 
     println!("✅ 時系列順一覧表示テスト成功:");
     println!("  全履歴: {} 件", all_history.len());
@@ -598,7 +598,7 @@ fn test_e2e_filter_by_category_detailed() -> Result<()> {
         let filtered = BackupHistory::filter_by_category(&all_history, &test_category);
 
         assert!(
-            filtered.len() >= 1,
+            !filtered.is_empty(),
             "Should have at least 1 entry for category {}: found {}",
             test_category,
             filtered.len()

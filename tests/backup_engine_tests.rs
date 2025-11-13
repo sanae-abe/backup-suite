@@ -510,7 +510,7 @@ fn test_permission_preservation_cross_platform() -> Result<()> {
     #[cfg(unix)]
     {
         let backed_perms = fs::metadata(&backed_up)?.permissions();
-        assert!(backed_perms.readonly() == false);
+        assert!(!backed_perms.readonly());
     }
 
     Ok(())

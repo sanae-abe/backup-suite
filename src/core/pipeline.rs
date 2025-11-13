@@ -1219,7 +1219,7 @@ mod tests {
         assert_eq!(stats.available_threads, num_cpus::get());
         assert_eq!(stats.buffer_size, 2 * 1024 * 1024);
         assert_eq!(stats.compression_type, CompressionType::Gzip);
-        assert!(stats.encryption_enabled == false);
+        assert!(!stats.encryption_enabled);
     }
 
     #[test]
