@@ -943,7 +943,8 @@ mod tests {
         let config = Config::default();
         let scheduler = Scheduler::new(config).unwrap();
 
-        let (service_path, timer_path) = scheduler.get_systemd_paths(&Priority::High).unwrap();
+        let service_path = scheduler.get_systemd_service_path(&Priority::High).unwrap();
+        let timer_path = scheduler.get_systemd_timer_path(&Priority::High).unwrap();
 
         let service_str = service_path.to_string_lossy();
         let timer_str = timer_path.to_string_lossy();
