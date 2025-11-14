@@ -61,7 +61,7 @@ flate2 = "1.0"
 sha2 = "0.10"
 
 # Phase 1: AI機能（統計的異常検知・推奨エンジン）
-statrs = { version = "0.17", optional = true }
+statrs = { version = "0.18", optional = true }
 
 # Unix限定のセキュリティ機能
 [target.'cfg(unix)'.dependencies]
