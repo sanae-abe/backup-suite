@@ -52,6 +52,15 @@ use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 /// # Ok::<(), anyhow::Error>(())
 /// ```
 pub fn confirm(message: &str, default: bool) -> Result<bool> {
+    // CI環境での自動確認サポート
+    // BACKUP_SUITE_YES=true または BACKUP_SUITE_YES=1 で自動的にtrueを返す
+    if let Ok(auto_yes) = std::env::var("BACKUP_SUITE_YES") {
+        if auto_yes == "true" || auto_yes == "1" {
+            eprintln!("[CI MODE] Auto-confirming: {}", message);
+            return Ok(true);
+        }
+    }
+
     let result = Confirm::with_theme(&ColorfulTheme::default())
         .with_prompt(message)
         .default(default)

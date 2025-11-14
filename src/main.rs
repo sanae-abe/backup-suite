@@ -1997,17 +1997,32 @@ fn main() -> Result<()> {
 
             // パフォーマンス最適化: 確認プロンプトをスキャン前に表示
             if !dry_run {
-                use dialoguer::Confirm;
                 let prompt = format!(
                     "{}日以前の古いバックアップを削除します。よろしいですか？",
                     days
                 );
 
-                if !Confirm::new()
-                    .with_prompt(prompt)
-                    .default(true)
-                    .interact()?
-                {
+                // CI環境対応: BACKUP_SUITE_YESが設定されている場合は自動確認
+                let should_proceed = if let Ok(auto_yes) = std::env::var("BACKUP_SUITE_YES") {
+                    if auto_yes == "true" || auto_yes == "1" {
+                        eprintln!("[CI MODE] Auto-confirming: {}", prompt);
+                        true
+                    } else {
+                        use dialoguer::Confirm;
+                        Confirm::new()
+                            .with_prompt(prompt)
+                            .default(true)
+                            .interact()?
+                    }
+                } else {
+                    use dialoguer::Confirm;
+                    Confirm::new()
+                        .with_prompt(prompt)
+                        .default(true)
+                        .interact()?
+                };
+
+                if !should_proceed {
                     println!(
                         "{}キャンセルしました{}",
                         get_color("yellow", false),
