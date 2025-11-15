@@ -1,1 +1,0 @@
-src/crypto/encryption.rs:58:9: replace EncryptedData::from_bytes -> Result<Self> with Ok(Default::default())

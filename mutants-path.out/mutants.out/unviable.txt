@@ -1,1 +1,0 @@
-src/security/path.rs:262:5: replace safe_open -> Result<File> with Ok(Default::default())

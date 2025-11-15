@@ -78,3 +78,7 @@ $RECYCLE.BIN/
 # Test artifacts
 /tmp/
 /test-output/
+
+# Mutation testing outputs
+mutants*.out/
+*.out/

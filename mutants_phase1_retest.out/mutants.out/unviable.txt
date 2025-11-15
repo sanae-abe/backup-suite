@@ -1,3 +1,0 @@
-src/crypto/encryption.rs:208:9: replace EncryptionEngine::encrypt_stream -> Result<EncryptedData> with Ok(Default::default())
-src/crypto/encryption.rs:58:9: replace EncryptedData::from_bytes -> Result<Self> with Ok(Default::default())
-src/crypto/encryption.rs:149:9: replace EncryptionEngine::encrypt -> Result<EncryptedData> with Ok(Default::default())

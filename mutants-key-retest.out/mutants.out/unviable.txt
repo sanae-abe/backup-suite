@@ -1,6 +1,0 @@
-src/crypto/key_management.rs:21:9: replace MasterKey::generate -> Self with Default::default()
-src/crypto/key_management.rs:29:9: replace MasterKey::from_bytes -> Self with Default::default()
-src/crypto/key_management.rs:83:9: replace KeyDerivation::derive_key -> Result<MasterKey> with Ok(Default::default())
-src/crypto/key_management.rs:174:9: replace KeyManager::create_master_key -> Result<(MasterKey, [u8; 16])> with Ok((Default::default(), [0; 16]))
-src/crypto/key_management.rs:174:9: replace KeyManager::create_master_key -> Result<(MasterKey, [u8; 16])> with Ok((Default::default(), [1; 16]))
-src/crypto/key_management.rs:189:9: replace KeyManager::restore_master_key -> Result<MasterKey> with Ok(Default::default())
