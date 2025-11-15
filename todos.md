@@ -86,7 +86,15 @@
   - [x] README.zh-TW.md（繁体字版）に補完セクション追加
   - [x] 詳細ドキュメント（docs/shell-completion.md）へのリンク追加
   - [x] よくある3つの問題の簡易対処方法を記載
-- [ ] typo修正サジェスト機能（簡素化版） - コマンド名のみ・英語のみ | Priority: medium | Context: ui | Due: 2025-11-30
+- [x] typo修正サジェスト機能（簡素化版） - コマンド名のみ・英語のみ | Priority: medium | Context: ui | Due: 2025-11-30 | Completed: 2025-11-16
+  - [x] typo.rs実装確認 - Levenshtein距離アルゴリズム実装済み
+  - [x] main.rs統合確認 - parse_cli_with_typo_detection実装済み
+  - [x] 動作テスト実施 - restor→restore, ad→add, lst→list 正常動作
+  - [x] ユニットテスト確認 - 13テスト全成功
+  - [x] README.md（日本語版）に機能説明追加
+  - [x] README.en.md（英語版）に機能説明追加
+  - [x] README.zh-CN.md（簡体字版）に機能説明追加
+  - [x] README.zh-TW.md（繁体字版）に機能説明追加
 - [ ] Nonce衝突検出機構 - デバッグビルド追跡 | Priority: medium | Context: security | Due: 2025-12-15
 
 ## 🟢 低優先度（Phase 3以降）

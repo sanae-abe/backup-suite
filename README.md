@@ -78,6 +78,19 @@
 - **自動言語検出**：`LANG`環境変数から自動判定（`ja`, `en`, `zh-CN`, `zh-TW`等に対応）
 - **全メッセージ翻訳済み**：CLI出力、エラーメッセージ、ヘルプ全てを各言語で表示
 
+### 💡 使いやすいCLI
+- **タイポ修正サジェスト**：コマンド名のスペルミスを自動検出し、正しいコマンドを提案
+  ```bash
+  $ backup-suite restor
+  error: unrecognized subcommand 'restor'
+
+  Did you mean 'restore'?
+
+  For more information, try '--help'.
+  ```
+- **インテリジェントな編集距離アルゴリズム**：Levenshtein距離で類似コマンドを自動判定（最大2文字の差まで検出）
+- **カラー対応**：ターミナルのカラーサポートに応じて自動調整
+
 ## スクリーンショット
 
 ### ヘルプ画面

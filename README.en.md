@@ -78,6 +78,19 @@
 - **Automatic language detection**: Auto-detected from `LANG` environment variable (supports `ja`, `en`, `zh-CN`, `zh-TW`, etc.)
 - **Complete translations**: All CLI output, error messages, and help text available in each language
 
+### 💡 User-Friendly CLI
+- **Typo correction suggestions**: Automatically detects command name typos and suggests the correct command
+  ```bash
+  $ backup-suite restor
+  error: unrecognized subcommand 'restor'
+
+  Did you mean 'restore'?
+
+  For more information, try '--help'.
+  ```
+- **Intelligent edit distance algorithm**: Uses Levenshtein distance to automatically detect similar commands (up to 2 character differences)
+- **Color support**: Automatically adjusts based on terminal color capabilities
+
 ## Screenshots
 
 ### Help Screen

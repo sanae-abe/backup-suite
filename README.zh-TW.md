@@ -78,6 +78,19 @@
 - **自動語言偵測**：從 `LANG` 環境變數自動判斷（支援 `ja`、`en`、`zh-CN`、`zh-TW` 等）
 - **所有訊息已翻譯**：CLI 輸出、錯誤訊息、說明文字均以各語言顯示
 
+### 💡 易用的 CLI
+- **拼字錯誤修正建議**：自動偵測指令名稱拼字錯誤並建議正確指令
+  ```bash
+  $ backup-suite restor
+  error: unrecognized subcommand 'restor'
+
+  Did you mean 'restore'?
+
+  For more information, try '--help'.
+  ```
+- **智慧編輯距離演算法**：使用 Levenshtein 距離自動偵測相似指令（最多 2 個字元差異）
+- **顏色支援**：根據終端顏色功能自動調整
+
 ## 螢幕截圖
 
 ### 說明介面
