@@ -285,3 +285,187 @@ fn test_decrypt_stream_wrong_master_key() {
     assert!(result.is_err());
     assert!(result.unwrap_err().to_string().contains("復号化エラー"));
 }
+
+// =============================================================================
+// CRITICAL TESTS - Mutation Testing で検出された脆弱性への対策
+// =============================================================================
+
+// =============================================================================
+// Test 11: Nonce一意性の強化テスト - 10,000個
+// MISSED変異への対策: generate_nonce() → [0; 12], [1; 12]
+// =============================================================================
+
+#[test]
+fn test_nonce_uniqueness_10000_generations() {
+    use std::collections::HashSet;
+
+    let mut nonces = HashSet::new();
+
+    // 10,000個のナンスを生成して一意性を確認
+    for _ in 0..10_000 {
+        let nonce = EncryptionEngine::generate_nonce_internal();
+
+        assert!(
+            nonces.insert(nonce),
+            "Nonce collision detected at {} generations! CRITICAL SECURITY ISSUE.",
+            nonces.len()
+        );
+    }
+
+    assert_eq!(nonces.len(), 10_000, "Expected 10,000 unique nonces");
+}
+
+// =============================================================================
+// Test 12: Nonce がゼロや固定値でないことを確認
+// MISSED変異への対策: generate_nonce() → [0; 12], [1; 12]
+// =============================================================================
+
+#[test]
+fn test_nonce_not_zero_or_fixed() {
+    // 100個のナンスを生成して、ゼロや固定値でないことを確認
+    for _ in 0..100 {
+        let nonce = EncryptionEngine::generate_nonce_internal();
+
+        assert_ne!(
+            nonce, [0u8; 12],
+            "Zero nonce detected! CRITICAL: AES-GCM completely broken."
+        );
+        assert_ne!(
+            nonce, [1u8; 12],
+            "Fixed nonce [1; 12] detected! CRITICAL: Nonce reuse attack possible."
+        );
+        assert_ne!(
+            nonce, [255u8; 12],
+            "Fixed nonce [255; 12] detected! CRITICAL: Nonce reuse attack possible."
+        );
+    }
+}
+
+// =============================================================================
+// Test 13: EncryptedData::from_bytes 境界値テスト（厳密版）
+// MISSED変異への対策: < → <= の境界条件変更
+// =============================================================================
+
+#[test]
+fn test_encrypted_data_from_bytes_exact_boundary() {
+    // 最小サイズ未満（43バイト）
+    let too_small = vec![0u8; 43];
+    assert!(
+        EncryptedData::from_bytes(&too_small).is_err(),
+        "43 bytes should be rejected (minimum is 44)"
+    );
+
+    // 最小サイズちょうど（44バイト）- これは受け入れられるべき
+    let mut exact_size = vec![0u8; 44];
+    exact_size[0..12].copy_from_slice(&[1u8; 12]); // nonce
+    exact_size[12..28].copy_from_slice(&[2u8; 16]); // salt
+    exact_size[28..36].copy_from_slice(&0u64.to_le_bytes()); // original_size = 0
+    exact_size[36..44].copy_from_slice(&0u64.to_le_bytes()); // ciphertext_len = 0
+
+    let result = EncryptedData::from_bytes(&exact_size);
+    assert!(
+        result.is_ok(),
+        "44 bytes (exact minimum) should be accepted: {:?}",
+        result.err()
+    );
+
+    // オフバイワン（45バイト、ciphertext_len=1）
+    let mut off_by_one = vec![0u8; 45];
+    off_by_one[0..12].copy_from_slice(&[1u8; 12]);
+    off_by_one[12..28].copy_from_slice(&[2u8; 16]);
+    off_by_one[28..36].copy_from_slice(&1u64.to_le_bytes());
+    off_by_one[36..44].copy_from_slice(&1u64.to_le_bytes()); // ciphertext_len = 1
+    off_by_one[44] = 0xFF; // 1バイトのciphertext
+
+    assert!(
+        EncryptedData::from_bytes(&off_by_one).is_ok(),
+        "45 bytes should be accepted"
+    );
+}
+
+// =============================================================================
+// Test 14: チャンクサイズのバリデーション
+// MISSED変異への対策: get_chunk_size() → 0, 1
+// =============================================================================
+
+#[test]
+fn test_chunk_size_validation() {
+    // ゼロチャンクサイズの検証（現状は許容されるが、将来的には拒否すべき）
+    let config_zero = EncryptionConfig {
+        chunk_size: 0,
+        buffer_size: 8192,
+    };
+    // MISSED mutation: get_chunk_size() → 0 を検出するテスト
+    let engine_zero = EncryptionEngine::new(config_zero);
+    assert_eq!(
+        engine_zero.get_chunk_size(),
+        0,
+        "CRITICAL: Zero chunk size detected! Risk: buffer overflow, infinite loop. This test verifies mutation detection."
+    );
+
+    // 1バイトチャンクサイズの検証（現状は許容されるが、DoS攻撃のリスク）
+    let config_one = EncryptionConfig {
+        chunk_size: 1,
+        buffer_size: 8192,
+    };
+    // MISSED mutation: get_chunk_size() → 1 を検出するテスト
+    let engine_one = EncryptionEngine::new(config_one);
+    assert_eq!(
+        engine_one.get_chunk_size(),
+        1,
+        "CRITICAL: Size 1 chunk detected! Risk: extreme performance degradation (DoS). This test verifies mutation detection."
+    );
+
+    // デフォルトチャンクサイズは適切な範囲内
+    let config_default = EncryptionConfig::default();
+    assert!(
+        config_default.chunk_size >= 64 * 1024,
+        "Default chunk size should be at least 64KB"
+    );
+    assert!(
+        config_default.chunk_size <= 16 * 1024 * 1024,
+        "Default chunk size should not exceed 16MB"
+    );
+}
+
+// =============================================================================
+// Test 15: エラーハンドリング - UnexpectedEof の適切な処理
+// MISSED変異への対策: ErrorKind::UnexpectedEof チェックの無効化
+// =============================================================================
+
+#[test]
+fn test_decrypt_stream_truncated_file() {
+    let engine = EncryptionEngine::default();
+    let master_key = MasterKey::generate();
+    let original_data = b"Test data for truncation check";
+
+    // 正常な暗号化
+    let reader = Cursor::new(&original_data[..]);
+    let mut encrypted_buffer = Vec::new();
+    engine
+        .encrypt_stream(reader, &mut encrypted_buffer, &master_key)
+        .unwrap();
+
+    // 暗号化データを切り詰める（末尾10バイト削除）
+    let truncated_len = encrypted_buffer.len().saturating_sub(10);
+    encrypted_buffer.truncate(truncated_len);
+
+    // 切り詰められたデータの復号化は失敗すべき
+    let encrypted_reader = Cursor::new(encrypted_buffer);
+    let mut decrypted_buffer = Vec::new();
+    let result = engine.decrypt_stream(encrypted_reader, &mut decrypted_buffer, &master_key);
+
+    assert!(
+        result.is_err(),
+        "Truncated encrypted file must be detected! Risk: data corruption accepted as valid"
+    );
+
+    let error_msg = result.unwrap_err().to_string();
+    assert!(
+        error_msg.contains("復号化エラー")
+            || error_msg.contains("読み取りエラー")
+            || error_msg.contains("I/Oエラー"),
+        "Error message should indicate decryption or read failure, got: {}",
+        error_msg
+    );
+}
