@@ -1,0 +1,21 @@
+--- src/core/pipeline.rs
++++ replace + with * in ProcessingPipeline::process_files_with_progress
+@@ -615,17 +615,17 @@
+         let total = files.len();
+         let progress_callback = Arc::new(progress_callback);
+ 
+         files
+             .par_iter()
+             .enumerate()
+             .map(|(idx, file)| {
+                 let result = self.process_file(file, master_key, salt);
+-                progress_callback(idx + 1, total);
++                progress_callback(idx * /* ~ changed by cargo-mutants ~ */ 1, total);
+                 result
+             })
+             .collect()
+     }
+ 
+     /// 設定を取得
+     #[must_use]
+     pub fn config(&self) -> &PipelineConfig {

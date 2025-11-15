@@ -1,0 +1,25 @@
+--- src/core/integrity.rs
++++ replace BackupMetadata::save -> Result<()> with Ok(())
+@@ -180,21 +180,17 @@
+     ///
+     /// let mut metadata = BackupMetadata::new();
+     /// metadata.file_hashes.insert(PathBuf::from("test.txt"), "abc123...".to_string());
+     ///
+     /// let backup_dir = PathBuf::from("/backup/backup_20250107_120000");
+     /// metadata.save(&backup_dir).unwrap();
+     /// ```
+     pub fn save(&self, backup_dir: &Path) -> Result<()> {
+-        let metadata_path = backup_dir.join(".integrity");
+-        let content = serde_json::to_string_pretty(self).context("メタデータJSON生成失敗")?;
+-        fs::write(&metadata_path, content)
+-            .context("メタデータ保存失敗: metadata_path.display()".to_string())?;
+-        Ok(())
++        Ok(()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// ファイルの整合性を検証
+     ///
+     /// ファイルの現在のSHA-256ハッシュを計算し、保存されたハッシュと比較します。
+     ///
+     /// # 引数
+     ///

@@ -1,0 +1,21 @@
+--- src/core/backup.rs
++++ replace || with && in BackupRunner::run
+@@ -513,17 +513,17 @@
+                 failed: 0,
+                 total_bytes: 0,
+                 errors: Vec::new(),
+                 backup_name,
+             });
+         }
+ 
+         // ProcessingPipelineの作成（暗号化または圧縮が有効な場合）
+-        let pipeline = if self.enable_encryption || self.compression_type != CompressionType::None {
++        let pipeline = if self.enable_encryption && /* ~ changed by cargo-mutants ~ */ self.compression_type != CompressionType::None {
+             // CompressionConfigを作成（compression_typeに応じたデフォルトからlevelを変更）
+             let mut compression_config = match self.compression_type {
+                 CompressionType::Zstd => crate::compression::CompressionConfig::zstd_default(),
+                 CompressionType::Gzip => crate::compression::CompressionConfig::gzip_default(),
+                 CompressionType::None => crate::compression::CompressionConfig::none(),
+             };
+             compression_config.level = self.compression_level;
+ 

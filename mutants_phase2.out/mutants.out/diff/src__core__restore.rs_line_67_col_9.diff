@@ -1,0 +1,22 @@
+--- src/core/restore.rs
++++ replace RestoreEngine::with_verification -> Self with Default::default()
+@@ -59,18 +59,17 @@
+     pub fn with_progress(mut self, show_progress: bool) -> Self {
+         self.show_progress = show_progress;
+         self
+     }
+ 
+     /// 整合性検証の有効/無効を設定
+     #[must_use]
+     pub fn with_verification(mut self, verify: bool) -> Self {
+-        self.verify_integrity = verify;
+-        self
++        Default::default() /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// バックアップから復元
+     ///
+     /// # 引数
+     ///
+     /// * `backup_dir` - バックアップディレクトリのパス
+     /// * `dest_dir` - 復元先ディレクトリ

@@ -1,0 +1,21 @@
+--- src/crypto/key_management.rs
++++ replace MasterKey::as_bytes -> &[u8; 32] with Box::leak(Box::new([1; 32]))
+@@ -27,17 +27,17 @@
+     #[must_use]
+     pub fn from_bytes(bytes: [u8; 32]) -> Self {
+         Self { key: bytes }
+     }
+ 
+     /// キーのバイト配列を取得
+     #[must_use]
+     pub fn as_bytes(&self) -> &[u8; 32] {
+-        &self.key
++        Box::leak(Box::new([1; 32])) /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ /// キー導出設定
+ #[derive(Debug, Clone)]
+ pub struct KeyDerivationConfig {
+     /// メモリ使用量（KB）
+     pub memory_cost: u32,

@@ -1,0 +1,21 @@
+--- src/core/backup.rs
++++ delete ! in BackupRunner::run
+@@ -316,17 +316,17 @@
+             let category = target.category.clone();
+             let backup_dir = backup_base.join(&category);
+ 
+             // カテゴリディレクトリを作成
+             std::fs::create_dir_all(&backup_dir)
+                 .context("バックアップディレクトリ作成失敗: backup_dir.display()".to_string())?;
+ 
+             // FileFilterの準備
+-            let filter = if !target.exclude_patterns.is_empty() {
++            let filter = if  /* ~ changed by cargo-mutants ~ */target.exclude_patterns.is_empty() {
+                 match FileFilter::new(&target.exclude_patterns) {
+                     Ok(f) => Some(f),
+                     Err(e) => {
+                         eprintln!("警告: 除外パターンの処理に失敗: {e}");
+                         None
+                     }
+                 }
+             } else {

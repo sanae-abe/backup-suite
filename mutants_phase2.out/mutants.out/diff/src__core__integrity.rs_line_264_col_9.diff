@@ -1,0 +1,36 @@
+--- src/core/integrity.rs
++++ replace BackupMetadata::compute_file_hash -> Result<String> with Ok(String::new())
+@@ -256,32 +256,17 @@
+     /// 成功時は16進数文字列形式のSHA-256ハッシュ、失敗時はエラー
+     ///
+     /// # Errors
+     ///
+     /// 以下の場合にエラーを返します:
+     /// * ファイルのオープンに失敗した場合
+     /// * ファイルの読み込みに失敗した場合
+     pub fn compute_file_hash(file_path: &Path) -> Result<String> {
+-        let mut file = fs::File::open(file_path)
+-            .context("ファイル読み込み失敗: file_path.display()".to_string())?;
+-
+-        let mut hasher = Sha256::new();
+-        let mut buffer = vec![0u8; 8192]; // 8KB バッファ
+-
+-        loop {
+-            let bytes_read = file.read(&mut buffer).context("ファイル読み込みエラー")?;
+-            if bytes_read == 0 {
+-                break;
+-            }
+-            hasher.update(&buffer[..bytes_read]);
+-        }
+-
+-        let result = hasher.finalize();
+-        Ok(format!("{result:x}"))
++        Ok(String::new()) /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ impl Default for BackupMetadata {
+     fn default() -> Self {
+         Self::new()
+     }
+ }

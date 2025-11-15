@@ -1,0 +1,12 @@
+src/security/path.rs:55:5: replace safe_join -> Result<PathBuf> with Ok(Default::default())
+src/security/path.rs:87:21: delete ! in safe_join
+src/security/path.rs:124:36: replace && with || in safe_join
+src/security/path.rs:124:15: delete ! in safe_join
+src/security/path.rs:136:8: delete ! in safe_join
+src/security/path.rs:177:5: replace sanitize_path_component -> String with String::new()
+src/security/path.rs:177:5: replace sanitize_path_component -> String with "xyzzy".into()
+src/security/path.rs:178:42: replace || with && in sanitize_path_component
+src/security/path.rs:199:5: replace validate_path_safety -> Result<()> with Ok(())
+src/security/path.rs:204:24: replace |= with &= in validate_path_safety
+src/security/path.rs:209:48: replace <= with > in validate_path_safety
+src/security/path.rs:213:23: replace || with && in validate_path_safety

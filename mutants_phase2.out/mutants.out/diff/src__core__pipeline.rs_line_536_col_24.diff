@@ -1,0 +1,21 @@
+--- src/core/pipeline.rs
++++ replace += with -= in ProcessingPipeline::copy_stream
+@@ -528,17 +528,17 @@
+ 
+         loop {
+             let bytes_read = reader.read(&mut buffer)?;
+             if bytes_read == 0 {
+                 break;
+             }
+ 
+             writer.write_all(&buffer[..bytes_read])?;
+-            total_size += bytes_read as u64;
++            total_size -= /* ~ changed by cargo-mutants ~ */ bytes_read as u64;
+         }
+ 
+         Ok((total_size, total_size, total_size))
+     }
+ 
+     /// 複数ファイルを並列処理
+     ///
+     /// # Arguments

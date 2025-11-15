@@ -1,0 +1,21 @@
+--- src/core/backup.rs
++++ delete ! in BackupRunner::run
+@@ -688,17 +688,17 @@
+                     .collect();
+ 
+                 // 増分バックアップの場合、変更されなかったファイルのハッシュも保存
+                 // （次回の増分バックアップで正しく比較できるようにするため）
+                 if actual_backup_type == BackupType::Incremental {
+                     for (source, dest) in &all_files {
+                         if let Ok(rel_path) = dest.strip_prefix(&backup_base) {
+                             // 既にハッシュが保存されているファイルはスキップ
+-                            if !guard.metadata.file_hashes.contains_key(rel_path) {
++                            if  /* ~ changed by cargo-mutants ~ */guard.metadata.file_hashes.contains_key(rel_path) {
+                                 if let Ok(hash) = guard.compute_hash(source) {
+                                     guard.add_file_hash(rel_path.to_path_buf(), hash);
+                                 }
+                             }
+                         }
+                     }
+                 }
+ 

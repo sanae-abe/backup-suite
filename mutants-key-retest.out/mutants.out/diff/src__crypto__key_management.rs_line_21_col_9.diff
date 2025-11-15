@@ -1,0 +1,23 @@
+--- src/crypto/key_management.rs
++++ replace MasterKey::generate -> Self with Default::default()
+@@ -13,19 +13,17 @@
+ pub struct MasterKey {
+     key: [u8; 32],
+ }
+ 
+ impl MasterKey {
+     /// 新しいマスターキーを生成
+     #[must_use]
+     pub fn generate() -> Self {
+-        let mut key = [0u8; 32];
+-        OsRng.fill_bytes(&mut key);
+-        Self { key }
++        Default::default() /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// バイト配列からマスターキーを作成
+     #[must_use]
+     pub fn from_bytes(bytes: [u8; 32]) -> Self {
+         Self { key: bytes }
+     }
+ 

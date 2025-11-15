@@ -1,0 +1,22 @@
+--- src/core/backup.rs
++++ replace BackupRunner::with_progress -> Self with Default::default()
+@@ -167,18 +167,17 @@
+     /// use backup_suite::{Config, BackupRunner};
+     ///
+     /// let config = Config::load().unwrap();
+     /// let mut runner = BackupRunner::new(config, false)
+     ///     .with_progress(false); // 進捗表示を無効化
+     /// ```
+     #[must_use]
+     pub fn with_progress(mut self, show_progress: bool) -> Self {
+-        self.show_progress = show_progress;
+-        self
++        Default::default() /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 暗号化を有効化
+     #[must_use]
+     pub fn with_encryption(mut self, password: String) -> Self {
+         self.enable_encryption = true;
+         self.password = Some(password);
+         self

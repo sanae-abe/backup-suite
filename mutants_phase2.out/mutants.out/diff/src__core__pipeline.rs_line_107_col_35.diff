@@ -1,0 +1,21 @@
+--- src/core/pipeline.rs
++++ replace * with / in PerformanceConfig::fast
+@@ -99,17 +99,17 @@
+ }
+ 
+ impl PerformanceConfig {
+     /// 高速設定
+     #[must_use]
+     pub fn fast() -> Self {
+         Self {
+             parallel_threads: num_cpus::get(), // 全コア使用
+-            buffer_size: 2 * 1024 * 1024,      // 2MB
++            buffer_size: 2 * 1024 / /* ~ changed by cargo-mutants ~ */ 1024,      // 2MB
+             memory_limit: 1024 * 1024 * 1024,  // 1GB
+             batch_size: 64,                    // 大きめのバッチサイズ
+         }
+     }
+ 
+     /// 品質重視設定
+     #[must_use]
+     pub fn quality() -> Self {

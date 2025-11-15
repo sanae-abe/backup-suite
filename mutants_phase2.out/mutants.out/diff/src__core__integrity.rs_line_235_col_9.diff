@@ -1,0 +1,31 @@
+--- src/core/integrity.rs
++++ replace BackupMetadata::verify_file -> Result<bool> with Ok(false)
+@@ -227,27 +227,17 @@
+     ///
+     /// if is_valid {
+     ///     println!("✓ ファイル整合性確認済み");
+     /// } else {
+     ///     eprintln!("⚠ ファイルが改ざんされています");
+     /// }
+     /// ```
+     pub fn verify_file(&self, relative_path: &Path, actual_file_path: &Path) -> Result<bool> {
+-        let expected_hash = match self.file_hashes.get(relative_path) {
+-            Some(h) => h,
+-            None => {
+-                return Err(anyhow::anyhow!(
+-                    "ファイルのハッシュ情報が見つかりません: relative_path.display()".to_string()
+-                ));
+-            }
+-        };
+-
+-        let actual_hash = Self::compute_file_hash(actual_file_path)?;
+-        Ok(&actual_hash == expected_hash)
++        Ok(false) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// ファイルのSHA-256ハッシュを計算（公開静的メソッド）
+     ///
+     /// # 引数
+     ///
+     /// * `file_path` - ハッシュ計算対象のファイルパス
+     ///

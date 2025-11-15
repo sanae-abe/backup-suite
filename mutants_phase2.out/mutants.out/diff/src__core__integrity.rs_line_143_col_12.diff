@@ -1,0 +1,21 @@
+--- src/core/integrity.rs
++++ delete ! in BackupMetadata::load
+@@ -135,17 +135,17 @@
+     /// use backup_suite::core::integrity::BackupMetadata;
+     /// use std::path::PathBuf;
+     ///
+     /// let backup_dir = PathBuf::from("/backup/backup_20250107_120000");
+     /// let metadata = BackupMetadata::load(&backup_dir).unwrap();
+     /// ```
+     pub fn load(backup_dir: &Path) -> Result<Self> {
+         let metadata_path = backup_dir.join(".integrity");
+-        if !metadata_path.exists() {
++        if  /* ~ changed by cargo-mutants ~ */metadata_path.exists() {
+             return Err(anyhow::anyhow!(
+                 "整合性メタデータが見つかりません: metadata_path.display()".to_string()
+             ));
+         }
+ 
+         let content = fs::read_to_string(&metadata_path)
+             .context("メタデータ読み込み失敗: metadata_path.display()".to_string())?;
+         let metadata: BackupMetadata =

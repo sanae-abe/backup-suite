@@ -1,0 +1,21 @@
+--- src/core/pipeline.rs
++++ replace * with / in ProcessingPipeline::create_thread_pool
+@@ -249,17 +249,17 @@
+         }
+     }
+ 
+     /// 最適化されたThreadPoolを作成
+     fn create_thread_pool(performance: &PerformanceConfig) -> Result<rayon::ThreadPool> {
+         ThreadPoolBuilder::new()
+             .num_threads(performance.parallel_threads)
+             .thread_name(|i| format!("backup-worker-{i}"))
+-            .stack_size(8 * 1024 * 1024) // 8MBスタックサイズ
++            .stack_size(8 / /* ~ changed by cargo-mutants ~ */ 1024 * 1024) // 8MBスタックサイズ
+             .build()
+             .map_err(|e| BackupError::Other(anyhow::anyhow!("ThreadPool作成エラー: {e}")))
+     }
+ 
+     /// 暗号化有効でパイプラインを作成
+     pub fn with_encryption(password: &str) -> Result<(Self, [u8; 16])> {
+         let config = PipelineConfig::default().with_encryption(EncryptionConfig::default());
+         let mut pipeline = Self::new(config);

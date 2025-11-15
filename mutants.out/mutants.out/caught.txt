@@ -1,0 +1,8 @@
+src/crypto/encryption.rs:47:9: replace EncryptedData::to_bytes -> Vec<u8> with vec![]
+src/crypto/encryption.rs:47:9: replace EncryptedData::to_bytes -> Vec<u8> with vec![0]
+src/crypto/encryption.rs:47:9: replace EncryptedData::to_bytes -> Vec<u8> with vec![1]
+src/crypto/encryption.rs:58:23: replace < with == in EncryptedData::from_bytes
+src/crypto/encryption.rs:58:23: replace < with > in EncryptedData::from_bytes
+src/crypto/encryption.rs:58:23: replace < with <= in EncryptedData::from_bytes
+src/crypto/encryption.rs:88:23: replace != with == in EncryptedData::from_bytes
+src/crypto/encryption.rs:119:9: replace EncryptionEngine::generate_nonce -> [u8; 12] with [0; 12]

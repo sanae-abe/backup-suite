@@ -1,0 +1,81 @@
+src/core/pipeline.rs:512:9: replace ProcessingPipeline::compress_stream_only -> Result<(u64, u64, u64)> with Ok((1, 0, 0))
+src/core/pipeline.rs:107:28: replace * with / in PerformanceConfig::fast
+src/core/restore.rs:129:12: delete ! in RestoreEngine::restore
+src/core/pipeline.rs:119:31: replace * with / in PerformanceConfig::quality
+src/core/pipeline.rs:611:9: replace ProcessingPipeline::process_files_with_progress -> Vec<Result<ProcessedData>> with vec![]
+src/core/pipeline.rs:512:9: replace ProcessingPipeline::compress_stream_only -> Result<(u64, u64, u64)> with Ok((1, 0, 1))
+src/core/pipeline.rs:117:48: replace / with % in PerformanceConfig::quality
+src/core/pipeline.rs:404:52: replace != with == in ProcessingPipeline::process_stream
+src/core/pipeline.rs:108:39: replace * with + in PerformanceConfig::fast
+src/core/pipeline.rs:512:9: replace ProcessingPipeline::compress_stream_only -> Result<(u64, u64, u64)> with Ok((1, 1, 1))
+src/core/pipeline.rs:512:9: replace ProcessingPipeline::compress_stream_only -> Result<(u64, u64, u64)> with Ok((1, 1, 0))
+src/core/pipeline.rs:321:49: replace > with < in ProcessingPipeline::process_file
+src/core/pipeline.rs:327:42: replace + with - in ProcessingPipeline::process_file
+src/core/pipeline.rs:119:31: replace * with + in PerformanceConfig::quality
+src/core/pipeline.rs:167:22: replace < with > in dynamic_parallelism
+src/core/pipeline.rs:107:35: replace * with / in PerformanceConfig::fast
+src/core/pipeline.rs:323:21: replace * with / in ProcessingPipeline::process_file
+src/core/pipeline.rs:134:9: replace PerformanceConfig::with_batch_size -> Self with Default::default()
+src/core/integrity.rs:264:9: replace BackupMetadata::compute_file_hash -> Result<String> with Ok(String::new())
+src/core/restore.rs:449:9: replace RestoreEngine::decompress_if_needed -> Result<Vec<u8>> with Ok(vec![])
+src/core/integrity.rs:142:9: replace BackupMetadata::load -> Result<Self> with Ok(Default::default())
+src/core/integrity.rs:362:9: replace IntegrityChecker::compute_hash -> Result<String> with Ok("xyzzy".into())
+src/core/restore.rs:98:12: delete ! in RestoreEngine::restore
+src/core/pipeline.rs:656:9: replace ProcessingPipeline::current_parallelism -> usize with 0
+src/core/pipeline.rs:559:9: replace ProcessingPipeline::process_files_parallel -> Vec<Result<ProcessedData>> with vec![]
+src/core/integrity.rs:235:9: replace BackupMetadata::verify_file -> Result<bool> with Ok(false)
+src/core/pipeline.rs:512:9: replace ProcessingPipeline::compress_stream_only -> Result<(u64, u64, u64)> with Ok((0, 1, 0))
+src/core/pipeline.rs:108:32: replace * with / in PerformanceConfig::fast
+src/core/pipeline.rs:345:9: replace ProcessingPipeline::restore_data -> Result<Vec<u8>> with Ok(vec![1])
+src/core/integrity.rs:264:9: replace BackupMetadata::compute_file_hash -> Result<String> with Ok("xyzzy".into())
+src/core/pipeline.rs:119:38: replace * with + in PerformanceConfig::quality
+src/core/integrity.rs:432:9: replace IntegrityChecker::file_count -> usize with 0
+src/core/pipeline.rs:512:9: replace ProcessingPipeline::compress_stream_only -> Result<(u64, u64, u64)> with Ok((0, 0, 1))
+src/core/pipeline.rs:55:9: replace PipelineConfig::with_compression -> Self with Default::default()
+src/core/integrity.rs:411:9: replace IntegrityChecker::save_metadata -> Result<()> with Ok(())
+src/core/pipeline.rs:162:19: replace < with == in dynamic_parallelism
+src/core/integrity.rs:188:9: replace BackupMetadata::save -> Result<()> with Ok(())
+src/core/pipeline.rs:650:9: replace ProcessingPipeline::is_parallel_ready -> bool with false
+src/core/restore.rs:143:35: replace != with == in RestoreEngine::restore
+src/core/pipeline.rs:162:19: replace < with > in dynamic_parallelism
+src/core/pipeline.rs:44:9: replace PipelineConfig::with_encryption -> Self with Default::default()
+src/core/pipeline.rs:623:39: replace + with - in ProcessingPipeline::process_files_with_progress
+src/core/integrity.rs:362:9: replace IntegrityChecker::compute_hash -> Result<String> with Ok(String::new())
+src/core/pipeline.rs:105:9: replace PerformanceConfig::fast -> Self with Default::default()
+src/core/pipeline.rs:656:9: replace ProcessingPipeline::current_parallelism -> usize with 1
+src/core/pipeline.rs:321:49: replace > with == in ProcessingPipeline::process_file
+src/core/pipeline.rs:116:9: replace PerformanceConfig::quality -> Self with Default::default()
+src/core/pipeline.rs:63:9: replace PipelineConfig::fast -> Self with Default::default()
+src/core/restore.rs:449:9: replace RestoreEngine::decompress_if_needed -> Result<Vec<u8>> with Ok(vec![0])
+src/core/pipeline.rs:145:5: replace optimal_parallelism -> usize with 0
+src/core/integrity.rs:245:25: replace == with != in BackupMetadata::verify_file
+src/core/pipeline.rs:127:9: replace PerformanceConfig::with_parallelism -> Self with Default::default()
+src/core/integrity.rs:382:9: replace IntegrityChecker::add_file_hash with ()
+src/core/pipeline.rs:108:32: replace * with + in PerformanceConfig::fast
+src/core/pipeline.rs:175:38: replace / with % in dynamic_parallelism
+src/core/pipeline.rs:108:39: replace * with / in PerformanceConfig::fast
+src/core/pipeline.rs:107:28: replace * with + in PerformanceConfig::fast
+src/core/integrity.rs:143:12: delete ! in BackupMetadata::load
+src/core/pipeline.rs:686:9: replace num_cpus::get -> usize with 0
+src/core/pipeline.rs:257:27: replace * with / in ProcessingPipeline::create_thread_pool
+src/core/pipeline.rs:159:5: replace dynamic_parallelism -> usize with 0
+src/core/pipeline.rs:578:9: replace ProcessingPipeline::process_files_parallel_internal -> Vec<Result<ProcessedData>> with vec![]
+src/core/pipeline.rs:71:9: replace PipelineConfig::best_compression -> Self with Default::default()
+src/core/pipeline.rs:159:5: replace dynamic_parallelism -> usize with 1
+src/core/pipeline.rs:119:38: replace * with / in PerformanceConfig::quality
+src/core/pipeline.rs:512:9: replace ProcessingPipeline::compress_stream_only -> Result<(u64, u64, u64)> with Ok((0, 1, 1))
+src/core/pipeline.rs:118:30: replace * with + in PerformanceConfig::quality
+src/core/pipeline.rs:512:9: replace ProcessingPipeline::compress_stream_only -> Result<(u64, u64, u64)> with Ok((0, 0, 0))
+src/core/pipeline.rs:293:45: replace != with == in ProcessingPipeline::process_file
+src/core/integrity.rs:235:9: replace BackupMetadata::verify_file -> Result<bool> with Ok(true)
+src/core/pipeline.rs:257:34: replace * with + in ProcessingPipeline::create_thread_pool
+src/core/pipeline.rs:175:34: replace * with / in dynamic_parallelism
+src/core/pipeline.rs:345:9: replace ProcessingPipeline::restore_data -> Result<Vec<u8>> with Ok(vec![])
+src/core/restore.rs:449:9: replace RestoreEngine::decompress_if_needed -> Result<Vec<u8>> with Ok(vec![1])
+src/core/pipeline.rs:146:15: replace / with * in optimal_parallelism
+src/core/pipeline.rs:257:34: replace * with / in ProcessingPipeline::create_thread_pool
+src/core/integrity.rs:272:27: replace == with != in BackupMetadata::compute_file_hash
+src/core/pipeline.rs:118:30: replace * with / in PerformanceConfig::quality
+src/core/pipeline.rs:345:9: replace ProcessingPipeline::restore_data -> Result<Vec<u8>> with Ok(vec![0])
+src/core/pipeline.rs:107:35: replace * with + in PerformanceConfig::fast
+src/core/pipeline.rs:117:48: replace / with * in PerformanceConfig::quality

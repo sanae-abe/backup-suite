@@ -1,0 +1,29 @@
+--- src/crypto/encryption.rs
++++ replace EncryptionEngine::decrypt -> Result<Vec<u8>> with Ok(vec![0])
+@@ -174,25 +174,17 @@
+     ///   - 認証タグの検証に失敗した場合（データが改ざんされている可能性）
+     ///   - 不正なマスターキーが使用された場合
+     #[allow(deprecated)]
+     pub fn decrypt(
+         &self,
+         encrypted_data: &EncryptedData,
+         master_key: &MasterKey,
+     ) -> Result<Vec<u8>> {
+-        let key = Key::<Aes256Gcm>::from_slice(master_key.as_bytes());
+-        let cipher = Aes256Gcm::new(key);
+-        let nonce = Nonce::from_slice(&encrypted_data.nonce);
+-
+-        let plaintext = cipher
+-            .decrypt(nonce, encrypted_data.ciphertext.as_ref())
+-            .map_err(|e| BackupError::EncryptionError(format!("復号化エラー: {e}")))?;
+-
+-        Ok(plaintext)
++        Ok(vec![0]) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// ストリーミング暗号化（大容量ファイル用）
+     ///
+     /// # Errors
+     ///
+     /// 以下の場合にエラーを返します:
+     /// - ファイル読み込みエラー (`BackupError::IoError`)

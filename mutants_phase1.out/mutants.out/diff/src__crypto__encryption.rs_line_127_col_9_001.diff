@@ -1,0 +1,21 @@
+--- src/crypto/encryption.rs
++++ replace EncryptionEngine::generate_nonce_internal -> [u8; 12] with [0; 12]
+@@ -119,17 +119,17 @@
+         let mut nonce = [0u8; 12];
+         rand::rng().fill_bytes(&mut nonce);
+         nonce
+     }
+ 
+     /// ランダムなナンスを生成（公開API、pipeline.rsから使用）
+     #[must_use]
+     pub fn generate_nonce_internal() -> [u8; 12] {
+-        Self::generate_nonce()
++        [0; 12] /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// チャンクサイズを取得（公開API、pipeline.rsから使用）
+     #[must_use]
+     pub fn get_chunk_size(&self) -> usize {
+         self.config.chunk_size
+     }
+ 

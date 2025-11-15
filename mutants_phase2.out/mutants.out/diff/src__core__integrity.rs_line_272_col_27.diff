@@ -1,0 +1,21 @@
+--- src/core/integrity.rs
++++ replace == with != in BackupMetadata::compute_file_hash
+@@ -264,17 +264,17 @@
+         let mut file = fs::File::open(file_path)
+             .context("ファイル読み込み失敗: file_path.display()".to_string())?;
+ 
+         let mut hasher = Sha256::new();
+         let mut buffer = vec![0u8; 8192]; // 8KB バッファ
+ 
+         loop {
+             let bytes_read = file.read(&mut buffer).context("ファイル読み込みエラー")?;
+-            if bytes_read == 0 {
++            if bytes_read != /* ~ changed by cargo-mutants ~ */ 0 {
+                 break;
+             }
+             hasher.update(&buffer[..bytes_read]);
+         }
+ 
+         let result = hasher.finalize();
+         Ok(format!("{result:x}"))
+     }

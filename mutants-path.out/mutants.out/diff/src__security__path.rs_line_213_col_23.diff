@@ -1,0 +1,21 @@
+--- src/security/path.rs
++++ replace || with && in validate_path_safety
+@@ -205,17 +205,17 @@
+     }
+ 
+     if path.is_absolute() {
+         let components: Vec<_> = path.components().collect();
+         is_shallow_absolute = components.len() <= 2;
+     }
+ 
+     // 最後に一度だけ判定（定数時間性を保証）
+-    if has_parent_dir || is_shallow_absolute {
++    if has_parent_dir && /* ~ changed by cargo-mutants ~ */ is_shallow_absolute {
+         return Err(BackupError::PathTraversalDetected {
+             path: path.to_path_buf(),
+         });
+     }
+ 
+     Ok(())
+ }
+ 

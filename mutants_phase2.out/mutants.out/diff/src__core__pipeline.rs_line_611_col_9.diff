@@ -1,0 +1,36 @@
+--- src/core/pipeline.rs
++++ replace ProcessingPipeline::process_files_with_progress -> Vec<Result<ProcessedData>> with vec![]
+@@ -603,32 +603,17 @@
+         master_key: Option<&MasterKey>,
+         salt: Option<[u8; 16]>,
+         progress_callback: F,
+     ) -> Vec<Result<ProcessedData>>
+     where
+         P: AsRef<Path> + Send + Sync,
+         F: Fn(usize, usize) + Send + Sync,
+     {
+-        if files.is_empty() {
+-            return Vec::new();
+-        }
+-
+-        let total = files.len();
+-        let progress_callback = Arc::new(progress_callback);
+-
+-        files
+-            .par_iter()
+-            .enumerate()
+-            .map(|(idx, file)| {
+-                let result = self.process_file(file, master_key, salt);
+-                progress_callback(idx + 1, total);
+-                result
+-            })
+-            .collect()
++        vec![] /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 設定を取得
+     #[must_use]
+     pub fn config(&self) -> &PipelineConfig {
+         &self.config
+     }
+ 

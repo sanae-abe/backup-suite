@@ -1,0 +1,21 @@
+--- src/security/path.rs
++++ delete ! in safe_join
+@@ -92,17 +92,17 @@
+ 
+     // ベースパスを正規化
+     // ベースパスが存在しない場合は、親ディレクトリまで遡って正規化
+     let canonical_base = if base.exists() {
+         base.canonicalize().map_err(BackupError::IoError)?
+     } else {
+         // ベースパスが存在しない場合、親ディレクトリを使用
+         let mut check_base = base.to_path_buf();
+-        while !check_base.exists() && check_base.parent().is_some() {
++        while  /* ~ changed by cargo-mutants ~ */check_base.exists() && check_base.parent().is_some() {
+             check_base = check_base.parent().unwrap().to_path_buf();
+         }
+         if check_base.exists() {
+             let canonical = check_base.canonicalize().map_err(BackupError::IoError)?;
+             // 元のベースパスの残りの部分を追加
+             let remaining = base.strip_prefix(&check_base).unwrap_or(base);
+             canonical.join(remaining)
+         } else {

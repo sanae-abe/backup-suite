@@ -1,0 +1,21 @@
+--- src/core/integrity.rs
++++ replace IntegrityChecker::compute_hash -> Result<String> with Ok("xyzzy".into())
+@@ -354,17 +354,17 @@
+     /// use backup_suite::core::integrity::IntegrityChecker;
+     /// use std::path::PathBuf;
+     ///
+     /// let checker = IntegrityChecker::new();
+     /// let hash = checker.compute_hash(&PathBuf::from("test.txt")).unwrap();
+     /// println!("SHA-256: {}", hash);
+     /// ```
+     pub fn compute_hash(&self, file_path: &Path) -> Result<String> {
+-        BackupMetadata::compute_file_hash(file_path)
++        Ok("xyzzy".into()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// ファイルハッシュをメタデータに追加
+     ///
+     /// # 引数
+     ///
+     /// * `relative_path` - バックアップ内の相対パス
+     /// * `hash` - SHA-256ハッシュ（16進数文字列）

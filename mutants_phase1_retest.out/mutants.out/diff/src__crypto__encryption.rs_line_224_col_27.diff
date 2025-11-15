@@ -1,0 +1,21 @@
+--- src/crypto/encryption.rs
++++ replace == with != in EncryptionEngine::encrypt_stream
+@@ -216,17 +216,17 @@
+         let cipher = Aes256Gcm::new(key);
+ 
+         let mut total_size = 0u64;
+         let mut encrypted_chunks = Vec::new();
+         let mut buffer = vec![0u8; self.config.chunk_size];
+ 
+         loop {
+             let bytes_read = reader.read(&mut buffer)?;
+-            if bytes_read == 0 {
++            if bytes_read != /* ~ changed by cargo-mutants ~ */ 0 {
+                 break;
+             }
+ 
+             total_size += bytes_read as u64;
+ 
+             // チャンク毎に異なるナンスを使用（u64カウンター）
+             let mut chunk_nonce = nonce_bytes;
+             let chunk_index = encrypted_chunks.len() as u64;

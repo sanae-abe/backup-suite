@@ -1,0 +1,21 @@
+--- src/core/pipeline.rs
++++ replace * with / in optimal_parallelism
+@@ -138,17 +138,17 @@
+ 
+ /// 最適な並列度を計算
+ ///
+ /// CPU コア数の75%を使用し、システムリソースを確保する。
+ /// 最小1スレッド、最大32スレッドに制限。
+ #[must_use]
+ pub fn optimal_parallelism() -> usize {
+     let cpus = num_cpus::get();
+-    (cpus * 3 / 4).clamp(1, 32)
++    (cpus / /* ~ changed by cargo-mutants ~ */ 3 / 4).clamp(1, 32)
+ }
+ 
+ /// 動的並列度計算
+ ///
+ /// ファイル数とファイルサイズに基づいて最適なスレッド数を計算する。
+ ///
+ /// # Arguments
+ ///

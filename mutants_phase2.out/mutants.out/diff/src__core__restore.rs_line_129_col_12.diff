@@ -1,0 +1,21 @@
+--- src/core/restore.rs
++++ delete ! in RestoreEngine::restore
+@@ -121,17 +121,17 @@
+                 backup_chain.len()
+             );
+             for (i, backup) in backup_chain.iter().enumerate() {
+                 println!("  {}. {:?}", i + 1, backup.file_name().unwrap_or_default());
+             }
+         }
+ 
+         // 復元先ディレクトリを作成
+-        if !self.dry_run {
++        if  /* ~ changed by cargo-mutants ~ */self.dry_run {
+             std::fs::create_dir_all(dest_dir)
+                 .context("復元先ディレクトリ作成失敗: dest_dir.display()".to_string())?;
+         }
+ 
+         // チェーン内のすべてのバックアップからファイル一覧を収集
+         let mut all_files: Vec<(PathBuf, PathBuf)> = Vec::new(); // (source_backup_dir, file_path)
+         for backup in &backup_chain {
+             let files_in_backup: Vec<PathBuf> = WalkDir::new(backup)

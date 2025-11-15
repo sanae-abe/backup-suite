@@ -1,0 +1,66 @@
+--- src/crypto/encryption.rs
++++ replace EncryptionEngine::encrypt_stream -> Result<EncryptedData> with Ok(Default::default())
+@@ -200,62 +200,17 @@
+     /// - チャンク毎のAES-256-GCM暗号化処理が失敗した場合 (`BackupError::EncryptionError`)
+     #[allow(deprecated)]
+     pub fn encrypt_stream<R: Read, W: Write>(
+         &self,
+         mut reader: R,
+         mut writer: W,
+         master_key: &MasterKey,
+     ) -> Result<EncryptedData> {
+-        let nonce_bytes = Self::generate_nonce();
+-        let salt = crate::crypto::key_management::KeyDerivation::generate_salt();
+-
+-        // ヘッダー情報を書き込み
+-        writer.write_all(&nonce_bytes)?;
+-        writer.write_all(&salt)?;
+-
+-        let key = Key::<Aes256Gcm>::from_slice(master_key.as_bytes());
+-        let cipher = Aes256Gcm::new(key);
+-
+-        let mut total_size = 0u64;
+-        let mut encrypted_chunks = Vec::new();
+-        let mut buffer = vec![0u8; self.config.chunk_size];
+-
+-        loop {
+-            let bytes_read = reader.read(&mut buffer)?;
+-            if bytes_read == 0 {
+-                break;
+-            }
+-
+-            total_size += bytes_read as u64;
+-
+-            // チャンク毎に異なるナンスを使用（u64カウンター）
+-            let mut chunk_nonce = nonce_bytes;
+-            let chunk_index = encrypted_chunks.len() as u64;
+-            chunk_nonce[4..12].copy_from_slice(&chunk_index.to_le_bytes());
+-
+-            #[allow(deprecated)]
+-            let nonce = Nonce::from_slice(&chunk_nonce);
+-            let chunk_ciphertext = cipher
+-                .encrypt(nonce, &buffer[..bytes_read])
+-                .map_err(|e| BackupError::EncryptionError(format!("チャンク暗号化エラー: {e}")))?;
+-
+-            // チャンクサイズと暗号化データを書き込み
+-            writer.write_all(&(chunk_ciphertext.len() as u32).to_le_bytes())?;
+-            writer.write_all(&chunk_ciphertext)?;
+-
+-            encrypted_chunks.push(chunk_ciphertext);
+-        }
+-
+-        Ok(EncryptedData {
+-            nonce: nonce_bytes,
+-            salt,
+-            ciphertext: encrypted_chunks.into_iter().flatten().collect(),
+-            original_size: total_size,
+-        })
++        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// ストリーミング復号化（大容量ファイル用）
+     ///
+     /// # Errors
+     ///
+     /// 以下の場合にエラーを返します:
+     /// - ヘッダー情報（ナンス・ソルト）の読み取りエラー (`BackupError::IoError`)

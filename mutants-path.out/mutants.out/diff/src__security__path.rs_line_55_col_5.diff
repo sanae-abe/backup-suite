@@ -1,0 +1,108 @@
+--- src/security/path.rs
++++ replace safe_join -> Result<PathBuf> with Ok(Default::default())
+@@ -47,104 +47,17 @@
+ ///
+ /// // エラー: ディレクトリトラバーサル検出
+ /// let malicious = Path::new("../../../etc/passwd");
+ /// let result = safe_join(base, malicious);
+ /// assert!(result.is_err());
+ /// ```
+ pub fn safe_join(base: &Path, child: &Path) -> Result<PathBuf> {
+     // Null byte検出（パストラバーサル攻撃対策）
+-    let child_str = child
+-        .to_str()
+-        .ok_or_else(|| BackupError::PathTraversalDetected {
+-            path: child.to_path_buf(),
+-        })?;
+-
+-    // Unicode正規化（NFKC: 互換性分解 + 正規合成）
+-    let normalized_str: String = child_str.nfkc().collect();
+-
+-    // Null byte検出
+-    if normalized_str.contains('\0') {
+-        return Err(BackupError::PathTraversalDetected {
+-            path: child.to_path_buf(),
+-        });
+-    }
+-
+-    // Unicode攻撃パターン検出
+-    if normalized_str.contains('\u{2044}')  // Unicode Fraction Slash
+-        || normalized_str.contains('\u{FF0E}')  // 全角ピリオド
+-        || normalized_str.contains('\u{FF0F}')
+-    // 全角スラッシュ
+-    {
+-        return Err(BackupError::PathTraversalDetected {
+-            path: child.to_path_buf(),
+-        });
+-    }
+-
+-    let child = Path::new(&normalized_str);
+-
+-    // 相対パスから .. を除去して正規化
+-    let normalized: PathBuf = child
+-        .components()
+-        .filter(|c| !matches!(c, Component::ParentDir))
+-        .collect();
+-
+-    // ベースパスと結合
+-    let result = base.join(&normalized);
+-
+-    // ベースパスを正規化
+-    // ベースパスが存在しない場合は、親ディレクトリまで遡って正規化
+-    let canonical_base = if base.exists() {
+-        base.canonicalize().map_err(BackupError::IoError)?
+-    } else {
+-        // ベースパスが存在しない場合、親ディレクトリを使用
+-        let mut check_base = base.to_path_buf();
+-        while !check_base.exists() && check_base.parent().is_some() {
+-            check_base = check_base.parent().unwrap().to_path_buf();
+-        }
+-        if check_base.exists() {
+-            let canonical = check_base.canonicalize().map_err(BackupError::IoError)?;
+-            // 元のベースパスの残りの部分を追加
+-            let remaining = base.strip_prefix(&check_base).unwrap_or(base);
+-            canonical.join(remaining)
+-        } else {
+-            // どの親ディレクトリも存在しない場合はエラー
+-            return Err(BackupError::IoError(std::io::Error::new(
+-                std::io::ErrorKind::NotFound,
+-                format!("ベースパス {} が存在しません", base.display()),
+-            )));
+-        }
+-    };
+-
+-    // 結果パスの親ディレクトリが存在しない場合は作成する必要があるため、
+-    // 親ディレクトリまでの部分を検証
+-    let result_parent = if result.exists() {
+-        result.canonicalize().map_err(BackupError::IoError)?
+-    } else {
+-        // 存在しないパスの場合、親ディレクトリを基準に検証
+-        let mut check_path = result.clone();
+-        while !check_path.exists() && check_path.parent().is_some() {
+-            check_path = check_path.parent().unwrap().to_path_buf();
+-        }
+-
+-        if check_path.exists() {
+-            check_path.canonicalize().map_err(BackupError::IoError)?
+-        } else {
+-            canonical_base.clone()
+-        }
+-    };
+-
+-    // 結果がベースディレクトリ配下にあることを確認
+-    if !result_parent.starts_with(&canonical_base) {
+-        return Err(BackupError::PathTraversalDetected {
+-            path: child.to_path_buf(),
+-        });
+-    }
+-
+-    Ok(result)
++    Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ /// パス文字列のサニタイズ
+ ///
+ /// ファイル名やディレクトリ名から危険な文字を除去し、安全な文字列に変換します。
+ ///
+ /// # セキュリティ
+ ///

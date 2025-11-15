@@ -1,0 +1,21 @@
+--- src/core/pipeline.rs
++++ replace * with + in PerformanceConfig::quality
+@@ -111,17 +111,17 @@
+     }
+ 
+     /// 品質重視設定
+     #[must_use]
+     pub fn quality() -> Self {
+         Self {
+             parallel_threads: (num_cpus::get() / 2).max(1), // コア数の半分
+             buffer_size: 512 * 1024,                        // 512KB
+-            memory_limit: 256 * 1024 * 1024,                // 256MB
++            memory_limit: 256 * 1024 + /* ~ changed by cargo-mutants ~ */ 1024,                // 256MB
+             batch_size: 16,                                 // 小さめのバッチサイズ
+         }
+     }
+ 
+     /// カスタム並列度設定
+     #[must_use]
+     pub fn with_parallelism(mut self, threads: usize) -> Self {
+         self.parallel_threads = threads.max(1);

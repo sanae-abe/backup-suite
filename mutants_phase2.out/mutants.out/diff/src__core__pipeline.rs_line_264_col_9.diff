@@ -1,0 +1,31 @@
+--- src/core/pipeline.rs
++++ replace ProcessingPipeline::with_encryption -> Result<(Self, [u8; 16])> with Ok((Default::default(), [0; 16]))
+@@ -256,27 +256,17 @@
+             .thread_name(|i| format!("backup-worker-{i}"))
+             .stack_size(8 * 1024 * 1024) // 8MBスタックサイズ
+             .build()
+             .map_err(|e| BackupError::Other(anyhow::anyhow!("ThreadPool作成エラー: {e}")))
+     }
+ 
+     /// 暗号化有効でパイプラインを作成
+     pub fn with_encryption(password: &str) -> Result<(Self, [u8; 16])> {
+-        let config = PipelineConfig::default().with_encryption(EncryptionConfig::default());
+-        let mut pipeline = Self::new(config);
+-
+-        let key_manager = KeyManager::default();
+-        let (_master_key, salt) = key_manager.create_master_key(password)?;
+-
+-        pipeline.key_manager = Some(Arc::new(key_manager));
+-        // Note: In a real implementation, we'd store the master key securely
+-        // For now, we'll need to pass it to process methods
+-
+-        Ok((pipeline, salt))
++        Ok((Default::default(), [0; 16])) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// ファイルを処理（圧縮 → 暗号化）
+     pub fn process_file<P: AsRef<Path>>(
+         &self,
+         file_path: P,
+         master_key: Option<&MasterKey>,
+         salt: Option<[u8; 16]>,

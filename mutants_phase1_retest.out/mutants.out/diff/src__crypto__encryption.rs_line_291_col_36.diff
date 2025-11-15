@@ -1,0 +1,21 @@
+--- src/crypto/encryption.rs
++++ replace == with != in EncryptionEngine::decrypt_stream
+@@ -283,17 +283,17 @@
+         let mut total_decrypted = 0u64;
+         let mut chunk_index = 0u64;
+ 
+         loop {
+             // チャンクサイズを読み取り
+             let mut chunk_size_bytes = [0u8; 4];
+             match reader.read_exact(&mut chunk_size_bytes) {
+                 Ok(_) => {}
+-                Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => break,
++                Err(e) if e.kind() != /* ~ changed by cargo-mutants ~ */ std::io::ErrorKind::UnexpectedEof => break,
+                 Err(e) => return Err(BackupError::IoError(e)),
+             }
+ 
+             let chunk_size = u32::from_le_bytes(chunk_size_bytes) as usize;
+             let mut chunk_data = vec![0u8; chunk_size];
+             reader.read_exact(&mut chunk_data)?;
+ 
+             // チャンク毎のナンスを再生成（u64カウンター）

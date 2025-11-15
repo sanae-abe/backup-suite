@@ -1,0 +1,21 @@
+--- src/core/integrity.rs
++++ replace IntegrityChecker::file_count -> usize with 0
+@@ -424,17 +424,17 @@
+     /// use std::path::PathBuf;
+     ///
+     /// let mut checker = IntegrityChecker::new();
+     /// checker.add_file_hash(PathBuf::from("test.txt"), "abc123...".to_string());
+     /// assert_eq!(checker.file_count(), 1);
+     /// ```
+     #[must_use]
+     pub fn file_count(&self) -> usize {
+-        self.metadata.file_hashes.len()
++        0 /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ impl Default for IntegrityChecker {
+     fn default() -> Self {
+         Self::new()
+     }
+ }

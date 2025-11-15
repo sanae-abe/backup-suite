@@ -1,0 +1,41 @@
+--- src/security/path.rs
++++ replace validate_path_safety -> Result<()> with Ok(())
+@@ -191,37 +191,17 @@
+ ///
+ /// # Errors
+ ///
+ /// * `BackupError::PathTraversalDetected` - 危険なパスパターンを検出した場合
+ ///   - 親ディレクトリ参照（`..`）を含むパス
+ ///   - 浅い絶対パス（ルート直下等、階層が2以下の絶対パス）
+ pub fn validate_path_safety(path: &Path) -> Result<()> {
+     // 定数時間で全ての検証を実行（タイミング攻撃対策）
+-    let mut has_parent_dir = false;
+-    let mut is_shallow_absolute = false;
+-
+-    // 全コンポーネントをチェック（早期リターンなし）
+-    for component in path.components() {
+-        has_parent_dir |= matches!(component, Component::ParentDir);
+-    }
+-
+-    if path.is_absolute() {
+-        let components: Vec<_> = path.components().collect();
+-        is_shallow_absolute = components.len() <= 2;
+-    }
+-
+-    // 最後に一度だけ判定（定数時間性を保証）
+-    if has_parent_dir || is_shallow_absolute {
+-        return Err(BackupError::PathTraversalDetected {
+-            path: path.to_path_buf(),
+-        });
+-    }
+-
+-    Ok(())
++    Ok(()) /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ /// TOCTOU対策付き安全なファイルオープン
+ ///
+ /// シンボリックリンクを追跡しないでファイルを開くことで、Time-Of-Check-Time-Of-Use (TOCTOU) 攻撃を防ぎます。
+ ///
+ /// # セキュリティ
+ ///

@@ -1,0 +1,9 @@
+src/crypto/encryption.rs:127:9: replace EncryptionEngine::generate_nonce_internal -> [u8; 12] with [1; 12]
+src/crypto/encryption.rs:58:23: replace < with <= in EncryptedData::from_bytes
+src/crypto/encryption.rs:119:9: replace EncryptionEngine::generate_nonce -> [u8; 12] with [1; 12]
+src/crypto/encryption.rs:291:27: replace match guard e.kind() == std::io::ErrorKind::UnexpectedEof with true in EncryptionEngine::decrypt_stream
+src/crypto/encryption.rs:119:9: replace EncryptionEngine::generate_nonce -> [u8; 12] with [0; 12]
+src/crypto/encryption.rs:133:9: replace EncryptionEngine::get_chunk_size -> usize with 0
+src/crypto/encryption.rs:311:25: replace += with *= in EncryptionEngine::decrypt_stream
+src/crypto/encryption.rs:133:9: replace EncryptionEngine::get_chunk_size -> usize with 1
+src/crypto/encryption.rs:127:9: replace EncryptionEngine::generate_nonce_internal -> [u8; 12] with [0; 12]

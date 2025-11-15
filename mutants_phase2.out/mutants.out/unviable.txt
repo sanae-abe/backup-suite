@@ -1,0 +1,16 @@
+src/core/pipeline.rs:254:9: replace ProcessingPipeline::create_thread_pool -> Result<rayon::ThreadPool> with Ok(Default::default())
+src/core/backup.rs:198:9: replace BackupRunner::with_verification -> Self with Default::default()
+src/core/restore.rs:67:9: replace RestoreEngine::with_verification -> Self with Default::default()
+src/core/backup.rs:182:9: replace BackupRunner::with_encryption -> Self with Default::default()
+src/core/pipeline.rs:284:9: replace ProcessingPipeline::process_file -> Result<ProcessedData> with Ok(Default::default())
+src/core/backup.rs:205:9: replace BackupRunner::with_incremental -> Self with Default::default()
+src/core/pipeline.rs:578:9: replace ProcessingPipeline::process_files_parallel_internal -> Vec<Result<ProcessedData>> with vec![Ok(Default::default())]
+src/core/backup.rs:175:9: replace BackupRunner::with_progress -> Self with Default::default()
+src/core/restore.rs:88:9: replace RestoreEngine::restore -> Result<RestoreResult> with Ok(Default::default())
+src/core/backup.rs:190:9: replace BackupRunner::with_compression -> Self with Default::default()
+src/core/restore.rs:60:9: replace RestoreEngine::with_progress -> Self with Default::default()
+src/core/pipeline.rs:559:9: replace ProcessingPipeline::process_files_parallel -> Vec<Result<ProcessedData>> with vec![Ok(Default::default())]
+src/core/pipeline.rs:395:9: replace ProcessingPipeline::process_stream -> Result<ProcessingMetadata> with Ok(Default::default())
+src/core/pipeline.rs:611:9: replace ProcessingPipeline::process_files_with_progress -> Vec<Result<ProcessedData>> with vec![Ok(Default::default())]
+src/core/pipeline.rs:638:9: replace ProcessingPipeline::get_performance_stats -> PerformanceStats with Default::default()
+src/core/backup.rs:253:9: replace BackupRunner::run -> Result<BackupResult> with Ok(Default::default())

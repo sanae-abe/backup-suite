@@ -1,0 +1,23 @@
+--- src/security/path.rs
++++ replace sanitize_path_component -> String with String::new()
+@@ -169,19 +169,17 @@
+ /// let safe = sanitize_path_component("my-file_v10");
+ /// assert_eq!(safe, "my-file_v10");
+ ///
+ /// let sanitized = sanitize_path_component("dangerous/../../../file.txt");
+ /// assert_eq!(sanitized, "dangerousfiletxt");
+ /// ```
+ #[must_use]
+ pub fn sanitize_path_component(name: &str) -> String {
+-    name.chars()
+-        .filter(|&c| c.is_alphanumeric() || "-_".contains(c))
+-        .collect()
++    String::new() /* ~ changed by cargo-mutants ~ */
+ }
+ 
+ /// パスが安全かどうかを検証
+ ///
+ /// # 引数
+ ///
+ /// * `path` - 検証するパス
+ ///

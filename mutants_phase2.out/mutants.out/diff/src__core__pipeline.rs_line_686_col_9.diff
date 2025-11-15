@@ -1,0 +1,21 @@
+--- src/core/pipeline.rs
++++ replace num_cpus::get -> usize with 1
+@@ -678,17 +678,17 @@
+ 
+ /// CPU コア数を取得
+ ///
+ /// `num_cpus`クレートを使用して論理コア数を取得する。
+ /// フォールバック時は4コアを仮定。
+ mod num_cpus {
+     #[must_use]
+     pub fn get() -> usize {
+-        ::num_cpus::get()
++        1 /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+     use crate::crypto::MasterKey;
+     use std::io::Cursor;

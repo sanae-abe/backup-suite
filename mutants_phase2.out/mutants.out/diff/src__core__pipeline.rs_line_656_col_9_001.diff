@@ -1,0 +1,24 @@
+--- src/core/pipeline.rs
++++ replace ProcessingPipeline::current_parallelism -> usize with 1
+@@ -648,20 +648,17 @@
+     #[must_use]
+     pub fn is_parallel_ready(&self) -> bool {
+         self.thread_pool.is_some()
+     }
+ 
+     /// 現在の並列度を取得
+     #[must_use]
+     pub fn current_parallelism(&self) -> usize {
+-        self.thread_pool
+-            .as_ref()
+-            .map(rayon::ThreadPool::current_num_threads)
+-            .unwrap_or(1)
++        1 /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ impl Default for ProcessingPipeline {
+     fn default() -> Self {
+         Self::new(PipelineConfig::default())
+     }
+ }

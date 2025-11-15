@@ -1,0 +1,21 @@
+--- src/security/path.rs
++++ replace && with || in safe_join
+@@ -116,17 +116,17 @@
+ 
+     // 結果パスの親ディレクトリが存在しない場合は作成する必要があるため、
+     // 親ディレクトリまでの部分を検証
+     let result_parent = if result.exists() {
+         result.canonicalize().map_err(BackupError::IoError)?
+     } else {
+         // 存在しないパスの場合、親ディレクトリを基準に検証
+         let mut check_path = result.clone();
+-        while !check_path.exists() && check_path.parent().is_some() {
++        while !check_path.exists() || /* ~ changed by cargo-mutants ~ */ check_path.parent().is_some() {
+             check_path = check_path.parent().unwrap().to_path_buf();
+         }
+ 
+         if check_path.exists() {
+             check_path.canonicalize().map_err(BackupError::IoError)?
+         } else {
+             canonical_base.clone()
+         }

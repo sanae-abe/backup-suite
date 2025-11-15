@@ -1,0 +1,64 @@
+--- src/crypto/encryption.rs
++++ replace EncryptedData::from_bytes -> Result<Self> with Ok(Default::default())
+@@ -50,60 +50,17 @@
+         result.extend_from_slice(&self.original_size.to_le_bytes()); // 8バイト
+         result.extend_from_slice(&(self.ciphertext.len() as u64).to_le_bytes()); // 8バイト
+         result.extend_from_slice(&self.ciphertext); // 可変長
+         result
+     }
+ 
+     /// バイナリ形式からデシリアライズ
+     pub fn from_bytes(data: &[u8]) -> Result<Self> {
+-        if data.len() < 44 {
+-            return Err(BackupError::EncryptionError(
+-                "暗号化データが短すぎます".to_string(),
+-            ));
+-        }
+-
+-        let mut nonce = [0u8; 12];
+-        nonce.copy_from_slice(&data[0..12]);
+-
+-        let mut salt = [0u8; 16];
+-        salt.copy_from_slice(&data[12..28]);
+-
+-        let original_size = u64::from_le_bytes([
+-            data[28], data[29], data[30], data[31], data[32], data[33], data[34], data[35],
+-        ]);
+-
+-        let ciphertext_len = u64::from_le_bytes([
+-            data[36], data[37], data[38], data[39], data[40], data[41], data[42], data[43],
+-        ]) as usize;
+-
+-        // オーバーフロー対策: checked_add を使用
+-        let expected_len = match 44usize.checked_add(ciphertext_len) {
+-            Some(len) => len,
+-            None => {
+-                return Err(BackupError::EncryptionError(
+-                    "暗号化データの長さが不正です（オーバーフロー）".to_string(),
+-                ));
+-            }
+-        };
+-
+-        if data.len() != expected_len {
+-            return Err(BackupError::EncryptionError(
+-                "暗号化データの長さが一致しません".to_string(),
+-            ));
+-        }
+-
+-        let ciphertext = data[44..].to_vec();
+-
+-        Ok(Self {
+-            nonce,
+-            salt,
+-            ciphertext,
+-            original_size,
+-        })
++        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+     }
+ }
+ 
+ /// AES-256-GCM 暗号化エンジン
+ pub struct EncryptionEngine {
+     config: EncryptionConfig,
+ }
+ 

@@ -1,0 +1,21 @@
+--- src/core/pipeline.rs
++++ replace ProcessingPipeline::is_parallel_ready -> bool with true
+@@ -642,17 +642,17 @@
+             encryption_enabled: self.encryption_engine.is_some(),
+             compression_type: self.config.compression_type,
+         }
+     }
+ 
+     /// ThreadPoolが正常に作成されているか確認
+     #[must_use]
+     pub fn is_parallel_ready(&self) -> bool {
+-        self.thread_pool.is_some()
++        true /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 現在の並列度を取得
+     #[must_use]
+     pub fn current_parallelism(&self) -> usize {
+         self.thread_pool
+             .as_ref()
+             .map(rayon::ThreadPool::current_num_threads)

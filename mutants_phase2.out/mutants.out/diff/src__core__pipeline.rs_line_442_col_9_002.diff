@@ -1,0 +1,82 @@
+--- src/core/pipeline.rs
++++ replace ProcessingPipeline::compress_and_encrypt_stream -> Result<(u64, u64, u64)> with Ok((1, 1, 1))
+@@ -434,78 +434,17 @@
+     fn compress_and_encrypt_stream<R: Read, W: Write>(
+         &self,
+         reader: R,
+         writer: W,
+         encryption_engine: &EncryptionEngine,
+         master_key: &MasterKey,
+         salt: [u8; 16],
+     ) -> Result<(u64, u64, u64)> {
+-        use std::io::Cursor;
+-
+-        // 圧縮バッファ（メモリ内一時保存）
+-        let mut compressed_buffer = Vec::new();
+-
+-        // ステップ1: 圧縮ストリーミング
+-        let compressed_data = self
+-            .compression_engine
+-            .compress_stream(reader, &mut compressed_buffer)?;
+-
+-        let original_size = compressed_data.original_size;
+-        let compressed_size = compressed_data.compressed_size;
+-
+-        // ステップ2: 暗号化ストリーミング（圧縮データを入力）
+-        let compressed_reader = Cursor::new(compressed_buffer);
+-        let mut encrypted_buffer = Vec::new();
+-
+-        // ナンス・ソルトヘッダー書き込み
+-        let nonce_bytes = crate::crypto::encryption::EncryptionEngine::generate_nonce_internal();
+-        encrypted_buffer.extend_from_slice(&nonce_bytes);
+-        encrypted_buffer.extend_from_slice(&salt);
+-
+-        // 暗号化ストリーミング（チャンク単位）
+-        #[allow(deprecated)]
+-        let key = aes_gcm::Key::<aes_gcm::Aes256Gcm>::from_slice(master_key.as_bytes());
+-        let cipher = aes_gcm::Aes256Gcm::new(key);
+-
+-        let chunk_size = encryption_engine.get_chunk_size();
+-        let mut buffer = vec![0u8; chunk_size];
+-        let mut compressed_reader = compressed_reader;
+-        let mut chunk_index = 0u64;
+-
+-        loop {
+-            let bytes_read = compressed_reader.read(&mut buffer)?;
+-            if bytes_read == 0 {
+-                break;
+-            }
+-
+-            // チャンク毎に異なるナンスを使用（u64カウンター）
+-            let mut chunk_nonce = nonce_bytes;
+-            chunk_nonce[4..12].copy_from_slice(&chunk_index.to_le_bytes());
+-
+-            #[allow(deprecated)]
+-            let nonce = aes_gcm::Nonce::from_slice(&chunk_nonce);
+-            let chunk_ciphertext = cipher
+-                .encrypt(nonce, &buffer[..bytes_read])
+-                .map_err(|e| BackupError::EncryptionError(format!("チャンク暗号化エラー: {e}")))?;
+-
+-            // チャンクサイズと暗号化データを書き込み
+-            encrypted_buffer.extend_from_slice(&(chunk_ciphertext.len() as u32).to_le_bytes());
+-            encrypted_buffer.extend_from_slice(&chunk_ciphertext);
+-
+-            chunk_index += 1;
+-        }
+-
+-        let final_size = encrypted_buffer.len() as u64;
+-
+-        // ステップ3: 最終書き込み（一括）
+-        let mut writer = writer;
+-        writer.write_all(&encrypted_buffer)?;
+-
+-        Ok((original_size, compressed_size, final_size))
++        Ok((1, 1, 1)) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 圧縮のみストリーミング処理（内部実装）
+     fn compress_stream_only<R: Read, W: Write>(
+         &self,
+         reader: R,
+         writer: W,
+     ) -> Result<(u64, u64, u64)> {

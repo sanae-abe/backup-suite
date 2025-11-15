@@ -1,0 +1,21 @@
+--- src/core/pipeline.rs
++++ replace * with + in ProcessingPipeline::process_stream
+@@ -413,17 +413,17 @@
+ 
+         Ok(ProcessingMetadata {
+             original_size,
+             compressed_size,
+             final_size,
+             processing_time_ms: processing_time,
+             compression_ratio: if original_size > 0 {
+                 (original_size.saturating_sub(compressed_size) as f64 / original_size as f64)
+-                    * 100.0
++                    + /* ~ changed by cargo-mutants ~ */ 100.0
+             } else {
+                 0.0
+             },
+             memory_usage: 2 * 1024 * 1024, // 2MB固定（チャンクサイズベース）
+         })
+     }
+ 
+     /// 圧縮 + 暗号化ストリーミング処理（内部実装）

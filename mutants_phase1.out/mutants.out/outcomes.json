@@ -1,0 +1,2096 @@
+{
+  "outcomes": [
+    {
+      "scenario": "Baseline",
+      "summary": "Success",
+      "log_path": "log/baseline.log",
+      "diff_path": null,
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 27.829247333,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 14.252243459,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::encrypt_stream",
+            "return_type": "-> Result<EncryptedData>",
+            "span": {
+              "start": {
+                "line": 193,
+                "column": 5
+              },
+              "end": {
+                "line": 254,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 224,
+              "column": 27
+            },
+            "end": {
+              "line": 224,
+              "column": 29
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_224_col_27.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_224_col_27.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.444750208,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.387566334,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt_stream",
+            "return_type": "-> Result<u64>",
+            "span": {
+              "start": {
+                "line": 256,
+                "column": 5
+              },
+              "end": {
+                "line": 315,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 311,
+              "column": 25
+            },
+            "end": {
+              "line": 311,
+              "column": 27
+            }
+          },
+          "replacement": "-=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_311_col_25.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_311_col_25.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.915807167,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.449925292,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptedData::from_bytes",
+            "return_type": "-> Result<Self>",
+            "span": {
+              "start": {
+                "line": 56,
+                "column": 5
+              },
+              "end": {
+                "line": 102,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 88,
+              "column": 23
+            },
+            "end": {
+              "line": 88,
+              "column": 25
+            }
+          },
+          "replacement": "==",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_88_col_23.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_88_col_23.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.023045708,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.594916875,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::generate_nonce_internal",
+            "return_type": "-> [u8; 12]",
+            "span": {
+              "start": {
+                "line": 124,
+                "column": 5
+              },
+              "end": {
+                "line": 128,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 127,
+              "column": 9
+            },
+            "end": {
+              "line": 127,
+              "column": 31
+            }
+          },
+          "replacement": "[1; 12]",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_127_col_9.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_127_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.10716775,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 14.028381666,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptedData::from_bytes",
+            "return_type": "-> Result<Self>",
+            "span": {
+              "start": {
+                "line": 56,
+                "column": 5
+              },
+              "end": {
+                "line": 102,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 58,
+              "column": 23
+            },
+            "end": {
+              "line": 58,
+              "column": 24
+            }
+          },
+          "replacement": "<=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_58_col_23.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_58_col_23.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.3889385,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.907664916,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptedData::to_bytes",
+            "return_type": "-> Vec<u8>",
+            "span": {
+              "start": {
+                "line": 44,
+                "column": 5
+              },
+              "end": {
+                "line": 54,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 47,
+              "column": 9
+            },
+            "end": {
+              "line": 53,
+              "column": 15
+            }
+          },
+          "replacement": "vec![1]",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_47_col_9.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_47_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.367836291,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.710636375,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::generate_nonce",
+            "return_type": "-> [u8; 12]",
+            "span": {
+              "start": {
+                "line": 117,
+                "column": 5
+              },
+              "end": {
+                "line": 122,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 119,
+              "column": 9
+            },
+            "end": {
+              "line": 121,
+              "column": 14
+            }
+          },
+          "replacement": "[1; 12]",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_119_col_9.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_119_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.612105625,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.900750292,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt",
+            "return_type": "-> Result<Vec<u8>>",
+            "span": {
+              "start": {
+                "line": 168,
+                "column": 5
+              },
+              "end": {
+                "line": 191,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 182,
+              "column": 9
+            },
+            "end": {
+              "line": 190,
+              "column": 22
+            }
+          },
+          "replacement": "Ok(vec![0])",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_182_col_9.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_182_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.749842042,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.248987208,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt",
+            "return_type": "-> Result<Vec<u8>>",
+            "span": {
+              "start": {
+                "line": 168,
+                "column": 5
+              },
+              "end": {
+                "line": 191,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 182,
+              "column": 9
+            },
+            "end": {
+              "line": 190,
+              "column": 22
+            }
+          },
+          "replacement": "Ok(vec![1])",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_182_col_9_001.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_182_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.3312076250000002,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.259214334,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt_stream",
+            "return_type": "-> Result<u64>",
+            "span": {
+              "start": {
+                "line": 256,
+                "column": 5
+              },
+              "end": {
+                "line": 315,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 291,
+              "column": 27
+            },
+            "end": {
+              "line": 291,
+              "column": 72
+            }
+          },
+          "replacement": "true",
+          "genre": "MatchArmGuard"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_291_col_27.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_291_col_27.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.651725125,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.727630958,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::generate_nonce",
+            "return_type": "-> [u8; 12]",
+            "span": {
+              "start": {
+                "line": 117,
+                "column": 5
+              },
+              "end": {
+                "line": 122,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 119,
+              "column": 9
+            },
+            "end": {
+              "line": 121,
+              "column": 14
+            }
+          },
+          "replacement": "[0; 12]",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_119_col_9_001.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_119_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.097108833,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.642751458,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptedData::to_bytes",
+            "return_type": "-> Vec<u8>",
+            "span": {
+              "start": {
+                "line": 44,
+                "column": 5
+              },
+              "end": {
+                "line": 54,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 47,
+              "column": 9
+            },
+            "end": {
+              "line": 53,
+              "column": 15
+            }
+          },
+          "replacement": "vec![]",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_47_col_9_001.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_47_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.058264,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.258581459,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt_stream",
+            "return_type": "-> Result<u64>",
+            "span": {
+              "start": {
+                "line": 256,
+                "column": 5
+              },
+              "end": {
+                "line": 315,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 291,
+              "column": 27
+            },
+            "end": {
+              "line": 291,
+              "column": 72
+            }
+          },
+          "replacement": "false",
+          "genre": "MatchArmGuard"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_291_col_27_001.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_291_col_27_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.1825831669999998,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.323352458,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptedData::to_bytes",
+            "return_type": "-> Vec<u8>",
+            "span": {
+              "start": {
+                "line": 44,
+                "column": 5
+              },
+              "end": {
+                "line": 54,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 47,
+              "column": 9
+            },
+            "end": {
+              "line": 53,
+              "column": 15
+            }
+          },
+          "replacement": "vec![0]",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_47_col_9_002.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_47_col_9_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.166421208,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.407484917,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::get_chunk_size",
+            "return_type": "-> usize",
+            "span": {
+              "start": {
+                "line": 130,
+                "column": 5
+              },
+              "end": {
+                "line": 134,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 133,
+              "column": 9
+            },
+            "end": {
+              "line": 133,
+              "column": 31
+            }
+          },
+          "replacement": "0",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_133_col_9.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_133_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.272185666,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.909789667,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt_stream",
+            "return_type": "-> Result<u64>",
+            "span": {
+              "start": {
+                "line": 256,
+                "column": 5
+              },
+              "end": {
+                "line": 315,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 311,
+              "column": 25
+            },
+            "end": {
+              "line": 311,
+              "column": 27
+            }
+          },
+          "replacement": "*=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_311_col_25_001.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_311_col_25_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.049952041,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 14.356398125,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt",
+            "return_type": "-> Result<Vec<u8>>",
+            "span": {
+              "start": {
+                "line": 168,
+                "column": 5
+              },
+              "end": {
+                "line": 191,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 182,
+              "column": 9
+            },
+            "end": {
+              "line": 190,
+              "column": 22
+            }
+          },
+          "replacement": "Ok(vec![])",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_182_col_9_002.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_182_col_9_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.752053834,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.567031834,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt_stream",
+            "return_type": "-> Result<u64>",
+            "span": {
+              "start": {
+                "line": 256,
+                "column": 5
+              },
+              "end": {
+                "line": 315,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 310,
+              "column": 29
+            },
+            "end": {
+              "line": 310,
+              "column": 31
+            }
+          },
+          "replacement": "*=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_310_col_29.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_310_col_29.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.276129041,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.357693125,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptedData::from_bytes",
+            "return_type": "-> Result<Self>",
+            "span": {
+              "start": {
+                "line": 56,
+                "column": 5
+              },
+              "end": {
+                "line": 102,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 58,
+              "column": 23
+            },
+            "end": {
+              "line": 58,
+              "column": 24
+            }
+          },
+          "replacement": "==",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_58_col_23_001.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_58_col_23_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.072368958,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.392716709,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptedData::from_bytes",
+            "return_type": "-> Result<Self>",
+            "span": {
+              "start": {
+                "line": 56,
+                "column": 5
+              },
+              "end": {
+                "line": 102,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 58,
+              "column": 9
+            },
+            "end": {
+              "line": 101,
+              "column": 11
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__crypto__encryption.rs_line_58_col_9.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_58_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.05729225,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt_stream",
+            "return_type": "-> Result<u64>",
+            "span": {
+              "start": {
+                "line": 256,
+                "column": 5
+              },
+              "end": {
+                "line": 315,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 275,
+              "column": 9
+            },
+            "end": {
+              "line": 314,
+              "column": 28
+            }
+          },
+          "replacement": "Ok(1)",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_275_col_9.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_275_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.145315333,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.116016791,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::encrypt_stream",
+            "return_type": "-> Result<EncryptedData>",
+            "span": {
+              "start": {
+                "line": 193,
+                "column": 5
+              },
+              "end": {
+                "line": 254,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 228,
+              "column": 24
+            },
+            "end": {
+              "line": 228,
+              "column": 26
+            }
+          },
+          "replacement": "-=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_228_col_24.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_228_col_24.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.214979917,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.593735917,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptedData::from_bytes",
+            "return_type": "-> Result<Self>",
+            "span": {
+              "start": {
+                "line": 56,
+                "column": 5
+              },
+              "end": {
+                "line": 102,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 58,
+              "column": 23
+            },
+            "end": {
+              "line": 58,
+              "column": 24
+            }
+          },
+          "replacement": ">",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_58_col_23_002.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_58_col_23_002.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.381704792,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.917982291,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::encrypt",
+            "return_type": "-> Result<EncryptedData>",
+            "span": {
+              "start": {
+                "line": 136,
+                "column": 5
+              },
+              "end": {
+                "line": 166,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 149,
+              "column": 9
+            },
+            "end": {
+              "line": 165,
+              "column": 11
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__crypto__encryption.rs_line_149_col_9.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_149_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.072298709,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt_stream",
+            "return_type": "-> Result<u64>",
+            "span": {
+              "start": {
+                "line": 256,
+                "column": 5
+              },
+              "end": {
+                "line": 315,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 310,
+              "column": 29
+            },
+            "end": {
+              "line": 310,
+              "column": 31
+            }
+          },
+          "replacement": "-=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_310_col_29_001.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_310_col_29_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.342300708,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 14.371584583,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt_stream",
+            "return_type": "-> Result<u64>",
+            "span": {
+              "start": {
+                "line": 256,
+                "column": 5
+              },
+              "end": {
+                "line": 315,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 291,
+              "column": 36
+            },
+            "end": {
+              "line": 291,
+              "column": 38
+            }
+          },
+          "replacement": "!=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_291_col_36.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_291_col_36.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 3.285508542,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.350794292,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::get_chunk_size",
+            "return_type": "-> usize",
+            "span": {
+              "start": {
+                "line": 130,
+                "column": 5
+              },
+              "end": {
+                "line": 134,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 133,
+              "column": 9
+            },
+            "end": {
+              "line": 133,
+              "column": 31
+            }
+          },
+          "replacement": "1",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_133_col_9_001.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_133_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.4968093749999998,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.884948334,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::encrypt_stream",
+            "return_type": "-> Result<EncryptedData>",
+            "span": {
+              "start": {
+                "line": 193,
+                "column": 5
+              },
+              "end": {
+                "line": 254,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 208,
+              "column": 9
+            },
+            "end": {
+              "line": 253,
+              "column": 11
+            }
+          },
+          "replacement": "Ok(Default::default())",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "Unviable",
+      "log_path": "log/src__crypto__encryption.rs_line_208_col_9.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_208_col_9.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 1.532684375,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::generate_nonce_internal",
+            "return_type": "-> [u8; 12]",
+            "span": {
+              "start": {
+                "line": 124,
+                "column": 5
+              },
+              "end": {
+                "line": 128,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 127,
+              "column": 9
+            },
+            "end": {
+              "line": 127,
+              "column": 31
+            }
+          },
+          "replacement": "[0; 12]",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "MissedMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_127_col_9_001.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_127_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.102861958,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.811595,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::encrypt_stream",
+            "return_type": "-> Result<EncryptedData>",
+            "span": {
+              "start": {
+                "line": 193,
+                "column": 5
+              },
+              "end": {
+                "line": 254,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 228,
+              "column": 24
+            },
+            "end": {
+              "line": 228,
+              "column": 26
+            }
+          },
+          "replacement": "*=",
+          "genre": "BinaryOperator"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_228_col_24_001.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_228_col_24_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.149028208,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.460170208,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    },
+    {
+      "scenario": {
+        "Mutant": {
+          "package": "backup-suite",
+          "file": "src/crypto/encryption.rs",
+          "function": {
+            "function_name": "EncryptionEngine::decrypt_stream",
+            "return_type": "-> Result<u64>",
+            "span": {
+              "start": {
+                "line": 256,
+                "column": 5
+              },
+              "end": {
+                "line": 315,
+                "column": 6
+              }
+            }
+          },
+          "span": {
+            "start": {
+              "line": 275,
+              "column": 9
+            },
+            "end": {
+              "line": 314,
+              "column": 28
+            }
+          },
+          "replacement": "Ok(0)",
+          "genre": "FnValue"
+        }
+      },
+      "summary": "CaughtMutant",
+      "log_path": "log/src__crypto__encryption.rs_line_275_col_9_001.log",
+      "diff_path": "diff/src__crypto__encryption.rs_line_275_col_9_001.diff",
+      "phase_results": [
+        {
+          "phase": "Build",
+          "duration": 2.353588625,
+          "process_status": "Success",
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--no-run",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        },
+        {
+          "phase": "Test",
+          "duration": 13.127351459,
+          "process_status": {
+            "Failure": 101
+          },
+          "argv": [
+            "/Users/sanae.abe/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+            "test",
+            "--verbose",
+            "--package=backup-suite@1.0.0",
+            "--lib",
+            "--bins"
+          ]
+        }
+      ]
+    }
+  ],
+  "total_mutants": 31,
+  "missed": 9,
+  "caught": 19,
+  "timeout": 0,
+  "unviable": 3,
+  "success": 0
+}

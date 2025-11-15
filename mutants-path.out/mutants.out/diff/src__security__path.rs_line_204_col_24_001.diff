@@ -1,0 +1,21 @@
+--- src/security/path.rs
++++ replace |= with ^= in validate_path_safety
+@@ -196,17 +196,17 @@
+ ///   - 浅い絶対パス（ルート直下等、階層が2以下の絶対パス）
+ pub fn validate_path_safety(path: &Path) -> Result<()> {
+     // 定数時間で全ての検証を実行（タイミング攻撃対策）
+     let mut has_parent_dir = false;
+     let mut is_shallow_absolute = false;
+ 
+     // 全コンポーネントをチェック（早期リターンなし）
+     for component in path.components() {
+-        has_parent_dir |= matches!(component, Component::ParentDir);
++        has_parent_dir ^= /* ~ changed by cargo-mutants ~ */ matches!(component, Component::ParentDir);
+     }
+ 
+     if path.is_absolute() {
+         let components: Vec<_> = path.components().collect();
+         is_shallow_absolute = components.len() <= 2;
+     }
+ 
+     // 最後に一度だけ判定（定数時間性を保証）

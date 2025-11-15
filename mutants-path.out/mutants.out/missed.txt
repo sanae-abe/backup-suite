@@ -1,0 +1,8 @@
+src/security/path.rs:74:9: replace || with && in safe_join
+src/security/path.rs:73:9: replace || with && in safe_join
+src/security/path.rs:100:36: replace && with || in safe_join
+src/security/path.rs:100:15: delete ! in safe_join
+src/security/path.rs:204:24: replace |= with ^= in validate_path_safety
+src/security/path.rs:289:70: replace != with == in safe_open
+src/security/path.rs:289:39: replace & with | in safe_open
+src/security/path.rs:289:39: replace & with ^ in safe_open

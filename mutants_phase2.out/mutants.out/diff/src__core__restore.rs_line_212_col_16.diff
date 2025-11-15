@@ -1,0 +1,21 @@
+--- src/core/restore.rs
++++ delete ! in RestoreEngine::restore
+@@ -204,17 +204,17 @@
+                     Err(e) => {
+                         eprintln!(
+                             "警告: 整合性メタデータの読み込みに失敗しました ({}): {e}",
+                             backup.display()
+                         );
+                     }
+                 }
+             }
+-            if !backup_metadata_map.is_empty() {
++            if  /* ~ changed by cargo-mutants ~ */backup_metadata_map.is_empty() {
+                 println!(
+                     "✓ 整合性メタデータを読み込みました（{}個のバックアップ）",
+                     backup_metadata_map.len()
+                 );
+             }
+         }
+ 
+         let mut errors = Vec::new();

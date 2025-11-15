@@ -1,0 +1,32 @@
+--- src/core/pipeline.rs
++++ replace ProcessingPipeline::process_files_parallel_internal -> Vec<Result<ProcessedData>> with vec![Ok(Default::default())]
+@@ -570,28 +570,17 @@
+ 
+     /// 内部並列処理実装
+     fn process_files_parallel_internal<P: AsRef<Path> + Send + Sync>(
+         &self,
+         files: &[P],
+         master_key: Option<&MasterKey>,
+         salt: Option<[u8; 16]>,
+     ) -> Vec<Result<ProcessedData>> {
+-        let batch_size = self.config.performance.batch_size;
+-
+-        // バッチ処理による並列実行
+-        files
+-            .par_chunks(batch_size)
+-            .flat_map(|batch| {
+-                batch
+-                    .par_iter()
+-                    .map(|file| self.process_file(file, master_key, salt))
+-                    .collect::<Vec<_>>()
+-            })
+-            .collect()
++        vec![Ok(Default::default())] /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// 複数ファイルを並列処理（進捗コールバック付き）
+     ///
+     /// # Arguments
+     ///
+     /// * `files` - 処理対象のファイルパスのスライス
+     /// * `master_key` - マスターキー（暗号化時のみ必要）

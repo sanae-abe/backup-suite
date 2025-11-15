@@ -1,0 +1,392 @@
+[
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "MasterKey::generate",
+      "return_type": "-> Self",
+      "span": {
+        "start": {
+          "line": 18,
+          "column": 5
+        },
+        "end": {
+          "line": 24,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 21,
+        "column": 9
+      },
+      "end": {
+        "line": 23,
+        "column": 21
+      }
+    },
+    "replacement": "Default::default()",
+    "genre": "FnValue"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "MasterKey::from_bytes",
+      "return_type": "-> Self",
+      "span": {
+        "start": {
+          "line": 26,
+          "column": 5
+        },
+        "end": {
+          "line": 30,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 29,
+        "column": 9
+      },
+      "end": {
+        "line": 29,
+        "column": 28
+      }
+    },
+    "replacement": "Default::default()",
+    "genre": "FnValue"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "MasterKey::as_bytes",
+      "return_type": "-> &[u8; 32]",
+      "span": {
+        "start": {
+          "line": 32,
+          "column": 5
+        },
+        "end": {
+          "line": 36,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 35,
+        "column": 9
+      },
+      "end": {
+        "line": 35,
+        "column": 18
+      }
+    },
+    "replacement": "Box::leak(Box::new([0; 32]))",
+    "genre": "FnValue"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "MasterKey::as_bytes",
+      "return_type": "-> &[u8; 32]",
+      "span": {
+        "start": {
+          "line": 32,
+          "column": 5
+        },
+        "end": {
+          "line": 36,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 35,
+        "column": 9
+      },
+      "end": {
+        "line": 35,
+        "column": 18
+      }
+    },
+    "replacement": "Box::leak(Box::new([1; 32]))",
+    "genre": "FnValue"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "KeyDerivation::derive_key",
+      "return_type": "-> Result<MasterKey>",
+      "span": {
+        "start": {
+          "line": 72,
+          "column": 5
+        },
+        "end": {
+          "line": 114,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 83,
+        "column": 9
+      },
+      "end": {
+        "line": 113,
+        "column": 39
+      }
+    },
+    "replacement": "Ok(Default::default())",
+    "genre": "FnValue"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "KeyDerivation::derive_key",
+      "return_type": "-> Result<MasterKey>",
+      "span": {
+        "start": {
+          "line": 72,
+          "column": 5
+        },
+        "end": {
+          "line": 114,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 107,
+        "column": 29
+      },
+      "end": {
+        "line": 107,
+        "column": 31
+      }
+    },
+    "replacement": "==",
+    "genre": "BinaryOperator"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "KeyDerivation::generate_salt",
+      "return_type": "-> [u8; 16]",
+      "span": {
+        "start": {
+          "line": 116,
+          "column": 5
+        },
+        "end": {
+          "line": 122,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 119,
+        "column": 9
+      },
+      "end": {
+        "line": 121,
+        "column": 13
+      }
+    },
+    "replacement": "[0; 16]",
+    "genre": "FnValue"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "KeyDerivation::generate_salt",
+      "return_type": "-> [u8; 16]",
+      "span": {
+        "start": {
+          "line": 116,
+          "column": 5
+        },
+        "end": {
+          "line": 122,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 119,
+        "column": 9
+      },
+      "end": {
+        "line": 121,
+        "column": 13
+      }
+    },
+    "replacement": "[1; 16]",
+    "genre": "FnValue"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "KeyDerivation::verify_password",
+      "return_type": "-> Result<bool>",
+      "span": {
+        "start": {
+          "line": 124,
+          "column": 5
+        },
+        "end": {
+          "line": 140,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 133,
+        "column": 9
+      },
+      "end": {
+        "line": 139,
+        "column": 22
+      }
+    },
+    "replacement": "Ok(true)",
+    "genre": "FnValue"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "KeyDerivation::verify_password",
+      "return_type": "-> Result<bool>",
+      "span": {
+        "start": {
+          "line": 124,
+          "column": 5
+        },
+        "end": {
+          "line": 140,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 133,
+        "column": 9
+      },
+      "end": {
+        "line": 139,
+        "column": 22
+      }
+    },
+    "replacement": "Ok(false)",
+    "genre": "FnValue"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "KeyManager::create_master_key",
+      "return_type": "-> Result<(MasterKey, [u8; 16])>",
+      "span": {
+        "start": {
+          "line": 164,
+          "column": 5
+        },
+        "end": {
+          "line": 177,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 174,
+        "column": 9
+      },
+      "end": {
+        "line": 176,
+        "column": 24
+      }
+    },
+    "replacement": "Ok((Default::default(), [0; 16]))",
+    "genre": "FnValue"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "KeyManager::create_master_key",
+      "return_type": "-> Result<(MasterKey, [u8; 16])>",
+      "span": {
+        "start": {
+          "line": 164,
+          "column": 5
+        },
+        "end": {
+          "line": 177,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 174,
+        "column": 9
+      },
+      "end": {
+        "line": 176,
+        "column": 24
+      }
+    },
+    "replacement": "Ok((Default::default(), [1; 16]))",
+    "genre": "FnValue"
+  },
+  {
+    "package": "backup-suite",
+    "file": "src/crypto/key_management.rs",
+    "function": {
+      "function_name": "KeyManager::restore_master_key",
+      "return_type": "-> Result<MasterKey>",
+      "span": {
+        "start": {
+          "line": 179,
+          "column": 5
+        },
+        "end": {
+          "line": 190,
+          "column": 6
+        }
+      }
+    },
+    "span": {
+      "start": {
+        "line": 189,
+        "column": 9
+      },
+      "end": {
+        "line": 189,
+        "column": 51
+      }
+    },
+    "replacement": "Ok(Default::default())",
+    "genre": "FnValue"
+  }
+]

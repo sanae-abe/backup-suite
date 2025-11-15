@@ -1,0 +1,21 @@
+--- src/core/backup.rs
++++ replace == with != in BackupRunner::run
+@@ -429,17 +429,17 @@
+         let backup_type = if self.incremental {
+             inc_engine.determine_backup_type()?
+         } else {
+             BackupType::Full
+         };
+ 
+         // 増分バックアップの場合、前回のメタデータを読み込み（失敗した場合はフルバックアップにフォールバック）
+         let (actual_backup_type, parent_backup_name, files_to_backup) = if backup_type
+-            == BackupType::Incremental
++            != /* ~ changed by cargo-mutants ~ */ BackupType::Incremental
+         {
+             match inc_engine.load_previous_metadata() {
+                 Ok(previous_metadata) => {
+                     println!("📦 増分バックアップモード（変更ファイルのみ）");
+ 
+                     // バックアップディレクトリからの相対パスを計算
+                     let files_with_relative: Vec<(PathBuf, PathBuf)> = all_files
+                         .iter()

@@ -1,0 +1,21 @@
+--- src/crypto/encryption.rs
++++ replace += with -= in EncryptionEngine::encrypt_stream
+@@ -220,17 +220,17 @@
+         let mut buffer = vec![0u8; self.config.chunk_size];
+ 
+         loop {
+             let bytes_read = reader.read(&mut buffer)?;
+             if bytes_read == 0 {
+                 break;
+             }
+ 
+-            total_size += bytes_read as u64;
++            total_size -= /* ~ changed by cargo-mutants ~ */ bytes_read as u64;
+ 
+             // チャンク毎に異なるナンスを使用（u64カウンター）
+             let mut chunk_nonce = nonce_bytes;
+             let chunk_index = encrypted_chunks.len() as u64;
+             chunk_nonce[4..12].copy_from_slice(&chunk_index.to_le_bytes());
+ 
+             #[allow(deprecated)]
+             let nonce = Nonce::from_slice(&chunk_nonce);

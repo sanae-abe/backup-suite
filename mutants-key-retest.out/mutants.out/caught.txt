@@ -1,0 +1,7 @@
+src/crypto/key_management.rs:35:9: replace MasterKey::as_bytes -> &[u8; 32] with Box::leak(Box::new([0; 32]))
+src/crypto/key_management.rs:35:9: replace MasterKey::as_bytes -> &[u8; 32] with Box::leak(Box::new([1; 32]))
+src/crypto/key_management.rs:107:29: replace != with == in KeyDerivation::derive_key
+src/crypto/key_management.rs:119:9: replace KeyDerivation::generate_salt -> [u8; 16] with [0; 16]
+src/crypto/key_management.rs:119:9: replace KeyDerivation::generate_salt -> [u8; 16] with [1; 16]
+src/crypto/key_management.rs:133:9: replace KeyDerivation::verify_password -> Result<bool> with Ok(true)
+src/crypto/key_management.rs:133:9: replace KeyDerivation::verify_password -> Result<bool> with Ok(false)

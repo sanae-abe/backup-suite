@@ -1,0 +1,106 @@
+src/core/pipeline.rs:494:25: replace += with *= in ProcessingPipeline::compress_and_encrypt_stream
+src/core/pipeline.rs:526:9: replace ProcessingPipeline::copy_stream -> Result<(u64, u64, u64)> with Ok((0, 1, 1))
+src/core/backup.rs:351:42: replace > with < in BackupRunner::run
+src/core/pipeline.rs:173:35: replace * with + in dynamic_parallelism
+src/core/pipeline.rs:632:9: replace ProcessingPipeline::config -> &PipelineConfig with Box::leak(Box::new(Default::default()))
+src/core/backup.rs:351:42: replace > with == in BackupRunner::run
+src/core/pipeline.rs:322:71: replace / with % in ProcessingPipeline::process_file
+src/core/backup.rs:324:29: delete ! in BackupRunner::run
+src/core/pipeline.rs:264:9: replace ProcessingPipeline::with_encryption -> Result<(Self, [u8; 16])> with Ok((Default::default(), [0; 16]))
+src/core/pipeline.rs:425:36: replace * with + in ProcessingPipeline::process_stream
+src/core/pipeline.rs:650:9: replace ProcessingPipeline::is_parallel_ready -> bool with true
+src/core/pipeline.rs:536:24: replace += with -= in ProcessingPipeline::copy_stream
+src/core/pipeline.rs:442:9: replace ProcessingPipeline::compress_and_encrypt_stream -> Result<(u64, u64, u64)> with Ok((1, 0, 1))
+src/core/backup.rs:349:74: replace * with + in BackupRunner::run
+src/core/pipeline.rs:425:29: replace * with + in ProcessingPipeline::process_stream
+src/core/pipeline.rs:531:27: replace == with != in ProcessingPipeline::copy_stream
+src/core/integrity.rs:432:9: replace IntegrityChecker::file_count -> usize with 1
+src/core/pipeline.rs:146:15: replace / with % in optimal_parallelism
+src/core/pipeline.rs:526:9: replace ProcessingPipeline::copy_stream -> Result<(u64, u64, u64)> with Ok((1, 0, 0))
+src/core/pipeline.rs:526:9: replace ProcessingPipeline::copy_stream -> Result<(u64, u64, u64)> with Ok((1, 1, 0))
+src/core/pipeline.rs:420:71: replace / with * in ProcessingPipeline::process_stream
+src/core/pipeline.rs:442:9: replace ProcessingPipeline::compress_and_encrypt_stream -> Result<(u64, u64, u64)> with Ok((0, 1, 0))
+src/core/pipeline.rs:526:9: replace ProcessingPipeline::copy_stream -> Result<(u64, u64, u64)> with Ok((0, 0, 1))
+src/core/backup.rs:692:39: replace == with != in BackupRunner::run
+src/core/pipeline.rs:175:38: replace / with * in dynamic_parallelism
+src/core/backup.rs:382:71: replace * with / in BackupRunner::run
+src/core/pipeline.rs:173:22: replace > with >= in dynamic_parallelism
+src/core/pipeline.rs:421:21: replace * with / in ProcessingPipeline::process_stream
+src/core/pipeline.rs:419:49: replace > with >= in ProcessingPipeline::process_stream
+src/core/pipeline.rs:442:9: replace ProcessingPipeline::compress_and_encrypt_stream -> Result<(u64, u64, u64)> with Ok((1, 1, 1))
+src/core/pipeline.rs:419:49: replace > with == in ProcessingPipeline::process_stream
+src/core/pipeline.rs:526:9: replace ProcessingPipeline::copy_stream -> Result<(u64, u64, u64)> with Ok((1, 1, 1))
+src/core/restore.rs:398:23: replace == with != in RestoreEngine::restore
+src/core/backup.rs:351:42: replace > with >= in BackupRunner::run
+src/core/backup.rs:384:46: replace > with == in BackupRunner::run
+src/core/pipeline.rs:442:9: replace ProcessingPipeline::compress_and_encrypt_stream -> Result<(u64, u64, u64)> with Ok((1, 0, 0))
+src/core/pipeline.rs:442:9: replace ProcessingPipeline::compress_and_encrypt_stream -> Result<(u64, u64, u64)> with Ok((1, 1, 0))
+src/core/pipeline.rs:526:9: replace ProcessingPipeline::copy_stream -> Result<(u64, u64, u64)> with Ok((1, 0, 1))
+src/core/pipeline.rs:173:22: replace > with == in dynamic_parallelism
+src/core/pipeline.rs:257:27: replace * with + in ProcessingPipeline::create_thread_pool
+src/core/pipeline.rs:173:35: replace * with / in dynamic_parallelism
+src/core/pipeline.rs:442:9: replace ProcessingPipeline::compress_and_encrypt_stream -> Result<(u64, u64, u64)> with Ok((0, 1, 1))
+src/core/pipeline.rs:421:21: replace * with + in ProcessingPipeline::process_stream
+src/core/pipeline.rs:322:71: replace / with * in ProcessingPipeline::process_file
+src/core/backup.rs:382:85: replace * with / in BackupRunner::run
+src/core/restore.rs:118:31: replace > with == in RestoreEngine::restore
+src/core/pipeline.rs:442:9: replace ProcessingPipeline::compress_and_encrypt_stream -> Result<(u64, u64, u64)> with Ok((0, 0, 0))
+src/core/pipeline.rs:175:34: replace * with + in dynamic_parallelism
+src/core/restore.rs:118:31: replace > with >= in RestoreEngine::restore
+src/core/backup.rs:384:46: replace > with >= in BackupRunner::run
+src/core/backup.rs:382:85: replace * with + in BackupRunner::run
+src/core/pipeline.rs:536:24: replace += with *= in ProcessingPipeline::copy_stream
+src/core/pipeline.rs:162:19: replace < with <= in dynamic_parallelism
+src/core/backup.rs:481:25: replace || with && in BackupRunner::run
+src/core/pipeline.rs:425:36: replace * with / in ProcessingPipeline::process_stream
+src/core/pipeline.rs:526:9: replace ProcessingPipeline::copy_stream -> Result<(u64, u64, u64)> with Ok((0, 1, 0))
+src/core/restore.rs:212:16: delete ! in RestoreEngine::restore
+src/core/pipeline.rs:686:9: replace num_cpus::get -> usize with 1
+src/core/pipeline.rs:167:22: replace < with <= in dynamic_parallelism
+src/core/pipeline.rs:145:5: replace optimal_parallelism -> usize with 1
+src/core/backup.rs:384:46: replace > with < in BackupRunner::run
+src/core/pipeline.rs:327:42: replace + with * in ProcessingPipeline::process_file
+src/core/pipeline.rs:321:49: replace > with >= in ProcessingPipeline::process_file
+src/core/pipeline.rs:167:29: replace * with + in dynamic_parallelism
+src/core/pipeline.rs:146:11: replace * with + in optimal_parallelism
+src/core/pipeline.rs:420:71: replace / with % in ProcessingPipeline::process_stream
+src/core/backup.rs:521:75: replace != with == in BackupRunner::run
+src/core/backup.rs:462:54: replace == with != in BackupRunner::run
+src/core/backup.rs:272:43: replace == with != in BackupRunner::run
+src/core/pipeline.rs:173:28: replace * with + in dynamic_parallelism
+src/core/pipeline.rs:526:9: replace ProcessingPipeline::copy_stream -> Result<(u64, u64, u64)> with Ok((0, 0, 0))
+src/core/pipeline.rs:169:34: replace / with * in dynamic_parallelism
+src/core/pipeline.rs:264:9: replace ProcessingPipeline::with_encryption -> Result<(Self, [u8; 16])> with Ok((Default::default(), [1; 16]))
+src/core/pipeline.rs:167:29: replace * with / in dynamic_parallelism
+src/core/backup.rs:349:81: replace * with / in BackupRunner::run
+src/core/pipeline.rs:173:22: replace > with < in dynamic_parallelism
+src/core/pipeline.rs:442:9: replace ProcessingPipeline::compress_and_encrypt_stream -> Result<(u64, u64, u64)> with Ok((0, 0, 1))
+src/core/pipeline.rs:167:22: replace < with == in dynamic_parallelism
+src/core/backup.rs:382:71: replace * with + in BackupRunner::run
+src/core/backup.rs:696:32: delete ! in BackupRunner::run
+src/core/backup.rs:721:37: replace == with != in BackupRunner::run
+src/core/backup.rs:437:13: replace == with != in BackupRunner::run
+src/core/backup.rs:668:23: replace == with != in BackupRunner::run
+src/core/backup.rs:288:39: replace && with || in BackupRunner::run
+src/core/pipeline.rs:173:28: replace * with / in dynamic_parallelism
+src/core/pipeline.rs:323:21: replace * with + in ProcessingPipeline::process_file
+src/core/pipeline.rs:476:27: replace == with != in ProcessingPipeline::compress_and_encrypt_stream
+src/core/backup.rs:382:78: replace * with / in BackupRunner::run
+src/core/backup.rs:382:78: replace * with + in BackupRunner::run
+src/core/restore.rs:428:42: replace == with != in RestoreEngine::restore
+src/core/backup.rs:349:81: replace * with + in BackupRunner::run
+src/core/pipeline.rs:327:60: replace + with - in ProcessingPipeline::process_file
+src/core/restore.rs:454:63: replace && with || in RestoreEngine::decompress_if_needed
+src/core/restore.rs:118:31: replace > with < in RestoreEngine::restore
+src/core/pipeline.rs:146:11: replace * with / in optimal_parallelism
+src/core/pipeline.rs:494:25: replace += with -= in ProcessingPipeline::compress_and_encrypt_stream
+src/core/backup.rs:521:50: replace || with && in BackupRunner::run
+src/core/pipeline.rs:327:60: replace + with * in ProcessingPipeline::process_file
+src/core/backup.rs:349:67: replace * with / in BackupRunner::run
+src/core/pipeline.rs:623:39: replace + with * in ProcessingPipeline::process_files_with_progress
+src/core/restore.rs:454:66: delete ! in RestoreEngine::decompress_if_needed
+src/core/backup.rs:349:67: replace * with + in BackupRunner::run
+src/core/pipeline.rs:419:49: replace > with < in ProcessingPipeline::process_stream
+src/core/backup.rs:349:74: replace * with / in BackupRunner::run
+src/core/pipeline.rs:425:29: replace * with / in ProcessingPipeline::process_stream
+src/core/pipeline.rs:169:34: replace / with % in dynamic_parallelism

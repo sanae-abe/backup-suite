@@ -1,0 +1,21 @@
+--- src/core/restore.rs
++++ replace == with != in RestoreEngine::restore
+@@ -390,17 +390,17 @@
+             if let Some(ref pb) = progress {
+                 pb.inc(1);
+             }
+         }
+ 
+         // プログレスバー完了
+         if let Some(pb) = progress {
+             let failed = failed_count.load(Ordering::Relaxed);
+-            if failed == 0 {
++            if failed != /* ~ changed by cargo-mutants ~ */ 0 {
+                 pb.finish("✓ 復元完了");
+             } else {
+                 pb.finish(&format!("⚠ 復元完了（{failed}件失敗）"));
+             }
+         }
+ 
+         let result = RestoreResult {
+             total_files,

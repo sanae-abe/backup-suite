@@ -1,0 +1,21 @@
+--- src/core/pipeline.rs
++++ replace / with % in ProcessingPipeline::process_file
+@@ -314,17 +314,17 @@
+         let processing_time = start_time.elapsed().as_millis() as u64;
+ 
+         let metadata = ProcessingMetadata {
+             original_size,
+             compressed_size,
+             final_size,
+             processing_time_ms: processing_time,
+             compression_ratio: if original_size > 0 {
+-                (original_size.saturating_sub(compressed_size) as f64 / original_size as f64)
++                (original_size.saturating_sub(compressed_size) as f64 % /* ~ changed by cargo-mutants ~ */ original_size as f64)
+                     * 100.0
+             } else {
+                 0.0
+             },
+             memory_usage: (original_size + compressed_size + final_size),
+         };
+ 
+         Ok(ProcessedData {

@@ -1,0 +1,37 @@
+--- src/crypto/encryption.rs
++++ replace EncryptionEngine::encrypt -> Result<EncryptedData> with Ok(Default::default())
+@@ -141,33 +141,17 @@
+     /// - AES-256-GCM暗号化処理が失敗した場合 (`BackupError::EncryptionError`)
+     #[allow(deprecated)]
+     pub fn encrypt(
+         &self,
+         data: &[u8],
+         master_key: &MasterKey,
+         salt: [u8; 16],
+     ) -> Result<EncryptedData> {
+-        let nonce_bytes = Self::generate_nonce();
+-
+-        // AES-256-GCM 暗号化
+-        let key = Key::<Aes256Gcm>::from_slice(master_key.as_bytes());
+-        let cipher = Aes256Gcm::new(key);
+-        let nonce = Nonce::from_slice(&nonce_bytes);
+-
+-        let ciphertext = cipher
+-            .encrypt(nonce, data)
+-            .map_err(|e| BackupError::EncryptionError(format!("暗号化エラー: {e}")))?;
+-
+-        Ok(EncryptedData {
+-            nonce: nonce_bytes,
+-            salt, // 渡されたsaltを使用（新しく生成しない）
+-            ciphertext,
+-            original_size: data.len() as u64,
+-        })
++        Ok(Default::default()) /* ~ changed by cargo-mutants ~ */
+     }
+ 
+     /// データを復号化
+     ///
+     /// # Errors
+     ///
+     /// 以下の場合にエラーを返します:
+     /// - AES-256-GCM復号化処理が失敗した場合 (`BackupError::EncryptionError`)
