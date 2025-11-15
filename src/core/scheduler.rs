@@ -894,7 +894,7 @@ mod tests {
 
         assert!(content.contains("[Unit]"));
         assert!(content.contains("[Timer]"));
-        assert!(content.contains("OnCalendar=daily"));
+        assert!(content.contains("OnCalendar=*-*-* 02:00:00"));
         assert!(content.contains("[Install]"));
     }
 
@@ -908,7 +908,7 @@ mod tests {
             .generate_systemd_timer_content(&Priority::Medium, Frequency::Weekly)
             .unwrap();
 
-        assert!(content.contains("OnCalendar=weekly"));
+        assert!(content.contains("OnCalendar=Sun *-*-* 02:00:00"));
     }
 
     #[test]
@@ -921,7 +921,7 @@ mod tests {
             .generate_systemd_timer_content(&Priority::Low, Frequency::Monthly)
             .unwrap();
 
-        assert!(content.contains("OnCalendar=monthly"));
+        assert!(content.contains("OnCalendar=*-*-01 02:00:00"));
     }
 
     #[test]
@@ -934,7 +934,7 @@ mod tests {
             .generate_systemd_timer_content(&Priority::High, Frequency::Hourly)
             .unwrap();
 
-        assert!(content.contains("OnCalendar=hourly"));
+        assert!(content.contains("OnCalendar=*-*-* *:00:00"));
     }
 
     #[test]
