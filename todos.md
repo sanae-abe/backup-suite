@@ -113,7 +113,40 @@
 
 ## 🟢 低優先度（Phase 3以降）
 
-- [ ] ストリーミング暗号化の完全実装 - チャンク毎の圧縮暗号化 | Priority: low | Context: build | Due: 2026-01-31
+- [x] ストリーミング暗号化の完全実装 - チャンク毎の圧縮暗号化 | Priority: low | Context: build | Due: 2026-01-31 | Completed: 2025-11-16
+  - [x] 実装確認完了 - src/crypto/encryption.rs:251-373, src/core/pipeline.rs:434-504 に実装済み
+  - [x] チャンク毎の暗号化実装 - encrypt_stream()（Line 251-312）
+    - チャンクサイズ: 1MB（デフォルト、設定可能）
+    - Nonce生成: チャンク毎に一意（u64カウンター方式）
+    - フォーマット: ヘッダー（Nonce 12byte + Salt 16byte）+ チャンクデータ
+  - [x] チャンク毎の復号化実装 - decrypt_stream()（Line 314-373）
+    - チャンク毎の復号化と認証タグ検証
+    - エラーハンドリング（認証失敗、不正なキー）
+  - [x] 圧縮暗号化統合実装 - compress_and_encrypt_stream()（Line 434-504）
+    - Step 1: 圧縮ストリーミング（compression_engine.compress_stream()）
+    - Step 2: 暗号化ストリーミング（チャンク単位、AES-256-GCM）
+    - Step 3: 最終書き込み
+  - [x] 統合パイプライン実装 - process_stream()（Line 377-429）
+    - 圧縮のみ / 暗号化のみ / 圧縮+暗号化を自動判定
+    - 並列処理対応（rayon ThreadPool）
+  - [x] ユニットテスト確認 - src/core/pipeline.rs:724-757
+    - test_pipeline_with_encryption(): 圧縮+暗号化統合テスト（PASS, 0.02s）
+    - 復元テスト、間違った鍵での失敗確認
+  - [x] E2Eテスト確認 - tests/comprehensive_e2e_tests.rs
+    - test_e2e_encrypted_compressed_backup_and_restore（PASS, 8.33s）
+  - [x] バックアップエンジンテスト確認 - tests/backup_engine_tests.rs
+    - test_backup_encryption_and_compression_combined（PASS, 4.19s）
+  - [x] セキュリティ機能確認
+    - AES-256-GCM認証付き暗号化
+    - チャンク毎の一意なNonce（u64カウンター方式）
+    - Argon2鍵導出
+    - 認証タグ検証
+    - Nonce衝突検出（デバッグビルド）
+  - [x] パフォーマンス機能確認
+    - チャンクサイズ最適化（1MB〜2MB）
+    - 並列処理（rayon ThreadPool）
+    - メモリ効率化（ストリーミング処理）
+    - 適応的設定（CPU数に基づく動的調整）
 - [ ] Phase 2 Ollama統合 - 依存関係セットアップ | Priority: low | Context: api | Due: 2025-12-31
 - [ ] Phase 2 Ollama統合 - クライアント基盤実装 | Priority: low | Context: api | Due: 2025-12-31
 - [ ] Phase 2 Ollama統合 - 自然言語処理機能 | Priority: low | Context: api | Due: 2026-01-15
