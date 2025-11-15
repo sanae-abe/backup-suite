@@ -95,7 +95,21 @@
   - [x] README.en.md（英語版）に機能説明追加
   - [x] README.zh-CN.md（簡体字版）に機能説明追加
   - [x] README.zh-TW.md（繁体字版）に機能説明追加
-- [ ] Nonce衝突検出機構 - デバッグビルド追跡 | Priority: medium | Context: security | Due: 2025-12-15
+- [x] Nonce衝突検出機構 - デバッグビルド追跡 | Priority: medium | Context: security | Due: 2025-12-15 | Completed: 2025-11-16
+  - [x] 実装確認完了 - src/crypto/encryption.rs:12-20, 129-180行に実装済み
+  - [x] デバッグビルド専用追跡 - NONCE_TRACKER static変数で全Nonce追跡
+  - [x] 衝突時の詳細エラーメッセージ - セキュリティ影響、統計、対処方法を表示
+  - [x] リリースビルドゼロオーバーヘッド - #[cfg(debug_assertions)]で完全削除
+  - [x] テスト確認完了 - tests/nonce_verification.rs に5テスト実装済み
+    - test_nonce_uniqueness_1000_iterations: 1000回の一意性検証
+    - test_streaming_nonce_u64_capacity: ストリーミング暗号化のu64カウンター容量確認
+    - test_nonce_statistical_distribution: 統計的ランダム性検証
+    - test_chunk_nonce_uniqueness: チャンク毎のnonce一意性確認
+    - test_nonce_format_validation: nonce形式検証（12バイト、非ゼロ）
+  - [x] README.md（日本語版）にセキュリティ機能として追加
+  - [x] README.en.md（英語版）にセキュリティ機能として追加
+  - [x] README.zh-CN.md（簡体字版）にセキュリティ機能として追加
+  - [x] README.zh-TW.md（繁体字版）にセキュリティ機能として追加
 
 ## 🟢 低優先度（Phase 3以降）
 

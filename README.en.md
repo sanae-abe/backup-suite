@@ -584,10 +584,16 @@ rm -rf ~/.local/share/backup-suite/
 ## Security & Quality
 
 ### **Enterprise-Grade Security**
-- AES-256-GCM encryption support
-- Secure password-based key derivation (Argon2)
-- Local-only (cloud-independent)
-- Proper permission management for configuration files
+- **Encryption**: AES-256-GCM (Authenticated Encryption)
+- **Key Derivation**: Argon2id (Memory cost 19MB, Iterations 2)
+- **Nonce Collision Detection**: Auto-tracking in debug builds (zero overhead in release builds)
+  - Tracks all Nonces (encryption initialization vectors) and immediately detects collisions
+  - Provides detailed error messages explaining security impact when collision occurs
+  - Completely removed at compile-time in release builds (no performance impact)
+- **Path Traversal Protection**: Unicode normalization (NFKC), Null byte detection, Symlink attack prevention
+- **Sensitive Data Erasure**: Zeroize usage (memory dump attack protection)
+- **Local-only**: Cloud-independent security
+- **Permission Management**: Proper configuration file permissions
 
 ### **Type Safety & Memory Safety**
 - Minimize runtime errors with Rust's powerful type system
