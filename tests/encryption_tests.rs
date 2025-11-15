@@ -351,7 +351,65 @@ fn test_nonce_not_zero_or_fixed() {
 }
 
 // =============================================================================
-// Test 13: EncryptedData::from_bytes 境界値テスト（厳密版）
+// Test 13: Nonce衝突検出機構（デバッグビルド専用）
+// 目的: generate_nonce()の衝突検出が正常に動作することを確認
+// セキュリティ影響: Nonce再利用はAES-GCMの致命的脆弱性
+// =============================================================================
+
+#[test]
+fn test_nonce_collision_detection_debug_only() {
+    // デバッグビルド専用の衝突検出機構をテスト
+    // この機構は src/crypto/encryption.rs の generate_nonce() 内で
+    // #[cfg(debug_assertions)] により実装されている
+    //
+    // 【セキュリティ上の重要性】
+    // AES-256-GCMでは、同じ鍵で同じNonceを2回使用すると：
+    // - 暗号化データの機密性が完全に失われる
+    // - 認証タグが偽造可能になる
+    // - 攻撃者が暗号鍵を復元できる可能性がある
+    //
+    // 【デバッグビルド専用の理由】
+    // - リリースビルドではパフォーマンスへの影響ゼロ
+    // - 開発中のバグ検出に特化
+    // - コンパイル時にコードが完全削除される（#[cfg(debug_assertions)]）
+
+    // 大量のNonceを生成して全てユニークであることを確認
+    let iterations = 10_000;
+    let mut nonces = std::collections::HashSet::new();
+
+    for _ in 0..iterations {
+        let nonce = EncryptionEngine::generate_nonce_internal();
+
+        // 衝突が発生した場合、デバッグビルドでは即座にpanicする
+        // このテストは衝突が発生しないことを確認するもの
+        assert!(
+            nonces.insert(nonce),
+            "CRITICAL: Nonce collision detected! This should never happen.\n\
+             Debug build should have panicked in generate_nonce() with detailed error message."
+        );
+    }
+
+    // 全てのNonceがユニークであることを確認
+    assert_eq!(
+        nonces.len(),
+        iterations,
+        "All generated nonces must be unique"
+    );
+
+    // 【注意】
+    // 意図的な衝突テスト（同じNonceを2回生成させるテスト）は、
+    // 現在の実装では不可能です。なぜなら：
+    // - generate_nonce()は内部的にMutex<HashSet>で追跡
+    // - 衝突が発生した時点でpanicするため、テストとして捕捉できない
+    //
+    // 衝突検出の動作を確認したい場合は、以下の方法があります：
+    // 1. 手動でgenerate_nonce()を改変し、固定値を返すようにする
+    // 2. モックライブラリを使用してrand::rng()をモック化する
+    // 3. デバッグビルドで実際にpanicが発生することを手動確認する
+}
+
+// =============================================================================
+// Test 14: EncryptedData::from_bytes 境界値テスト（厳密版）
 // MISSED変異への対策: < → <= の境界条件変更
 // =============================================================================
 

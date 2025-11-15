@@ -235,4 +235,115 @@ mod tests {
         // 作成したキーと復元したキーは同じ
         assert_eq!(key1.as_bytes(), key2.as_bytes());
     }
+
+    // ========== verify_password 認証テスト（CRITICAL - Mutation Testing対策） ==========
+
+    #[test]
+    fn test_verify_password_with_correct_password() {
+        let kd = KeyDerivation::default();
+        let password = "correct_password_123";
+
+        // パスワードをハッシュ化（Argon2でPHC文字列形式を生成）
+        let salt = KeyDerivation::generate_salt();
+        let argon2 = Argon2::default();
+        let salt_string = SaltString::encode_b64(&salt).unwrap();
+        let password_hash = argon2
+            .hash_password(password.as_bytes(), &salt_string)
+            .unwrap();
+        let hash_str = password_hash.to_string();
+
+        // 正しいパスワードで検証 → true を返すべき
+        let result = kd.verify_password(password, &hash_str).unwrap();
+        assert_eq!(result, true, "正しいパスワードは true を返すべき");
+    }
+
+    #[test]
+    fn test_verify_password_with_wrong_password() {
+        let kd = KeyDerivation::default();
+        let correct_password = "correct_password_123";
+        let wrong_password = "wrong_password_456";
+
+        // 正しいパスワードでハッシュを生成
+        let salt = KeyDerivation::generate_salt();
+        let argon2 = Argon2::default();
+        let salt_string = SaltString::encode_b64(&salt).unwrap();
+        let password_hash = argon2
+            .hash_password(correct_password.as_bytes(), &salt_string)
+            .unwrap();
+        let hash_str = password_hash.to_string();
+
+        // 間違ったパスワードで検証 → false を返すべき
+        let result = kd.verify_password(wrong_password, &hash_str).unwrap();
+        assert_eq!(result, false, "間違ったパスワードは false を返すべき");
+    }
+
+    #[test]
+    fn test_verify_password_edge_cases() {
+        let kd = KeyDerivation::default();
+        let password = "test_password";
+
+        // ハッシュ生成
+        let salt = KeyDerivation::generate_salt();
+        let argon2 = Argon2::default();
+        let salt_string = SaltString::encode_b64(&salt).unwrap();
+        let password_hash = argon2
+            .hash_password(password.as_bytes(), &salt_string)
+            .unwrap();
+        let hash_str = password_hash.to_string();
+
+        // 空パスワード → false
+        let result = kd.verify_password("", &hash_str).unwrap();
+        assert_eq!(result, false, "空パスワードは拒否されるべき");
+
+        // 大文字小文字の違い → false（パスワードは大文字小文字を区別）
+        let result = kd.verify_password("TEST_PASSWORD", &hash_str).unwrap();
+        assert_eq!(result, false, "大文字小文字の違いは拒否されるべき");
+
+        // 部分一致 → false
+        let result = kd.verify_password("test_pass", &hash_str).unwrap();
+        assert_eq!(result, false, "部分一致パスワードは拒否されるべき");
+    }
+
+    #[test]
+    fn test_verify_password_must_return_boolean() {
+        let kd = KeyDerivation::default();
+        let password = "any_password";
+
+        // ハッシュ生成
+        let salt = KeyDerivation::generate_salt();
+        let argon2 = Argon2::default();
+        let salt_string = SaltString::encode_b64(&salt).unwrap();
+        let password_hash = argon2
+            .hash_password(password.as_bytes(), &salt_string)
+            .unwrap();
+        let hash_str = password_hash.to_string();
+
+        // 正しいパスワード → 必ず true
+        let result_correct = kd.verify_password(password, &hash_str).unwrap();
+        assert!(result_correct, "verify_password(correct) must return true");
+
+        // 間違ったパスワード → 必ず false
+        let result_wrong = kd.verify_password("different_password", &hash_str).unwrap();
+        assert!(!result_wrong, "verify_password(wrong) must return false");
+
+        // 両方の結果が異なることを確認（常に同じ値を返す変異を検出）
+        assert_ne!(
+            result_correct, result_wrong,
+            "正しいパスワードと間違ったパスワードで結果が異なるべき"
+        );
+    }
+
+    #[test]
+    fn test_verify_password_invalid_hash_format() {
+        let kd = KeyDerivation::default();
+        let password = "any_password";
+
+        // 無効なハッシュ形式 → エラーを返すべき
+        let result = kd.verify_password(password, "invalid_hash_format");
+        assert!(result.is_err(), "無効なハッシュ形式はエラーを返すべき");
+
+        // 空文字列 → エラーを返すべき
+        let result = kd.verify_password(password, "");
+        assert!(result.is_err(), "空のハッシュ文字列はエラーを返すべき");
+    }
 }

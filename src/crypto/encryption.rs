@@ -9,6 +9,16 @@ use aes_gcm::{Aes256Gcm, Key, KeyInit, Nonce};
 use rand::RngCore;
 use std::io::{Read, Write};
 
+// デバッグビルド専用: Nonce衝突検出トラッカー
+// リリースビルドではコンパイル時に完全削除される（オーバーヘッドゼロ）
+#[cfg(debug_assertions)]
+use std::collections::HashSet;
+#[cfg(debug_assertions)]
+use std::sync::Mutex;
+
+#[cfg(debug_assertions)]
+static NONCE_TRACKER: Mutex<Option<HashSet<[u8; 12]>>> = Mutex::new(None);
+
 /// 暗号化設定
 #[derive(Debug, Clone)]
 pub struct EncryptionConfig {
@@ -115,9 +125,59 @@ impl EncryptionEngine {
     }
 
     /// ランダムなナンスを生成（内部用）
+    ///
+    /// デバッグビルドでは、生成された全Nonceを追跡し、衝突を検出します。
+    /// リリースビルドでは、追跡コードはコンパイル時に完全削除されます（オーバーヘッドゼロ）。
     fn generate_nonce() -> [u8; 12] {
         let mut nonce = [0u8; 12];
         rand::rng().fill_bytes(&mut nonce);
+
+        // デバッグビルド専用: Nonce衝突検出
+        // リリースビルドではこのブロック全体がコンパイル時に削除される
+        #[cfg(debug_assertions)]
+        {
+            let mut tracker = NONCE_TRACKER.lock().unwrap();
+            let set = tracker.get_or_insert_with(HashSet::new);
+
+            if !set.insert(nonce) {
+                panic!(
+                    "\n\
+                    ╔══════════════════════════════════════════════════════════════╗\n\
+                    ║  🚨 CRITICAL SECURITY VIOLATION: Nonce Collision Detected! ║\n\
+                    ╚══════════════════════════════════════════════════════════════╝\n\
+                    \n\
+                    Nonce (hex): {:02x?}\n\
+                    \n\
+                    ⚠️  SECURITY IMPACT:\n\
+                    This is a CRITICAL security vulnerability in AES-256-GCM encryption.\n\
+                    Nonce reuse completely breaks the confidentiality and authenticity guarantees.\n\
+                    \n\
+                    An attacker can:\n\
+                    - Decrypt encrypted data without the key\n\
+                    - Forge authenticated messages\n\
+                    - Recover the encryption key\n\
+                    \n\
+                    📊 STATISTICS:\n\
+                    - Total unique nonces generated so far: {}\n\
+                    - Collision detected on nonce #{}\n\
+                    \n\
+                    ℹ️  DEBUG BUILD ONLY:\n\
+                    This panic only occurs in debug builds to help detect bugs during development.\n\
+                    Release builds have zero overhead (this code is removed at compile time).\n\
+                    \n\
+                    🔧 NEXT STEPS:\n\
+                    1. Check if this is a test scenario (intentional collision test)\n\
+                    2. If not, investigate random number generation (rand crate)\n\
+                    3. Review recent changes to generate_nonce() function\n\
+                    4. Run mutation testing to verify detection works correctly\n\
+                    \n",
+                    nonce,
+                    set.len(),
+                    set.len() + 1
+                );
+            }
+        }
+
         nonce
     }
 
