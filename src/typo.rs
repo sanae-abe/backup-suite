@@ -45,7 +45,7 @@ pub fn levenshtein_distance(a: &str, b: &str) -> usize {
     // Calculate distances
     for (i, a_char) in a_chars.iter().enumerate() {
         for (j, b_char) in b_chars.iter().enumerate() {
-            let cost = if a_char == b_char { 0 } else { 1 };
+            let cost = usize::from(a_char != b_char);
 
             matrix[i + 1][j + 1] = std::cmp::min(
                 std::cmp::min(
