@@ -139,8 +139,7 @@ impl EncryptionEngine {
             let mut tracker = NONCE_TRACKER.lock().unwrap();
             let set = tracker.get_or_insert_with(HashSet::new);
 
-            if !set.insert(nonce) {
-                panic!(
+            assert!(set.insert(nonce),
                     "\n\
                     ╔══════════════════════════════════════════════════════════════╗\n\
                     ║  🚨 CRITICAL SECURITY VIOLATION: Nonce Collision Detected! ║\n\
@@ -175,7 +174,6 @@ impl EncryptionEngine {
                     set.len(),
                     set.len() + 1
                 );
-            }
         }
 
         nonce

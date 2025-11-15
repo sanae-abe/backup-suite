@@ -254,7 +254,7 @@ mod tests {
 
         // 正しいパスワードで検証 → true を返すべき
         let result = kd.verify_password(password, &hash_str).unwrap();
-        assert_eq!(result, true, "正しいパスワードは true を返すべき");
+        assert!(result, "正しいパスワードは true を返すべき");
     }
 
     #[test]
@@ -274,7 +274,7 @@ mod tests {
 
         // 間違ったパスワードで検証 → false を返すべき
         let result = kd.verify_password(wrong_password, &hash_str).unwrap();
-        assert_eq!(result, false, "間違ったパスワードは false を返すべき");
+        assert!(!result, "間違ったパスワードは false を返すべき");
     }
 
     #[test]
@@ -293,15 +293,15 @@ mod tests {
 
         // 空パスワード → false
         let result = kd.verify_password("", &hash_str).unwrap();
-        assert_eq!(result, false, "空パスワードは拒否されるべき");
+        assert!(!result, "空パスワードは拒否されるべき");
 
         // 大文字小文字の違い → false（パスワードは大文字小文字を区別）
         let result = kd.verify_password("TEST_PASSWORD", &hash_str).unwrap();
-        assert_eq!(result, false, "大文字小文字の違いは拒否されるべき");
+        assert!(!result, "大文字小文字の違いは拒否されるべき");
 
         // 部分一致 → false
         let result = kd.verify_password("test_pass", &hash_str).unwrap();
-        assert_eq!(result, false, "部分一致パスワードは拒否されるべき");
+        assert!(!result, "部分一致パスワードは拒否されるべき");
     }
 
     #[test]
