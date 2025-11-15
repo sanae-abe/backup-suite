@@ -291,7 +291,7 @@ fn test_decrypt_stream_wrong_master_key() {
 // =============================================================================
 
 // =============================================================================
-// Test 11: Nonce一意性の強化テスト - 10,000個
+// Test 11: Nonce一意性の強化テスト - encrypt()経由で10,000個
 // MISSED変異への対策: generate_nonce() → [0; 12], [1; 12]
 // =============================================================================
 
@@ -299,14 +299,18 @@ fn test_decrypt_stream_wrong_master_key() {
 fn test_nonce_uniqueness_10000_generations() {
     use std::collections::HashSet;
 
+    let engine = EncryptionEngine::default();
+    let master_key = MasterKey::generate();
     let mut nonces = HashSet::new();
+    let salt = [1u8; 16];
 
-    // 10,000個のナンスを生成して一意性を確認
-    for _ in 0..10_000 {
-        let nonce = EncryptionEngine::generate_nonce_internal();
+    // 10,000回暗号化して、生成されたnonceの一意性を確認
+    for i in 0..10_000 {
+        let data = format!("test data {}", i);
+        let encrypted = engine.encrypt(data.as_bytes(), &master_key, salt).unwrap();
 
         assert!(
-            nonces.insert(nonce),
+            nonces.insert(encrypted.nonce),
             "Nonce collision detected at {} generations! CRITICAL SECURITY ISSUE.",
             nonces.len()
         );
@@ -316,26 +320,31 @@ fn test_nonce_uniqueness_10000_generations() {
 }
 
 // =============================================================================
-// Test 12: Nonce がゼロや固定値でないことを確認
+// Test 12: Nonce がゼロや固定値でないことを確認 - encrypt()経由
 // MISSED変異への対策: generate_nonce() → [0; 12], [1; 12]
 // =============================================================================
 
 #[test]
 fn test_nonce_not_zero_or_fixed() {
-    // 100個のナンスを生成して、ゼロや固定値でないことを確認
-    for _ in 0..100 {
-        let nonce = EncryptionEngine::generate_nonce_internal();
+    let engine = EncryptionEngine::default();
+    let master_key = MasterKey::generate();
+    let salt = [2u8; 16];
+
+    // 100回暗号化して、生成されたnonceがゼロや固定値でないことを確認
+    for i in 0..100 {
+        let data = format!("test {}", i);
+        let encrypted = engine.encrypt(data.as_bytes(), &master_key, salt).unwrap();
 
         assert_ne!(
-            nonce, [0u8; 12],
+            encrypted.nonce, [0u8; 12],
             "Zero nonce detected! CRITICAL: AES-GCM completely broken."
         );
         assert_ne!(
-            nonce, [1u8; 12],
+            encrypted.nonce, [1u8; 12],
             "Fixed nonce [1; 12] detected! CRITICAL: Nonce reuse attack possible."
         );
         assert_ne!(
-            nonce, [255u8; 12],
+            encrypted.nonce, [255u8; 12],
             "Fixed nonce [255; 12] detected! CRITICAL: Nonce reuse attack possible."
         );
     }
@@ -390,31 +399,65 @@ fn test_encrypted_data_from_bytes_exact_boundary() {
 
 #[test]
 fn test_chunk_size_validation() {
-    // ゼロチャンクサイズの検証（現状は許容されるが、将来的には拒否すべき）
-    let config_zero = EncryptionConfig {
-        chunk_size: 0,
+    // MISSED mutation: get_chunk_size() → 0, 1 を検出するテスト
+    // 複数の異なるchunk_sizeで get_chunk_size() が異なる値を返すことを確認
+
+    let config_small = EncryptionConfig {
+        chunk_size: 1024, // 1KB
+        buffer_size: 512,
+    };
+    let engine_small = EncryptionEngine::new(config_small);
+
+    let config_medium = EncryptionConfig {
+        chunk_size: 64 * 1024, // 64KB
         buffer_size: 8192,
     };
-    // MISSED mutation: get_chunk_size() → 0 を検出するテスト
-    let engine_zero = EncryptionEngine::new(config_zero);
-    assert_eq!(
-        engine_zero.get_chunk_size(),
+    let engine_medium = EncryptionEngine::new(config_medium);
+
+    let config_large = EncryptionConfig {
+        chunk_size: 1024 * 1024, // 1MB
+        buffer_size: 16384,
+    };
+    let engine_large = EncryptionEngine::new(config_large);
+
+    // MISSED mutation: get_chunk_size() → 0 would make all these equal to 0
+    assert_ne!(
+        engine_small.get_chunk_size(),
         0,
-        "CRITICAL: Zero chunk size detected! Risk: buffer overflow, infinite loop. This test verifies mutation detection."
+        "CRITICAL: get_chunk_size() returned 0! MISSED mutation detected."
+    );
+    assert_ne!(
+        engine_medium.get_chunk_size(),
+        0,
+        "CRITICAL: get_chunk_size() returned 0! MISSED mutation detected."
+    );
+    assert_ne!(
+        engine_large.get_chunk_size(),
+        0,
+        "CRITICAL: get_chunk_size() returned 0! MISSED mutation detected."
     );
 
-    // 1バイトチャンクサイズの検証（現状は許容されるが、DoS攻撃のリスク）
-    let config_one = EncryptionConfig {
-        chunk_size: 1,
-        buffer_size: 8192,
-    };
-    // MISSED mutation: get_chunk_size() → 1 を検出するテスト
-    let engine_one = EncryptionEngine::new(config_one);
-    assert_eq!(
-        engine_one.get_chunk_size(),
+    // MISSED mutation: get_chunk_size() → 1 would make all these equal to 1
+    assert_ne!(
+        engine_small.get_chunk_size(),
         1,
-        "CRITICAL: Size 1 chunk detected! Risk: extreme performance degradation (DoS). This test verifies mutation detection."
+        "CRITICAL: get_chunk_size() returned 1! MISSED mutation detected."
     );
+    assert_ne!(
+        engine_medium.get_chunk_size(),
+        1,
+        "CRITICAL: get_chunk_size() returned 1! MISSED mutation detected."
+    );
+    assert_ne!(
+        engine_large.get_chunk_size(),
+        1,
+        "CRITICAL: get_chunk_size() returned 1! MISSED mutation detected."
+    );
+
+    // 各サイズが正しく設定されていることを確認
+    assert_eq!(engine_small.get_chunk_size(), 1024);
+    assert_eq!(engine_medium.get_chunk_size(), 64 * 1024);
+    assert_eq!(engine_large.get_chunk_size(), 1024 * 1024);
 
     // デフォルトチャンクサイズは適切な範囲内
     let config_default = EncryptionConfig::default();
@@ -437,7 +480,8 @@ fn test_chunk_size_validation() {
 fn test_decrypt_stream_truncated_file() {
     let engine = EncryptionEngine::default();
     let master_key = MasterKey::generate();
-    let original_data = b"Test data for truncation check";
+    let original_data =
+        b"Test data for truncation check - this is a longer message for comprehensive testing";
 
     // 正常な暗号化
     let reader = Cursor::new(&original_data[..]);
@@ -446,14 +490,33 @@ fn test_decrypt_stream_truncated_file() {
         .encrypt_stream(reader, &mut encrypted_buffer, &master_key)
         .unwrap();
 
+    // MISSED mutation: += with *= in decrypt_stream (line 311)
+    // 正常な復号化サイズを確認（算術演算子変異の検出）
+    let encrypted_reader = Cursor::new(&encrypted_buffer);
+    let mut decrypted_buffer = Vec::new();
+    let decrypted_size = engine
+        .decrypt_stream(encrypted_reader, &mut decrypted_buffer, &master_key)
+        .unwrap();
+
+    assert_eq!(
+        decrypted_size,
+        original_data.len() as u64,
+        "Decrypted size must match original size. MISSED mutation: += with *= would break this."
+    );
+    assert_eq!(decrypted_buffer, original_data);
+
     // 暗号化データを切り詰める（末尾10バイト削除）
     let truncated_len = encrypted_buffer.len().saturating_sub(10);
     encrypted_buffer.truncate(truncated_len);
 
     // 切り詰められたデータの復号化は失敗すべき
-    let encrypted_reader = Cursor::new(encrypted_buffer);
-    let mut decrypted_buffer = Vec::new();
-    let result = engine.decrypt_stream(encrypted_reader, &mut decrypted_buffer, &master_key);
+    let encrypted_reader_truncated = Cursor::new(encrypted_buffer);
+    let mut decrypted_buffer_truncated = Vec::new();
+    let result = engine.decrypt_stream(
+        encrypted_reader_truncated,
+        &mut decrypted_buffer_truncated,
+        &master_key,
+    );
 
     assert!(
         result.is_err(),
