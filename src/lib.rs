@@ -279,6 +279,7 @@ pub mod i18n;
 pub mod security;
 #[cfg(feature = "smart")]
 pub mod smart;
+pub mod typo;
 pub mod ui;
 
 // 主要な型を再エクスポート

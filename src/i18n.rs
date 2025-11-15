@@ -86,11 +86,36 @@ impl Language {
     ///
     /// # Security
     /// - Rejects null bytes (security vulnerability)
+    /// - Rejects command injection patterns (semicolons, pipes, etc.)
+    /// - Rejects path traversal attempts (../, ..\)
+    /// - Rejects excessively long inputs (> 100 chars)
     /// - Whitelist-based validation (only known language codes accepted)
     #[must_use]
     pub fn parse(s: &str) -> Option<Self> {
         // Security: Reject null bytes
         if s.contains('\0') {
+            return None;
+        }
+
+        // Security: Reject command injection patterns
+        if s.contains(';')
+            || s.contains('|')
+            || s.contains('&')
+            || s.contains('`')
+            || s.contains('$')
+            || s.contains('(')
+            || s.contains(')')
+        {
+            return None;
+        }
+
+        // Security: Reject path traversal attempts
+        if s.contains("..") || s.contains('/') || s.contains('\\') {
+            return None;
+        }
+
+        // Security: Reject excessively long inputs (DoS prevention)
+        if s.len() > 100 {
             return None;
         }
 
