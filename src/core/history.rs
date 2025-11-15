@@ -198,8 +198,11 @@ impl BackupHistory {
         fs::write(&temp_path, &content)?;
 
         // ファイルシステムへの同期を保証（データの永続化）
-        let file = fs::File::open(&temp_path)?;
-        file.sync_all()?;
+        // Windows: ファイルハンドルを明示的にクローズするためスコープを使用
+        {
+            let file = fs::File::open(&temp_path)?;
+            file.sync_all()?;
+        } // ファイルハンドルがここでドロップされる
 
         // 原子的リネーム（POSIX環境では原子的操作）
         fs::rename(&temp_path, &log_path)?;
