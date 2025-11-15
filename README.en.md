@@ -143,6 +143,53 @@ cargo install --path . --features smart
 backup-suite --version
 ```
 
+### 🌍 Shell Completion (Multilingual Support)
+
+Shell completion is supported in **4 languages**: English, Japanese, Simplified Chinese, Traditional Chinese.
+
+#### Quick Setup (Zsh)
+
+```bash
+# 1. Create completion directory
+mkdir -p ~/.zfunc
+
+# 2. Add to ~/.zshrc
+echo 'fpath=(~/.zfunc $fpath)' >> ~/.zshrc
+echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
+
+# 3. Generate completion (auto-detects language from $LANG)
+backup-suite completion zsh > ~/.zfunc/_backup-suite
+
+# 4. Restart shell
+exec zsh
+```
+
+**Manual language selection**:
+
+```bash
+# Japanese
+./scripts/generate-completion.sh ja
+
+# Simplified Chinese
+./scripts/generate-completion.sh zh-CN
+
+# Traditional Chinese
+./scripts/generate-completion.sh zh-TW
+
+# English
+./scripts/generate-completion.sh en
+```
+
+**Troubleshooting**:
+
+If completion doesn't work, see the comprehensive guide at [docs/shell-completion.md](docs/shell-completion.md). Common solutions:
+
+- **No completion at all**: Restart shell (`exec zsh`), check file exists (`ls -la ~/.zfunc/_backup-suite`)
+- **Wrong language displayed**: Check `echo $LANG`, or use `./scripts/generate-completion.sh en` to manually specify
+- **compinit warnings**: Fix permissions (`chmod go-w ~/.zfunc`)
+
+For Bash/Fish installation and detailed troubleshooting, refer to [docs/shell-completion.md](docs/shell-completion.md).
+
 ## Quick Start
 
 ### 1. Basic Setup

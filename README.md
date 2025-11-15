@@ -200,6 +200,16 @@ exec zsh
 
 補完が有効になると、`backup-suite <TAB>`でコマンドと説明が選択した言語で表示されます。
 
+**補完が動作しない場合**:
+
+詳細なトラブルシューティング手順は [docs/shell-completion.md](docs/shell-completion.md) をご覧ください。以下は主な対処方法です：
+
+- **補完が全く動作しない**: シェルを再起動 (`exec zsh`)、ファイルの存在確認 (`ls -la ~/.zfunc/_backup-suite`)
+- **間違った言語で表示される**: `echo $LANG` で環境変数を確認、または `./scripts/generate-completion.sh ja` で手動指定
+- **compinit警告が出る**: ディレクトリ権限を修正 (`chmod go-w ~/.zfunc`)
+
+Bash/Fishの補完インストール手順、その他の詳細は [docs/shell-completion.md](docs/shell-completion.md) を参照してください。
+
 ## クイックスタート
 
 ### 1. 基本セットアップ

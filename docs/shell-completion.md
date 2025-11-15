@@ -532,4 +532,9 @@ ls -la ~/.config/fish/completions/backup-suite.fish
 
 ---
 
-**Last Updated**: 2025-11-15
+**Last Updated**: 2025-11-16
+
+## Changelog
+
+- **2025-11-16**: Added comprehensive troubleshooting section, integrated into main README files (ja/en/zh-CN/zh-TW)
+- **2025-11-15**: Initial documentation created with Zsh/Bash/Fish installation guides

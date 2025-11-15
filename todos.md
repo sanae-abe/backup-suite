@@ -79,7 +79,13 @@
   - ✅ レポート生成: `mutation-testing-report.md`
   - 対象: src/crypto/encryption.rs（限定的実装）
   - 推奨: src/security/path.rs, src/crypto/key_management.rs への展開
-- [ ] CLI補完機能のドキュメント整備 - インストール手順とトラブルシューティング | Priority: medium | Context: docs | Due: 2025-11-25
+- [x] CLI補完機能のドキュメント整備 - インストール手順とトラブルシューティング | Priority: medium | Context: docs | Due: 2025-11-25 | Completed: 2025-11-16
+  - [x] README.md（日本語版）にトラブルシューティングセクション追加
+  - [x] README.en.md（英語版）にShell Completionセクション追加
+  - [x] README.zh-CN.md（簡体字版）に补全セクション追加
+  - [x] README.zh-TW.md（繁体字版）に補完セクション追加
+  - [x] 詳細ドキュメント（docs/shell-completion.md）へのリンク追加
+  - [x] よくある3つの問題の簡易対処方法を記載
 - [ ] typo修正サジェスト機能（簡素化版） - コマンド名のみ・英語のみ | Priority: medium | Context: ui | Due: 2025-11-30
 - [ ] Nonce衝突検出機構 - デバッグビルド追跡 | Priority: medium | Context: security | Due: 2025-12-15
 

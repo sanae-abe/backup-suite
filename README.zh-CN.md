@@ -143,6 +143,53 @@ cargo install --path . --features smart
 backup-suite --version
 ```
 
+### 🌍 Shell 补全（多语言支持）
+
+Shell 补全支持 **4 种语言**：英语、日语、简体中文、繁体中文。
+
+#### 快速设置（Zsh）
+
+```bash
+# 1. 创建补全目录
+mkdir -p ~/.zfunc
+
+# 2. 添加到 ~/.zshrc
+echo 'fpath=(~/.zfunc $fpath)' >> ~/.zshrc
+echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
+
+# 3. 生成补全（从 $LANG 自动检测语言）
+backup-suite completion zsh > ~/.zfunc/_backup-suite
+
+# 4. 重启 shell
+exec zsh
+```
+
+**手动选择语言**：
+
+```bash
+# 日语
+./scripts/generate-completion.sh ja
+
+# 简体中文
+./scripts/generate-completion.sh zh-CN
+
+# 繁体中文
+./scripts/generate-completion.sh zh-TW
+
+# 英语
+./scripts/generate-completion.sh en
+```
+
+**故障排除**：
+
+如果补全不工作，请参阅详细指南 [docs/shell-completion.md](docs/shell-completion.md)。常见解决方案：
+
+- **完全没有补全**：重启 shell（`exec zsh`），检查文件是否存在（`ls -la ~/.zfunc/_backup-suite`）
+- **显示错误的语言**：检查 `echo $LANG`，或使用 `./scripts/generate-completion.sh zh-CN` 手动指定
+- **compinit 警告**：修复权限（`chmod go-w ~/.zfunc`）
+
+有关 Bash/Fish 安装和详细故障排除，请参阅 [docs/shell-completion.md](docs/shell-completion.md)。
+
 ## 快速入门
 
 ### 1. 基本设置
