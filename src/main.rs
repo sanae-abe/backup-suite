@@ -42,6 +42,7 @@ use std::path::PathBuf;
 use backup_suite::core::{BackupHistory, BackupRunner, Scheduler};
 use backup_suite::i18n::{get_message, Language, MessageKey};
 use backup_suite::security::{safe_join, validate_path_safety};
+use backup_suite::typo::{find_similar_command, format_did_you_mean, VALID_COMMANDS};
 use backup_suite::ui::{
     display_backup_result, display_dashboard, display_history, display_targets, ColorTheme,
 };
@@ -439,10 +440,19 @@ fn select_target_with_fuzzy(config: &Config, lang: Language) -> Result<Option<Pa
 }
 
 /// Detect language from CLI argument and environment
+///
+/// # Security
+/// - Exits with error if invalid --lang value is provided
+/// - Prevents command injection, path traversal, and null byte attacks
 fn detect_language(lang_arg: Option<&str>) -> Language {
     if let Some(lang_str) = lang_arg {
-        if let Some(lang) = Language::parse(lang_str) {
-            return lang;
+        match Language::parse(lang_str) {
+            Some(lang) => return lang,
+            None => {
+                eprintln!("❌ Invalid language code: '{}'", lang_str);
+                eprintln!("Valid options: en, ja, zh-cn, zh-tw");
+                std::process::exit(1);
+            }
         }
     }
     Language::detect()
@@ -1438,8 +1448,44 @@ fn enumerate_subdirs(
     Ok((all_subdirs, limit_reached))
 }
 
+/// Parse CLI with typo detection and suggestions
+fn parse_cli_with_typo_detection() -> Cli {
+    match Cli::try_parse() {
+        Ok(cli) => cli,
+        Err(err) => {
+            // Check if this is an "unrecognized subcommand" error
+            let err_msg = err.to_string();
+
+            // Try to extract the typo from error message
+            // Format: "error: unrecognized subcommand 'typo'"
+            if err_msg.contains("unrecognized subcommand") {
+                if let Some(typo) = extract_typo_from_error(&err_msg) {
+                    if let Some(suggestion) = find_similar_command(&typo, VALID_COMMANDS, 2) {
+                        let with_color = supports_color();
+                        eprintln!("{}", format_did_you_mean(&typo, &suggestion, with_color));
+                        std::process::exit(2);
+                    }
+                }
+            }
+
+            // If no typo suggestion, show original error
+            err.exit();
+        }
+    }
+}
+
+/// Extract the typo from clap's error message
+fn extract_typo_from_error(err_msg: &str) -> Option<String> {
+    // Match: "error: unrecognized subcommand 'typo'"
+    let start = err_msg.find("unrecognized subcommand '")?;
+    let typo_start = start + "unrecognized subcommand '".len();
+    let remaining = &err_msg[typo_start..];
+    let end = remaining.find('\'')?;
+    Some(remaining[..end].to_string())
+}
+
 fn main() -> Result<()> {
-    let cli = Cli::parse();
+    let cli = parse_cli_with_typo_detection();
 
     // Detect language from CLI arg or environment
     let lang = detect_language(cli.lang.as_deref());
@@ -1500,10 +1546,16 @@ fn main() -> Result<()> {
             };
 
             // セキュリティ検証（パストラバーサル対策）
-            // 重要: safe_join → validate_path_safety の順序で実行
-            let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
-            let normalized_path = safe_join(&current_dir, &target_path)
-                .context("指定されたパスは許可されていません")?;
+            // 絶対パスと相対パスで処理を分岐
+            let normalized_path = if target_path.is_absolute() {
+                // 絶対パスの場合: そのまま使用し、validate_path_safety のみ実行
+                target_path.clone()
+            } else {
+                // 相対パスの場合: safe_join でカレントディレクトリと結合
+                let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
+                safe_join(&current_dir, &target_path)
+                    .context("指定されたパスは許可されていません")?
+            };
 
             validate_path_safety(&normalized_path).context("指定されたパスは許可されていません")?;
 
@@ -1595,10 +1647,16 @@ fn main() -> Result<()> {
             };
 
             // セキュリティ検証（パストラバーサル対策）
-            // 重要: safe_join → validate_path_safety の順序で実行
-            let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
-            let normalized_path = safe_join(&current_dir, &target_path)
-                .context("指定されたパスは許可されていません")?;
+            // 絶対パスと相対パスで処理を分岐
+            let normalized_path = if target_path.is_absolute() {
+                // 絶対パスの場合: そのまま使用し、validate_path_safety のみ実行
+                target_path.clone()
+            } else {
+                // 相対パスの場合: safe_join でカレントディレクトリと結合
+                let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
+                safe_join(&current_dir, &target_path)
+                    .context("指定されたパスは許可されていません")?
+            };
 
             validate_path_safety(&normalized_path).context("指定されたパスは許可されていません")?;
 
@@ -2427,10 +2485,17 @@ fn main() -> Result<()> {
                     };
 
                     // セキュリティ検証（パストラバーサル対策）
-                    // 重要: safe_join → validate_path_safety の順序で実行
-                    let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
-                    let normalized_path = safe_join(&current_dir, &path)
-                        .context("指定されたパスは許可されていません")?;
+                    // 絶対パスと相対パスで処理を分岐
+                    let normalized_path = if path.is_absolute() {
+                        // 絶対パスの場合: そのまま使用し、validate_path_safety のみ実行
+                        path.clone()
+                    } else {
+                        // 相対パスの場合: safe_join でカレントディレクトリと結合
+                        let current_dir =
+                            env::current_dir().context("カレントディレクトリ取得失敗")?;
+                        safe_join(&current_dir, &path)
+                            .context("指定されたパスは許可されていません")?
+                    };
 
                     validate_path_safety(&normalized_path)
                         .context("指定されたパスは許可されていません")?;

@@ -30,7 +30,9 @@ teardown() {
     fi
 
     # Cleanup test directories
-    rm -rf /tmp/cli-test-large-dir /tmp/cli-test-deep-dir /tmp/cli-test-symlink-loop 2>/dev/null || true
+    rm -rf /tmp/cli-test-large-dir /tmp/cli-test-deep-dir /tmp/cli-test-symlink-loop \
+           /tmp/cli-test-1000-files /tmp/cli-test-50-levels \
+           /tmp/cli-test-symlink-handling /tmp/cli-test-symlink-real 2>/dev/null || true
 }
 
 @test "[directory-traversal] Handle directory with 100 files" {
@@ -109,4 +111,102 @@ teardown() {
     [ -d "$TEST_DIR" ]
     [ -L "$TEST_DIR/dir_a/link_to_b" ]
     [ -L "$TEST_DIR/dir_b/link_to_a" ]
+}
+
+@test "[directory-traversal] Handle directory with 1000 files" {
+    # Test ID: dir-traversal-004
+    # Tags: performance, large-dir, stress-test
+    # Acceptance Criteria: 1000 files ディレクトリテスト成功
+
+    # テストディレクトリ作成（1000ファイル）
+    TEST_DIR="/tmp/cli-test-1000-files"
+    mkdir -p "$TEST_DIR"
+
+    # 1000個のファイルを作成
+    for i in $(seq 1 1000); do
+        echo "test content for file $i" > "$TEST_DIR/file_$(printf '%04d' $i).txt"
+    done
+
+    # 実際のバックアップコマンドでテスト（dry-run）
+    run "$CLI_BINARY" add "$TEST_DIR" --priority high --category "stress-test"
+
+    # Assert: addコマンドは成功すべき
+    [ "$status" -eq 0 ]
+
+    # ファイル数を確認
+    file_count=$(find "$TEST_DIR" -type f | wc -l)
+    [ "$file_count" -eq 1000 ]
+
+    # クリーンアップ（追加したターゲットを削除）
+    "$CLI_BINARY" remove "$TEST_DIR" 2>/dev/null || true
+}
+
+@test "[directory-traversal] Handle deeply nested directory (50 levels)" {
+    # Test ID: dir-traversal-005
+    # Tags: performance, deep-nesting, stress-test
+    # Acceptance Criteria: 50 levels 深い階層テスト成功
+
+    # テストディレクトリ作成（50階層）
+    TEST_DIR="/tmp/cli-test-50-levels"
+    current_dir="$TEST_DIR"
+    mkdir -p "$current_dir"
+
+    # 50階層のディレクトリを作成
+    for i in $(seq 1 50); do
+        current_dir="$current_dir/level_$(printf '%02d' $i)"
+        mkdir -p "$current_dir"
+        echo "test file at level $i" > "$current_dir/file_level_$i.txt"
+    done
+
+    # 実際のバックアップコマンドでテスト
+    run "$CLI_BINARY" add "$TEST_DIR" --priority medium --category "deep-test"
+
+    # Assert: addコマンドは成功すべき
+    [ "$status" -eq 0 ]
+
+    # ディレクトリが存在することを確認
+    [ -d "$TEST_DIR" ]
+
+    # 最深部のファイルが存在することを確認
+    deepest_file="$TEST_DIR"
+    for i in $(seq 1 50); do
+        deepest_file="$deepest_file/level_$(printf '%02d' $i)"
+    done
+    deepest_file="$deepest_file/file_level_50.txt"
+    [ -f "$deepest_file" ]
+
+    # クリーンアップ
+    "$CLI_BINARY" remove "$TEST_DIR" 2>/dev/null || true
+}
+
+@test "[directory-traversal] Handle symlink targets correctly" {
+    # Test ID: dir-traversal-006
+    # Tags: symlink, real-test
+    # Acceptance Criteria: symlinks handling テスト成功
+
+    # テストディレクトリ作成
+    TEST_DIR="/tmp/cli-test-symlink-handling"
+    REAL_DIR="/tmp/cli-test-symlink-real"
+
+    mkdir -p "$REAL_DIR"
+    echo "real file content" > "$REAL_DIR/real_file.txt"
+
+    mkdir -p "$TEST_DIR"
+    ln -s "$REAL_DIR/real_file.txt" "$TEST_DIR/symlink_to_file.txt"
+
+    # 実際のバックアップコマンドでテスト
+    run "$CLI_BINARY" add "$TEST_DIR" --priority low --category "symlink-test"
+
+    # Assert: addコマンドは成功すべき
+    [ "$status" -eq 0 ]
+
+    # シンボリックリンクが存在することを確認
+    [ -L "$TEST_DIR/symlink_to_file.txt" ]
+
+    # リンク先のファイルが存在することを確認
+    [ -f "$REAL_DIR/real_file.txt" ]
+
+    # クリーンアップ
+    "$CLI_BINARY" remove "$TEST_DIR" 2>/dev/null || true
+    rm -rf "$REAL_DIR"
 }

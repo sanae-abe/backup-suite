@@ -1,0 +1,197 @@
+project:
+  description: 高速・安全・インテリジェントなローカルバックアップツール - Rust製CLIツール
+  last_updated: '2025-11-15T06:49:19.290794Z'
+  name: backup-suite
+  total_tasks: 8
+tasks:
+- acceptance_criteria:
+  - injection attack テスト成功
+  - null byte handling テスト成功
+  - path traversal テスト成功
+  - long input handling テスト成功
+  - BATS pass rate 70% → 85%+ 達成
+  assigned_to: null
+  blocked_reason: null
+  completed_at: '2025-11-15T06:49:19.290244Z'
+  depends_on: []
+  description: BATS セキュリティテストの4件の失敗を修正（injection, null byte, traversal, long input）
+  docs:
+  - tests/bats/security.bats
+  - .github/workflows/cli-testing.yml
+  - src/security/path.rs
+  effort: 4h
+  git_branch: null
+  git_commit: null
+  goal: CLI Testing CI統合 - セキュリティテスト修正
+  id: task-1
+  priority: critical
+  started_at: null
+  status: completed
+  type: test
+- acceptance_criteria:
+  - 1000 files ディレクトリテスト成功
+  - 50 levels 深い階層テスト成功
+  - symlinks handling テスト成功
+  - 全 directory traversal テスト成功
+  assigned_to: null
+  blocked_reason: null
+  completed_at: '2025-11-15T07:30:00Z'
+  depends_on:
+  - task-1
+  description: 3件の失敗を修正（1000 files, 50 levels, symlinks）
+  docs:
+  - tests/bats/directory_traversal.bats
+  - src/core/backup.rs
+  - src/security/path.rs
+  effort: 3h
+  git_branch: null
+  git_commit: null
+  goal: CLI Testing CI統合 - Directory traversal テスト修正
+  id: task-2
+  priority: critical
+  started_at: '2025-11-15T06:00:00Z'
+  status: completed
+  type: test
+- acceptance_criteria:
+  - remove confirmation テスト成功
+  - cleanup confirmation テスト成功
+  - 全 destructive operations テスト成功
+  - BATS全テストスイート85%+ pass rate達成
+  assigned_to: null
+  blocked_reason: null
+  completed_at: null
+  depends_on:
+  - task-2
+  description: 2件の失敗を修正（remove, cleanup confirmations）
+  docs:
+  - tests/bats/destructive_ops.bats
+  - src/commands/remove.rs
+  - src/commands/cleanup.rs
+  effort: 2h
+  git_branch: null
+  git_commit: null
+  goal: CLI Testing CI統合 - Destructive ops テスト修正
+  id: task-3
+  priority: critical
+  started_at: null
+  status: pending
+  type: test
+- acceptance_criteria:
+  - src/crypto/encryption.rs の主要関数でmutation testing実施
+  - タイムアウト問題解決（--timeout 60設定）
+  - 検出された生存変異の修正
+  - mutation score 80%+ 達成
+  assigned_to: null
+  blocked_reason: null
+  completed_at: '2025-11-15'
+  depends_on: []
+  description: cargo-mutantsを使ってクリティカルな暗号化・セキュリティ関数のミューテーションテストを実施
+  docs:
+  - src/crypto/encryption.rs
+  - mutation-testing-report.md
+  - scripts/run-mutation-tests.sh
+  effort: 6h
+  git_branch: null
+  git_commit: null
+  goal: Mutation Testing実施（リリース前推奨）
+  id: task-4
+  priority: medium
+  started_at: '2025-11-15'
+  status: completed
+  type: test
+- acceptance_criteria:
+  - docs/shell-completion.md 作成
+  - 各シェル（Zsh/Bash/Fish）のインストール手順記載
+  - トラブルシューティングセクション追加
+  - 多言語対応の説明を含む
+  assigned_to: null
+  blocked_reason: null
+  completed_at: '2025-11-15T11:16:10Z'
+  depends_on: []
+  description: インストール手順とトラブルシューティングガイドを作成
+  docs:
+  - README.md#Zsh補完の多言語対応
+  - scripts/generate-completion.sh
+  effort: 3h
+  git_branch: null
+  git_commit: null
+  goal: CLI補完機能のドキュメント整備
+  id: task-5
+  priority: medium
+  started_at: '2025-11-15T11:16:10Z'
+  status: completed
+  type: documentation
+- acceptance_criteria:
+  - コマンド名のtypo検出機能実装
+  - レーベンシュタイン距離アルゴリズム使用
+  - 最大2文字差まで提案
+  - 英語のみ対応
+  - did you mean形式のエラーメッセージ表示
+  assigned_to: null
+  blocked_reason: null
+  completed_at: '2025-11-15T11:24:57Z'
+  depends_on: []
+  description: コマンド名のみ・英語のみのシンプルなtypo修正サジェスト機能を実装
+  docs:
+  - src/main.rs
+  - src/cli.rs
+  effort: 4h
+  git_branch: null
+  git_commit: null
+  goal: typo修正サジェスト機能（簡素化版）
+  id: task-6
+  priority: medium
+  started_at: '2025-11-15T11:24:57Z'
+  status: completed
+  type: feature
+- acceptance_criteria:
+  - '#[cfg(debug_assertions)] 付きNonce追跡実装'
+  - 衝突検出時にpanicして警告
+  - 既存のnonce検証テストに統合
+  - リリースビルドではオーバーヘッドゼロ
+  assigned_to: null
+  blocked_reason: null
+  completed_at: null
+  depends_on: []
+  description: デバッグビルドで生成されたNonceを追跡し、衝突を検出する機構を実装
+  docs:
+  - src/crypto/encryption.rs
+  - tests/crypto/nonce_verification.rs
+  effort: 5h
+  git_branch: null
+  git_commit: null
+  goal: Nonce衝突検出機構（デバッグビルド）
+  id: task-7
+  priority: medium
+  started_at: null
+  status: pending
+  type: security
+- acceptance_criteria:
+  - docs/security/audit-report.md 作成
+  - 暗号化実装の監査結果記載
+  - パストラバーサル対策の検証結果記載
+  - penetration testの実施結果記載
+  - 発見された脆弱性と対策を文書化
+  - OWASP Top 10準拠チェックリスト完成
+  assigned_to: null
+  blocked_reason: null
+  completed_at: null
+  depends_on:
+  - task-1
+  - task-2
+  - task-3
+  description: 包括的なセキュリティ監査と脆弱性テストの実施結果をレポートにまとめる
+  docs:
+  - tests/security/
+  - tests/crypto/
+  - src/crypto/encryption.rs
+  - src/security/path.rs
+  effort: 8h
+  git_branch: null
+  git_commit: null
+  goal: セキュリティ監査・脆弱性テストレポート作成
+  id: task-8
+  priority: medium
+  started_at: null
+  status: pending
+  type: documentation
