@@ -369,6 +369,10 @@ impl BackupRunner {
                     }
                 }
                 TargetType::Directory => {
+                    // ディレクトリ名を保持するため、親ディレクトリを基準にする
+                    // 例: ~/.ssh をバックアップする場合、~ を基準にして .ssh/id_rsa のような相対パスを作成
+                    let base_path = target.path.parent().unwrap_or(&target.path);
+
                     for entry in WalkDir::new(&target.path)
                         .into_iter()
                         .filter_map(std::result::Result::ok)
@@ -391,8 +395,8 @@ impl BackupRunner {
                                 }
                             }
 
-                            // 相対パスを保持してバックアップ先を決定（セキュリティ強化版）
-                            match source.strip_prefix(&target.path) {
+                            // ディレクトリ名を含めた相対パスを保持してバックアップ先を決定
+                            match source.strip_prefix(base_path) {
                                 Ok(relative) => {
                                     // 除外フィルタチェック（相対パスに対して）
                                     if let Some(ref f) = filter {

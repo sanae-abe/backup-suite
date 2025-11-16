@@ -248,7 +248,22 @@ backup-suite list
 backup-suite list --priority high  # High priority only
 ```
 
-3. **Execute Backup**
+3. **Update Target Settings**
+```bash
+# Change category only
+backup-suite update ~/.config --category "Config files"
+
+# Change priority and category simultaneously
+backup-suite update ~/.ssh --priority high --category "SSH config (private keys)"
+
+# Add exclude patterns
+backup-suite update ~/.ssh --exclude "known_hosts*" --exclude "*.old"
+
+# Update multiple settings at once
+backup-suite update ~/Documents --priority high --category "Important docs" --exclude "*.tmp"
+```
+
+4. **Execute Backup**
 ```bash
 backup-suite run                   # Execute all targets
 backup-suite run --priority high   # High priority only
@@ -276,7 +291,7 @@ backup-suite run --compress zstd --encrypt
 # → Enter password interactively via prompt
 ```
 
-4. **Setup Automation**
+5. **Setup Automation**
 ```bash
 # Set priority-based schedule
 backup-suite schedule setup --high daily --medium weekly --low monthly
@@ -539,6 +554,7 @@ exclude = ["node_modules/", "target/", ".git/", "*.log"]
 | **add**        | Add backup target         | `backup-suite add ~/docs --priority high`       |
 | **list, ls**   | Display target list       | `backup-suite list --priority medium`           |
 | **remove**     | Remove target             | `backup-suite remove ~/old-files`               |
+| **update**     | Update target settings    | `backup-suite update ~/.ssh --priority high --category "SSH config"` |
 | **clear, rm**  | Bulk delete               | `backup-suite clear --priority low`             |
 | **run**        | Execute backup            | `backup-suite run --encrypt`                    |
 | **restore**    | Restore backup            | `backup-suite restore --from backup-20251104`   |

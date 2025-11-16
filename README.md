@@ -268,7 +268,22 @@ backup-suite list
 backup-suite list --priority high  # 高優先度のみ
 ```
 
-3. **バックアップ実行**
+3. **対象の設定更新**
+```bash
+# カテゴリのみ変更
+backup-suite update ~/.config --category "設定ファイル"
+
+# 優先度とカテゴリを同時に変更
+backup-suite update ~/.ssh --priority high --category "SSH設定（秘密鍵含む）"
+
+# 除外パターンを追加
+backup-suite update ~/.ssh --exclude "known_hosts*" --exclude "*.old"
+
+# 複数の設定を同時に更新
+backup-suite update ~/Documents --priority high --category "重要書類" --exclude "*.tmp"
+```
+
+4. **バックアップ実行**
 ```bash
 backup-suite run                   # 全対象実行
 backup-suite run --priority high   # 高優先度のみ
@@ -296,7 +311,7 @@ backup-suite run --compress zstd --encrypt
 # → パスワードプロンプトで対話的に入力
 ```
 
-4. **自動化設定**
+5. **自動化設定**
 ```bash
 # 優先度別スケジュール設定
 backup-suite schedule setup --high daily --medium weekly --low monthly
@@ -586,6 +601,7 @@ backup-suite schedule status
 | **add**        | バックアップ対象追加           | `backup-suite add ~/docs --priority high`       |
 | **list, ls**   | 対象一覧表示                   | `backup-suite list --priority medium`           |
 | **remove**     | 対象削除                       | `backup-suite remove ~/old-files`               |
+| **update**     | 対象の設定更新                 | `backup-suite update ~/.ssh --priority high --category "SSH設定"` |
 | **clear, rm**  | 一括削除                       | `backup-suite clear --priority low`             |
 | **run**        | バックアップ実行               | `backup-suite run --encrypt`                    |
 | **restore**    | バックアップ復元               | `backup-suite restore --from backup-20251104`   |

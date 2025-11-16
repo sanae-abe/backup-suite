@@ -126,6 +126,20 @@ enum Commands {
         /// Use interactive target selector
         interactive: bool,
     },
+    /// Update backup target settings
+    Update {
+        /// File or directory path to update
+        path: PathBuf,
+        #[arg(long, value_enum)]
+        /// New priority (if not specified, keeps current value)
+        priority: Option<Priority>,
+        #[arg(long)]
+        /// New category (if not specified, keeps current value)
+        category: Option<String>,
+        #[arg(long = "exclude")]
+        /// New exclude patterns (if not specified, keeps current value)
+        exclude_patterns: Vec<String>,
+    },
     /// Clear all backup targets
     #[command(alias = "rm")]
     Clear {
@@ -1593,6 +1607,13 @@ fn main() -> Result<()> {
                     get_message(MessageKey::Added, lang),
                     get_color("reset", false)
                 );
+            } else {
+                println!(
+                    "{}⚠️ このパスは既に登録されています: {:?}{}",
+                    get_color("yellow", false),
+                    normalized_path,
+                    get_color("reset", false)
+                );
             }
         }
         Some(Commands::List { priority }) => {
@@ -1694,6 +1715,57 @@ fn main() -> Result<()> {
                     "{}❌ {}{}",
                     get_color("red", false),
                     get_message(MessageKey::NotInBackupConfig, lang),
+                    get_color("reset", false)
+                );
+            }
+        }
+        Some(Commands::Update {
+            path,
+            priority,
+            category,
+            exclude_patterns,
+        }) => {
+            let mut config = Config::load()?;
+
+            // セキュリティ検証（パストラバーサル対策）
+            let normalized_path = if path.is_absolute() {
+                path.clone()
+            } else {
+                let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
+                safe_join(&current_dir, &path).context("指定されたパスは許可されていません")?
+            };
+
+            validate_path_safety(&normalized_path).context("指定されたパスは許可されていません")?;
+
+            // 除外パターンの処理: 空のVecの場合はNone、要素がある場合はSome
+            let exclude_opt = if exclude_patterns.is_empty() {
+                None
+            } else {
+                Some(exclude_patterns)
+            };
+
+            if config.update_target(&normalized_path, priority, category, exclude_opt) {
+                config.save()?;
+                println!(
+                    "{}✅ バックアップ対象を更新しました{}",
+                    get_color("green", false),
+                    get_color("reset", false)
+                );
+
+                // 更新内容を表示
+                if let Some(target) = config.targets.iter().find(|t| t.path == normalized_path) {
+                    println!("  パス: {:?}", target.path);
+                    println!("  優先度: {:?}", target.priority);
+                    println!("  カテゴリ: {}", target.category);
+                    if !target.exclude_patterns.is_empty() {
+                        println!("  除外パターン: {}", target.exclude_patterns.join(", "));
+                    }
+                }
+            } else {
+                println!(
+                    "{}❌ バックアップ対象が見つかりません: {:?}{}",
+                    get_color("red", false),
+                    normalized_path,
                     get_color("reset", false)
                 );
             }
@@ -2886,10 +2958,17 @@ fn main() -> Result<()> {
                     detailed,
                 } => {
                     // セキュリティ検証（パストラバーサル対策）
-                    // 重要: safe_join → validate_path_safety の順序で実行
-                    let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
-                    let normalized_path = safe_join(&current_dir, &path)
-                        .context("指定されたパスは許可されていません")?;
+                    // 絶対パスと相対パスで処理を分岐
+                    let normalized_path = if path.is_absolute() {
+                        // 絶対パスの場合: そのまま使用し、validate_path_safety のみ実行
+                        path.clone()
+                    } else {
+                        // 相対パスの場合: safe_join でカレントディレクトリと結合
+                        let current_dir =
+                            env::current_dir().context("カレントディレクトリ取得失敗")?;
+                        safe_join(&current_dir, &path)
+                            .context("指定されたパスは許可されていません")?
+                    };
 
                     validate_path_safety(&normalized_path)
                         .context("指定されたパスは許可されていません")?;
@@ -3043,10 +3122,17 @@ fn main() -> Result<()> {
                     }
 
                     // セキュリティ検証（パストラバーサル対策）
-                    // 重要: safe_join → validate_path_safety の順序で実行
-                    let current_dir = env::current_dir().context("カレントディレクトリ取得失敗")?;
-                    let normalized_path = safe_join(&current_dir, &path)
-                        .context("指定されたパスは許可されていません")?;
+                    // 絶対パスと相対パスで処理を分岐
+                    let normalized_path = if path.is_absolute() {
+                        // 絶対パスの場合: そのまま使用し、validate_path_safety のみ実行
+                        path.clone()
+                    } else {
+                        // 相対パスの場合: safe_join でカレントディレクトリと結合
+                        let current_dir =
+                            env::current_dir().context("カレントディレクトリ取得失敗")?;
+                        safe_join(&current_dir, &path)
+                            .context("指定されたパスは許可されていません")?
+                    };
 
                     validate_path_safety(&normalized_path)
                         .context("指定されたパスは許可されていません")?;
@@ -3394,77 +3480,45 @@ fn main() -> Result<()> {
                             vec![normalized_path.clone()]
                         };
 
-                        // アニメーションスピナー用の記号（処理中であることを視覚的に示す）
-                        let spinner_frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
-
-                        // プログレス表示：総数とカウンターを出力
-                        let total_targets = targets_to_evaluate.len();
-                        if total_targets > 0 {
-                            println!(
-                                "  {}📊 {}: {}/{}{}",
-                                get_color("cyan", false),
-                                if lang == Language::Japanese {
-                                    "処理進捗"
-                                } else {
-                                    "Progress"
-                                },
-                                0,
-                                total_targets,
-                                get_color("reset", false)
-                            );
-                        }
-
                         // TTY判定（インタラクティブ端末かどうか）
                         use is_terminal::IsTerminal;
                         let is_tty = std::io::stderr().is_terminal();
 
+                        // プログレス表示：総数とカウンターを出力
+                        let total_targets = targets_to_evaluate.len();
+
+                        // indicatifのProgressBarを使用
+                        use indicatif::{ProgressBar, ProgressStyle};
+                        let pb = if is_tty && total_targets > 0 {
+                            let pb = ProgressBar::new(total_targets as u64);
+                            pb.set_style(
+                                ProgressStyle::default_spinner()
+                                    .tick_strings(&[
+                                        "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏",
+                                    ])
+                                    .template("  {spinner} 📊 {msg} [{pos}/{len}]")
+                                    .unwrap(),
+                            );
+                            pb.enable_steady_tick(std::time::Duration::from_millis(100));
+                            Some(pb)
+                        } else {
+                            None
+                        };
+
+                        // 結果のバッファ
+                        let mut output_buffer: Vec<String> = Vec::new();
+
                         // 各ターゲットを評価
                         for (idx, target_path) in targets_to_evaluate.iter().enumerate() {
-                            // アニメーションスピナー表示（処理が動いていることを明示）
-                            let spinner = spinner_frames[idx % spinner_frames.len()];
-
-                            if is_tty {
-                                // インタラクティブ端末: 同じ行を上書き（\r使用）
-                                eprint!(
-                                    "\r  {}{} 📊 {}: {}/{} - {}: {:?}{}",
-                                    get_color("cyan", false),
-                                    spinner,
-                                    if lang == Language::Japanese {
-                                        "処理進捗"
-                                    } else {
-                                        "Progress"
-                                    },
-                                    idx + 1,
-                                    total_targets,
-                                    if lang == Language::Japanese {
-                                        "評価中"
-                                    } else {
-                                        "Evaluating"
-                                    },
-                                    target_path,
-                                    get_color("reset", false)
-                                );
-                            } else {
-                                // 非インタラクティブ（パイプ等）: 毎回改行
-                                eprintln!(
-                                    "  {}{} 📊 {}: {}/{} - {}: {:?}{}",
-                                    get_color("cyan", false),
-                                    spinner,
-                                    if lang == Language::Japanese {
-                                        "処理進捗"
-                                    } else {
-                                        "Progress"
-                                    },
-                                    idx + 1,
-                                    total_targets,
-                                    if lang == Language::Japanese {
-                                        "評価中"
-                                    } else {
-                                        "Evaluating"
-                                    },
-                                    target_path,
-                                    get_color("reset", false)
-                                );
+                            // プログレスバーを更新してから処理を開始
+                            if let Some(ref pb) = pb {
+                                pb.set_position((idx + 1) as u64);
+                                let msg = if lang == Language::Japanese {
+                                    format!("処理進捗 - 評価中: {:?}", target_path)
+                                } else {
+                                    format!("Progress - Evaluating: {:?}", target_path)
+                                };
+                                pb.set_message(msg);
                             }
 
                             match evaluator.evaluate(target_path) {
@@ -3485,7 +3539,7 @@ fn main() -> Result<()> {
                                             .count();
 
                                         if file_count > 1000 {
-                                            println!(
+                                            output_buffer.push(format!(
                                                 "      {}⚠️  {}: {} {}{}",
                                                 get_color("yellow", false),
                                                 if lang == Language::Japanese {
@@ -3500,7 +3554,7 @@ fn main() -> Result<()> {
                                                     "files"
                                                 },
                                                 get_color("reset", false)
-                                            );
+                                            ));
                                         } else {
                                             match exclude_engine
                                                 .suggest_exclude_patterns(target_path)
@@ -3582,7 +3636,7 @@ fn main() -> Result<()> {
 
                                     // 除外パターンの表示（dry_run でも表示）
                                     if !exclude_patterns.is_empty() {
-                                        println!(
+                                        output_buffer.push(format!(
                                             "      {}📝 {}: {}{}",
                                             get_color("gray", false),
                                             if lang == Language::Japanese {
@@ -3592,7 +3646,7 @@ fn main() -> Result<()> {
                                             },
                                             exclude_patterns.join(", "),
                                             get_color("reset", false)
-                                        );
+                                        ));
                                     }
 
                                     if !dry_run {
@@ -3607,9 +3661,9 @@ fn main() -> Result<()> {
                                             target.exclude_patterns = exclude_patterns.clone();
                                         }
 
-                                        if config.add_target(target) {
+                                        if config.add_target(target.clone()) {
                                             added_count += 1;
-                                            println!(
+                                            output_buffer.push(format!(
                                                 "      {}✅ {}{}",
                                                 get_color("green", false),
                                                 if lang == Language::Japanese {
@@ -3618,12 +3672,19 @@ fn main() -> Result<()> {
                                                     "Added to configuration"
                                                 },
                                                 get_color("reset", false)
-                                            );
+                                            ));
+                                        } else {
+                                            output_buffer.push(format!(
+                                                "      {}警告: {:?} は既に登録されています。スキップします。{}",
+                                                get_color("yellow", false),
+                                                target.path,
+                                                get_color("reset", false)
+                                            ));
                                         }
                                     }
                                 }
                                 Err(e) => {
-                                    println!(
+                                    output_buffer.push(format!(
                                         "      {}⚠️  {}: {}{}",
                                         get_color("yellow", false),
                                         if lang == Language::Japanese {
@@ -3633,26 +3694,19 @@ fn main() -> Result<()> {
                                         },
                                         e,
                                         get_color("reset", false)
-                                    );
+                                    ));
                                 }
                             }
                         } // end of for target_path in targets_to_evaluate
 
-                        // 進捗完了メッセージ
-                        if total_targets > 0 {
-                            if is_tty {
-                                eprintln!(); // TTY環境: 改行して進捗カウンターをクリア
-                            }
-                            println!(
-                                "  {}✅ {}{}",
-                                get_color("green", false),
-                                if lang == Language::Japanese {
-                                    "全サブディレクトリの分析完了"
-                                } else {
-                                    "Successfully analyzed all subdirectories"
-                                },
-                                get_color("reset", false)
-                            );
+                        // プログレスバーを終了
+                        if let Some(pb) = pb {
+                            pb.finish_and_clear();
+                        }
+
+                        // バッファリングされた結果を出力
+                        for line in output_buffer {
+                            println!("{}", line);
                         }
                     } // end of for path in paths
 

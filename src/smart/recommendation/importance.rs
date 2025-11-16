@@ -504,6 +504,24 @@ impl ImportanceEvaluator {
     fn evaluate_directory(&self, path: &Path) -> SmartResult<FileImportanceResult> {
         use walkdir::WalkDir;
 
+        // セキュリティ関連ディレクトリの早期検出（最優先）
+        if let Some(dir_name) = path.file_name().and_then(|n| n.to_str()) {
+            let security_dirs = [".ssh", ".gnupg", ".aws", ".kube", ".docker"];
+            if security_dirs.contains(&dir_name) {
+                let importance = FileImportance::new(95).map_err(SmartError::InvalidParameter)?;
+                return Ok(FileImportanceResult::new(
+                    path.to_path_buf(),
+                    importance,
+                    Priority::High,
+                    "セキュリティ設定".to_string(),
+                    format!(
+                        "認証情報・秘密鍵（{}ディレクトリ、暗号化必須、スコア: 95）",
+                        dir_name
+                    ),
+                ));
+            }
+        }
+
         // 低優先度ディレクトリの早期検出（cache, archive, logs等）
         if is_low_priority_dir(path) {
             let importance = FileImportance::new(20).map_err(SmartError::InvalidParameter)?;

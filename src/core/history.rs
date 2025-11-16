@@ -221,6 +221,12 @@ impl BackupHistory {
         // 原子的リネーム（POSIX環境では原子的操作、Windows環境では削除後リネーム）
         fs::rename(&temp_path, &log_path)?;
 
+        // 書き込み検証: ファイルを読み込んでTOMLパースが成功することを確認
+        // これにより toml::to_string_pretty() のバグや書き込みエラーを検出
+        let verify_content = fs::read_to_string(&log_path)?;
+        toml::from_str::<HistoryFile>(&verify_content)
+            .map_err(|e| anyhow::anyhow!("履歴ファイル検証失敗: {}", e))?;
+
         Ok(())
     }
 

@@ -248,7 +248,22 @@ backup-suite list
 backup-suite list --priority high  # 仅高优先级
 ```
 
-3. **执行备份**
+3. **更新目标设置**
+```bash
+# 仅更改类别
+backup-suite update ~/.config --category "配置文件"
+
+# 同时更改优先级和类别
+backup-suite update ~/.ssh --priority high --category "SSH配置（含私钥）"
+
+# 添加排除模式
+backup-suite update ~/.ssh --exclude "known_hosts*" --exclude "*.old"
+
+# 同时更新多个设置
+backup-suite update ~/Documents --priority high --category "重要文档" --exclude "*.tmp"
+```
+
+4. **执行备份**
 ```bash
 backup-suite run                   # 执行所有目标
 backup-suite run --priority high   # 仅高优先级
@@ -276,7 +291,7 @@ backup-suite run --compress zstd --encrypt
 # → 通过提示交互式输入密码
 ```
 
-4. **自动化设置**
+5. **自动化设置**
 ```bash
 # 按优先级设置计划
 backup-suite schedule setup --high daily --medium weekly --low monthly
@@ -566,6 +581,7 @@ backup-suite schedule status
 | **add**        | 添加备份目标               | `backup-suite add ~/docs --priority high`       |
 | **list, ls**   | 显示目标列表               | `backup-suite list --priority medium`           |
 | **remove**     | 删除目标                   | `backup-suite remove ~/old-files`               |
+| **update**     | 更新目标设置               | `backup-suite update ~/.ssh --priority high --category "SSH配置"` |
 | **clear, rm**  | 批量删除                   | `backup-suite clear --priority low`             |
 | **run**        | 执行备份                   | `backup-suite run --encrypt`                    |
 | **restore**    | 恢复备份                   | `backup-suite restore --from backup-20251104`   |

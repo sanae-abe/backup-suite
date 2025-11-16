@@ -281,10 +281,6 @@ impl Config {
     pub fn add_target(&mut self, target: Target) -> bool {
         // 重複チェック：同じパスがすでに存在する場合は追加しない
         if self.targets.iter().any(|t| t.path == target.path) {
-            eprintln!(
-                "警告: {:?} は既に登録されています。スキップします。",
-                target.path
-            );
             return false;
         }
         self.targets.push(target);
@@ -320,6 +316,61 @@ impl Config {
         let before_len = self.targets.len();
         self.targets.retain(|t| &t.path != path);
         self.targets.len() < before_len
+    }
+
+    /// バックアップ対象を更新
+    ///
+    /// 指定されたパスのバックアップ対象の優先度・カテゴリ・除外パターンを更新します。
+    ///
+    /// # 引数
+    ///
+    /// * `path` - 更新するバックアップ対象のパス
+    /// * `priority` - 新しい優先度（Noneの場合は変更しない）
+    /// * `category` - 新しいカテゴリ（Noneの場合は変更しない）
+    /// * `exclude_patterns` - 新しい除外パターン（Noneの場合は変更しない）
+    ///
+    /// # 戻り値
+    ///
+    /// 更新された場合は `true`、見つからなかった場合は `false`
+    ///
+    /// # 使用例
+    ///
+    /// ```no_run
+    /// use backup_suite::{Config, Priority};
+    /// use std::path::PathBuf;
+    ///
+    /// let mut config = Config::load().unwrap();
+    /// let updated = config.update_target(
+    ///     &PathBuf::from("/path/to/update"),
+    ///     Some(Priority::High),
+    ///     Some("新カテゴリ".to_string()),
+    ///     None
+    /// );
+    /// if updated {
+    ///     config.save().unwrap();
+    /// }
+    /// ```
+    pub fn update_target(
+        &mut self,
+        path: &PathBuf,
+        priority: Option<crate::core::Priority>,
+        category: Option<String>,
+        exclude_patterns: Option<Vec<String>>,
+    ) -> bool {
+        if let Some(target) = self.targets.iter_mut().find(|t| &t.path == path) {
+            if let Some(p) = priority {
+                target.priority = p;
+            }
+            if let Some(c) = category {
+                target.category = c;
+            }
+            if let Some(patterns) = exclude_patterns {
+                target.exclude_patterns = patterns;
+            }
+            true
+        } else {
+            false
+        }
     }
 
     /// 優先度でフィルタリング
