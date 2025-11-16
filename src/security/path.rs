@@ -193,7 +193,7 @@ pub fn sanitize_path_component(name: &str) -> String {
 ///
 /// * `BackupError::PathTraversalDetected` - 危険なパスパターンを検出した場合
 ///   - 親ディレクトリ参照（`..`）を含むパス
-///   - 浅い絶対パス（ルート直下等、階層が2以下の絶対パス）
+///   - 危険な絶対パス（ルート `/` や `/etc`, `/sys`, `/proc`, `/dev` などのシステムディレクトリ）
 pub fn validate_path_safety(path: &Path) -> Result<()> {
     // 定数時間で全ての検証を実行（タイミング攻撃対策）
     let mut has_parent_dir = false;
@@ -206,8 +206,18 @@ pub fn validate_path_safety(path: &Path) -> Result<()> {
 
     if path.is_absolute() {
         let components: Vec<_> = path.components().collect();
-        // RootDir + 最大2階層まで（例: /etc/passwd）を拒否
-        is_shallow_absolute = components.len() <= 3;
+        // ルート直下の危険なディレクトリをブロック
+        // /etc, /sys, /proc, /dev, /boot, /root など
+        if components.len() >= 2 {
+            if let Component::Normal(first_dir) = components[1] {
+                let first_dir_str = first_dir.to_string_lossy();
+                let dangerous_dirs = ["etc", "sys", "proc", "dev", "boot", "root", "bin", "sbin"];
+                is_shallow_absolute = dangerous_dirs.contains(&first_dir_str.as_ref());
+            }
+        } else {
+            // ルート直下（/）は常に拒否
+            is_shallow_absolute = true;
+        }
     }
 
     // 最後に一度だけ判定（定数時間性を保証）
@@ -386,9 +396,27 @@ mod tests {
         let safe_absolute = Path::new("/home/user/documents/file.txt");
         assert!(validate_path_safety(safe_absolute).is_ok());
 
-        // ルート直下（危険）
-        let dangerous_absolute = Path::new("/etc");
-        assert!(validate_path_safety(dangerous_absolute).is_err());
+        // /tmp/test のようなパスも安全（/tmpは危険なディレクトリリストにない）
+        let temp_path = Path::new("/tmp/test_directory");
+        assert!(validate_path_safety(temp_path).is_ok());
+
+        // /var/log のようなパスも安全（/varは危険なディレクトリリストにない）
+        let var_path = Path::new("/var/log/test.log");
+        assert!(validate_path_safety(var_path).is_ok());
+
+        // システムディレクトリ（危険）
+        let etc_passwd = Path::new("/etc/passwd");
+        assert!(validate_path_safety(etc_passwd).is_err());
+
+        let sys_path = Path::new("/sys/class");
+        assert!(validate_path_safety(sys_path).is_err());
+
+        let proc_path = Path::new("/proc/self");
+        assert!(validate_path_safety(proc_path).is_err());
+
+        // ルート（危険）
+        let root = Path::new("/");
+        assert!(validate_path_safety(root).is_err());
     }
 
     #[test]
