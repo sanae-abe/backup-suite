@@ -204,7 +204,16 @@ impl BackupHistory {
             file.sync_all()?;
         } // ファイルハンドルがここでドロップされる
 
-        // 原子的リネーム（POSIX環境では原子的操作）
+        // Windows対応: 宛先ファイルが存在する場合は削除してからリネーム
+        // Windowsではfs::rename()が既存ファイルへの上書きに失敗するため
+        #[cfg(windows)]
+        {
+            if log_path.exists() {
+                fs::remove_file(&log_path)?;
+            }
+        }
+
+        // 原子的リネーム（POSIX環境では原子的操作、Windows環境では削除後リネーム）
         fs::rename(&temp_path, &log_path)?;
 
         Ok(())
