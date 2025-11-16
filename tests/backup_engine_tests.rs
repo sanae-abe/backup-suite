@@ -706,9 +706,11 @@ fn test_cleanup_after_partial_failures() -> Result<()> {
     assert_eq!(result.successful + result.failed, result.total_files);
 
     // Check that successful files exist
+    // Note: Directory backups now preserve the directory name (e.g., source/good1.txt)
     if result.successful > 0 {
         assert!(
-            category_path.join("good1.txt").exists() || category_path.join("good2.txt").exists()
+            category_path.join("source").join("good1.txt").exists()
+                || category_path.join("source").join("good2.txt").exists()
         );
     }
 
