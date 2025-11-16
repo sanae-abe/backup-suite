@@ -206,7 +206,8 @@ pub fn validate_path_safety(path: &Path) -> Result<()> {
 
     if path.is_absolute() {
         let components: Vec<_> = path.components().collect();
-        is_shallow_absolute = components.len() <= 2;
+        // RootDir + 最大2階層まで（例: /etc/passwd）を拒否
+        is_shallow_absolute = components.len() <= 3;
     }
 
     // 最後に一度だけ判定（定数時間性を保証）
