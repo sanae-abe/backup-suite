@@ -185,8 +185,9 @@ fn test_incremental_restore_chain() {
     assert_eq!(restore_result.failed, 0);
 
     // 復元されたファイルの内容確認
-    let restored_file1 = fs::read_to_string(restore_dir.join("test/file1.txt")).unwrap();
-    let restored_file2 = fs::read_to_string(restore_dir.join("test/file2.txt")).unwrap();
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
+    let restored_file1 = fs::read_to_string(restore_dir.join("test/source/file1.txt")).unwrap();
+    let restored_file2 = fs::read_to_string(restore_dir.join("test/source/file2.txt")).unwrap();
 
     assert_eq!(restored_file1, "version2");
     assert_eq!(restored_file2, "version2");
