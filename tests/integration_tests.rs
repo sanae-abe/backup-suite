@@ -105,7 +105,10 @@ fn test_full_backup_workflow_directory() -> Result<()> {
     assert_eq!(result.successful, 3);
 
     // バックアップディレクトリの構造を確認（カテゴリディレクトリ使用）
-    let backup_root = backup_dir.join(&result.backup_name).join("documents");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、documents/source/ 配下にバックアップされる
+    let backup_root = backup_dir
+        .join(&result.backup_name)
+        .join("documents/source");
     assert!(backup_root.join("file1.txt").exists());
     assert!(backup_root.join("file2.txt").exists());
     assert!(backup_root.join("subdir/file3.txt").exists());
@@ -143,7 +146,8 @@ fn test_exclude_patterns_simple() -> Result<()> {
     // .tmpファイルが除外され、2ファイルのみバックアップされる
     assert_eq!(result.total_files, 2);
 
-    let backup_root = backup_dir.join(&result.backup_name).join("files");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、files/source/ 配下にバックアップされる
+    let backup_root = backup_dir.join(&result.backup_name).join("files/source");
     assert!(backup_root.join("include.txt").exists());
     assert!(backup_root.join("include2.md").exists());
     assert!(!backup_root.join("exclude.tmp").exists());
@@ -172,7 +176,7 @@ fn test_exclude_patterns_complex() -> Result<()> {
     let mut target = Target::new(source_dir.clone(), Priority::High, "test".to_string());
     target.exclude_patterns = vec![
         r"node_modules/.*".to_string(),
-        r"^\..+".to_string(), // 隠しファイル
+        r".*/\..+".to_string(), // 隠しファイル（パス中の任意の位置）
     ];
 
     let mut config = Config::default();
@@ -183,7 +187,8 @@ fn test_exclude_patterns_complex() -> Result<()> {
         .with_compression(backup_suite::CompressionType::None, 0);
     let result = runner.run(None, None)?;
 
-    // 2ファイルのみバックアップ (main.rs, config.toml)
+    // 2ファイルのみバックアップ (src/main.rs, config.toml)
+    // 注: node_modules/package.json と .env は除外パターンにより除外される
     assert_eq!(result.total_files, 2);
 
     Ok(())
