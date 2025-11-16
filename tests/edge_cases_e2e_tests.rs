@@ -82,7 +82,8 @@ fn test_e2e_empty_directory() -> Result<()> {
     // ステップ3: 復元されたディレクトリ構造を確認
     // 注: backup-suite の実装では、空のディレクトリはバックアップされません。
     // ファイルを含むディレクトリのみが復元されます。
-    let restored_root = restore.join("test");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
+    let restored_root = restore.join("test/source");
     assert_dir_exists(&restored_root, "Restored root should exist");
 
     // 空ディレクトリは復元されない（実装の制限）
@@ -178,7 +179,8 @@ fn test_e2e_special_characters_filename() -> Result<()> {
     );
 
     // ステップ3: 復元されたファイルの検証
-    let restored_root = restore.join("test");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
+    let restored_root = restore.join("test/source");
     for filename in &test_files {
         let file_path = restored_root.join(filename);
         assert_file_exists(&file_path, &format!("{} should be restored", filename));
@@ -268,7 +270,8 @@ fn test_e2e_many_small_files() -> Result<()> {
     );
 
     // ステップ3: ランダムサンプリング検証（すべて検証すると遅いため）
-    let restored_root = restore.join("test");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
+    let restored_root = restore.join("test/source");
     let sample_indices = vec![0, 100, 500, 750, 999];
 
     for i in sample_indices {

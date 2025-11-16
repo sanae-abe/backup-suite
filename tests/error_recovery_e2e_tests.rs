@@ -130,7 +130,8 @@ fn test_e2e_corrupted_backup_detection() -> Result<()> {
     assert_eq!(result.failed, 0, "Backup should succeed");
 
     // バックアップファイルを意図的に破損
-    let backup_dir = backup.join(&result.backup_name).join("test");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下にバックアップされる
+    let backup_dir = backup.join(&result.backup_name).join("test/source");
     let files: Vec<_> = fs::read_dir(&backup_dir)?.collect();
 
     if let Some(Ok(entry)) = files.first() {
@@ -189,7 +190,8 @@ fn test_e2e_encrypted_corrupted_backup_detection() -> Result<()> {
     assert_eq!(result.failed, 0, "Encrypted backup should succeed");
 
     // 暗号化バックアップファイルを意図的に破損
-    let backup_dir = backup.join(&result.backup_name).join("test");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下にバックアップされる
+    let backup_dir = backup.join(&result.backup_name).join("test/source");
     let files: Vec<_> = fs::read_dir(&backup_dir)?.filter_map(|e| e.ok()).collect();
 
     if let Some(entry) = files.first() {

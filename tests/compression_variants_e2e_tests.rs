@@ -172,7 +172,8 @@ fn test_e2e_gzip_compression() -> Result<()> {
     );
 
     // ステップ6: 復元されたファイルの内容確認
-    let restored_root = restore.join("test");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
+    let restored_root = restore.join("test/source");
     let repetitive_content = "This is a test file with repetitive content. ".repeat(100);
     assert_file_content(&restored_root.join("file1.txt"), &repetitive_content);
     assert_file_content(&restored_root.join("file2.txt"), &repetitive_content);
@@ -289,17 +290,18 @@ fn test_e2e_compression_auto_detection() -> Result<()> {
     );
 
     // ステップ4: 各復元結果の内容確認
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
     let repetitive_content = "This is a test file with repetitive content. ".repeat(100);
 
-    let restored_gzip = restore_gzip.join("test");
+    let restored_gzip = restore_gzip.join("test/source");
     assert_file_content(&restored_gzip.join("file1.txt"), &repetitive_content);
     assert_file_content(&restored_gzip.join("file2.txt"), &repetitive_content);
 
-    let restored_zstd = restore_zstd.join("test");
+    let restored_zstd = restore_zstd.join("test/source");
     assert_file_content(&restored_zstd.join("file1.txt"), &repetitive_content);
     assert_file_content(&restored_zstd.join("file2.txt"), &repetitive_content);
 
-    let restored_none = restore_none.join("test");
+    let restored_none = restore_none.join("test/source");
     assert_file_content(&restored_none.join("file1.txt"), &repetitive_content);
     assert_file_content(&restored_none.join("file2.txt"), &repetitive_content);
 

@@ -242,7 +242,8 @@ fn test_e2e_incremental_restore_latest() -> Result<()> {
     restore_engine.restore(&latest_backup, &restore, None)?;
 
     // 検証: Day 3の最新状態が復元されていること
-    let restored_root = restore.join("test");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
+    let restored_root = restore.join("test/source");
     assert_file_content(
         &restored_root.join("file1.txt"),
         "Day 2: file1 modified", // Day 2で変更、Day 3で変更なし
@@ -342,7 +343,8 @@ fn test_e2e_incremental_point_in_time_restore() -> Result<()> {
     restore_engine.restore(&day2_backup, &restore, None)?;
 
     // 検証: Day 2の状態が復元されていること
-    let restored_root = restore.join("test");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
+    let restored_root = restore.join("test/source");
     assert_file_content(
         &restored_root.join("file1.txt"),
         "Day 2: file1 modified", // Day 2で変更
