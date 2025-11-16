@@ -105,7 +105,8 @@ fn test_e2e_basic_backup_and_restore() -> Result<()> {
 
     // ステップ3: 復元されたファイルの検証
     // 注: RestoreEngineはカテゴリ名のディレクトリを含めて復元する
-    let restored_root = restore.join("test");
+    // ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
+    let restored_root = restore.join("test/source");
     assert_file_content_matches(&source, &restored_root, "document.txt");
     assert_file_content_matches(&source, &restored_root, "config.toml");
     assert_file_content_matches(&source, &restored_root, "large_file.bin");
@@ -158,7 +159,7 @@ fn test_e2e_encrypted_backup_and_restore() -> Result<()> {
     restore_engine.restore(&actual_backup, &restore, Some(password))?;
 
     // ステップ3: 復元されたファイルの検証
-    let restored_root = restore.join("test");
+    let restored_root = restore.join("test/source");
     assert_file_content_matches(&source, &restored_root, "document.txt");
     assert_file_content_matches(&source, &restored_root, "subdir/file1.txt");
 
@@ -204,7 +205,7 @@ fn test_e2e_compressed_backup_and_restore() -> Result<()> {
     restore_engine.restore(&actual_backup, &restore, None)?;
 
     // ステップ3: 復元されたファイルの検証
-    let restored_root = restore.join("test");
+    let restored_root = restore.join("test/source");
     assert_file_content_matches(&source, &restored_root, "large_file.bin");
 
     Ok(())
@@ -259,7 +260,7 @@ fn test_e2e_encrypted_compressed_backup_and_restore() -> Result<()> {
     restore_engine.restore(&actual_backup, &restore, Some(password))?;
 
     // ステップ3: 復元されたファイルの検証
-    let restored_root = restore.join("test");
+    let restored_root = restore.join("test/source");
     assert_file_content_matches(&source, &restored_root, "document.txt");
     assert_file_content_matches(&source, &restored_root, "config.toml");
     assert_file_content_matches(&source, &restored_root, "large_file.bin");
@@ -540,7 +541,7 @@ fn test_e2e_large_file_backup() -> Result<()> {
     let mut restore_engine = RestoreEngine::new(false).with_progress(false);
     restore_engine.restore(&actual_backup, &restore, None)?;
 
-    let restored_root = restore.join("test");
+    let restored_root = restore.join("test/source");
     let restored_content = fs::read(restored_root.join("large_file.bin"))?;
     assert_eq!(
         restored_content.len(),
@@ -654,7 +655,7 @@ fn test_e2e_full_practical_scenario() -> Result<()> {
     restore_engine.restore(&actual_backup2, &restore, Some("secure_pw"))?;
 
     // 復元後のファイル内容確認（更新後の内容）
-    let restored_root = restore.join("test");
+    let restored_root = restore.join("test/source");
     let restored_content = fs::read_to_string(restored_root.join("document.txt"))?;
     assert_eq!(restored_content, "Updated document content");
 
