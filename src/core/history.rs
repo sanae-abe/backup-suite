@@ -195,12 +195,17 @@ impl BackupHistory {
         // 原子的書き込み: 一時ファイルに書き込んでからリネーム
         // これにより中断時に履歴ファイルが破損しない
         let temp_path = log_path.with_extension("toml.tmp");
-        fs::write(&temp_path, &content)?;
 
         // ファイルシステムへの同期を保証（データの永続化）
-        // Windows: ファイルハンドルを明示的にクローズするためスコープを使用
+        // Windows: 書き込みとsyncを一つの操作で行い、権限エラーを回避
         {
-            let file = fs::File::open(&temp_path)?;
+            use std::io::Write;
+            let mut file = fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(&temp_path)?;
+            file.write_all(content.as_bytes())?;
             file.sync_all()?;
         } // ファイルハンドルがここでドロップされる
 
