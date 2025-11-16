@@ -105,7 +105,8 @@ fn test_e2e_integrity_verification_success() -> Result<()> {
     );
 
     // 検証4: 復元されたファイルの内容確認
-    let restored_root = restore.join("test");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
+    let restored_root = restore.join("test/source");
     assert_file_content(&restored_root.join("file1.txt"), "Content of file 1");
     assert_file_content(&restored_root.join("file2.txt"), "Content of file 2");
     assert_file_content(&restored_root.join("file3.txt"), "Content of file 3");
@@ -162,7 +163,8 @@ fn test_e2e_integrity_verification_tampered() -> Result<()> {
         let metadata = BackupMetadata::load(&backup_dir)?;
 
         // 復元されたファイルを検証
-        let restored_root = restore.join("test");
+        // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
+        let restored_root = restore.join("test/source");
         let restored_file = restored_root.join("file1.txt");
 
         let is_valid =
@@ -291,7 +293,8 @@ fn test_e2e_encrypted_integrity_verification() -> Result<()> {
     assert_eq!(restore_result.failed, 0, "Encrypted restore should succeed");
 
     // 検証3: 復元されたファイルの内容確認
-    let restored_root = restore.join("test");
+    // 注: ディレクトリバックアップではディレクトリ名も保持されるため、test/source/ 配下に復元される
+    let restored_root = restore.join("test/source");
     assert_file_content(&restored_root.join("file1.txt"), "Content of file 1");
     assert_file_content(&restored_root.join("file2.txt"), "Content of file 2");
     assert_file_content(&restored_root.join("file3.txt"), "Content of file 3");
