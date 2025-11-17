@@ -521,11 +521,11 @@ fn test_display_backup_result() {
     let theme = ColorTheme::auto();
 
     // 正常なバックアップ結果
-    display_backup_result(100, 95, 5, 1_048_576, &theme);
+    display_backup_result(100, 95, 5, 1_048_576, &theme, Language::Japanese);
 
     // すべて成功
-    display_backup_result(50, 50, 0, 524_288, &theme);
+    display_backup_result(50, 50, 0, 524_288, &theme, Language::Japanese);
 
     // すべて失敗
-    display_backup_result(10, 0, 10, 0, &theme);
+    display_backup_result(10, 0, 10, 0, &theme, Language::Japanese);
 }
