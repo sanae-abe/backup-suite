@@ -3337,11 +3337,7 @@ fn main() -> Result<()> {
                         println!(
                             "{}[{}]{}\n",
                             get_color("yellow", false),
-                            if lang == Language::Japanese {
-                                "ドライラン モード"
-                            } else {
-                                "DRY RUN Mode"
-                            },
+                            get_message(MessageKey::SmartDryRunModeLabel, lang),
                             get_color("reset", false)
                         );
                     }
@@ -3398,11 +3394,7 @@ fn main() -> Result<()> {
                                     println!(
                                         "  {}❌ {}: {:?}{}",
                                         get_color("red", false),
-                                        if lang == Language::Japanese {
-                                            "パスの検証に失敗しました"
-                                        } else {
-                                            "Path validation failed"
-                                        },
+                                        get_message(MessageKey::PathValidationFailed, lang),
                                         e,
                                         get_color("reset", false)
                                     );
@@ -3415,11 +3407,7 @@ fn main() -> Result<()> {
                             println!(
                                 "  {}❌ {}: {:?}{}",
                                 get_color("red", false),
-                                if lang == Language::Japanese {
-                                    "パスの安全性検証に失敗しました"
-                                } else {
-                                    "Path safety validation failed"
-                                },
+                                get_message(MessageKey::PathSafetyValidationFailed, lang),
                                 e,
                                 get_color("reset", false)
                             );

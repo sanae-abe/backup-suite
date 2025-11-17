@@ -234,6 +234,9 @@ pub enum MessageKey {
     SmartSuggestExcludeRecommendation,
     SmartAutoConfigureTitle,
     SmartAutoConfigureSuccess,
+    SmartDryRunModeLabel,
+    PathValidationFailed,
+    PathSafetyValidationFailed,
     SmartErrorNotEnabled,
     SmartErrorInsufficientData,
     SmartErrorInsufficientDataDetailed,
@@ -746,6 +749,9 @@ impl MessageKey {
             MessageKey::SmartSuggestExcludeRecommendation => "Recommended exclusion",
             MessageKey::SmartAutoConfigureTitle => "🤖 Smart Auto-Configuration",
             MessageKey::SmartAutoConfigureSuccess => "Auto-configuration completed successfully",
+            MessageKey::SmartDryRunModeLabel => "DRY RUN Mode",
+            MessageKey::PathValidationFailed => "Path validation failed",
+            MessageKey::PathSafetyValidationFailed => "Path safety validation failed",
             MessageKey::SmartErrorNotEnabled => {
                 "AI features are not enabled. Compile with --features ai"
             }
@@ -1321,6 +1327,9 @@ impl MessageKey {
             MessageKey::SmartSuggestExcludeRecommendation => "除外推奨",
             MessageKey::SmartAutoConfigureTitle => "🤖 Smart自動設定",
             MessageKey::SmartAutoConfigureSuccess => "自動設定が完了しました",
+            MessageKey::SmartDryRunModeLabel => "ドライラン モード",
+            MessageKey::PathValidationFailed => "パスの検証に失敗しました",
+            MessageKey::PathSafetyValidationFailed => "パスの安全性検証に失敗しました",
             MessageKey::SmartErrorNotEnabled => {
                 "Smart機能が有効化されていません。--features smart でコンパイルしてください"
             }
@@ -1805,6 +1814,9 @@ impl MessageKey {
             MessageKey::SmartSuggestExcludeRecommendation => "建议排除",
             MessageKey::SmartAutoConfigureTitle => "🤖 Smart自动配置",
             MessageKey::SmartAutoConfigureSuccess => "自动配置成功完成",
+            MessageKey::SmartDryRunModeLabel => "演习模式",
+            MessageKey::PathValidationFailed => "路径验证失败",
+            MessageKey::PathSafetyValidationFailed => "路径安全性验证失败",
             MessageKey::SmartErrorNotEnabled => "Smart功能未启用。请使用 --features smart 编译",
             MessageKey::SmartErrorInsufficientData => "Smart分析数据不足",
             MessageKey::SmartErrorInsufficientDataDetailed => {
@@ -2162,6 +2174,9 @@ impl MessageKey {
             MessageKey::SmartSuggestExcludeRecommendation => "建議排除",
             MessageKey::SmartAutoConfigureTitle => "🤖 Smart自動設定",
             MessageKey::SmartAutoConfigureSuccess => "自動設定成功完成",
+            MessageKey::SmartDryRunModeLabel => "演習模式",
+            MessageKey::PathValidationFailed => "路徑驗證失敗",
+            MessageKey::PathSafetyValidationFailed => "路徑安全性驗證失敗",
             MessageKey::SmartErrorNotEnabled => "Smart功能未啟用。請使用 --features smart 編譯",
             MessageKey::SmartErrorInsufficientData => "Smart分析資料不足",
             MessageKey::SmartErrorInsufficientDataDetailed => {
