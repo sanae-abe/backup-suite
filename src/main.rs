@@ -1501,6 +1501,12 @@ fn extract_typo_from_error(err_msg: &str) -> Option<String> {
 fn main() -> Result<()> {
     let cli = parse_cli_with_typo_detection();
 
+    // --no-color フラグが指定された場合、NO_COLOR 環境変数を設定
+    // これにより、console クレートと comfy_table が色を無効化します
+    if cli.no_color {
+        std::env::set_var("NO_COLOR", "1");
+    }
+
     // Detect language from CLI arg or environment
     let lang = detect_language(cli.lang.as_deref());
 
@@ -1618,7 +1624,7 @@ fn main() -> Result<()> {
         }
         Some(Commands::List { priority }) => {
             let config = Config::load()?;
-            let theme = ColorTheme::auto();
+            let theme = ColorTheme::from_no_color(cli.no_color);
 
             let targets = if let Some(ref prio) = priority {
                 config.filter_by_priority(prio)
@@ -1828,7 +1834,7 @@ fn main() -> Result<()> {
             incremental,
         }) => {
             let config = Config::load()?;
-            let theme = ColorTheme::auto();
+            let theme = ColorTheme::from_no_color(cli.no_color);
 
             // 圧縮タイプ（既に CompressionType 型）
             use backup_suite::compression::CompressionType;
@@ -2077,9 +2083,44 @@ fn main() -> Result<()> {
                 dest
             );
 
+            // 暗号化されたファイルが存在するかをチェック（再帰的に探索）
+            let has_encrypted_files = walkdir::WalkDir::new(backup_dir)
+                .into_iter()
+                .filter_map(Result::ok)
+                .filter(|e| e.file_type().is_file())
+                .filter(|e| e.file_name() != ".integrity") // .integrityファイルを除外
+                .take(5) // 最初の5ファイルのみチェック（効率化）
+                .any(|e| {
+                    // ファイルを読み込んで暗号化データかどうか判定
+                    if let Ok(data) = std::fs::read(e.path()) {
+                        use backup_suite::crypto::EncryptedData;
+                        EncryptedData::from_bytes(&data).is_ok()
+                    } else {
+                        false
+                    }
+                });
+
+            // 暗号化されたファイルがあり、パスワードが未指定の場合は対話的に入力
+            let password_for_restore = if has_encrypted_files && password.is_none() {
+                use dialoguer::Password;
+
+                let input = Password::new()
+                    .with_prompt(format!(
+                        "{}{}{}",
+                        get_color("yellow", false),
+                        get_message(MessageKey::EncryptionPassword, lang),
+                        get_color("reset", false)
+                    ))
+                    .interact()?;
+
+                Some(input)
+            } else {
+                password
+            };
+
             // RestoreEngineを使用して復元
             let mut engine = RestoreEngine::new(false);
-            let result = engine.restore(backup_dir, &dest, password.as_deref())?;
+            let result = engine.restore(backup_dir, &dest, password_for_restore.as_deref())?;
 
             println!(
                 "\n{}✅ {} {:?}{}",
@@ -2248,7 +2289,7 @@ fn main() -> Result<()> {
             detailed,
         }) => {
             let mut history = BackupHistory::filter_by_days(days)?;
-            let theme = ColorTheme::auto();
+            let theme = ColorTheme::from_no_color(cli.no_color);
 
             // 優先度フィルタ適用
             if let Some(ref prio) = priority {

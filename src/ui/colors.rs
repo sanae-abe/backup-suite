@@ -48,6 +48,16 @@ impl ColorTheme {
         Self::new(ColorScheme::detect())
     }
 
+    /// --no-color フラグに基づいてテーマを作成
+    #[must_use]
+    pub fn from_no_color(no_color: bool) -> Self {
+        if no_color {
+            Self::new(ColorScheme::HighContrast)
+        } else {
+            Self::auto()
+        }
+    }
+
     /// 成功メッセージ用スタイル（緑 - 落ち着いた色調）
     #[must_use]
     pub fn success(&self) -> Style {
