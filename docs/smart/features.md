@@ -768,15 +768,12 @@ cargo install --path . --features smart
 - インストールガイド表示
 - 代替機能の案内
 
-詳細は [Smart実装計画書](./SMART_IMPLEMENTATION_PLAN.md) を参照してください。
-
 ---
 
 ## 参考資料
 
-- [Smart実装計画書](./SMART_IMPLEMENTATION_PLAN.md): 詳細な実装仕様
-- [Smart推奨エンジン実装報告](./SMART_RECOMMENDATION_ENGINE.md): 推奨エンジンの詳細
-- [Smartテストレポート](./SMART_TEST_REPORT.md): テストカバレッジとベンチマーク
+- [マニュアルテスト手順書](./manual-test.md): Smart機能の実機テスト手順
+- [README](./README.md): Smart機能の概要
 - [ソースコード](../../src/smart/): Smart機能の実装
 
 ---
