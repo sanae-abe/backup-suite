@@ -368,6 +368,7 @@ pub enum MessageKey {
     SelectionCancelled,
     ConfirmClearAll,
     ConfirmClearPriority,
+    NoPriorityTargets,
     ConfirmCleanup,
     DaysOutOfRange,
     PromptSelectTarget,
@@ -915,6 +916,7 @@ impl MessageKey {
             MessageKey::ConfirmClearPriority => {
                 "⚠️  Warning: Delete {} backup targets with {} priority. Are you sure?"
             }
+            MessageKey::NoPriorityTargets => "No backup targets found with specified priority",
             MessageKey::ConfirmCleanup => "Delete backups older than {} days. Are you sure?",
             MessageKey::DaysOutOfRange => "days must be in the range 1-3650 (specified: {})",
             MessageKey::PromptSelectTarget => "Select backup target to remove",
@@ -1475,6 +1477,7 @@ impl MessageKey {
             MessageKey::SelectionCancelled => "選択がキャンセルされました",
             MessageKey::ConfirmClearAll => "⚠️  警告: {}個すべてのバックアップ対象を削除します。本当によろしいですか？",
             MessageKey::ConfirmClearPriority => "⚠️  警告: {}優先度のバックアップ対象{}個を削除します。本当によろしいですか？",
+            MessageKey::NoPriorityTargets => "指定された優先度のバックアップ対象は0件です",
             MessageKey::ConfirmCleanup => "{}日以前の古いバックアップを削除します。よろしいですか？",
             MessageKey::DaysOutOfRange => "days は 1-3650 の範囲で指定してください（指定値: {}）",
             MessageKey::PromptSelectTarget => "削除するバックアップ対象を選択",
@@ -1861,6 +1864,7 @@ impl MessageKey {
             MessageKey::SelectionCancelled => "选择已取消",
             MessageKey::ConfirmClearAll => "⚠️  警告：删除所有 {} 个备份目标。确定吗？",
             MessageKey::ConfirmClearPriority => "⚠️  警告：删除 {} 个{}优先级备份目标。确定吗？",
+            MessageKey::NoPriorityTargets => "未找到指定优先级的备份目标",
             MessageKey::ConfirmCleanup => "删除 {} 天之前的旧备份。确定吗？",
             MessageKey::DaysOutOfRange => "days 必须在 1-3650 范围内（指定值：{}）",
             MessageKey::PathNotExists => "路径不存在",
@@ -2217,6 +2221,7 @@ impl MessageKey {
             MessageKey::SelectionCancelled => "選擇已取消",
             MessageKey::ConfirmClearAll => "⚠️  警告：刪除所有 {} 個備份目標。確定嗎？",
             MessageKey::ConfirmClearPriority => "⚠️  警告：刪除 {} 個{}優先級備份目標。確定嗎？",
+            MessageKey::NoPriorityTargets => "未找到指定優先級的備份目標",
             MessageKey::ConfirmCleanup => "刪除 {} 天之前的舊備份。確定嗎？",
             MessageKey::DaysOutOfRange => "days 必須在 1-3650 範圍內（指定值：{}）",
             MessageKey::PathNotExists => "路徑不存在",

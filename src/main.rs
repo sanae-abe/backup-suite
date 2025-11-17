@@ -1799,8 +1799,9 @@ fn main() -> Result<()> {
 
                 if to_delete_count == 0 {
                     println!(
-                        "{}⚠️ 指定された優先度のバックアップ対象は0件です{}",
+                        "{}⚠️ {}{}",
                         get_color("yellow", false),
+                        get_message(MessageKey::NoPriorityTargets, lang),
                         get_color("reset", false)
                     );
                     return Ok(());
