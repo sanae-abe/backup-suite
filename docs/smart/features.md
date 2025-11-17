@@ -1,7 +1,7 @@
 # Smart機能 - 包括的ガイド
 
 **バージョン**: 1.0.0 (Phase 1完成)
-**最終更新**: 2025-11-09
+**最終更新**: 2025-11-17
 
 ---
 
@@ -51,7 +51,7 @@ backup-suite のSmart機能は、統計的機械学習とルールベースの�
 src/smart/
 ├── mod.rs                       # 公開APIエクスポート
 ├── types.rs                     # 型定義（Newtype Pattern）
-├── error.rs                     # AI固有のエラー型
+├── error.rs                     # Smart固有のエラー型
 ├── anomaly/                     # 異常検知エンジン
 │   ├── mod.rs
 │   ├── detector.rs              # 統計的異常検知（Z-score）
@@ -132,7 +132,7 @@ Z = (current_size - mean) / std_dev
 backup-suite smart detect --days 7
 
 # 出力例:
-# 🤖 AI異常検知レポート（過去7日間）
+# 🤖 Smart異常検知レポート（過去7日間）
 #
 # ┌────┬──────────────────┬──────────┬──────────┬─────────────────────┐
 # │ No │ 検出日時          │ 異常種別  │ 信頼度    │ 説明                 │
@@ -233,7 +233,7 @@ backup-suite smart detect --days 30 --detailed
 backup-suite smart analyze ~/Documents
 
 # 出力例:
-# 🤖 AIファイル重要度分析: ~/Documents
+# 🤖 Smartファイル重要度分析: ~/Documents
 #
 # ┌─────────────────────────────┬──────────────┬──────────┬─────────────────────┐
 # │ ファイル/ディレクトリ         │ 重要度スコア   │ 提案優先度 │ 理由                 │
@@ -292,7 +292,7 @@ backup-suite smart analyze ~/projects --filter "*.rs,*.toml,Cargo.lock"
 backup-suite smart suggest-exclude ~/projects
 
 # 出力例:
-# 🤖 AI除外パターン推奨: ~/projects
+# 🤖 Smart除外パターン推奨: ~/projects
 #
 # ┌──────────────────┬──────────┬──────────┬─────────────────────┐
 # │ パターン          │ 削減量    │ 信頼度    │ 理由                 │
@@ -329,48 +329,73 @@ backup-suite smart suggest-exclude ~/projects --min-size 50MB
 # 50MB以上の除外候補のみ推奨
 ```
 
-### 4. AI自動設定
+### 4. Smart自動設定
 
-#### 4.1 自動分析・設定
+#### 4.1 サブディレクトリ別評価
 
-ディレクトリを包括的に分析し、最適なバックアップ設定を自動生成：
+ディレクトリを包括的に分析し、**各サブディレクトリごとに**最適なバックアップ設定を自動生成：
 
 ```bash
-# 自動分析・設定
+# 自動分析・設定（サブディレクトリ別評価）
 backup-suite smart auto-configure ~/data
 
 # 処理フロー:
-# 1. ディレクトリ走査・ファイル分析
-# 2. 重要度評価・優先度判定
-# 3. 除外パターン検出
+# 1. サブディレクトリ検出（デフォルト: 深さ1）
+# 2. 各サブディレクトリの重要度評価
+# 3. 除外パターン検出（サブディレクトリごと）
 # 4. 最適な圧縮レベル推奨
 # 5. バックアップスケジュール提案
 # 6. 設定ファイルに自動反映
 ```
 
+**サブディレクトリ探索オプション**:
+```bash
+# 深さを2に設定（~/data/subdir1/subdir2 まで探索）
+backup-suite smart auto-configure ~/data --max-depth 2
+
+# 処理するサブディレクトリ数の上限を設定（デフォルト: 100）
+backup-suite smart auto-configure ~/data --max-subdirs 50
+
+# 大量のサブディレクトリがある場合は上限を増やす
+backup-suite smart auto-configure ~/data --max-subdirs 200
+```
+
 **出力例**:
 ```
-🤖 AI自動設定レポート: ~/data
+🤖 Smart自動設定
+分析中: "/Users/user/projects"
+  📁 発見した3個のサブディレクトリ: 3
+    評価中: "/Users/user/projects/web-app"
+      推奨優先度: High（スコア: 95）
+      📋 除外パターン推奨: 3
+        - node_modules（99.0%、予測削減量 2.34 GB）
+        - .cache（95.0%、予測削減量 0.45 GB）
+        - .*\.tmp$（99.0%、予測削減量 0.00 GB）
+      📝 除外パターン: node_modules、.cache、.*\.tmp$
+      ✅ 設定に追加しました
+    評価中: "/Users/user/projects/rust-cli"
+      推奨優先度: High（スコア: 95）
+      📋 除外パターン推奨: 2
+        - target（99.0%、予測削減量 1.87 GB）
+        - .cache（95.0%、予測削減量 0.12 GB）
+      📝 除外パターン: target、.cache
+      ✅ 設定に追加しました
+    評価中: "/Users/user/projects/archive"
+      推奨優先度: Low（スコア: 30）
+      ✅ 設定に追加しました
 
-📊 分析結果:
-  - 総ファイル数: 12,345ファイル
-  - 総サイズ: 15.6 GB
-  - 推奨優先度: High（重要なソースコード・ドキュメント多数）
-  - 除外可能サイズ: 3.2 GB（node_modules, .cache等）
+自動設定完了
+  追加した項目: 3
+  総削減量: 4.78 GB（バックアップ時間約35%短縮）
+```
 
-⚙️ 推奨設定:
-  - バックアップ対象: ~/data
-  - 優先度: high
-  - スケジュール: 毎日午前2時
-  - 圧縮: zstd（レベル3）
-  - 暗号化: 有効化推奨
-  - 除外パターン:
-    * node_modules/
-    * target/
-    * .cache/
-    * *.tmp
-
-✅ 設定を ~/.config/backup-suite/config.toml に保存しました
+**サブディレクトリ数が上限に達した場合**:
+```
+🤖 Smart自動設定
+分析中: "/Users/user/large-project"
+  📁 発見した100個のサブディレクトリ: 100
+  ⚠️  上限に達したため、一部のサブディレクトリは処理されませんでした: 100
+      （--max-subdirs で変更可能）
 ```
 
 #### 4.2 対話的設定
@@ -382,7 +407,10 @@ backup-suite smart auto-configure ~/data --interactive
 # 各ステップで確認プロンプトを表示:
 # ❓ 推奨優先度は「High」ですが、変更しますか？ [y/N]
 # ❓ 除外パターン「node_modules/」を適用しますか？ [Y/n]
+# ❓ Smart推奨: "/path/to/dir" (優先度: High) を追加しますか？ [Y/n]
 ```
+
+**注意**: プログレスバーは対話プロンプト表示中は自動的に一時停止されます。
 
 #### 4.3 ドライラン
 
@@ -477,7 +505,7 @@ backup-suite smart suggest-exclude ~/backups --min-size 100MB --apply
 **シナリオ**: 新しいプロジェクトディレクトリを追加し、最適な設定を自動生成したい
 
 ```bash
-# 1. AI自動設定（対話モード）
+# 1. Smart自動設定（対話モード）
 backup-suite smart auto-configure ~/new-project --interactive
 
 # 対話プロンプト:
@@ -629,7 +657,7 @@ cargo install --path .
 
 ## トラブルシューティング
 
-### Q1. `backup-suite ai` コマンドが見つからない
+### Q1. `backup-suite smart` コマンドが見つからない
 
 **原因**: Smart機能なしでビルドされている
 
@@ -704,6 +732,24 @@ ls -la ~/.config/backup-suite/config.toml
 2. より小さいディレクトリ単位で分析
 3. `--no-cache` オプション（実装予定）
 
+### Q6. Interactive モードでプログレスバーが止まる
+
+**症状**: `smart auto-configure --interactive` でプログレスバーが [1/64] で止まる
+
+**原因**: 古いバージョンのバグ（v1.0.0以前）
+
+**解決策**:
+```bash
+# 最新バージョンに更新
+cargo install --path . --features smart --force
+
+# または GitHub から最新版を取得
+git pull origin main
+cargo install --path . --features smart
+```
+
+**修正履歴**: v1.0.0（2025-11-17）でプログレスバー一時停止機能を追加し、対話プロンプトとの競合を解消
+
 ---
 
 ## 今後の拡張予定
@@ -713,7 +759,7 @@ ls -la ~/.config/backup-suite/config.toml
 **オプション機能** - Phase 1（軽量ML）は常に利用可能
 
 - 自然言語バックアップ設定
-- AI駆動レポート生成
+- Smart駆動レポート生成
 - インタラクティブアシスタント
 - バックアップ統計の自然言語サマリー
 
@@ -722,18 +768,18 @@ ls -la ~/.config/backup-suite/config.toml
 - インストールガイド表示
 - 代替機能の案内
 
-詳細は [AI実装計画書](./AI_IMPLEMENTATION_PLAN.md) を参照してください。
+詳細は [Smart実装計画書](./SMART_IMPLEMENTATION_PLAN.md) を参照してください。
 
 ---
 
 ## 参考資料
 
-- [AI実装計画書](./AI_IMPLEMENTATION_PLAN.md): 詳細な実装仕様
-- [AI推奨エンジン実装報告](./AI_RECOMMENDATION_ENGINE.md): 推奨エンジンの詳細
-- [AIテストレポート](./AI_TEST_REPORT.md): テストカバレッジとベンチマーク
-- [ソースコード](../src/smart/): Smart機能の実装
+- [Smart実装計画書](./SMART_IMPLEMENTATION_PLAN.md): 詳細な実装仕様
+- [Smart推奨エンジン実装報告](./SMART_RECOMMENDATION_ENGINE.md): 推奨エンジンの詳細
+- [Smartテストレポート](./SMART_TEST_REPORT.md): テストカバレッジとベンチマーク
+- [ソースコード](../../src/smart/): Smart機能の実装
 
 ---
 
-**最終更新**: 2025-11-09
+**最終更新**: 2025-11-17
 **バージョン**: 1.0.0 (Phase 1完成)
