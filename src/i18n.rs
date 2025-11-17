@@ -266,6 +266,8 @@ pub enum MessageKey {
     SmartAddToExcludeListPrompt,
     SmartReductionLabel,
     SmartAddedLabel,
+    SmartAutoConfigureErrorNoPath,
+    SmartAutoConfigureUsageExamples,
 
     // Detailed info
     DetailedInfo,
@@ -779,6 +781,8 @@ impl MessageKey {
             MessageKey::SmartAddToExcludeListPrompt => "to exclude list?",
             MessageKey::SmartReductionLabel => "reduction",
             MessageKey::SmartAddedLabel => "added",
+            MessageKey::SmartAutoConfigureErrorNoPath => "Error: Please specify paths to analyze",
+            MessageKey::SmartAutoConfigureUsageExamples => "Examples:\n  backup-suite smart auto-configure ~/projects\n  backup-suite smart auto-configure ~/Documents ~/projects --dry-run\n  backup-suite smart auto-configure ~/projects --interactive",
 
             // Detailed info
             MessageKey::DetailedInfo => "Detailed Information:",
@@ -1351,6 +1355,8 @@ impl MessageKey {
             MessageKey::SmartAddToExcludeListPrompt => "を除外リストに追加しますか？",
             MessageKey::SmartReductionLabel => "削減見込",
             MessageKey::SmartAddedLabel => "を追加しました",
+            MessageKey::SmartAutoConfigureErrorNoPath => "エラー: 分析対象のパスを指定してください",
+            MessageKey::SmartAutoConfigureUsageExamples => "使用例:\n  backup-suite smart auto-configure ~/projects\n  backup-suite smart auto-configure ~/Documents ~/projects --dry-run\n  backup-suite smart auto-configure ~/projects --interactive",
 
             // Detailed info
             MessageKey::DetailedInfo => "詳細情報:",
@@ -1817,6 +1823,8 @@ impl MessageKey {
             MessageKey::SmartAddToExcludeListPrompt => "添加到排除列表？",
             MessageKey::SmartReductionLabel => "预计减少",
             MessageKey::SmartAddedLabel => "已添加",
+            MessageKey::SmartAutoConfigureErrorNoPath => "错误：请指定要分析的路径",
+            MessageKey::SmartAutoConfigureUsageExamples => "示例:\n  backup-suite smart auto-configure ~/projects\n  backup-suite smart auto-configure ~/Documents ~/projects --dry-run\n  backup-suite smart auto-configure ~/projects --interactive",
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智能备份",
 
             // Status messages
@@ -2171,6 +2179,8 @@ impl MessageKey {
             MessageKey::SmartAddToExcludeListPrompt => "加入至排除清單？",
             MessageKey::SmartReductionLabel => "預計減少",
             MessageKey::SmartAddedLabel => "已加入",
+            MessageKey::SmartAutoConfigureErrorNoPath => "錯誤：請指定要分析的路徑",
+            MessageKey::SmartAutoConfigureUsageExamples => "範例:\n  backup-suite smart auto-configure ~/projects\n  backup-suite smart auto-configure ~/Documents ~/projects --dry-run\n  backup-suite smart auto-configure ~/projects --interactive",
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智慧備份",
 
             // Status messages

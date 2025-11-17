@@ -3316,21 +3316,13 @@ fn main() -> Result<()> {
                         eprintln!(
                             "{}{}{}",
                             get_color("red", false),
-                            if lang == Language::Japanese {
-                                "エラー: 分析対象のパスを指定してください"
-                            } else {
-                                "Error: Please specify paths to analyze"
-                            },
+                            get_message(MessageKey::SmartAutoConfigureErrorNoPath, lang),
                             get_color("reset", false)
                         );
                         eprintln!(
                             "\n{}{}{}",
                             get_color("yellow", false),
-                            if lang == Language::Japanese {
-                                "使用例:\n  backup-suite ai auto-configure ~/projects\n  backup-suite ai auto-configure ~/Documents ~/projects --dry-run\n  backup-suite ai auto-configure ~/projects --interactive"
-                            } else {
-                                "Examples:\n  backup-suite ai auto-configure ~/projects\n  backup-suite ai auto-configure ~/Documents ~/projects --dry-run\n  backup-suite ai auto-configure ~/projects --interactive"
-                            },
+                            get_message(MessageKey::SmartAutoConfigureUsageExamples, lang),
                             get_color("reset", false)
                         );
                         return Ok(());
