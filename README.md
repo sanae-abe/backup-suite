@@ -8,78 +8,78 @@
 
 [日本語](README.md) | [English](README.en.md) | [简体中文](README.zh-CN.md) | [繁體中文](README.zh-TW.md)
 
-> **高速・安全・インテリジェントなローカルバックアップツール**
+> **Fast, Secure & Intelligent Local Backup Tool**
 
-## 目次
+## Table of Contents
 
-- [主要機能](#主要機能)
-- [スクリーンショット](#スクリーンショット)
-- [インストール](#インストール)
-- [クイックスタート](#クイックスタート)
-- [基本的な使用方法](#基本的な使用方法)
-- [Smart機能（インテリジェントバックアップ）](#-smart機能インテリジェントバックアップ)
-- [設定ファイル](#設定ファイル)
-- [スケジューリング機能](#スケジューリング機能)
-- [コマンドリファレンス](#コマンドリファレンス)
-- [アップデート・アンインストール](#アップデートアンインストール)
-- [セキュリティ・品質](#セキュリティ品質)
-- [技術スタック](#技術スタック)
-- [対応プラットフォーム](#対応プラットフォーム)
-- [ライセンス](#ライセンス)
+- [Key Features](#key-features)
+- [Screenshots](#screenshots)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Basic Usage](#basic-usage)
+- [Smart Features (Intelligent Backup)](#-smart-features-intelligent-backup)
+- [Configuration File](#configuration-file)
+- [Scheduling Features](#scheduling-features)
+- [Command Reference](#command-reference)
+- [Update & Uninstall](#update--uninstall)
+- [Security & Quality](#security--quality)
+- [Technology Stack](#technology-stack)
+- [Supported Platforms](#supported-platforms)
+- [License](#license)
 
-## 主要機能
+## Key Features
 
-### 🎯 優先度別バックアップ管理
-- **重要な仕事ファイル**は毎日自動バックアップ
-- **写真や個人ファイル**は週次バックアップ
-- **アーカイブファイル**は月次バックアップ
+### 🎯 Priority-Based Backup Management
+- **Important work files** automatically backed up daily
+- **Photos and personal files** backed up weekly
+- **Archive files** backed up monthly
 
-### 🤖 Smart駆動のインテリジェント管理
-- **自動最適化**: ディレクトリ分析による最適なバックアップ設定の自動生成
-- **ファイル重要度分析**: ディレクトリ内のファイルを重要度別に自動分類（~8秒/10,000ファイル）
-- **除外パターン推奨**: 不要ファイル（キャッシュ、ビルド成果物）を自動検出・除外提案
-- **異常検知**: 統計的分析でバックアップサイズ異常を自動検知（< 1ms）
-- **完全オフライン**: すべてのSmart機能はローカルで動作、プライバシー完全保護
+### 🤖 Smart-Driven Intelligent Management
+- **Auto-Optimization**: Automatically generate optimal backup configuration through directory analysis
+- **File Importance Analysis**: Automatically classify files in directories by importance level (~8s/10,000 files)
+- **Exclude Pattern Suggestions**: Auto-detect and suggest exclusion of unnecessary files (cache, build artifacts)
+- **Anomaly Detection**: Automatically detect backup size anomalies using statistical analysis (< 1ms)
+- **Fully Offline**: All Smart features run locally, complete privacy protection
 
-### 🔐 軍事レベルの暗号化保護
-- **AES-256-GCM暗号化**で解読は事実上不可能
-- **Argon2鍵導出**でパスワードから安全な暗号鍵を生成
-- **パソコン盗難時**でもデータは完全に安全
-- **クラウド保存時**も第三者は絶対に見れない
-- **強力なパスワード自動生成**で安全性を確保
+### 🔐 Military-Grade Encryption Protection
+- **AES-256-GCM encryption** virtually impossible to decrypt
+- **Argon2 key derivation** securely generates encryption keys from passwords
+- **Data completely safe** even if computer is stolen
+- **Third parties cannot access** when stored in cloud
+- **Strong password auto-generation** ensures security
 
-### 📦 高速圧縮によるストレージ節約
-- **Zstd圧縮**で高速かつ高圧縮率を実現
-- **Gzip圧縮**で互換性重視の圧縮
-- **圧縮なし**でも選択可能
-- **ディスク容量を最大70%削減**（テキストファイルの典型的なケース）
+### 📦 High-Speed Compression for Storage Savings
+- **Zstd compression** for fast and high compression ratio
+- **Gzip compression** for compatibility focus
+- **No compression** option also available
+- **Reduce disk usage by up to 70%**
 
-### ⚡ 増分バックアップで超高速化
-- **変更ファイルのみバックアップ**で時間を大幅短縮
-- **SHA-256ハッシュ**による正確な変更検出
-- **バックアップ時間を90%削減**（2回目以降、変更率10%の場合）
-- **ストレージ容量を85%削減**（差分のみ保存、典型的なケース）
-- **自動的にフルバックアップに切り替え**（初回実行時）
+### ⚡ Incremental Backup for Ultra-Fast Performance
+- **Backup only changed files** for massive time savings
+- **SHA-256 hash-based** accurate change detection
+- **90% faster backup time** (from 2nd run onwards)
+- **85% storage reduction** (only differences saved)
+- **Automatic fallback to full backup** (on first run)
 
-### ⏰ 完全自動化されたスケジューリング
-- **設定後は手動操作不要**で自動実行
-- **重要度別に頻度を調整**（毎日・週次・月次）
-- **バックアップ忘れ**を完全に防止
-- **macOS launchd/Linux systemd統合**で信頼性の高い自動実行
+### ⏰ Fully Automated Scheduling
+- **No manual operation required** after setup - runs automatically
+- **Frequency adjusted by importance** (daily/weekly/monthly)
+- **Completely prevents forgotten backups**
+- **macOS launchd/Linux systemd integration** for reliable automated execution
 
-### 📊 わかりやすい管理とメンテナンス
-- **どれくらいバックアップしたか**統計で確認
-- **いつ実行されたか**履歴で確認
-- **古いバックアップ**を自動削除してディスク節約
-- **データが壊れた時**の簡単復元
+### 📊 Clear Management and Maintenance
+- **Check backup statistics** to see how much has been backed up
+- **View execution history** to see when backups ran
+- **Automatically delete old backups** to save disk space
+- **Easy restoration** when data is corrupted
 
-### 🌍 多言語対応
-- **4言語完全対応**：日本語、英語、簡体中文（中国大陸）、繁體中文（台湾・香港）
-- **自動言語検出**：`LANG`環境変数から自動判定（`ja`, `en`, `zh-CN`, `zh-TW`等に対応）
-- **全メッセージ翻訳済み**：CLI出力、エラーメッセージ、ヘルプ全てを各言語で表示
+### 🌍 International Language Support
+- **4 languages fully supported**: English, Japanese (日本語), Simplified Chinese (简体中文), Traditional Chinese (繁體中文)
+- **Automatic language detection**: Auto-detected from `LANG` environment variable (supports `ja`, `en`, `zh-CN`, `zh-TW`, etc.)
+- **Complete translations**: All CLI output, error messages, and help text available in each language
 
-### 💡 使いやすいCLI
-- **タイポ修正サジェスト**：コマンド名のスペルミスを自動検出し、正しいコマンドを提案
+### 💡 User-Friendly CLI
+- **Typo correction suggestions**: Automatically detects command name typos and suggests the correct command
   ```bash
   $ backup-suite restor
   error: unrecognized subcommand 'restor'
@@ -88,452 +88,434 @@
 
   For more information, try '--help'.
   ```
-- **インテリジェントな編集距離アルゴリズム**：Levenshtein距離で類似コマンドを自動判定（最大2文字の差まで検出）
-- **カラー対応**：ターミナルのカラーサポートに応じて自動調整
+- **Intelligent edit distance algorithm**: Uses Levenshtein distance to automatically detect similar commands (up to 2 character differences)
+- **Color support**: Automatically adjusts based on terminal color capabilities
 
-## スクリーンショット
+## Screenshots
 
-### ヘルプ画面
+### Help Screen
 <img src="docs/screenshots/help.webp" alt="backup-suite help" width="600">
 
-*コマンド一覧とオプションを日本語で表示*
+*Display command list and options in Japanese*
 
-### バックアップ対象一覧
+### Backup Target List
 <img src="docs/screenshots/list.webp" alt="backup-suite list" width="600">
 
-*登録されたバックアップ対象をテーブル形式で表示*
+*Display registered backup targets in table format*
 
-### バックアップ実行
+### Backup Execution
 <img src="docs/screenshots/run.webp" alt="backup-suite run" width="600">
 
-*実際のバックアップ実行画面*
+*Actual backup execution screen*
 
-### バックアップ実行（ドライラン）
+### Backup Execution (Dry Run)
 <img src="docs/screenshots/dry-run.webp" alt="backup-suite dry-run" width="600">
 
-*実際にファイルをコピーせずに実行内容を確認*
+*Check execution content without actually copying files*
 
-### バックアップ履歴
+### Backup History
 <img src="docs/screenshots/history.webp" alt="backup-suite history" width="600">
 
-*過去のバックアップ実行履歴を確認*
+*Check past backup execution history*
 
-## インストール
+## Installation
 
-### Homebrewでインストール（macOS）
+### Install via Homebrew (macOS)
 
 ```bash
 brew tap sanae-abe/backup-suite
 brew install backup-suite
 ```
 
-### Cargoでインストール
+### Install via Cargo
 
 ```bash
-# Smart機能を有効化してインストール（推奨）
+# Install with Smart features enabled (recommended)
 cargo install backup-suite --features smart
 
-# Smart機能なしでインストール（軽量版）
+# Install without Smart features (lightweight version)
 cargo install backup-suite
 ```
 
-### ソースからビルド
+### Build from Source
 
 ```bash
-# 1. リポジトリをクローン
+# 1. Clone repository
 git clone git@github.com:sanae-abe/backup-suite.git
 cd backup-suite
 
-# 2. Rustインストール（未インストールの場合）
+# 2. Install Rust (if not already installed)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.cargo/env
 
-# 3. ビルド＆インストール（Smart機能あり）
+# 3. Build & Install (with Smart features)
 cargo build --release --features smart
 cargo install --path . --features smart
 
-# 4. 動作確認
+# 4. Verify operation
 backup-suite --version
 ```
 
-### 🌍 Zsh補完の多言語対応
+### 🌍 Shell Completion (Multilingual Support)
 
-Zsh補完説明は4言語に対応しています：
+Shell completion is supported in **4 languages**: English, Japanese, Simplified Chinese, Traditional Chinese.
 
-- 🇬🇧 **English** (en) - デフォルト
-- 🇯🇵 **日本語** (ja) - Japanese
-- 🇨🇳 **简体中文** (zh-CN) - Simplified Chinese
-- 🇹🇼 **繁體中文** (zh-TW) - Traditional Chinese
-
-#### 自動言語検出
-
-システムのロケール設定（`$LANG`環境変数）から自動で適切な言語が選択されます：
+#### Quick Setup (Zsh)
 
 ```bash
-# システムロケールに基づいて自動生成
+# 1. Create completion directory
+mkdir -p ~/.zfunc
+
+# 2. Add to ~/.zshrc
+echo 'fpath=(~/.zfunc $fpath)' >> ~/.zshrc
+echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
+
+# 3. Generate completion (auto-detects language from $LANG)
 backup-suite completion zsh > ~/.zfunc/_backup-suite
+
+# 4. Restart shell
+exec zsh
 ```
 
-#### 手動で言語を指定
-
-特定の言語の補完を生成したい場合：
+**Manual language selection**:
 
 ```bash
-# 日本語
+# Japanese
 ./scripts/generate-completion.sh ja
 
-# 简体中文
+# Simplified Chinese
 ./scripts/generate-completion.sh zh-CN
 
-# 繁體中文
+# Traditional Chinese
 ./scripts/generate-completion.sh zh-TW
 
 # English
 ./scripts/generate-completion.sh en
 ```
 
-**初回セットアップ**（Zsh補完を有効化）:
+**Troubleshooting**:
 
+If completion doesn't work, see the comprehensive guide at [docs/shell-completion.md](docs/shell-completion.md). Common solutions:
+
+- **No completion at all**: Restart shell (`exec zsh`), check file exists (`ls -la ~/.zfunc/_backup-suite`)
+- **Wrong language displayed**: Check `echo $LANG`, or use `./scripts/generate-completion.sh en` to manually specify
+- **compinit warnings**: Fix permissions (`chmod go-w ~/.zfunc`)
+
+For Bash/Fish installation and detailed troubleshooting, refer to [docs/shell-completion.md](docs/shell-completion.md).
+
+## Quick Start
+
+### 1. Basic Setup
 ```bash
-# 1. 補完ディレクトリを作成
-mkdir -p ~/.zfunc
-
-# 2. .zshrcに以下を追加
-echo 'fpath=(~/.zfunc $fpath)' >> ~/.zshrc
-echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
-
-# 3. 補完スクリプトを生成
-backup-suite completion zsh > ~/.zfunc/_backup-suite
-# または多言語対応スクリプトを使用
-./scripts/generate-completion.sh ja
-
-# 4. 新しいシェルを起動
-exec zsh
-```
-
-補完が有効になると、`backup-suite <TAB>`でコマンドと説明が選択した言語で表示されます。
-
-**補完が動作しない場合**:
-
-詳細なトラブルシューティング手順は [docs/shell-completion.md](docs/shell-completion.md) をご覧ください。以下は主な対処方法です：
-
-- **補完が全く動作しない**: シェルを再起動 (`exec zsh`)、ファイルの存在確認 (`ls -la ~/.zfunc/_backup-suite`)
-- **間違った言語で表示される**: `echo $LANG` で環境変数を確認、または `./scripts/generate-completion.sh ja` で手動指定
-- **compinit警告が出る**: ディレクトリ権限を修正 (`chmod go-w ~/.zfunc`)
-
-Bash/Fishの補完インストール手順、その他の詳細は [docs/shell-completion.md](docs/shell-completion.md) を参照してください。
-
-## クイックスタート
-
-### 1. 基本セットアップ
-```bash
-# 現在の設定確認
+# Check current settings
 backup-suite status
 
-# 設定ファイルの場所
+# Configuration file location
 # ~/.config/backup-suite/config.toml
 ```
 
-**注意**: 言語は環境変数`LANG`で自動検出されます。対応言語：日本語、英語、簡体中文、繁體中文。日本語環境では自動的に日本語で表示されます。
+**Note**: Language is automatically detected from the `LANG` environment variable. Supported languages: English, Japanese, Simplified Chinese (简体中文), Traditional Chinese (繁體中文). It will automatically display in the appropriate language based on your system locale.
 
-### 2. バックアップ保存先の設定
+### 2. Configure Backup Destination
 
 ```bash
-# Google Driveの保存先を設定
-backup-suite config set-destination "/Users/あなたのユーザー名/Library/CloudStorage/GoogleDrive-your@email.com/マイドライブ/backup-storage"
+# Set Google Drive destination
+backup-suite config set-destination "/Users/your-username/Library/CloudStorage/GoogleDrive-your@email.com/My Drive/backup-storage"
 
-# ⚠️ 重要: クラウドストレージへのバックアップは必ず暗号化を有効にしてください
-# Google Drive等のクラウドストレージにバックアップを保存する場合、
-# 第三者による不正アクセスを防ぐため、必ず --encrypt オプションを使用してください
+# ⚠️ IMPORTANT: Always enable encryption when backing up to cloud storage
+# When storing backups on cloud storage like Google Drive,
+# always use the --encrypt option to protect against unauthorized third-party access
 
-# 現在の設定を確認
+# Check current settings
 backup-suite config get-destination
 ```
 
-### 3. 設定確認
+### 3. Verify Configuration
 
-設定を確認するには、[1. 基本セットアップ](#1-基本セットアップ)の`backup-suite status`コマンドを使用してください。
+To verify your configuration, use the `backup-suite status` command from [1. Basic Setup](#1-basic-setup).
 
-## 基本的な使用方法
+## Basic Usage
 
-1. **ファイルを追加**
+1. **Add Files**
 ```bash
 backup-suite add ~/Documents/project --priority high --category development
 backup-suite add ~/Photos --priority medium --category personal
 ```
 
-2. **対象一覧確認**
+2. **Check Target List**
 ```bash
 backup-suite list
-backup-suite list --priority high  # 高優先度のみ
+backup-suite list --priority high  # High priority only
 ```
 
-3. **対象の設定更新**
+3. **Update Target Settings**
 ```bash
-# カテゴリのみ変更
-backup-suite update ~/.config --category "設定ファイル"
+# Change category only
+backup-suite update ~/.config --category "Config files"
 
-# 優先度とカテゴリを同時に変更
-backup-suite update ~/.ssh --priority high --category "SSH設定（秘密鍵含む）"
+# Change priority and category simultaneously
+backup-suite update ~/.ssh --priority high --category "SSH config (private keys)"
 
-# 除外パターンを追加
+# Add exclude patterns
 backup-suite update ~/.ssh --exclude "known_hosts*" --exclude "*.old"
 
-# 複数の設定を同時に更新
-backup-suite update ~/Documents --priority high --category "重要書類" --exclude "*.tmp"
+# Update multiple settings at once
+backup-suite update ~/Documents --priority high --category "Important docs" --exclude "*.tmp"
 ```
 
-4. **バックアップ実行**
+4. **Execute Backup**
 ```bash
-backup-suite run                   # 全対象実行
-backup-suite run --priority high   # 高優先度のみ
-backup-suite run --category work   # 特定カテゴリのみ
-backup-suite run --dry-run         # ドライラン（確認のみ）
+backup-suite run                   # Execute all targets
+backup-suite run --priority high   # High priority only
+backup-suite run --category work   # Specific category only
+backup-suite run --dry-run         # Dry run (verification only)
 
-# 増分バックアップ
-backup-suite run --incremental      # 変更分のみバックアップ（2回目以降推奨）
+# Incremental backup
+backup-suite run --incremental     # Backup only changed files (recommended from 2nd run)
 
-# 圧縮オプション
-backup-suite run --compress zstd   # Zstd圧縮（高速・高圧縮率・推奨）
-backup-suite run --compress gzip   # Gzip圧縮（互換性重視）
-backup-suite run --compress none   # 圧縮なし
+# Compression options
+backup-suite run --compress zstd   # Zstd compression (fast, high ratio, recommended)
+backup-suite run --compress gzip   # Gzip compression (compatibility focus)
+backup-suite run --compress none   # No compression
 
-# 暗号化バックアップ（推奨: 対話的パスワード入力）
+# Encrypted backup (recommended: interactive password prompt)
 backup-suite run --encrypt
-# → パスワードプロンプトで安全に入力（シェル履歴に残らない）
+# → Enter password securely via prompt (won't be saved in shell history)
 
-# または環境変数を使用（オプション）
+# Or use environment variable (optional)
 export BACKUP_SUITE_PASSWORD="your-secure-password"
 backup-suite run --encrypt
 
-# 圧縮+暗号化の組み合わせ
+# Compression + encryption combination
 backup-suite run --compress zstd --encrypt
-# → パスワードプロンプトで対話的に入力
+# → Enter password interactively via prompt
 ```
 
-5. **自動化設定**
+5. **Setup Automation**
 ```bash
-# 優先度別スケジュール設定
+# Set priority-based schedule
 backup-suite schedule setup --high daily --medium weekly --low monthly
 backup-suite schedule enable
 ```
 
-## 🤖 Smart機能（インテリジェントバックアップ）
+## 🤖 Smart Features (Intelligent Backup)
 
-統計的異常検知・ファイル重要度分析でバックアップを最適化します。
+Optimize your backups with statistical anomaly detection and file importance analysis.
 
-### インストール
+### Installation
 
-Smart機能を使用するには、`--features smart`フラグを付けてビルドする必要があります。
+To use Smart features, you need to build with the `--features smart` flag.
 
 ```bash
-# Smart機能を有効化してビルド
+# Build with Smart features enabled
 cargo build --release --features smart
 cargo install --path . --features smart
 
-# または Cargo経由でインストール
+# Or install via Cargo
 cargo install backup-suite --features smart
 ```
 
-### 主要機能
+### Key Features
 
-#### 1. Smart自動設定
+#### 1. Smart Auto-Configuration
 
-ディレクトリを分析し、最適なバックアップ設定を自動生成します。
+Analyze directories and automatically generate optimal backup configuration.
 
 ```bash
-# 自動分析・設定（サブディレクトリを個別に評価）
+# Auto-analyze and configure (evaluate each subdirectory individually)
 backup-suite smart auto-configure ~/data
 
-# 対話的に確認しながら設定（サブディレクトリと除外パターンを確認）
+# Interactive mode (confirm each subdirectory and exclusion pattern)
 backup-suite smart auto-configure ~/data --interactive
 
-# ドライラン（設定を適用せず確認のみ）
+# Dry run (preview only, don't apply changes)
 backup-suite smart auto-configure ~/data --dry-run
 
-# サブディレクトリの探索深度を指定（デフォルト: 1）
+# Specify subdirectory scan depth (default: 1)
 backup-suite smart auto-configure ~/data --max-depth 2
 
-# 処理するサブディレクトリの最大数を指定（デフォルト: 100）
+# Specify maximum number of subdirectories to process (default: 100)
 backup-suite smart auto-configure ~/data --max-subdirs 50
 
-# 大量のサブディレクトリがある場合の処理数上限を増やす
+# Increase subdirectory processing limit for large directory trees
 backup-suite smart auto-configure ~/data --max-subdirs 200
 ```
 
-**機能**:
-- **サブディレクトリごとに重要度を個別評価**（各ディレクトリに最適な優先度を設定）
-- **除外パターンの自動検出・適用**（`node_modules/`, `target/`, `.cache/` 等を自動除外）
-- **プロジェクトタイプの自動判定**（Rust, Node.js, Python 等）
-- **信頼度80%以上のパターンのみ適用**（誤検出を防止）
-- **処理数制限による性能最適化**（`--max-subdirs`で大量のサブディレクトリ対策、デフォルト: 100）
+**Features**:
+- **Individual evaluation of each subdirectory** (optimal priority for each directory)
+- **Automatic exclusion pattern detection** (auto-exclude `node_modules/`, `target/`, `.cache/`, etc.)
+- **Project type auto-detection** (Rust, Node.js, Python, etc.)
+- **Only patterns with 80%+ confidence applied** (prevents false positives)
+- **Performance optimization with processing limit** (`--max-subdirs` for handling large directory trees, default: 100)
 
-**出力例**:
+**Example Output**:
 ```
-🤖 Smart自動設定
-分析中: "/Users/user/projects"
-  📁 3個のサブディレクトリを発見: 3
-    評価中: "/Users/user/projects/web-app"
-      推奨優先度: High (スコア: 95)
-      📋 除外パターン提案: 3
-        - node_modules (99.0%, 2.34 GB 削減見込)
-        - .cache (95.0%, 0.45 GB 削減見込)
-        - .*\.tmp$ (99.0%, 0.00 GB 削減見込)
-      📝 除外パターン: node_modules, .cache, .*\.tmp$
-      ✅ 設定に追加しました
-    評価中: "/Users/user/projects/rust-cli"
-      推奨優先度: High (スコア: 95)
-      📋 除外パターン提案: 2
-        - target (99.0%, 1.87 GB 削減見込)
-        - .cache (95.0%, 0.12 GB 削減見込)
-      📝 除外パターン: target, .cache
-      ✅ 設定に追加しました
-    評価中: "/Users/user/projects/archive"
-      推奨優先度: Low (スコア: 30)
-      ✅ 設定に追加しました
+🤖 Smart Auto-Configuration
+Analyzing: "/Users/user/projects"
+  📁 Found 3 subdirectories: 3
+    Evaluating: "/Users/user/projects/web-app"
+      Recommended Priority: High (Score: 95)
+      📋 Exclusion pattern suggestions: 3
+        - node_modules (99.0%, 2.34 GB estimated reduction)
+        - .cache (95.0%, 0.45 GB estimated reduction)
+        - .*\.tmp$ (99.0%, 0.00 GB estimated reduction)
+      📝 Exclusion patterns: node_modules, .cache, .*\.tmp$
+      ✅ Added to configuration
+    Evaluating: "/Users/user/projects/rust-cli"
+      Recommended Priority: High (Score: 95)
+      📋 Exclusion pattern suggestions: 2
+        - target (99.0%, 1.87 GB estimated reduction)
+        - .cache (95.0%, 0.12 GB estimated reduction)
+      📝 Exclusion patterns: target, .cache
+      ✅ Added to configuration
+    Evaluating: "/Users/user/projects/archive"
+      Recommended Priority: Low (Score: 30)
+      ✅ Added to configuration
 
-自動設定が完了しました
-  追加された項目: 3
-  総削減量: 4.78 GB（バックアップ時間を約35%短縮）
-```
-
-**サブディレクトリ数制限時の例**:
-```
-🤖 Smart自動設定
-分析中: "/Users/user/large-project"
-  📁 100個のサブディレクトリを発見: 100
-  ⚠️  制限に達したため、一部のサブディレクトリは処理されませんでした: 100 (--max-subdirs で変更可能)
+Auto-configuration completed
+  Items added: 3
+  Total reduction: 4.78 GB (approx. 35% faster backup time)
 ```
 
-#### 2. ファイル重要度分析
+**When subdirectory limit is reached**:
+```
+🤖 Smart Auto-Configuration
+Analyzing: "/Users/user/large-project"
+  📁 Found 100 subdirectories: 100
+  ⚠️  Limit reached, some subdirectories were not processed: 100 (use --max-subdirs to change)
+```
 
-ディレクトリ内のファイルを重要度別に分類し、バックアップ戦略を最適化します。
+#### 2. File Importance Analysis
+
+Classify files in a directory by importance level to optimize backup strategy.
 
 ```bash
-# ディレクトリの重要度分析
+# Analyze directory importance
 backup-suite smart analyze ~/documents
 
-# 詳細な重要度スコア表示
+# Show detailed importance scores
 backup-suite smart analyze ~/documents --detailed
 
-# 特定のファイル種別のみ分析
+# Analyze only specific file types
 backup-suite smart analyze ~/projects --filter "*.rs,*.toml"
 ```
 
-**評価基準**:
-- **高重要度（80-100点）**: ソースコード、ドキュメント、設定ファイル
-- **中重要度（40-79点）**: 画像、データファイル
-- **低重要度（0-39点）**: ログ、一時ファイル
+**Evaluation Criteria**:
+- **High Importance (80-100 points)**: Source code, documents, configuration files
+- **Medium Importance (40-79 points)**: Images, data files
+- **Low Importance (0-39 points)**: Logs, temporary files
 
-**出力例**:
+**Example Output**:
 ```
-🤖 Smartファイル重要度分析: ~/Documents
+🤖 Smart File Importance Analysis: ~/Documents
 
-┌─────────────────────────┬──────────────┬──────────┬─────────────────────┐
-│ ファイル/ディレクトリ     │ 重要度スコア   │ 提案優先度 │ 理由                 │
-├─────────────────────────┼──────────────┼──────────┼─────────────────────┤
-│ src/                    │ ████████ 95  │ 高        │ ソースコード（頻繁更新）│
-│ reports/                │ ████████ 90  │ 高        │ ドキュメント（重要）  │
-│ photos/                 │ ████░░░░ 60  │ 中        │ 画像ファイル          │
-│ .cache/                 │ █░░░░░░░ 10  │ 除外推奨  │ キャッシュディレクトリ │
-└─────────────────────────┴──────────────┴──────────┴─────────────────────┘
+┌─────────────────────────┬──────────────────┬──────────────┬─────────────────────┐
+│ File/Directory          │ Importance Score │ Suggested    │ Reason              │
+│                         │                  │ Priority     │                     │
+├─────────────────────────┼──────────────────┼──────────────┼─────────────────────┤
+│ src/                    │ ████████ 95      │ High         │ Source code (frequent updates) │
+│ reports/                │ ████████ 90      │ High         │ Documents (important) │
+│ photos/                 │ ████░░░░ 60      │ Medium       │ Image files         │
+│ .cache/                 │ █░░░░░░░ 10      │ Exclude      │ Cache directory     │
+└─────────────────────────┴──────────────────┴──────────────┴─────────────────────┘
 ```
 
-**パフォーマンス**: ~8秒（10,000ファイル）
+**Performance**: ~8 seconds (10,000 files)
 
-#### 3. 除外パターン推奨
+#### 3. Exclusion Pattern Suggestions
 
-不要なファイルを自動検出し、除外パターンを推奨します。
+Automatically detect unnecessary files and suggest exclusion patterns.
 
 ```bash
-# 除外パターンの推奨を表示
+# Show suggested exclusion patterns
 backup-suite smart suggest-exclude ~/projects
 
-# 推奨パターンを自動的に設定ファイルに適用
+# Automatically apply suggested patterns to config
 backup-suite smart suggest-exclude ~/projects --apply
 
-# 最小ファイルサイズを指定（デフォルト: 100MB）
+# Specify minimum file size (default: 100MB)
 backup-suite smart suggest-exclude ~/projects --min-size 50MB
 ```
 
-**検出対象**:
-- ビルド成果物（`target/`, `dist/`, `build/`）
-- 依存関係キャッシュ（`node_modules/`, `.cargo/`）
-- 一時ファイル（`*.tmp`, `*.cache`）
-- 大容量メディアファイル（閾値以上のサイズ）
+**Detection Targets**:
+- Build artifacts (`target/`, `dist/`, `build/`)
+- Dependency caches (`node_modules/`, `.cargo/`)
+- Temporary files (`*.tmp`, `*.cache`)
+- Large media files (above threshold size)
 
-**出力例**:
+**Example Output**:
 ```
-🤖 Smart除外パターン推奨: ~/projects
+🤖 Smart Exclusion Pattern Suggestions: ~/projects
 
 ┌──────────────────┬──────────┬──────────┬─────────────────────┐
-│ パターン          │ 削減量    │ 信頼度    │ 理由                 │
+│ Pattern          │ Size     │ Confidence │ Reason                  │
+│                  │ Saved    │            │                         │
 ├──────────────────┼──────────┼──────────┼─────────────────────┤
-│ node_modules/    │ 2.34 GB  │ 99%      │ npm依存関係（再生成可能）│
-│ target/          │ 1.87 GB  │ 99%      │ Rustビルド成果物      │
-│ .cache/          │ 0.45 GB  │ 95%      │ キャッシュディレクトリ │
+│ node_modules/    │ 2.34 GB  │ 99%      │ npm dependencies (regenerable) │
+│ target/          │ 1.87 GB  │ 99%      │ Rust build artifacts    │
+│ .cache/          │ 0.45 GB  │ 95%      │ Cache directory         │
 └──────────────────┴──────────┴──────────┴─────────────────────┘
 
-💡 総削減量: 4.66 GB（バックアップ時間を約30%短縮）
+💡 Total Reduction: 4.66 GB (approx. 30% faster backup time)
 ```
 
-#### 4. 異常検知
+#### 4. Anomaly Detection
 
-過去の履歴から統計的に異常なバックアップを検知します。
+Detect statistically abnormal backups from historical data.
 
 ```bash
-# 過去7日間の異常検知
+# Detect anomalies in the last 7 days
 backup-suite smart detect --days 7
 
-# より詳細な分析（統計情報も表示）
+# More detailed analysis (also shows statistics)
 backup-suite smart detect --days 14 --detailed
 ```
 
-**検知内容**:
-- バックアップサイズの急増/急減（Z-score統計分析）
-- ディスク容量枯渇予測（線形回帰）
-- 失敗パターンの分析（カテゴリ別・時刻別）
+**Detection Contents**:
+- Backup size spikes/drops (Z-score statistical analysis)
+- Disk capacity depletion prediction (linear regression)
+- Failure pattern analysis (by category and time)
 
-**出力例**:
+**Example Output**:
 ```
-🤖 Smart異常検知レポート（過去7日間）
+🤖 Smart Anomaly Detection Report (Last 7 Days)
 
-┌────┬──────────────────┬──────────┬──────────┬─────────────────────┐
-│ No │ 検出日時          │ 異常種別  │ 信頼度    │ 説明                 │
-├────┼──────────────────┼──────────┼──────────┼─────────────────────┤
-│ 1  │ 2025-11-09 03:15 │ サイズ急増│ 95.3%    │ ファイルサイズが通常の3倍 │
-└────┴──────────────────┴──────────┴──────────┴─────────────────────┘
+┌────┬──────────────────┬──────────────┬────────────┬────────────────────────┐
+│ No │ Detection Time   │ Anomaly Type │ Confidence │ Description            │
+├────┼──────────────────┼──────────────┼────────────┼────────────────────────┤
+│ 1  │ 2025-11-09 03:15 │ Size Surge   │ 95.3%      │ File size 3x normal    │
+└────┴──────────────────┴──────────────┴────────────┴────────────────────────┘
 
-📊 サマリー: 1件の異常を検出
-💡 推奨アクション: ~/Downloads の一時ファイルを除外設定に追加
+📊 Summary: 1 anomaly detected
+💡 Recommended Action: Add temporary files in ~/Downloads to exclusion settings
 ```
 
-**パフォーマンス**: < 1ms（100件履歴）
+**Performance**: < 1ms (100 history entries)
 
-### Smart機能の無効化
+### Disabling Smart Features
 
-Smart機能が不要な場合は、通常のビルドを使用してください。
+If Smart features are not needed, use the standard build.
 
 ```bash
-# 通常ビルド（Smart機能なし）
+# Standard build (without Smart features)
 cargo build --release
 cargo install --path .
 ```
 
-### セキュリティとプライバシー
+### Security and Privacy
 
-すべてのSmart機能は**完全にオフライン**で動作します：
+All Smart features operate **completely offline**:
 
-- ✅ 外部APIコール: なし
-- ✅ クラウドサービス: 不要
-- ✅ 機密情報の送信: ゼロ
-- ✅ データ収集: なし
+- ✅ External API calls: None
+- ✅ Cloud services: Not required
+- ✅ Sensitive data transmission: Zero
+- ✅ Data collection: None
 
-詳細は [Smart機能ドキュメント](docs/smart/features.md) を参照してください。
+For more details, see [Smart Features Documentation](docs/smart/features.md).
 
-## 設定ファイル
+## Configuration File
 
-### ~/.config/backup-suite/config.toml の例
+### ~/.config/backup-suite/config.toml Example
 ```toml
 [general]
 log_level = "info"
@@ -541,11 +523,11 @@ log_file = "~/.local/share/backup-suite/logs/backup.log"
 
 [storage]
 type = "local"
-path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/マイドライブ/backup-storage"  # クラウドストレージ使用時は encryption = true 必須
-compression = "zstd"  # 圧縮タイプ: "zstd", "gzip", "none"
-compression_level = 3  # 圧縮レベル: 1-22（Zstd）, 1-9（Gzip）
+path = "/Users/john/Library/CloudStorage/GoogleDrive-john@example.com/My Drive/backup-storage"  # When using cloud storage, encryption = true is required
+compression = "zstd"  # Compression type: "zstd", "gzip", "none"
+compression_level = 3  # Compression level: 1-22 (Zstd), 1-9 (Gzip)
 encryption = true
-encryption_key_file = "~/.config/backup-suite/keys/backup.key"  # 重要: chmod 600で保護
+encryption_key_file = "~/.config/backup-suite/keys/backup.key"  # Important: Protect with chmod 600
 
 [schedule]
 enabled = true
@@ -565,58 +547,29 @@ path = "~/Projects"
 exclude = ["node_modules/", "target/", ".git/", "*.log"]
 ```
 
-## スケジューリング機能
+## Command Reference
 
-### 自動バックアップの設定
+| Command        | Description               | Example                                         |
+| -------------- | ------------------------- | ----------------------------------------------- |
+| **add**        | Add backup target         | `backup-suite add ~/docs --priority high`       |
+| **list, ls**   | Display target list       | `backup-suite list --priority medium`           |
+| **remove**     | Remove target             | `backup-suite remove ~/old-files`               |
+| **update**     | Update target settings    | `backup-suite update ~/.ssh --priority high --category "SSH config"` |
+| **clear, rm**  | Bulk delete               | `backup-suite clear --priority low`             |
+| **run**        | Execute backup            | `backup-suite run --encrypt`                    |
+| **restore**    | Restore backup            | `backup-suite restore --from backup-20251104`   |
+| **cleanup**    | Delete old backups        | `backup-suite cleanup --days 30`                |
+| **status**     | Display current status    | `backup-suite status`                           |
+| **history**    | Display execution history | `backup-suite history --days 7`                 |
+| **schedule**   | Manage scheduling         | `backup-suite schedule enable`                  |
+| **config**     | Manage configuration      | `backup-suite config set-destination ~/backups` |
+| **open**       | Open backup directory     | `backup-suite open`                             |
+| **completion** | Generate shell completion | `backup-suite completion zsh`                   |
+| **smart**         | Smart features (requires `--features smart`) | `backup-suite smart detect --days 7`    |
 
-```bash
-# スケジュール頻度を設定
-backup-suite schedule setup --high daily --medium weekly --low monthly
+## Update & Uninstall
 
-# スケジュールを有効化
-backup-suite schedule enable
-
-# 状態確認
-backup-suite schedule status
-```
-
-### プラットフォーム別の動作
-
-#### macOS (launchd)
-- 設定ファイル: `~/Library/LaunchAgents/com.backup-suite.{priority}.plist`
-- ログ: `/tmp/backup-suite-{priority}.log`
-- 確認: `launchctl list | grep backup-suite`
-
-#### Linux (systemd)
-- 設定ファイル: `~/.config/systemd/user/backup-suite-{priority}.{service,timer}`
-- ログ: `journalctl --user -u backup-suite-{priority}.service`
-- 確認: `systemctl --user list-timers backup-suite-*`
-
-詳細は[スケジューリングガイド](docs/SCHEDULER.md)を参照してください。
-
-## コマンドリファレンス
-
-| コマンド       | 説明                           | 例                                              |
-| -------------- | ------------------------------ | ----------------------------------------------- |
-| **add**        | バックアップ対象追加           | `backup-suite add ~/docs --priority high`       |
-| **list, ls**   | 対象一覧表示                   | `backup-suite list --priority medium`           |
-| **remove**     | 対象削除                       | `backup-suite remove ~/old-files`               |
-| **update**     | 対象の設定更新                 | `backup-suite update ~/.ssh --priority high --category "SSH設定"` |
-| **clear, rm**  | 一括削除                       | `backup-suite clear --priority low`             |
-| **run**        | バックアップ実行               | `backup-suite run --encrypt`                    |
-| **restore**    | バックアップ復元               | `backup-suite restore --from backup-20251104`   |
-| **cleanup**    | 古いバックアップ削除           | `backup-suite cleanup --days 30`                |
-| **status**     | 現在の状態表示                 | `backup-suite status`                           |
-| **history**    | 実行履歴表示                   | `backup-suite history --days 7`                 |
-| **schedule**   | スケジューリング管理           | `backup-suite schedule enable`                  |
-| **config**     | 設定管理                       | `backup-suite config set-destination ~/backups` |
-| **open**       | バックアップディレクトリを開く | `backup-suite open`                             |
-| **completion** | シェル補完生成                 | `backup-suite completion zsh`                   |
-| **smart**         | Smart機能（要`--features smart`）    | `backup-suite smart detect --days 7`               |
-
-## アップデート・アンインストール
-
-### アップデート
+### Update
 
 ```bash
 # Homebrew
@@ -625,79 +578,70 @@ brew upgrade backup-suite
 # Cargo
 cargo install backup-suite --force --features smart
 
-# ソースから
+# From source
 cd backup-suite
 git pull origin main
 cargo install --path . --force --features smart
 ```
 
-### アンインストール
+### Uninstall
 
 ```bash
-# 1. バイナリを削除
+# 1. Remove binary
 rm ~/.local/bin/backup-suite
 
-# 2. 設定ファイル削除（オプション）
+# 2. Delete configuration files (optional)
 rm -rf ~/.config/backup-suite/
 
-# 3. ログファイル削除（オプション）
+# 3. Delete log files (optional)
 rm -rf ~/.local/share/backup-suite/
 ```
 
-## セキュリティ・品質
+## Security & Quality
 
-### **企業級セキュリティ**
-- **暗号化**: AES-256-GCM（認証付き暗号化）
-- **鍵導出**: Argon2id（メモリコスト19MB、反復2回）
-- **Nonce衝突検出**: デバッグビルドで自動追跡（リリースビルドはゼロオーバーヘッド）
-  - 全Nonce（暗号化初期化ベクトル）を追跡し、衝突を即座に検出
-  - 衝突発生時は詳細なエラーメッセージでセキュリティ影響を報告
-  - リリースビルドではコンパイル時に完全削除（パフォーマンス影響なし）
-- **パストラバーサル対策**: Unicode正規化（NFKC）、Null byte検出、シンボリックリンク攻撃防止
-- **機密データ消去**: Zeroize使用（メモリダンプ攻撃対策）
-- **ローカル専用**: クラウド非依存で安全
-- **権限管理**: 設定ファイルの適切な権限設定
+### **Enterprise-Grade Security**
+- **Encryption**: AES-256-GCM (Authenticated Encryption)
+- **Key Derivation**: Argon2id (Memory cost 19MB, Iterations 2)
+- **Nonce Collision Detection**: Auto-tracking in debug builds (zero overhead in release builds)
+  - Tracks all Nonces (encryption initialization vectors) and immediately detects collisions
+  - Provides detailed error messages explaining security impact when collision occurs
+  - Completely removed at compile-time in release builds (no performance impact)
+- **Path Traversal Protection**: Unicode normalization (NFKC), Null byte detection, Symlink attack prevention
+- **Sensitive Data Erasure**: Zeroize usage (memory dump attack protection)
+- **Local-only**: Cloud-independent security
+- **Permission Management**: Proper configuration file permissions
 
-### **型安全性・メモリ安全性**
-- Rustの強力な型システムで実行時エラーを最小化
-- メモリ安全性保証（バッファオーバーフロー、メモリリーク防止）
-- コンパイル時エラー検出
-- 機密データの安全な消去（ZeroizeOnDrop）
+### **Type Safety & Memory Safety**
+- Minimize runtime errors with Rust's powerful type system
+- Memory safety guarantee (prevents buffer overflow, memory leaks)
+- Compile-time error detection
 
-### **防御対象攻撃**
-- ✅ **パストラバーサル攻撃**: Unicode正規化（NFKC）、Null byte検出、シンボリックリンク検証
-- ✅ **ブルートフォース攻撃**: Argon2id高コスト鍵導出（メモリ19MB、反復2回）
-- ✅ **メモリダンプ攻撃**: Zeroize による機密データ即座消去
-- ✅ **中間者攻撃**: AES-256-GCM認証付き暗号化（改ざん検出）
-- ✅ **タイミング攻撃**: 定数時間比較による鍵検証
-- ✅ **インジェクション攻撃**: Rustの型システムによる安全なパス操作
+## Technology Stack
 
-## 技術スタック
+- **Language**: Rust (latest stable version)
+- **CLI**: clap 4.x (command line parsing & completion generation)
+- **Compression**: Zstd (fast & high ratio), Gzip (compatibility)
+- **Encryption**: AES-256-GCM, Argon2
+- **Configuration**: TOML (human-readable configuration format)
+- **Scheduling**: macOS launchctl, Linux systemd
+- **Smart/Statistical Analysis**: statrs (statistical computing), rayon (parallel processing)
 
-- **言語**: Rust（最新安定版）
-- **CLI**: clap 4.x （コマンドライン解析・補完生成）
-- **圧縮**: Zstd（高速・高圧縮率）、Gzip（互換性）
-- **暗号化**: AES-256-GCM、Argon2
-- **設定**: TOML （人間にとって読みやすい設定形式）
-- **スケジューリング**: macOS launchctl、Linux systemd
-- **Smart/統計分析**: statrs（統計計算）、rayon（並列処理）
+## Supported Platforms
 
-## 対応プラットフォーム
+| OS      | Architecture  | Support Status |
+| ------- | ------------- | -------------- |
+| 🐧 Linux | x86_64        | ✅ Full support |
+| 🐧 Linux | aarch64       | ✅ Full support |
+| 🍎 macOS | x86_64        | ✅ Full support |
+| 🍎 macOS | Apple Silicon | ✅ Full support |
 
-| OS      | アーキテクチャ | 対応状況   |
-| ------- | -------------- | ---------- |
-| 🐧 Linux | x86_64         | ✅ 完全対応 |
-| 🐧 Linux | aarch64        | ✅ 完全対応 |
-| 🍎 macOS | x86_64         | ✅ 完全対応 |
-| 🍎 macOS | Apple Silicon  | ✅ 完全対応 |
+## License
 
-## ライセンス
-
-このプロジェクトは[MITライセンス](LICENSE)の下で公開されています。
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-## コントリビューション
+## Contributing
 
-バグレポート・機能要望・プルリクエストを歓迎します。
-GitHubのIssue・PRからお気軽にご連絡ください。
+Bug reports, feature requests, and pull requests are welcome!
+Feel free to contact us via GitHub Issues or PRs.
