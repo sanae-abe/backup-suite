@@ -237,6 +237,14 @@ pub enum MessageKey {
     SmartDryRunModeLabel,
     PathValidationFailed,
     PathSafetyValidationFailed,
+    SmartExampleMaxDepthComment,
+    SmartExampleMaxSubdirsComment,
+    SmartExampleIncreaseSubdirsComment,
+    SmartAutoConfigureFeaturesHeader,
+    SmartFeatureEvaluateSubdirs,
+    SmartFeatureAutoDetectExclusions,
+    SmartFeatureHighConfidencePatterns,
+    SmartFeatureAutoDetectProjectTypes,
     SmartErrorNotEnabled,
     SmartErrorInsufficientData,
     SmartErrorInsufficientDataDetailed,
@@ -752,6 +760,28 @@ impl MessageKey {
             MessageKey::SmartDryRunModeLabel => "DRY RUN Mode",
             MessageKey::PathValidationFailed => "Path validation failed",
             MessageKey::PathSafetyValidationFailed => "Path safety validation failed",
+            MessageKey::SmartExampleMaxDepthComment => {
+                "# Specify subdirectory depth (up to 2 levels)"
+            }
+            MessageKey::SmartExampleMaxSubdirsComment => {
+                "# Specify maximum number of subdirectories to process (default: 100)"
+            }
+            MessageKey::SmartExampleIncreaseSubdirsComment => {
+                "# Increase subdirectory processing limit for large directory trees"
+            }
+            MessageKey::SmartAutoConfigureFeaturesHeader => "auto-configure features",
+            MessageKey::SmartFeatureEvaluateSubdirs => {
+                "Evaluate importance for each subdirectory individually"
+            }
+            MessageKey::SmartFeatureAutoDetectExclusions => {
+                "Auto-detect exclusion patterns (node_modules, target, .cache, etc.)"
+            }
+            MessageKey::SmartFeatureHighConfidencePatterns => {
+                "Apply only patterns with 80%+ confidence"
+            }
+            MessageKey::SmartFeatureAutoDetectProjectTypes => {
+                "Auto-detect project types (Rust, Node.js, Python, etc.)"
+            }
             MessageKey::SmartErrorNotEnabled => {
                 "AI features are not enabled. Compile with --features ai"
             }
@@ -1330,6 +1360,28 @@ impl MessageKey {
             MessageKey::SmartDryRunModeLabel => "ドライラン モード",
             MessageKey::PathValidationFailed => "パスの検証に失敗しました",
             MessageKey::PathSafetyValidationFailed => "パスの安全性検証に失敗しました",
+            MessageKey::SmartExampleMaxDepthComment => {
+                "# サブディレクトリの探索深度を指定（2階層まで）"
+            }
+            MessageKey::SmartExampleMaxSubdirsComment => {
+                "# 処理するサブディレクトリの最大数を指定（デフォルト: 100）"
+            }
+            MessageKey::SmartExampleIncreaseSubdirsComment => {
+                "# 大量のサブディレクトリがある場合の処理数上限を増やす"
+            }
+            MessageKey::SmartAutoConfigureFeaturesHeader => "auto-configure の機能",
+            MessageKey::SmartFeatureEvaluateSubdirs => {
+                "サブディレクトリごとに重要度を個別評価"
+            }
+            MessageKey::SmartFeatureAutoDetectExclusions => {
+                "除外パターンを自動検出・提案（node_modules, target, .cache等）"
+            }
+            MessageKey::SmartFeatureHighConfidencePatterns => {
+                "信頼度80%以上のパターンのみを適用"
+            }
+            MessageKey::SmartFeatureAutoDetectProjectTypes => {
+                "プロジェクトタイプを自動判定（Rust, Node.js, Python等）"
+            }
             MessageKey::SmartErrorNotEnabled => {
                 "Smart機能が有効化されていません。--features smart でコンパイルしてください"
             }
@@ -1817,6 +1869,20 @@ impl MessageKey {
             MessageKey::SmartDryRunModeLabel => "演习模式",
             MessageKey::PathValidationFailed => "路径验证失败",
             MessageKey::PathSafetyValidationFailed => "路径安全性验证失败",
+            MessageKey::SmartExampleMaxDepthComment => "# 指定子目录探索深度（最多2层）",
+            MessageKey::SmartExampleMaxSubdirsComment => {
+                "# 指定要处理的子目录最大数（默认：100）"
+            }
+            MessageKey::SmartExampleIncreaseSubdirsComment => "# 大量子目录时增加处理数上限",
+            MessageKey::SmartAutoConfigureFeaturesHeader => "auto-configure 功能",
+            MessageKey::SmartFeatureEvaluateSubdirs => "针对每个子目录单独评估重要性",
+            MessageKey::SmartFeatureAutoDetectExclusions => {
+                "自动检测排除模式（node_modules, target, .cache等）"
+            }
+            MessageKey::SmartFeatureHighConfidencePatterns => "仅应用信心度80%以上的模式",
+            MessageKey::SmartFeatureAutoDetectProjectTypes => {
+                "自动检测项目类型（Rust, Node.js, Python等）"
+            }
             MessageKey::SmartErrorNotEnabled => "Smart功能未启用。请使用 --features smart 编译",
             MessageKey::SmartErrorInsufficientData => "Smart分析数据不足",
             MessageKey::SmartErrorInsufficientDataDetailed => {
@@ -2177,6 +2243,20 @@ impl MessageKey {
             MessageKey::SmartDryRunModeLabel => "演習模式",
             MessageKey::PathValidationFailed => "路徑驗證失敗",
             MessageKey::PathSafetyValidationFailed => "路徑安全性驗證失敗",
+            MessageKey::SmartExampleMaxDepthComment => "# 指定子目錄探索深度（最多2層）",
+            MessageKey::SmartExampleMaxSubdirsComment => {
+                "# 指定要處理的子目錄最大數（預設：100）"
+            }
+            MessageKey::SmartExampleIncreaseSubdirsComment => "# 大量子目錄時增加處理數上限",
+            MessageKey::SmartAutoConfigureFeaturesHeader => "auto-configure 功能",
+            MessageKey::SmartFeatureEvaluateSubdirs => "針對每個子目錄單獨評估重要性",
+            MessageKey::SmartFeatureAutoDetectExclusions => {
+                "自動檢測排除模式（node_modules, target, .cache等）"
+            }
+            MessageKey::SmartFeatureHighConfidencePatterns => "僅應用信心度80%以上的模式",
+            MessageKey::SmartFeatureAutoDetectProjectTypes => {
+                "自動檢測項目類型（Rust, Node.js, Python等）"
+            }
             MessageKey::SmartErrorNotEnabled => "Smart功能未啟用。請使用 --features smart 編譯",
             MessageKey::SmartErrorInsufficientData => "Smart分析資料不足",
             MessageKey::SmartErrorInsufficientDataDetailed => {

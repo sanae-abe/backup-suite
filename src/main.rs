@@ -1168,79 +1168,43 @@ fn print_smart_help(lang: Language) {
     println!();
     println!(
         "  {}",
-        if lang == Language::Japanese {
-            "# サブディレクトリの探索深度を指定（2階層まで）"
-        } else {
-            "# Specify subdirectory depth (up to 2 levels)"
-        }
+        get_message(MessageKey::SmartExampleMaxDepthComment, lang)
     );
     println!("  backup-suite smart auto-configure ~/projects --max-depth 2");
     println!();
     println!(
         "  {}",
-        match lang {
-            Language::Japanese => "# 処理するサブディレクトリの最大数を指定（デフォルト: 100）",
-            Language::English =>
-                "# Specify maximum number of subdirectories to process (default: 100)",
-            Language::SimplifiedChinese => "# 指定要处理的子目录最大数（默认：100）",
-            Language::TraditionalChinese => "# 指定要處理的子目錄最大數（預設：100）",
-        }
+        get_message(MessageKey::SmartExampleMaxSubdirsComment, lang)
     );
     println!("  backup-suite smart auto-configure ~/projects --max-subdirs 50");
     println!();
     println!(
         "  {}",
-        match lang {
-            Language::Japanese => "# 大量のサブディレクトリがある場合の処理数上限を増やす",
-            Language::English =>
-                "# Increase subdirectory processing limit for large directory trees",
-            Language::SimplifiedChinese => "# 大量子目录时增加处理数上限",
-            Language::TraditionalChinese => "# 大量子目錄時增加處理數上限",
-        }
+        get_message(MessageKey::SmartExampleIncreaseSubdirsComment, lang)
     );
     println!("  backup-suite smart auto-configure ~/projects --max-subdirs 200");
     println!();
     println!(
         "{}{}:{}",
         magenta,
-        if lang == Language::Japanese {
-            "auto-configure の機能"
-        } else {
-            "auto-configure features"
-        },
+        get_message(MessageKey::SmartAutoConfigureFeaturesHeader, lang),
         reset
     );
     println!(
         "  - {}",
-        if lang == Language::Japanese {
-            "サブディレクトリごとに重要度を個別評価"
-        } else {
-            "Evaluate importance for each subdirectory individually"
-        }
+        get_message(MessageKey::SmartFeatureEvaluateSubdirs, lang)
     );
     println!(
         "  - {}",
-        if lang == Language::Japanese {
-            "除外パターンを自動検出・提案（node_modules, target, .cache等）"
-        } else {
-            "Auto-detect exclusion patterns (node_modules, target, .cache, etc.)"
-        }
+        get_message(MessageKey::SmartFeatureAutoDetectExclusions, lang)
     );
     println!(
         "  - {}",
-        if lang == Language::Japanese {
-            "信頼度80%以上のパターンのみを適用"
-        } else {
-            "Apply only patterns with 80%+ confidence"
-        }
+        get_message(MessageKey::SmartFeatureHighConfidencePatterns, lang)
     );
     println!(
         "  - {}",
-        if lang == Language::Japanese {
-            "プロジェクトタイプを自動判定（Rust, Node.js, Python等）"
-        } else {
-            "Auto-detect project types (Rust, Node.js, Python, etc.)"
-        }
+        get_message(MessageKey::SmartFeatureAutoDetectProjectTypes, lang)
     );
 }
 
