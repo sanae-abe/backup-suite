@@ -1802,10 +1802,8 @@ fn main() -> Result<()> {
             if all {
                 // 全削除前の確認（必須）
                 use dialoguer::Confirm;
-                let prompt = format!(
-                    "⚠️  警告: {}個すべてのバックアップ対象を削除します。本当によろしいですか？",
-                    config.targets.len()
-                );
+                let prompt = get_message(MessageKey::ConfirmClearAll, lang)
+                    .replace("{}", &config.targets.len().to_string());
 
                 if !Confirm::new()
                     .with_prompt(prompt)
@@ -2193,10 +2191,8 @@ fn main() -> Result<()> {
 
             // パフォーマンス最適化: 確認プロンプトをスキャン前に表示
             if !dry_run {
-                let prompt = format!(
-                    "{}日以前の古いバックアップを削除します。よろしいですか？",
-                    days
-                );
+                let prompt =
+                    get_message(MessageKey::ConfirmCleanup, lang).replace("{}", &days.to_string());
 
                 // CI環境対応: BACKUP_SUITE_YESが設定されている場合は自動確認
                 let should_proceed = if let Ok(auto_yes) = std::env::var("BACKUP_SUITE_YES") {

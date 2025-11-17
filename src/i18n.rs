@@ -345,6 +345,8 @@ pub enum MessageKey {
     // Runtime messages
     NoTargetsRegistered,
     SelectionCancelled,
+    ConfirmClearAll,
+    ConfirmCleanup,
     PathNotExists,
     NotInBackupConfig,
     SpecifyPriorityOrAll,
@@ -782,6 +784,10 @@ impl MessageKey {
             // Runtime messages
             MessageKey::NoTargetsRegistered => "No backup targets registered",
             MessageKey::SelectionCancelled => "Selection cancelled",
+            MessageKey::ConfirmClearAll => {
+                "⚠️  Warning: Delete all {} backup targets. Are you sure?"
+            }
+            MessageKey::ConfirmCleanup => "Delete backups older than {} days. Are you sure?",
             MessageKey::PathNotExists => "Path does not exist",
             MessageKey::NotInBackupConfig => "Not registered in backup configuration",
             MessageKey::SpecifyPriorityOrAll => "Specify --priority or --all",
@@ -1228,6 +1234,8 @@ impl MessageKey {
             // Runtime messages
             MessageKey::NoTargetsRegistered => "バックアップ対象が登録されていません",
             MessageKey::SelectionCancelled => "選択がキャンセルされました",
+            MessageKey::ConfirmClearAll => "⚠️  警告: {}個すべてのバックアップ対象を削除します。本当によろしいですか？",
+            MessageKey::ConfirmCleanup => "{}日以前の古いバックアップを削除します。よろしいですか？",
             MessageKey::PathNotExists => "パスが存在しません",
             MessageKey::NotInBackupConfig => "バックアップ設定に登録されていません",
             MessageKey::SpecifyPriorityOrAll => "--priority または --all を指定してください",
