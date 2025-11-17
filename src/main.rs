@@ -2542,7 +2542,7 @@ fn main() -> Result<()> {
                     );
 
                     println!(
-                        "  high: {}{}{}",
+                        "  high: {}{}{}{}",
                         if status.high_enabled {
                             get_color("green", false)
                         } else {
@@ -2553,12 +2553,12 @@ fn main() -> Result<()> {
                             get_message(MessageKey::Enabled, lang)
                         } else {
                             get_message(MessageKey::Disabled, lang)
-                        }
+                        },
+                        get_color("reset", false)
                     );
-                    println!("{}", get_color("reset", false));
 
                     println!(
-                        "  medium: {}{}{}",
+                        "  medium: {}{}{}{}",
                         if status.medium_enabled {
                             get_color("green", false)
                         } else {
@@ -2573,12 +2573,12 @@ fn main() -> Result<()> {
                             get_message(MessageKey::Enabled, lang)
                         } else {
                             get_message(MessageKey::Disabled, lang)
-                        }
+                        },
+                        get_color("reset", false)
                     );
-                    println!("{}", get_color("reset", false));
 
                     println!(
-                        "  low: {}{}{}",
+                        "  low: {}{}{}{}",
                         if status.low_enabled {
                             get_color("green", false)
                         } else {
@@ -2589,9 +2589,9 @@ fn main() -> Result<()> {
                             get_message(MessageKey::Enabled, lang)
                         } else {
                             get_message(MessageKey::Disabled, lang)
-                        }
+                        },
+                        get_color("reset", false)
                     );
-                    println!("{}", get_color("reset", false));
                 }
                 ScheduleAction::Setup { high, medium, low } => {
                     config.schedule.high_frequency = high.clone();
