@@ -17,7 +17,7 @@
 - [安装方法](#安装方法)
 - [快速入门](#快速入门)
 - [基本使用](#基本使用)
-- [AI 功能（智能备份）](#-smart-功能智能备份)
+- [Smart 功能（智能备份）](#-smart-功能智能备份)
 - [配置文件](#配置文件)
 - [调度功能](#调度功能)
 - [命令参考](#命令参考)
@@ -34,12 +34,12 @@
 - **照片和个人文件**每周备份
 - **归档文件**每月备份
 
-### 🤖 AI 驱动的智能管理
+### 🤖 Smart 驱动的智能管理
 - **自动优化**：通过目录分析自动生成最佳备份配置
 - **文件重要性分析**：自动按重要程度分类目录中的文件（约 8 秒/10,000 个文件）
 - **排除模式推荐**：自动检测并建议排除不必要的文件（缓存、构建产物）
 - **异常检测**：通过统计分析自动检测备份大小异常（< 1ms）
-- **完全离线**：所有 AI 功能均在本地运行，完全保护隐私
+- **完全离线**：所有 Smart 功能均在本地运行，完全保护隐私
 
 ### 🔐 军事级加密保护
 - **AES-256-GCM 加密**几乎不可能破解
@@ -130,10 +130,10 @@ brew install backup-suite
 ### 通过 Cargo 安装
 
 ```bash
-# 启用 AI 功能安装（推荐）
+# 启用 Smart 功能安装（推荐）
 cargo install backup-suite --features smart
 
-# 不启用 AI 功能安装（轻量版）
+# 不启用 Smart 功能安装（轻量版）
 cargo install backup-suite
 ```
 
@@ -148,7 +148,7 @@ cd backup-suite
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 source ~/.cargo/env
 
-# 3. 构建并安装（带 AI 功能）
+# 3. 构建并安装（带 Smart 功能）
 cargo build --release --features smart
 cargo install --path . --features smart
 
@@ -298,16 +298,16 @@ backup-suite schedule setup --high daily --medium weekly --low monthly
 backup-suite schedule enable
 ```
 
-## 🤖 AI 功能（智能备份）
+## 🤖 Smart 功能（智能备份）
 
 通过统计异常检测和文件重要性分析优化备份。
 
 ### 安装
 
-要使用 AI 功能，需要在构建时使用 `--features smart` 标志。
+要使用 Smart 功能，需要在构建时使用 `--features smart` 标志。
 
 ```bash
-# 启用 AI 功能构建
+# 启用 Smart 功能构建
 cargo build --release --features smart
 cargo install --path . --features smart
 
@@ -317,7 +317,7 @@ cargo install backup-suite --features smart
 
 ### 主要功能
 
-#### 1. AI 自动配置
+#### 1. Smart 自动配置
 
 分析目录并自动生成最佳备份配置。
 
@@ -350,7 +350,7 @@ backup-suite smart auto-configure ~/data --max-subdirs 200
 
 **输出示例**：
 ```
-🤖 AI 自动配置
+🤖 Smart 自动配置
 分析中："/Users/user/projects"
   📁 发现 3 个子目录：3
     评估中："/Users/user/projects/web-app"
@@ -379,7 +379,7 @@ backup-suite smart auto-configure ~/data --max-subdirs 200
 
 **子目录数达到限制时的示例**：
 ```
-🤖 AI 自动配置
+🤖 Smart 自动配置
 分析中："/Users/user/large-project"
   📁 发现 100 个子目录：100
   ⚠️  已达到限制，部分子目录未处理：100（可使用 --max-subdirs 更改）
@@ -407,7 +407,7 @@ backup-suite smart analyze ~/projects --filter "*.rs,*.toml"
 
 **输出示例**：
 ```
-🤖 AI 文件重要性分析：~/Documents
+🤖 Smart 文件重要性分析：~/Documents
 
 ┌─────────────────────────┬──────────────┬──────────┬─────────────────────┐
 │ 文件/目录                │ 重要性分数    │ 建议优先级 │ 理由                 │
@@ -444,7 +444,7 @@ backup-suite smart suggest-exclude ~/projects --min-size 50MB
 
 **输出示例**：
 ```
-🤖 AI 排除模式推荐：~/projects
+🤖 Smart 排除模式推荐：~/projects
 
 ┌──────────────────┬──────────┬──────────┬─────────────────────┐
 │ 模式              │ 减少量    │ 置信度    │ 理由                 │
@@ -476,7 +476,7 @@ backup-suite smart detect --days 14 --detailed
 
 **输出示例**：
 ```
-🤖 AI 异常检测报告（过去 7 天）
+🤖 Smart 异常检测报告（过去 7 天）
 
 ┌────┬──────────────────┬──────────┬──────────┬─────────────────────┐
 │ No │ 检测时间          │ 异常类型  │ 置信度    │ 说明                 │
@@ -490,26 +490,26 @@ backup-suite smart detect --days 14 --detailed
 
 **性能**：< 1ms（100 条历史记录）
 
-### 禁用 AI 功能
+### 禁用 Smart 功能
 
-如果不需要 AI 功能，请使用标准构建。
+如果不需要 Smart 功能，请使用标准构建。
 
 ```bash
-# 标准构建（无 AI 功能）
+# 标准构建（无 Smart 功能）
 cargo build --release
 cargo install --path .
 ```
 
 ### 安全与隐私
 
-所有 AI 功能**完全离线**运行：
+所有 Smart 功能**完全离线**运行：
 
 - ✅ 外部 API 调用：无
 - ✅ 云服务：不需要
 - ✅ 敏感信息传输：零
 - ✅ 数据收集：无
 
-详情请参阅 [AI 功能文档](docs/smart/features.md)。
+详情请参阅 [Smart 功能文档](docs/smart/features.md)。
 
 ## 配置文件
 
@@ -592,7 +592,7 @@ backup-suite schedule status
 | **config**     | 配置管理                   | `backup-suite config set-destination ~/backups` |
 | **open**       | 打开备份目录               | `backup-suite open`                             |
 | **completion** | 生成 shell 补全            | `backup-suite completion zsh`                   |
-| **smart**         | AI 功能（需要 `--features smart`）| `backup-suite smart detect --days 7`            |
+| **smart**         | Smart 功能（需要 `--features smart`）| `backup-suite smart detect --days 7`            |
 
 ## 更新与卸载
 
