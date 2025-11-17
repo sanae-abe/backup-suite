@@ -3139,11 +3139,7 @@ fn main() -> Result<()> {
                                 println!(
                                     "\n{}💡 {}: backup-suite add {:?} --priority {:?}{}",
                                     get_color("yellow", false),
-                                    if lang == Language::Japanese {
-                                        "推奨コマンド"
-                                    } else {
-                                        "Recommended command"
-                                    },
+                                    get_message(MessageKey::SmartRecommendedCommandLabel, lang),
                                     normalized_path,
                                     *result.priority(),
                                     get_color("reset", false)
@@ -3216,11 +3212,7 @@ fn main() -> Result<()> {
                                 println!(
                                     "{}✅ {}{}",
                                     get_color("green", false),
-                                    if lang == Language::Japanese {
-                                        "除外推奨なし（すべて最適化済み）"
-                                    } else {
-                                        "No exclusions recommended (already optimized)"
-                                    },
+                                    get_message(MessageKey::SmartNoExclusionsRecommended, lang),
                                     get_color("reset", false)
                                 );
                             } else {
@@ -3279,17 +3271,12 @@ fn main() -> Result<()> {
                                             "{}\"{}\" {} ({:.2}GB {}){}",
                                             get_color("yellow", false),
                                             rec.pattern(),
-                                            if lang == Language::Japanese {
-                                                "を除外リストに追加しますか？"
-                                            } else {
-                                                "to exclude list?"
-                                            },
+                                            get_message(
+                                                MessageKey::SmartAddToExcludeListPrompt,
+                                                lang
+                                            ),
                                             rec.size_reduction_gb(),
-                                            if lang == Language::Japanese {
-                                                "削減見込"
-                                            } else {
-                                                "reduction"
-                                            },
+                                            get_message(MessageKey::SmartReductionLabel, lang),
                                             get_color("reset", false)
                                         );
 
@@ -3298,11 +3285,7 @@ fn main() -> Result<()> {
                                                 "{}✅ \"{}\" {}{}",
                                                 get_color("green", false),
                                                 rec.pattern(),
-                                                if lang == Language::Japanese {
-                                                    "を追加しました"
-                                                } else {
-                                                    "added"
-                                                },
+                                                get_message(MessageKey::SmartAddedLabel, lang),
                                                 get_color("reset", false)
                                             );
                                         }

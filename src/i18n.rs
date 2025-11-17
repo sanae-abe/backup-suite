@@ -261,6 +261,11 @@ pub enum MessageKey {
     ExampleSmartAutoConfigureComment,
     ExampleSmartDryRunComment,
     ExampleSmartInteractiveComment,
+    SmartRecommendedCommandLabel,
+    SmartNoExclusionsRecommended,
+    SmartAddToExcludeListPrompt,
+    SmartReductionLabel,
+    SmartAddedLabel,
 
     // Detailed info
     DetailedInfo,
@@ -769,6 +774,11 @@ impl MessageKey {
             MessageKey::ExampleSmartAutoConfigureComment => "# Smart auto-configure (evaluate subdirectories individually with auto-exclusion)",
             MessageKey::ExampleSmartDryRunComment => "# Dry-run (show recommendations only)",
             MessageKey::ExampleSmartInteractiveComment => "# Interactive mode (confirm each subdirectory and exclusion pattern)",
+            MessageKey::SmartRecommendedCommandLabel => "Recommended command",
+            MessageKey::SmartNoExclusionsRecommended => "No exclusions recommended (already optimized)",
+            MessageKey::SmartAddToExcludeListPrompt => "to exclude list?",
+            MessageKey::SmartReductionLabel => "reduction",
+            MessageKey::SmartAddedLabel => "added",
 
             // Detailed info
             MessageKey::DetailedInfo => "Detailed Information:",
@@ -1336,6 +1346,11 @@ impl MessageKey {
             MessageKey::ExampleSmartAutoConfigureComment => "# Smart自動設定（サブディレクトリを個別に評価・除外パターン自動適用）",
             MessageKey::ExampleSmartDryRunComment => "# ドライラン（確認のみ、設定適用なし）",
             MessageKey::ExampleSmartInteractiveComment => "# 対話モード（各サブディレクトリと除外パターンを確認）",
+            MessageKey::SmartRecommendedCommandLabel => "推奨コマンド",
+            MessageKey::SmartNoExclusionsRecommended => "除外推奨なし（すべて最適化済み）",
+            MessageKey::SmartAddToExcludeListPrompt => "を除外リストに追加しますか？",
+            MessageKey::SmartReductionLabel => "削減見込",
+            MessageKey::SmartAddedLabel => "を追加しました",
 
             // Detailed info
             MessageKey::DetailedInfo => "詳細情報:",
@@ -1797,6 +1812,11 @@ impl MessageKey {
             }
             MessageKey::ExampleSmartDryRunComment => "# 演习模式（仅显示建议）",
             MessageKey::ExampleSmartInteractiveComment => "# 交互模式（确认每个子目录和排除模式）",
+            MessageKey::SmartRecommendedCommandLabel => "推荐命令",
+            MessageKey::SmartNoExclusionsRecommended => "无排除建议（已优化）",
+            MessageKey::SmartAddToExcludeListPrompt => "添加到排除列表？",
+            MessageKey::SmartReductionLabel => "预计减少",
+            MessageKey::SmartAddedLabel => "已添加",
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智能备份",
 
             // Status messages
@@ -2146,6 +2166,11 @@ impl MessageKey {
             }
             MessageKey::ExampleSmartDryRunComment => "# 演習模式（僅顯示建議）",
             MessageKey::ExampleSmartInteractiveComment => "# 交互模式（確認每個子目錄和排除模式）",
+            MessageKey::SmartRecommendedCommandLabel => "推薦指令",
+            MessageKey::SmartNoExclusionsRecommended => "無排除建議（已最佳化）",
+            MessageKey::SmartAddToExcludeListPrompt => "加入至排除清單？",
+            MessageKey::SmartReductionLabel => "預計減少",
+            MessageKey::SmartAddedLabel => "已加入",
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智慧備份",
 
             // Status messages
