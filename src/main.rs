@@ -2997,19 +2997,11 @@ fn main() -> Result<()> {
                                     ]);
                                 table.add_row(vec!["Z-score", &format!("{:.2}", result.z_score())]);
                                 table.add_row(vec![
-                                    if lang == Language::Japanese {
-                                        "信頼度"
-                                    } else {
-                                        "Confidence"
-                                    },
+                                    get_message(MessageKey::SmartDetectConfidenceLabel, lang),
                                     &format!("{:.1}%", result.confidence().get() * 100.0),
                                 ]);
                                 table.add_row(vec![
-                                    if lang == Language::Japanese {
-                                        "説明"
-                                    } else {
-                                        "Description"
-                                    },
+                                    get_message(MessageKey::SmartDetectDescriptionLabel, lang),
                                     result.description(),
                                 ]);
                                 println!(
@@ -3043,52 +3035,19 @@ fn main() -> Result<()> {
                             if format == "json" {
                                 let json_output = serde_json::json!({
                                     "error": "insufficient_data",
-                                    "message": format!(
-                                        "{}（{}3{}、{}{}{}）",
-                                        if lang == Language::Japanese {
-                                            "データが不足しています"
-                                        } else {
-                                            "Insufficient data"
-                                        },
-                                        if lang == Language::Japanese {
-                                            "最低"
-                                        } else {
-                                            "minimum "
-                                        },
-                                        if lang == Language::Japanese {
-                                            "件必要"
-                                        } else {
-                                            " entries required"
-                                        },
-                                        if lang == Language::Japanese {
-                                            ""
-                                        } else {
-                                            "found "
-                                        },
-                                        history.len(),
-                                        if lang == Language::Japanese {
-                                            "件しかありません"
-                                        } else {
-                                            ""
-                                        }
-                                    )
+                                    "message": get_message(MessageKey::SmartErrorInsufficientDataDetailed, lang)
+                                        .replace("{}", &history.len().to_string())
                                 });
                                 println!("{}", serde_json::to_string_pretty(&json_output)?);
                             } else {
                                 println!(
                                     "{}⚠️  {}{}",
                                     get_color("yellow", false),
-                                    if lang == Language::Japanese {
-                                        format!(
-                                            "データが不足しています（最低3件必要、{}件しかありません）",
-                                            history.len()
-                                        )
-                                    } else {
-                                        format!(
-                                            "Insufficient data (minimum 3 entries required, found {})",
-                                            history.len()
-                                        )
-                                    },
+                                    get_message(
+                                        MessageKey::SmartErrorInsufficientDataDetailed,
+                                        lang
+                                    )
+                                    .replace("{}", &history.len().to_string()),
                                     get_color("reset", false)
                                 );
                             }
@@ -3105,11 +3064,7 @@ fn main() -> Result<()> {
                                 println!(
                                     "{}❌ {}: {}{}",
                                     get_color("red", false),
-                                    if lang == Language::Japanese {
-                                        "分析エラー"
-                                    } else {
-                                        "Analysis error"
-                                    },
+                                    get_message(MessageKey::SmartErrorAnalysisLabel, lang),
                                     e,
                                     get_color("reset", false)
                                 );
