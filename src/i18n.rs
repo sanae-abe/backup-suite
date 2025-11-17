@@ -245,6 +245,14 @@ pub enum MessageKey {
     SmartFeatureAutoDetectExclusions,
     SmartFeatureHighConfidencePatterns,
     SmartFeatureAutoDetectProjectTypes,
+    NoSubdirectoriesFound,
+    SubdirLimitReached,
+    SubdirLimitChangeHint,
+    SkippingExcludeAnalysisLarge,
+    FilesUnit,
+    AddToExcludeListPrompt,
+    SmartRecommendsAddPrompt,
+    AnalysisFailedLabel,
     SmartErrorNotEnabled,
     SmartErrorInsufficientData,
     SmartErrorInsufficientDataDetailed,
@@ -782,6 +790,21 @@ impl MessageKey {
             MessageKey::SmartFeatureAutoDetectProjectTypes => {
                 "Auto-detect project types (Rust, Node.js, Python, etc.)"
             }
+            MessageKey::NoSubdirectoriesFound => "No subdirectories found",
+            MessageKey::SubdirLimitReached => {
+                "Limit reached, some subdirectories were not processed"
+            }
+            MessageKey::SubdirLimitChangeHint => "to change",
+            MessageKey::SkippingExcludeAnalysisLarge => {
+                "Skipping exclude pattern analysis (directory too large)"
+            }
+            MessageKey::FilesUnit => "files",
+            MessageKey::AddToExcludeListPrompt => "to exclude list?",
+            MessageKey::SmartRecommendsAddPrompt => {
+                "Smart recommends: Add {:?} (priority: {:?})?"
+            }
+            MessageKey::ExcludePatternsLabel => "Exclude patterns",
+            MessageKey::AnalysisFailedLabel => "Analysis failed",
             MessageKey::SmartErrorNotEnabled => {
                 "AI features are not enabled. Compile with --features ai"
             }
@@ -950,7 +973,7 @@ impl MessageKey {
                 "⚠️  Warning: Delete all {} backup targets. Are you sure?"
             }
             MessageKey::ConfirmClearPriority => {
-                "⚠️  Warning: Delete {} backup targets with {} priority. Are you sure?"
+                "⚠️  Warning: Delete {count} backup targets with {priority} priority. Are you sure?"
             }
             MessageKey::NoPriorityTargets => "No backup targets found with specified priority",
             MessageKey::ConfirmCleanup => "Delete backups older than {} days. Are you sure?",
@@ -1058,7 +1081,6 @@ impl MessageKey {
             MessageKey::PathLabel => "Path",
             MessageKey::PriorityLabel => "Priority",
             MessageKey::CategoryLabel => "Category",
-            MessageKey::ExcludePatternsLabel => "Exclude Patterns",
 
             // Smart Analyze labels
             MessageKey::ItemLabel => "Item",
@@ -1382,6 +1404,21 @@ impl MessageKey {
             MessageKey::SmartFeatureAutoDetectProjectTypes => {
                 "プロジェクトタイプを自動判定（Rust, Node.js, Python等）"
             }
+            MessageKey::NoSubdirectoriesFound => "サブディレクトリが見つかりません",
+            MessageKey::SubdirLimitReached => {
+                "制限に達したため、一部のサブディレクトリは処理されませんでした"
+            }
+            MessageKey::SubdirLimitChangeHint => "で変更可能",
+            MessageKey::SkippingExcludeAnalysisLarge => {
+                "ディレクトリが大きいため除外パターン分析をスキップ"
+            }
+            MessageKey::FilesUnit => "ファイル以上",
+            MessageKey::AddToExcludeListPrompt => "を除外リストに追加しますか？",
+            MessageKey::SmartRecommendsAddPrompt => {
+                "Smart推奨: {:?} (優先度: {:?}) を追加しますか？"
+            }
+            MessageKey::ExcludePatternsLabel => "除外パターン",
+            MessageKey::AnalysisFailedLabel => "分析失敗",
             MessageKey::SmartErrorNotEnabled => {
                 "Smart機能が有効化されていません。--features smart でコンパイルしてください"
             }
@@ -1537,7 +1574,7 @@ impl MessageKey {
             MessageKey::NoTargetsRegistered => "バックアップ対象が登録されていません",
             MessageKey::SelectionCancelled => "選択がキャンセルされました",
             MessageKey::ConfirmClearAll => "⚠️  警告: {}個すべてのバックアップ対象を削除します。本当によろしいですか？",
-            MessageKey::ConfirmClearPriority => "⚠️  警告: {}優先度のバックアップ対象{}個を削除します。本当によろしいですか？",
+            MessageKey::ConfirmClearPriority => "⚠️  警告: {priority}優先度のバックアップ対象{count}個を削除します。本当によろしいですか？",
             MessageKey::NoPriorityTargets => "指定された優先度のバックアップ対象は0件です",
             MessageKey::ConfirmCleanup => "{}日以前の古いバックアップを削除します。よろしいですか？",
             MessageKey::DaysOutOfRange => "days は 1-3650 の範囲で指定してください（指定値: {}）",
@@ -1640,7 +1677,6 @@ impl MessageKey {
             MessageKey::PathLabel => "パス",
             MessageKey::PriorityLabel => "優先度",
             MessageKey::CategoryLabel => "カテゴリ",
-            MessageKey::ExcludePatternsLabel => "除外パターン",
 
             // Smart Analyze labels
             MessageKey::ItemLabel => "項目",
@@ -1883,6 +1919,15 @@ impl MessageKey {
             MessageKey::SmartFeatureAutoDetectProjectTypes => {
                 "自动检测项目类型（Rust, Node.js, Python等）"
             }
+            MessageKey::NoSubdirectoriesFound => "未找到子目录",
+            MessageKey::SubdirLimitReached => "已达上限，部分子目录未处理",
+            MessageKey::SubdirLimitChangeHint => "可修改",
+            MessageKey::SkippingExcludeAnalysisLarge => "目录过大，跳过排除模式分析",
+            MessageKey::FilesUnit => "个文件",
+            MessageKey::AddToExcludeListPrompt => "添加到排除列表？",
+            MessageKey::SmartRecommendsAddPrompt => "Smart推荐：添加 {:?}（优先级：{:?}）？",
+            MessageKey::ExcludePatternsLabel => "排除模式",
+            MessageKey::AnalysisFailedLabel => "分析失败",
             MessageKey::SmartErrorNotEnabled => "Smart功能未启用。请使用 --features smart 编译",
             MessageKey::SmartErrorInsufficientData => "Smart分析数据不足",
             MessageKey::SmartErrorInsufficientDataDetailed => {
@@ -1941,7 +1986,7 @@ impl MessageKey {
             MessageKey::NoTargetsRegistered => "未注册备份目标",
             MessageKey::SelectionCancelled => "选择已取消",
             MessageKey::ConfirmClearAll => "⚠️  警告：删除所有 {} 个备份目标。确定吗？",
-            MessageKey::ConfirmClearPriority => "⚠️  警告：删除 {} 个{}优先级备份目标。确定吗？",
+            MessageKey::ConfirmClearPriority => "⚠️  警告：删除 {count} 个{priority}优先级备份目标。确定吗？",
             MessageKey::NoPriorityTargets => "未找到指定优先级的备份目标",
             MessageKey::ConfirmCleanup => "删除 {} 天之前的旧备份。确定吗？",
             MessageKey::DaysOutOfRange => "days 必须在 1-3650 范围内（指定值：{}）",
@@ -1981,7 +2026,6 @@ impl MessageKey {
             MessageKey::PathLabel => "路径",
             MessageKey::PriorityLabel => "优先级",
             MessageKey::CategoryLabel => "类别",
-            MessageKey::ExcludePatternsLabel => "排除模式",
 
             // Smart Analyze labels
             MessageKey::ItemLabel => "项目",
@@ -2257,6 +2301,15 @@ impl MessageKey {
             MessageKey::SmartFeatureAutoDetectProjectTypes => {
                 "自動檢測項目類型（Rust, Node.js, Python等）"
             }
+            MessageKey::NoSubdirectoriesFound => "未找到子目錄",
+            MessageKey::SubdirLimitReached => "已達上限，部分子目錄未處理",
+            MessageKey::SubdirLimitChangeHint => "可修改",
+            MessageKey::SkippingExcludeAnalysisLarge => "目錄過大，跳過排除模式分析",
+            MessageKey::FilesUnit => "個檔案",
+            MessageKey::AddToExcludeListPrompt => "添加到排除列表？",
+            MessageKey::SmartRecommendsAddPrompt => "Smart推薦：添加 {:?}（優先級：{:?}）？",
+            MessageKey::ExcludePatternsLabel => "排除模式",
+            MessageKey::AnalysisFailedLabel => "分析失敗",
             MessageKey::SmartErrorNotEnabled => "Smart功能未啟用。請使用 --features smart 編譯",
             MessageKey::SmartErrorInsufficientData => "Smart分析資料不足",
             MessageKey::SmartErrorInsufficientDataDetailed => {
@@ -2315,7 +2368,7 @@ impl MessageKey {
             MessageKey::NoTargetsRegistered => "未註冊備份目標",
             MessageKey::SelectionCancelled => "選擇已取消",
             MessageKey::ConfirmClearAll => "⚠️  警告：刪除所有 {} 個備份目標。確定嗎？",
-            MessageKey::ConfirmClearPriority => "⚠️  警告：刪除 {} 個{}優先級備份目標。確定嗎？",
+            MessageKey::ConfirmClearPriority => "⚠️  警告：刪除 {count} 個{priority}優先級備份目標。確定嗎？",
             MessageKey::NoPriorityTargets => "未找到指定優先級的備份目標",
             MessageKey::ConfirmCleanup => "刪除 {} 天之前的舊備份。確定嗎？",
             MessageKey::DaysOutOfRange => "days 必須在 1-3650 範圍內（指定值：{}）",
@@ -2355,7 +2408,6 @@ impl MessageKey {
             MessageKey::PathLabel => "路徑",
             MessageKey::PriorityLabel => "優先級",
             MessageKey::CategoryLabel => "類別",
-            MessageKey::ExcludePatternsLabel => "排除模式",
 
             // Smart Analyze labels
             MessageKey::ItemLabel => "項目",

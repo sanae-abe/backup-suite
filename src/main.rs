@@ -1794,16 +1794,9 @@ fn main() -> Result<()> {
                     },
                 };
 
-                // 日本語は優先度が先、他言語は件数が先
-                let prompt = if lang == Language::Japanese {
-                    get_message(MessageKey::ConfirmClearPriority, lang)
-                        .replacen("{}", priority_name, 1)
-                        .replacen("{}", &to_delete_count.to_string(), 1)
-                } else {
-                    get_message(MessageKey::ConfirmClearPriority, lang)
-                        .replacen("{}", &to_delete_count.to_string(), 1)
-                        .replacen("{}", priority_name, 1)
-                };
+                let prompt = get_message(MessageKey::ConfirmClearPriority, lang)
+                    .replace("{count}", &to_delete_count.to_string())
+                    .replace("{priority}", priority_name);
 
                 if !Confirm::new()
                     .with_prompt(prompt)
@@ -3389,11 +3382,7 @@ fn main() -> Result<()> {
                             println!(
                                 "  {}❌ {}: {:?}{}",
                                 get_color("red", false),
-                                if lang == Language::Japanese {
-                                    "パスが存在しません"
-                                } else {
-                                    "Path does not exist"
-                                },
+                                get_message(MessageKey::PathNotExists, lang),
                                 normalized_path,
                                 get_color("reset", false)
                             );
@@ -3408,11 +3397,7 @@ fn main() -> Result<()> {
                                 println!(
                                     "  {}💡 {}: {:?}{}",
                                     get_color("yellow", false),
-                                    if lang == Language::Japanese {
-                                        "サブディレクトリが見つかりません"
-                                    } else {
-                                        "No subdirectories found"
-                                    },
+                                    get_message(MessageKey::NoSubdirectoriesFound, lang),
                                     normalized_path,
                                     get_color("reset", false)
                                 );
@@ -3431,17 +3416,9 @@ fn main() -> Result<()> {
                                     println!(
                                         "  {}⚠️  {}: {} (--max-subdirs {}){}",
                                         get_color("yellow", false),
-                                        if lang == Language::Japanese {
-                                            "制限に達したため、一部のサブディレクトリは処理されませんでした"
-                                        } else {
-                                            "Limit reached, some subdirectories were not processed"
-                                        },
+                                        get_message(MessageKey::SubdirLimitReached, lang),
                                         max_subdirs,
-                                        if lang == Language::Japanese {
-                                            "で変更可能"
-                                        } else {
-                                            "to change"
-                                        },
+                                        get_message(MessageKey::SubdirLimitChangeHint, lang),
                                         get_color("reset", false)
                                     );
                                 }
@@ -3511,17 +3488,12 @@ fn main() -> Result<()> {
                                             output_buffer.push(format!(
                                                 "      {}⚠️  {}: {} {}{}",
                                                 get_color("yellow", false),
-                                                if lang == Language::Japanese {
-                                                    "ディレクトリが大きいため除外パターン分析をスキップ"
-                                                } else {
-                                                    "Skipping exclude pattern analysis (directory too large)"
-                                                },
+                                                get_message(
+                                                    MessageKey::SkippingExcludeAnalysisLarge,
+                                                    lang
+                                                ),
                                                 file_count,
-                                                if lang == Language::Japanese {
-                                                    "ファイル以上"
-                                                } else {
-                                                    "files"
-                                                },
+                                                get_message(MessageKey::FilesUnit, lang),
                                                 get_color("reset", false)
                                             ));
                                         } else {
@@ -3552,11 +3524,7 @@ fn main() -> Result<()> {
                                                                             "{}\"{}\" {}{}",
                                                                             get_color("yellow", false),
                                                                             rec.pattern(),
-                                                                            if lang == Language::Japanese {
-                                                                                "を除外リストに追加しますか？"
-                                                                            } else {
-                                                                                "to exclude list?"
-                                                                            },
+                                                                            get_message(MessageKey::AddToExcludeListPrompt, lang),
                                                                             get_color("reset", false)
                                                                         );
 
@@ -3571,13 +3539,7 @@ fn main() -> Result<()> {
                                                                         "{}\"{}\" {}{}",
                                                                         get_color("yellow", false),
                                                                         rec.pattern(),
-                                                                        if lang
-                                                                            == Language::Japanese
-                                                                        {
-                                                                            "を除外リストに追加しますか？"
-                                                                        } else {
-                                                                            "to exclude list?"
-                                                                        },
+                                                                        get_message(MessageKey::AddToExcludeListPrompt, lang),
                                                                         get_color("reset", false)
                                                                     );
 
@@ -3612,23 +3574,25 @@ fn main() -> Result<()> {
                                         let should_continue = if let Some(ref pb) = pb {
                                             pb.suspend(|| {
                                                 use dialoguer::Confirm;
-                                                let prompt = if lang == Language::Japanese {
-                                                    format!(
-                                                        "{}Smart推奨: {:?} (優先度: {:?}) を追加しますか？{}",
-                                                        get_color("yellow", false),
-                                                        target_path,
-                                                        *result.priority(),
-                                                        get_color("reset", false)
+                                                let prompt = format!(
+                                                    "{}{}{}",
+                                                    get_color("yellow", false),
+                                                    get_message(
+                                                        MessageKey::SmartRecommendsAddPrompt,
+                                                        lang
                                                     )
-                                                } else {
-                                                    format!(
-                                                        "{}Smart recommends: Add {:?} (priority: {:?})?{}",
-                                                        get_color("yellow", false),
-                                                        target_path,
-                                                        *result.priority(),
-                                                        get_color("reset", false)
+                                                    .replacen(
+                                                        "{:?}",
+                                                        &format!("{:?}", target_path),
+                                                        1
                                                     )
-                                                };
+                                                    .replacen(
+                                                        "{:?}",
+                                                        &format!("{:?}", *result.priority()),
+                                                        1
+                                                    ),
+                                                    get_color("reset", false)
+                                                );
 
                                                 Confirm::new()
                                                     .with_prompt(prompt)
@@ -3637,23 +3601,21 @@ fn main() -> Result<()> {
                                             })
                                         } else {
                                             use dialoguer::Confirm;
-                                            let prompt = if lang == Language::Japanese {
-                                                format!(
-                                                    "{}Smart推奨: {:?} (優先度: {:?}) を追加しますか？{}",
-                                                    get_color("yellow", false),
-                                                    target_path,
-                                                    *result.priority(),
-                                                    get_color("reset", false)
+                                            let prompt = format!(
+                                                "{}{}{}",
+                                                get_color("yellow", false),
+                                                get_message(
+                                                    MessageKey::SmartRecommendsAddPrompt,
+                                                    lang
                                                 )
-                                            } else {
-                                                format!(
-                                                    "{}Smart recommends: Add {:?} (priority: {:?})?{}",
-                                                    get_color("yellow", false),
-                                                    target_path,
-                                                    *result.priority(),
-                                                    get_color("reset", false)
-                                                )
-                                            };
+                                                .replacen("{:?}", &format!("{:?}", target_path), 1)
+                                                .replacen(
+                                                    "{:?}",
+                                                    &format!("{:?}", *result.priority()),
+                                                    1
+                                                ),
+                                                get_color("reset", false)
+                                            );
 
                                             Confirm::new().with_prompt(prompt).interact()?
                                         };
@@ -3668,11 +3630,7 @@ fn main() -> Result<()> {
                                         output_buffer.push(format!(
                                             "      {}📝 {}: {}{}",
                                             get_color("gray", false),
-                                            if lang == Language::Japanese {
-                                                "除外パターン"
-                                            } else {
-                                                "Exclude patterns"
-                                            },
+                                            get_message(MessageKey::ExcludePatternsLabel, lang),
                                             exclude_patterns.join(", "),
                                             get_color("reset", false)
                                         ));
@@ -3712,11 +3670,7 @@ fn main() -> Result<()> {
                                     output_buffer.push(format!(
                                         "      {}⚠️  {}: {}{}",
                                         get_color("yellow", false),
-                                        if lang == Language::Japanese {
-                                            "分析失敗"
-                                        } else {
-                                            "Analysis failed"
-                                        },
+                                        get_message(MessageKey::AnalysisFailedLabel, lang),
                                         e,
                                         get_color("reset", false)
                                     ));
