@@ -31,19 +31,28 @@ use tempfile::TempDir;
 
 /// モックバックアップ履歴を作成
 fn create_mock_history(size: u64, success: bool) -> BackupHistory {
-    BackupHistory::new(PathBuf::from("/tmp/backup"), 100, size, success)
+    BackupHistory::new(
+        PathBuf::from("/tmp/backup"),
+        100,
+        size,
+        success,
+        false,
+        false,
+    )
 }
 
 /// タイムスタンプ付きモック履歴を作成
 fn create_mock_history_with_timestamp(size: u64, days_ago: i64) -> BackupHistory {
-    let mut history = BackupHistory::new(PathBuf::from("/tmp/backup"), 100, size, true);
+    let mut history =
+        BackupHistory::new(PathBuf::from("/tmp/backup"), 100, size, true, false, false);
     history.timestamp = Utc::now() - Duration::days(days_ago);
     history
 }
 
 /// 失敗履歴を作成
 fn create_failed_history(error_msg: &str) -> BackupHistory {
-    let mut history = BackupHistory::new(PathBuf::from("/tmp/backup"), 100, 1000, false);
+    let mut history =
+        BackupHistory::new(PathBuf::from("/tmp/backup"), 100, 1000, false, false, false);
     history.error_message = Some(error_msg.to_string());
     history
 }

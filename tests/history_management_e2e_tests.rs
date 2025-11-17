@@ -129,7 +129,14 @@ fn test_e2e_backup_history_tracking() -> Result<()> {
     // 履歴エントリ1を作成して保存
     let backup_dir1 = backup.join(&result1.backup_name);
     let size1 = calculate_backup_size(&backup_dir1)?;
-    let mut history1 = BackupHistory::new(backup_dir1.clone(), result1.total_files, size1, true);
+    let mut history1 = BackupHistory::new(
+        backup_dir1.clone(),
+        result1.total_files,
+        size1,
+        true,
+        false,
+        false,
+    );
     history1.category = Some("test_tracking_v1".to_string());
     history1.priority = Some(Priority::High);
     // Note: compressed/encrypted flags are set by the runner, not manually
@@ -158,7 +165,14 @@ fn test_e2e_backup_history_tracking() -> Result<()> {
 
     let backup_dir2 = backup.join(&result2.backup_name);
     let size2 = calculate_backup_size(&backup_dir2)?;
-    let mut history2 = BackupHistory::new(backup_dir2.clone(), result2.total_files, size2, true);
+    let mut history2 = BackupHistory::new(
+        backup_dir2.clone(),
+        result2.total_files,
+        size2,
+        true,
+        false,
+        false,
+    );
     history2.category = Some("test_tracking_v2".to_string());
     history2.priority = Some(Priority::Medium);
     BackupHistory::save(&history2)?;
@@ -187,7 +201,14 @@ fn test_e2e_backup_history_tracking() -> Result<()> {
 
     let backup_dir3 = backup.join(&result3.backup_name);
     let size3 = calculate_backup_size(&backup_dir3)?;
-    let mut history3 = BackupHistory::new(backup_dir3.clone(), result3.total_files, size3, true);
+    let mut history3 = BackupHistory::new(
+        backup_dir3.clone(),
+        result3.total_files,
+        size3,
+        true,
+        false,
+        false,
+    );
     history3.category = Some("test_tracking_v3".to_string());
     history3.priority = Some(Priority::Low);
     BackupHistory::save(&history3)?;
@@ -290,8 +311,14 @@ fn test_e2e_list_backups_chronological() -> Result<()> {
     let result_high = runner_high.run(None, None)?;
     let backup_dir_high = backup.join(&result_high.backup_name);
     let size_high = calculate_backup_size(&backup_dir_high)?;
-    let mut history_high =
-        BackupHistory::new(backup_dir_high, result_high.total_files, size_high, true);
+    let mut history_high = BackupHistory::new(
+        backup_dir_high,
+        result_high.total_files,
+        size_high,
+        true,
+        false,
+        false,
+    );
     history_high.priority = Some(Priority::High);
     BackupHistory::save(&history_high)?;
 
@@ -318,6 +345,8 @@ fn test_e2e_list_backups_chronological() -> Result<()> {
         result_medium.total_files,
         size_medium,
         true,
+        false,
+        false,
     );
     history_medium.priority = Some(Priority::Medium);
     BackupHistory::save(&history_medium)?;
@@ -340,8 +369,14 @@ fn test_e2e_list_backups_chronological() -> Result<()> {
     let result_low = runner_low.run(None, None)?;
     let backup_dir_low = backup.join(&result_low.backup_name);
     let size_low = calculate_backup_size(&backup_dir_low)?;
-    let mut history_low =
-        BackupHistory::new(backup_dir_low, result_low.total_files, size_low, true);
+    let mut history_low = BackupHistory::new(
+        backup_dir_low,
+        result_low.total_files,
+        size_low,
+        true,
+        false,
+        false,
+    );
     history_low.priority = Some(Priority::Low);
     BackupHistory::save(&history_low)?;
 
@@ -410,7 +445,7 @@ fn test_e2e_delete_old_backups() -> Result<()> {
         let result = runner.run(None, None)?;
         let backup_dir = backup.join(&result.backup_name);
         let size = calculate_backup_size(&backup_dir)?;
-        let history = BackupHistory::new(backup_dir, result.total_files, size, true);
+        let history = BackupHistory::new(backup_dir, result.total_files, size, true, false, false);
         BackupHistory::save(&history)?;
 
         if i < 5 {
@@ -492,6 +527,8 @@ fn test_e2e_filter_by_days() -> Result<()> {
         10,
         1000,
         true,
+        false,
+        false,
     );
     entry_7days.timestamp = now - Duration::days(7);
     entry_7days.category = Some("test_filter_days_7".to_string());
@@ -505,6 +542,8 @@ fn test_e2e_filter_by_days() -> Result<()> {
         15,
         1500,
         true,
+        false,
+        false,
     );
     entry_3days.timestamp = now - Duration::days(3);
     entry_3days.category = Some("test_filter_days_3".to_string());
@@ -518,6 +557,8 @@ fn test_e2e_filter_by_days() -> Result<()> {
         20,
         2000,
         true,
+        false,
+        false,
     );
     entry_1day.timestamp = now - Duration::days(1);
     entry_1day.category = Some("test_filter_days_1".to_string());
@@ -582,6 +623,8 @@ fn test_e2e_filter_by_category_detailed() -> Result<()> {
             10,
             1000,
             true,
+            false,
+            false,
         );
         let mut entry_with_category = entry;
         entry_with_category.category = Some(format!("test_category_{}", category));
@@ -649,6 +692,8 @@ fn test_e2e_get_recent_entries() -> Result<()> {
             i * 10,
             (i * 100) as u64,
             true,
+            false,
+            false,
         );
         let mut entry_with_category = entry;
         entry_with_category.category = Some(format!("test_recent_{}", i));
@@ -794,6 +839,8 @@ fn test_e2e_backup_status_variants() -> Result<()> {
         100,
         10000,
         true,
+        false,
+        false,
     );
     entry_success.category = Some("test_status_success".to_string());
     BackupHistory::save(&entry_success)?;
@@ -801,8 +848,14 @@ fn test_e2e_backup_status_variants() -> Result<()> {
     std::thread::sleep(std::time::Duration::from_millis(100));
 
     // Failed ステータス
-    let mut entry_failed =
-        BackupHistory::new(std::path::PathBuf::from("/test/backup_failed"), 0, 0, false);
+    let mut entry_failed = BackupHistory::new(
+        std::path::PathBuf::from("/test/backup_failed"),
+        0,
+        0,
+        false,
+        false,
+        false,
+    );
     entry_failed.status = BackupStatus::Failed;
     entry_failed.error_message = Some("Test error: disk full".to_string());
     entry_failed.category = Some("test_status_failed".to_string());
@@ -816,6 +869,8 @@ fn test_e2e_backup_status_variants() -> Result<()> {
         50,
         5000,
         true,
+        false,
+        false,
     );
     entry_partial.status = BackupStatus::Partial;
     entry_partial.error_message = Some("Test warning: some files skipped".to_string());
@@ -925,6 +980,8 @@ fn test_e2e_history_limit_100() -> Result<()> {
             i,
             (i * 100) as u64,
             true,
+            false,
+            false,
         );
         BackupHistory::save(&entry)?;
     }
