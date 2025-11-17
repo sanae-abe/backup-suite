@@ -2356,11 +2356,7 @@ fn main() -> Result<()> {
 
             // 総対象数
             table.add_row(vec![
-                Cell::new(if lang == Language::Japanese {
-                    "総対象数"
-                } else {
-                    "Total Targets"
-                }),
+                Cell::new(get_message(MessageKey::TotalTargetsLabel, lang)),
                 Cell::new(total_targets.to_string())
                     .fg(Color::Cyan)
                     .set_alignment(CellAlignment::Right),
@@ -2368,11 +2364,7 @@ fn main() -> Result<()> {
 
             // 高優先度
             table.add_row(vec![
-                Cell::new(if lang == Language::Japanese {
-                    "  高優先度"
-                } else {
-                    "  High Priority"
-                }),
+                Cell::new(format!("  {}", get_message(MessageKey::HighPriority, lang))),
                 Cell::new(high_count.to_string())
                     .fg(Color::Red)
                     .set_alignment(CellAlignment::Right),
@@ -2380,11 +2372,10 @@ fn main() -> Result<()> {
 
             // 中優先度
             table.add_row(vec![
-                Cell::new(if lang == Language::Japanese {
-                    "  中優先度"
-                } else {
-                    "  Medium Priority"
-                }),
+                Cell::new(format!(
+                    "  {}",
+                    get_message(MessageKey::MediumPriority, lang)
+                )),
                 Cell::new(medium_count.to_string())
                     .fg(Color::Yellow)
                     .set_alignment(CellAlignment::Right),
@@ -2392,11 +2383,7 @@ fn main() -> Result<()> {
 
             // 低優先度
             table.add_row(vec![
-                Cell::new(if lang == Language::Japanese {
-                    "  低優先度"
-                } else {
-                    "  Low Priority"
-                }),
+                Cell::new(format!("  {}", get_message(MessageKey::LowPriority, lang))),
                 Cell::new(low_count.to_string())
                     .fg(Color::Cyan)
                     .set_alignment(CellAlignment::Right),
@@ -2594,11 +2581,7 @@ fn main() -> Result<()> {
                 ScheduleAction::Status => {
                     println!(
                         "\n\x1b[1m📅 {}\x1b[0m\n",
-                        if lang == Language::Japanese {
-                            "スケジュール"
-                        } else {
-                            "Schedule"
-                        }
+                        get_message(MessageKey::ScheduleHeaderLabel, lang)
                     );
 
                     // frequency値を事前に抽出（Scheduler::new()でconfigがmoveされる前）
@@ -2609,28 +2592,16 @@ fn main() -> Result<()> {
                     // 設定状態を表外に表示（チェックマーク位置修正: ✅を先に）
                     println!(
                         "{}: {} {}\n",
-                        if lang == Language::Japanese {
-                            "設定"
-                        } else {
-                            "Configuration"
-                        },
+                        get_message(MessageKey::ConfigurationLabel, lang),
                         if config.schedule.enabled {
                             "✅"
                         } else {
                             "❌"
                         },
                         if config.schedule.enabled {
-                            if lang == Language::Japanese {
-                                "有効"
-                            } else {
-                                "Enabled"
-                            }
+                            get_message(MessageKey::EnabledLabel, lang)
                         } else {
-                            if lang == Language::Japanese {
-                                "無効"
-                            } else {
-                                "Disabled"
-                            }
+                            get_message(MessageKey::Disabled, lang)
                         }
                     );
 
@@ -2965,18 +2936,9 @@ fn main() -> Result<()> {
                         get_message(MessageKey::SmartDetectTitle, lang)
                     );
                     println!(
-                        "{}{}{}...\n",
-                        if lang == Language::Japanese {
-                            "過去"
-                        } else {
-                            "Analyzing last"
-                        },
-                        days,
-                        if lang == Language::Japanese {
-                            "日間のバックアップを分析中"
-                        } else {
-                            " days of backups"
-                        }
+                        "{}...\n",
+                        get_message(MessageKey::SmartDetectAnalyzing, lang)
+                            .replace("{}", &days.to_string())
                     );
 
                     let detector = AnomalyDetector::default_detector();
@@ -3007,29 +2969,20 @@ fn main() -> Result<()> {
                                 println!("  Z-score: {:.2}", result.z_score());
                                 println!(
                                     "  {}: {:.1}%",
-                                    if lang == Language::Japanese {
-                                        "信頼度"
-                                    } else {
-                                        "Confidence"
-                                    },
+                                    get_message(MessageKey::SmartDetectConfidenceLabel, lang),
                                     result.confidence().get() * 100.0
                                 );
                                 println!(
                                     "  {}: {}",
-                                    if lang == Language::Japanese {
-                                        "説明"
-                                    } else {
-                                        "Description"
-                                    },
+                                    get_message(MessageKey::SmartDetectDescriptionLabel, lang),
                                     result.description()
                                 );
                                 println!(
                                     "  {}: {}",
-                                    if lang == Language::Japanese {
-                                        "推奨アクション"
-                                    } else {
-                                        "Recommended Action"
-                                    },
+                                    get_message(
+                                        MessageKey::SmartDetectRecommendedActionLabel,
+                                        lang
+                                    ),
                                     result.recommended_action().unwrap_or("None")
                                 );
                             }

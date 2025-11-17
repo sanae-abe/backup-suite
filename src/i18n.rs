@@ -480,6 +480,7 @@ pub enum MessageKey {
 
     // Schedule table headers
     ScheduleHeaderLabel,
+    ConfigurationLabel,
 
     // Dashboard sections
     StatisticsTitle,
@@ -573,6 +574,12 @@ pub enum MessageKey {
     ExcludeReasonMacOsMetadata,
     ExcludeReasonWindowsThumb,
     ExcludeReasonWindowsDesktop,
+
+    // Smart Detect labels
+    SmartDetectConfidenceLabel,
+    SmartDetectDescriptionLabel,
+    SmartDetectRecommendedActionLabel,
+    SmartDetectAnalyzing,
 
     // Password strength messages
     PasswordStrengthLabel,
@@ -1052,6 +1059,7 @@ impl MessageKey {
 
             // Schedule table headers
             MessageKey::ScheduleHeaderLabel => "Schedule",
+            MessageKey::ConfigurationLabel => "Configuration",
 
             // Relative time messages
             MessageKey::DaysAgo => "{} days ago",
@@ -1130,6 +1138,12 @@ impl MessageKey {
             MessageKey::ExcludeReasonWindowsDesktop => {
                 "Windows desktop settings file (auto-generated)"
             }
+
+            // Smart Detect labels
+            MessageKey::SmartDetectConfidenceLabel => "Confidence",
+            MessageKey::SmartDetectDescriptionLabel => "Description",
+            MessageKey::SmartDetectRecommendedActionLabel => "Recommended Action",
+            MessageKey::SmartDetectAnalyzing => "Analyzing last {} days of backups",
 
             // Password strength messages
             MessageKey::PasswordStrengthLabel => "Password Strength:",
@@ -1584,6 +1598,7 @@ impl MessageKey {
 
             // Schedule table headers
             MessageKey::ScheduleHeaderLabel => "スケジュール",
+            MessageKey::ConfigurationLabel => "設定",
 
             // Relative time messages
             MessageKey::DaysAgo => "{}日前",
@@ -1642,6 +1657,12 @@ impl MessageKey {
             MessageKey::ExcludeReasonMacOsMetadata => "macOSメタデータファイル（自動生成）",
             MessageKey::ExcludeReasonWindowsThumb => "Windowsサムネイルキャッシュ（自動生成）",
             MessageKey::ExcludeReasonWindowsDesktop => "Windowsデスクトップ設定ファイル（自動生成）",
+
+            // Smart Detect labels
+            MessageKey::SmartDetectConfidenceLabel => "信頼度",
+            MessageKey::SmartDetectDescriptionLabel => "説明",
+            MessageKey::SmartDetectRecommendedActionLabel => "推奨アクション",
+            MessageKey::SmartDetectAnalyzing => "過去{}日間のバックアップを分析中",
 
             // Password strength messages
             MessageKey::PasswordStrengthLabel => "パスワード強度:",
@@ -1883,6 +1904,7 @@ impl MessageKey {
 
             // Schedule table headers
             MessageKey::ScheduleHeaderLabel => "计划",
+            MessageKey::ConfigurationLabel => "配置",
 
             // Relative time messages
             MessageKey::DaysAgo => "{}天前",
@@ -1943,6 +1965,12 @@ impl MessageKey {
             MessageKey::ExcludeReasonMacOsMetadata => "macOS元数据文件（自动生成）",
             MessageKey::ExcludeReasonWindowsThumb => "Windows缩略图缓存（自动生成）",
             MessageKey::ExcludeReasonWindowsDesktop => "Windows桌面设置文件（自动生成）",
+
+            // Smart Detect labels
+            MessageKey::SmartDetectConfidenceLabel => "信心度",
+            MessageKey::SmartDetectDescriptionLabel => "描述",
+            MessageKey::SmartDetectRecommendedActionLabel => "推荐操作",
+            MessageKey::SmartDetectAnalyzing => "分析过去{}天的备份",
 
             // Password strength messages
             MessageKey::PasswordStrengthLabel => "密码强度:",
@@ -2215,6 +2243,7 @@ impl MessageKey {
 
             // Schedule table headers
             MessageKey::ScheduleHeaderLabel => "計劃",
+            MessageKey::ConfigurationLabel => "配置",
 
             // Relative time messages
             MessageKey::DaysAgo => "{}天前",
@@ -2275,6 +2304,12 @@ impl MessageKey {
             MessageKey::ExcludeReasonMacOsMetadata => "macOS元數據檔案（自動生成）",
             MessageKey::ExcludeReasonWindowsThumb => "Windows縮圖快取（自動生成）",
             MessageKey::ExcludeReasonWindowsDesktop => "Windows桌面設定檔案（自動生成）",
+
+            // Smart Detect labels
+            MessageKey::SmartDetectConfidenceLabel => "信心度",
+            MessageKey::SmartDetectDescriptionLabel => "描述",
+            MessageKey::SmartDetectRecommendedActionLabel => "推薦操作",
+            MessageKey::SmartDetectAnalyzing => "分析過去{}天的備份",
 
             // Password strength messages
             MessageKey::PasswordStrengthLabel => "密碼強度:",
