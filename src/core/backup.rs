@@ -536,7 +536,7 @@ impl BackupRunner {
                     .replace("{}", &total_files.to_string())
             );
             for (_source, _dest) in &files_to_backup {
-                println!("  _source.display() → _dest.display()");
+                println!("  {} → {}", _source.display(), _dest.display());
             }
             return Ok(BackupResult {
                 total_files,
