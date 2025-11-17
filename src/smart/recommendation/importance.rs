@@ -3,6 +3,7 @@
 //! ルールベーススコアリングによるファイル重要度の自動判定を提供します。
 
 use crate::core::Priority;
+use crate::i18n::{get_message, Language, MessageKey};
 use crate::security::path::validate_path_safety;
 use crate::smart::error::{SmartError, SmartResult};
 use crate::smart::types::FileImportance;
@@ -195,12 +196,19 @@ impl ImportanceRule {
 pub struct ImportanceEvaluator {
     rules: Vec<ImportanceRule>,
     cache: Mutex<HashMap<PathBuf, FileImportance>>,
+    lang: Language,
 }
 
 impl ImportanceEvaluator {
-    /// 新しい評価エンジンを作成
+    /// 新しい評価エンジンを作成（言語自動検出）
     #[must_use]
     pub fn new() -> Self {
+        Self::with_language(Language::detect())
+    }
+
+    /// 言語指定で評価エンジンを作成
+    #[must_use]
+    pub fn with_language(lang: Language) -> Self {
         let rules = vec![
             // 高重要度ファイル（80-100点）
             ImportanceRule::new(
@@ -334,6 +342,7 @@ impl ImportanceEvaluator {
         Self {
             rules,
             cache: Mutex::new(HashMap::new()),
+            lang,
         }
     }
 
@@ -513,11 +522,9 @@ impl ImportanceEvaluator {
                     path.to_path_buf(),
                     importance,
                     Priority::High,
-                    "セキュリティ設定".to_string(),
-                    format!(
-                        "認証情報・秘密鍵（{}ディレクトリ、暗号化必須、スコア: 95）",
-                        dir_name
-                    ),
+                    get_message(MessageKey::SmartCategoryDirectory, self.lang).to_string(),
+                    get_message(MessageKey::SmartReasonSecurityDir, self.lang)
+                        .replace("{}", dir_name),
                 ));
             }
         }
@@ -533,16 +540,14 @@ impl ImportanceEvaluator {
                 path.to_path_buf(),
                 importance,
                 Priority::Low,
-                "低優先度ディレクトリ".to_string(),
-                format!(
-                    "キャッシュ/ログ/アーカイブ等 (ディレクトリ: {}, スコア: 20)",
-                    dir_name
-                ),
+                get_message(MessageKey::SmartCategoryLowPriority, self.lang).to_string(),
+                get_message(MessageKey::SmartReasonLowPriorityDir, self.lang)
+                    .replace("{}", dir_name),
             ));
         }
 
         let mut score = 30u8; // デフォルトスコア
-        let mut category = "ディレクトリ".to_string();
+        let mut category = get_message(MessageKey::SmartCategoryDirectory, self.lang).to_string();
 
         // プロジェクトマーカーファイルを検出
         let has_package_json = path.join("package.json").exists();
@@ -555,19 +560,20 @@ impl ImportanceEvaluator {
         // プロジェクトタイプ判定
         if has_cargo_toml {
             score = 95;
-            category = "Rustプロジェクト".to_string();
+            category = get_message(MessageKey::SmartCategoryRustProject, self.lang).to_string();
         } else if has_package_json {
             score = 95;
-            category = "Node.jsプロジェクト".to_string();
+            category = get_message(MessageKey::SmartCategoryNodeJsProject, self.lang).to_string();
         } else if has_requirements_txt {
             score = 90;
-            category = "Pythonプロジェクト".to_string();
+            category = get_message(MessageKey::SmartCategoryPythonProject, self.lang).to_string();
         } else if has_src {
             score = 85;
-            category = "ソースコードプロジェクト".to_string();
+            category =
+                get_message(MessageKey::SmartCategorySourceCodeProject, self.lang).to_string();
         } else if has_git {
             score = 75;
-            category = "Git管理ディレクトリ".to_string();
+            category = get_message(MessageKey::SmartCategoryGitManaged, self.lang).to_string();
         }
 
         // ディレクトリ内のファイルをサンプリングして評価
@@ -628,12 +634,22 @@ impl ImportanceEvaluator {
         };
 
         let reason = if file_count > 0 {
+            let template = get_message(MessageKey::SmartReasonSampling, self.lang);
             format!(
-                "{} (サンプリング: {}ファイル, 高重要度: {}件, スコア: {})",
-                category, file_count, high_importance_count, score
+                "{} {}",
+                category,
+                template
+                    .replace("{}", &file_count.to_string())
+                    .replacen("{}", &high_importance_count.to_string(), 1)
+                    .replacen("{}", &score.to_string(), 1)
             )
         } else {
-            format!("{} (スコア: {})", category, score)
+            format!(
+                "{} {}",
+                category,
+                get_message(MessageKey::SmartReasonScore, self.lang)
+                    .replace("{}", &score.to_string())
+            )
         };
 
         Ok(FileImportanceResult::new(

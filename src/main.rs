@@ -1635,6 +1635,7 @@ fn main() -> Result<()> {
             display_targets(
                 &targets.iter().map(|&t| t.clone()).collect::<Vec<_>>(),
                 &theme,
+                lang,
             );
         }
         Some(Commands::Remove { path, interactive }) => {
@@ -1693,7 +1694,8 @@ fn main() -> Result<()> {
                 .file_name()
                 .and_then(|n| n.to_str())
                 .unwrap_or("(不明)");
-            let prompt = format!("本当に {} をバックアップ対象から削除しますか？", file_name);
+            let prompt =
+                get_message(MessageKey::ConfirmRemoveTarget, lang).replace("{}", file_name);
 
             if !Confirm::new()
                 .with_prompt(prompt)
@@ -1701,8 +1703,9 @@ fn main() -> Result<()> {
                 .interact()?
             {
                 println!(
-                    "{}キャンセルしました{}",
+                    "{}{}{}",
                     get_color("yellow", false),
+                    get_message(MessageKey::SelectionCancelled, lang),
                     get_color("reset", false)
                 );
                 return Ok(());
@@ -1753,18 +1756,35 @@ fn main() -> Result<()> {
             if config.update_target(&normalized_path, priority, category, exclude_opt) {
                 config.save()?;
                 println!(
-                    "{}✅ バックアップ対象を更新しました{}",
+                    "{}✅ {}{}",
                     get_color("green", false),
+                    get_message(MessageKey::UpdatedTarget, lang),
                     get_color("reset", false)
                 );
 
                 // 更新内容を表示
                 if let Some(target) = config.targets.iter().find(|t| t.path == normalized_path) {
-                    println!("  パス: {:?}", target.path);
-                    println!("  優先度: {:?}", target.priority);
-                    println!("  カテゴリ: {}", target.category);
+                    println!(
+                        "  {}: {:?}",
+                        get_message(MessageKey::PathLabel, lang),
+                        target.path
+                    );
+                    println!(
+                        "  {}: {:?}",
+                        get_message(MessageKey::PriorityLabel, lang),
+                        target.priority
+                    );
+                    println!(
+                        "  {}: {}",
+                        get_message(MessageKey::CategoryLabel, lang),
+                        target.category
+                    );
                     if !target.exclude_patterns.is_empty() {
-                        println!("  除外パターン: {}", target.exclude_patterns.join(", "));
+                        println!(
+                            "  {}: {}",
+                            get_message(MessageKey::ExcludePatternsLabel, lang),
+                            target.exclude_patterns.join(", ")
+                        );
                     }
                 }
             } else {
@@ -1793,8 +1813,9 @@ fn main() -> Result<()> {
                     .interact()?
                 {
                     println!(
-                        "{}キャンセルしました{}",
+                        "{}{}{}",
                         get_color("yellow", false),
+                        get_message(MessageKey::SelectionCancelled, lang),
                         get_color("reset", false)
                     );
                     return Ok(());
@@ -2009,6 +2030,9 @@ fn main() -> Result<()> {
                 runner = runner.with_encryption(pwd);
             }
 
+            // 言語設定
+            runner = runner.with_language(lang);
+
             let result = runner.run(priority.as_ref(), category.as_deref())?;
 
             if !dry_run {
@@ -2018,6 +2042,7 @@ fn main() -> Result<()> {
                     result.failed,
                     result.total_bytes,
                     &theme,
+                    lang,
                 );
 
                 if !result.errors.is_empty() {
@@ -2195,8 +2220,9 @@ fn main() -> Result<()> {
 
                 if !should_proceed {
                     println!(
-                        "{}キャンセルしました{}",
+                        "{}{}{}",
                         get_color("yellow", false),
+                        get_message(MessageKey::SelectionCancelled, lang),
                         get_color("reset", false)
                     );
                     return Ok(());
@@ -2326,27 +2352,59 @@ fn main() -> Result<()> {
                         get_message(MessageKey::StatusTitle, lang),
                         entry.timestamp.format("%Y-%m-%d %H:%M:%S")
                     );
-                    println!("📁 パス: {:?}", entry.backup_dir);
+                    println!(
+                        "📁 {}: {:?}",
+                        get_message(MessageKey::PathHistoryLabel, lang),
+                        entry.backup_dir
+                    );
                     if let Some(ref cat) = entry.category {
-                        println!("🏷️  カテゴリ: {cat}");
+                        println!(
+                            "🏷️  {}: {cat}",
+                            get_message(MessageKey::CategoryLabel, lang)
+                        );
                     }
                     if let Some(ref prio) = entry.priority {
-                        println!("⚡ 優先度: {prio:?}");
+                        println!(
+                            "⚡ {}: {prio:?}",
+                            get_message(MessageKey::PriorityLabel, lang)
+                        );
                     }
-                    println!("📊 ステータス: {:?}", entry.status);
-                    println!("📦 ファイル数: {}", entry.total_files);
                     println!(
-                        "💾 サイズ: {:.2} MB",
+                        "📊 {}: {:?}",
+                        get_message(MessageKey::StatusHistoryLabel, lang),
+                        entry.status
+                    );
+                    println!(
+                        "📦 {}: {}",
+                        get_message(MessageKey::FilesHistoryLabel, lang),
+                        entry.total_files
+                    );
+                    println!(
+                        "💾 {}: {:.2} MB",
+                        get_message(MessageKey::SizeLabel, lang),
                         entry.total_bytes as f64 / 1024.0 / 1024.0
                     );
                     if entry.compressed {
-                        println!("🗜️  圧縮: 有効");
+                        println!(
+                            "🗜️  {}: {}",
+                            get_message(MessageKey::CompressionLabel, lang),
+                            get_message(MessageKey::EnabledLabel, lang)
+                        );
                     }
                     if entry.encrypted {
-                        println!("🔒 暗号化: 有効");
+                        println!(
+                            "🔒 {}: {}",
+                            get_message(MessageKey::EncryptionLabel, lang),
+                            get_message(MessageKey::EnabledLabel, lang)
+                        );
                     }
                     if entry.duration_ms > 0 {
-                        println!("⏱️  処理時間: {:.2}秒", entry.duration_ms as f64 / 1000.0);
+                        println!(
+                            "⏱️  {}: {:.2}{}",
+                            get_message(MessageKey::DurationLabel, lang),
+                            entry.duration_ms as f64 / 1000.0,
+                            get_message(MessageKey::SecondsUnit, lang)
+                        );
                     }
                     if let Some(ref err) = entry.error_message {
                         println!(
@@ -2359,11 +2417,11 @@ fn main() -> Result<()> {
                 }
             } else {
                 // テーブル表示
-                display_history(&history, &theme);
+                display_history(&history, &theme, lang);
             }
         }
         Some(Commands::Dashboard) => {
-            display_dashboard()?;
+            display_dashboard(lang)?;
         }
         Some(Commands::Open) => {
             let config = Config::load()?;
@@ -2766,7 +2824,7 @@ fn main() -> Result<()> {
                 ExcludeRecommendationEngine, ImportanceEvaluator,
             };
             use backup_suite::smart::types::BackupSize;
-            use comfy_table::{Cell, Table};
+            use comfy_table::{presets::UTF8_FULL, Cell, CellAlignment, ContentArrangement, Table};
 
             match action {
                 SmartAction::Detect { days, format } => {
@@ -3030,7 +3088,7 @@ fn main() -> Result<()> {
                         normalized_path
                     );
 
-                    let evaluator = ImportanceEvaluator::default();
+                    let evaluator = ImportanceEvaluator::with_language(lang);
                     match evaluator.evaluate(&normalized_path) {
                         Ok(result) => {
                             if detailed {
@@ -3194,7 +3252,7 @@ fn main() -> Result<()> {
                         normalized_path
                     );
 
-                    let engine = ExcludeRecommendationEngine::default();
+                    let engine = ExcludeRecommendationEngine::with_language(lang);
                     match engine.suggest_exclude_patterns(&normalized_path) {
                         Ok(recommendations) => {
                             let filtered: Vec<_> = recommendations
@@ -3215,36 +3273,47 @@ fn main() -> Result<()> {
                                 );
                             } else {
                                 let mut table = Table::new();
-                                table.set_header(vec![
-                                    if lang == Language::Japanese {
-                                        "パターン"
-                                    } else {
-                                        "Pattern"
-                                    },
-                                    if lang == Language::Japanese {
-                                        "信頼度"
-                                    } else {
-                                        "Confidence"
-                                    },
-                                    if lang == Language::Japanese {
-                                        "削減見込(GB)"
-                                    } else {
-                                        "Reduction (GB)"
-                                    },
-                                    if lang == Language::Japanese {
-                                        "理由"
-                                    } else {
-                                        "Reason"
-                                    },
-                                ]);
+                                table
+                                    .load_preset(UTF8_FULL)
+                                    .set_content_arrangement(ContentArrangement::Dynamic)
+                                    .set_header(vec![
+                                        Cell::new(match lang {
+                                            Language::English => "Pattern",
+                                            Language::Japanese => "パターン",
+                                            Language::SimplifiedChinese => "模式",
+                                            Language::TraditionalChinese => "模式",
+                                        }),
+                                        Cell::new(match lang {
+                                            Language::English => "Confidence",
+                                            Language::Japanese => "信頼度",
+                                            Language::SimplifiedChinese => "信心度",
+                                            Language::TraditionalChinese => "信心度",
+                                        })
+                                        .set_alignment(CellAlignment::Right),
+                                        Cell::new(match lang {
+                                            Language::English => "Reduction (GB)",
+                                            Language::Japanese => "削減見込(GB)",
+                                            Language::SimplifiedChinese => "减少 (GB)",
+                                            Language::TraditionalChinese => "減少 (GB)",
+                                        })
+                                        .set_alignment(CellAlignment::Right),
+                                        Cell::new(match lang {
+                                            Language::English => "Reason",
+                                            Language::Japanese => "理由",
+                                            Language::SimplifiedChinese => "原因",
+                                            Language::TraditionalChinese => "原因",
+                                        }),
+                                    ]);
                                 for rec in &filtered {
                                     table.add_row(vec![
                                         Cell::new(rec.pattern()),
                                         Cell::new(format!(
                                             "{:.1}%",
                                             rec.confidence().get() * 100.0
-                                        )),
-                                        Cell::new(format!("{:.2}", rec.size_reduction_gb())),
+                                        ))
+                                        .set_alignment(CellAlignment::Right),
+                                        Cell::new(format!("{:.2}", rec.size_reduction_gb()))
+                                            .set_alignment(CellAlignment::Right),
                                         Cell::new(rec.reason()),
                                     ]);
                                 }
@@ -3392,8 +3461,8 @@ fn main() -> Result<()> {
                         println!();
                     }
 
-                    let evaluator = ImportanceEvaluator::default();
-                    let exclude_engine = ExcludeRecommendationEngine::default();
+                    let evaluator = ImportanceEvaluator::with_language(lang);
+                    let exclude_engine = ExcludeRecommendationEngine::with_language(lang);
                     let mut added_count = 0;
 
                     for path in paths {

@@ -1,18 +1,19 @@
 use super::colors::ColorTheme;
 use crate::core::{BackupHistory, Priority, Target, TargetType};
+use crate::i18n::{get_message, Language, MessageKey};
 /// テーブル表示モジュール
 ///
 /// comfy-tableを使用した美しい表形式の出力
 use comfy_table::{presets::UTF8_FULL, Cell, CellAlignment, Color, ContentArrangement, Table};
 
 /// バックアップ対象一覧をテーブル表示
-pub fn display_targets(targets: &[Target], theme: &ColorTheme) {
+pub fn display_targets(targets: &[Target], theme: &ColorTheme, lang: Language) {
     if targets.is_empty() {
         println!(
             "{}",
             theme
                 .warning()
-                .apply_to("バックアップ対象が登録されていません")
+                .apply_to(get_message(MessageKey::NoTargetsRegistered, lang))
         );
         return;
     }
@@ -23,24 +24,86 @@ pub fn display_targets(targets: &[Target], theme: &ColorTheme) {
         .set_content_arrangement(ContentArrangement::Dynamic)
         .set_header(vec![
             Cell::new("No").set_alignment(CellAlignment::Right),
-            Cell::new("優先度").set_alignment(CellAlignment::Center),
-            Cell::new("種別").set_alignment(CellAlignment::Center),
-            Cell::new("パス"),
-            Cell::new("カテゴリ").set_alignment(CellAlignment::Center),
-            Cell::new("除外パターン").set_alignment(CellAlignment::Right),
-            Cell::new("追加日"),
+            Cell::new(match lang {
+                Language::English => "Priority",
+                Language::Japanese => "優先度",
+                Language::SimplifiedChinese => "优先级",
+                Language::TraditionalChinese => "優先級",
+            })
+            .set_alignment(CellAlignment::Center),
+            Cell::new(match lang {
+                Language::English => "Type",
+                Language::Japanese => "種別",
+                Language::SimplifiedChinese => "类型",
+                Language::TraditionalChinese => "類型",
+            })
+            .set_alignment(CellAlignment::Center),
+            Cell::new(match lang {
+                Language::English => "Path",
+                Language::Japanese => "パス",
+                Language::SimplifiedChinese => "路径",
+                Language::TraditionalChinese => "路徑",
+            }),
+            Cell::new(match lang {
+                Language::English => "Category",
+                Language::Japanese => "カテゴリ",
+                Language::SimplifiedChinese => "类别",
+                Language::TraditionalChinese => "類別",
+            })
+            .set_alignment(CellAlignment::Center),
+            Cell::new(match lang {
+                Language::English => "Excludes",
+                Language::Japanese => "除外パターン",
+                Language::SimplifiedChinese => "排除模式",
+                Language::TraditionalChinese => "排除模式",
+            })
+            .set_alignment(CellAlignment::Right),
+            Cell::new(match lang {
+                Language::English => "Added",
+                Language::Japanese => "追加日",
+                Language::SimplifiedChinese => "添加日期",
+                Language::TraditionalChinese => "新增日期",
+            }),
         ]);
 
     for (idx, target) in targets.iter().enumerate() {
         let priority_cell = match target.priority {
-            Priority::High => Cell::new("高").fg(Color::Red),
-            Priority::Medium => Cell::new("中").fg(Color::Yellow),
-            Priority::Low => Cell::new("低").fg(Color::Cyan),
+            Priority::High => Cell::new(match lang {
+                Language::English => "High",
+                Language::Japanese => "高",
+                Language::SimplifiedChinese => "高",
+                Language::TraditionalChinese => "高",
+            })
+            .fg(Color::Red),
+            Priority::Medium => Cell::new(match lang {
+                Language::English => "Medium",
+                Language::Japanese => "中",
+                Language::SimplifiedChinese => "中",
+                Language::TraditionalChinese => "中",
+            })
+            .fg(Color::Yellow),
+            Priority::Low => Cell::new(match lang {
+                Language::English => "Low",
+                Language::Japanese => "低",
+                Language::SimplifiedChinese => "低",
+                Language::TraditionalChinese => "低",
+            })
+            .fg(Color::Cyan),
         };
 
         let type_cell = match target.target_type {
-            TargetType::File => Cell::new("📄 ファイル"),
-            TargetType::Directory => Cell::new("📁 ディレクトリ"),
+            TargetType::File => Cell::new(match lang {
+                Language::English => "📄 File",
+                Language::Japanese => "📄 ファイル",
+                Language::SimplifiedChinese => "📄 文件",
+                Language::TraditionalChinese => "📄 檔案",
+            }),
+            TargetType::Directory => Cell::new(match lang {
+                Language::English => "📁 Directory",
+                Language::Japanese => "📁 ディレクトリ",
+                Language::SimplifiedChinese => "📁 目录",
+                Language::TraditionalChinese => "📁 目錄",
+            }),
         };
 
         let exclude_count = if target.exclude_patterns.is_empty() {
@@ -62,16 +125,29 @@ pub fn display_targets(targets: &[Target], theme: &ColorTheme) {
         ]);
     }
 
-    println!("\n{}", theme.header().apply_to("📋 バックアップ対象一覧"));
+    println!(
+        "\n{}",
+        theme.header().apply_to(match lang {
+            Language::English => "📋 Backup Targets",
+            Language::Japanese => "📋 バックアップ対象一覧",
+            Language::SimplifiedChinese => "📋 备份目标列表",
+            Language::TraditionalChinese => "📋 備份目標清單",
+        })
+    );
     println!("{table}\n");
 }
 
 /// バックアップ履歴をテーブル表示
-pub fn display_history(history: &[BackupHistory], theme: &ColorTheme) {
+pub fn display_history(history: &[BackupHistory], theme: &ColorTheme, lang: Language) {
     if history.is_empty() {
         println!(
             "{}",
-            theme.warning().apply_to("バックアップ履歴がありません")
+            theme.warning().apply_to(match lang {
+                Language::English => "No backup history",
+                Language::Japanese => "バックアップ履歴がありません",
+                Language::SimplifiedChinese => "没有备份历史",
+                Language::TraditionalChinese => "沒有備份歷史",
+            })
         );
         return;
     }
@@ -82,11 +158,39 @@ pub fn display_history(history: &[BackupHistory], theme: &ColorTheme) {
         .set_content_arrangement(ContentArrangement::Dynamic)
         .set_header(vec![
             Cell::new("No").set_alignment(CellAlignment::Right),
-            Cell::new("日時"),
-            Cell::new("ファイル数").set_alignment(CellAlignment::Right),
-            Cell::new("サイズ").set_alignment(CellAlignment::Right),
-            Cell::new("状態").set_alignment(CellAlignment::Center),
-            Cell::new("バックアップ先"),
+            Cell::new(match lang {
+                Language::English => "Date/Time",
+                Language::Japanese => "日時",
+                Language::SimplifiedChinese => "日期时间",
+                Language::TraditionalChinese => "日期時間",
+            }),
+            Cell::new(match lang {
+                Language::English => "Files",
+                Language::Japanese => "ファイル数",
+                Language::SimplifiedChinese => "文件数",
+                Language::TraditionalChinese => "檔案數",
+            })
+            .set_alignment(CellAlignment::Right),
+            Cell::new(match lang {
+                Language::English => "Size",
+                Language::Japanese => "サイズ",
+                Language::SimplifiedChinese => "大小",
+                Language::TraditionalChinese => "大小",
+            })
+            .set_alignment(CellAlignment::Right),
+            Cell::new(match lang {
+                Language::English => "Status",
+                Language::Japanese => "状態",
+                Language::SimplifiedChinese => "状态",
+                Language::TraditionalChinese => "狀態",
+            })
+            .set_alignment(CellAlignment::Center),
+            Cell::new(match lang {
+                Language::English => "Backup Directory",
+                Language::Japanese => "バックアップ先",
+                Language::SimplifiedChinese => "备份目录",
+                Language::TraditionalChinese => "備份目錄",
+            }),
         ]);
 
     for (idx, entry) in history.iter().enumerate() {
@@ -99,9 +203,21 @@ pub fn display_history(history: &[BackupHistory], theme: &ColorTheme) {
         let size = format_bytes(entry.total_bytes);
 
         let status_cell = if entry.success {
-            Cell::new("✓ 成功").fg(Color::Green)
+            Cell::new(match lang {
+                Language::English => "✓ Success",
+                Language::Japanese => "✓ 成功",
+                Language::SimplifiedChinese => "✓ 成功",
+                Language::TraditionalChinese => "✓ 成功",
+            })
+            .fg(Color::Green)
         } else {
-            Cell::new("✗ 失敗").fg(Color::Red)
+            Cell::new(match lang {
+                Language::English => "✗ Failed",
+                Language::Japanese => "✗ 失敗",
+                Language::SimplifiedChinese => "✗ 失败",
+                Language::TraditionalChinese => "✗ 失敗",
+            })
+            .fg(Color::Red)
         };
 
         table.add_row(vec![
@@ -124,6 +240,7 @@ pub fn display_backup_result(
     failed_files: usize,
     total_bytes: u64,
     theme: &ColorTheme,
+    lang: Language,
 ) {
     let mut table = Table::new();
     table
@@ -131,12 +248,12 @@ pub fn display_backup_result(
         .set_content_arrangement(ContentArrangement::Dynamic);
 
     table.add_row(vec![
-        Cell::new("総ファイル数"),
+        Cell::new(get_message(MessageKey::TotalFilesLabel, lang)),
         Cell::new(total_files.to_string()).set_alignment(CellAlignment::Right),
     ]);
 
     table.add_row(vec![
-        Cell::new("成功"),
+        Cell::new(get_message(MessageKey::SuccessfulLabel, lang)),
         Cell::new(success_files.to_string())
             .fg(Color::Green)
             .set_alignment(CellAlignment::Right),
@@ -144,7 +261,7 @@ pub fn display_backup_result(
 
     if failed_files > 0 {
         table.add_row(vec![
-            Cell::new("失敗"),
+            Cell::new(get_message(MessageKey::FailedLabel, lang)),
             Cell::new(failed_files.to_string())
                 .fg(Color::Red)
                 .set_alignment(CellAlignment::Right),
@@ -152,11 +269,16 @@ pub fn display_backup_result(
     }
 
     table.add_row(vec![
-        Cell::new("合計サイズ"),
+        Cell::new(get_message(MessageKey::TotalSizeLabel, lang)),
         Cell::new(format_bytes(total_bytes)).set_alignment(CellAlignment::Right),
     ]);
 
-    println!("\n\n{}", theme.header().apply_to("📈 バックアップ結果"));
+    println!(
+        "\n\n{}",
+        theme
+            .header()
+            .apply_to(get_message(MessageKey::BackupResultTitle, lang))
+    );
     println!("{table}\n");
 }
 

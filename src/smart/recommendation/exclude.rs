@@ -2,6 +2,7 @@
 //!
 //! 一時ファイル、キャッシュ、再生成可能なファイルを検出して除外を提案します。
 
+use crate::i18n::{get_message, Language, MessageKey};
 use crate::smart::error::{SmartError, SmartResult};
 use crate::smart::types::PredictionConfidence;
 use std::path::{Path, PathBuf};
@@ -110,136 +111,143 @@ struct ExcludePattern {
 #[derive(Debug)]
 pub struct ExcludeRecommendationEngine {
     patterns: Vec<ExcludePattern>,
+    lang: Language,
 }
 
 impl ExcludeRecommendationEngine {
-    /// 新しい除外推奨エンジンを作成
+    /// 新しい除外推奨エンジンを作成（言語自動検出）
     #[must_use]
     pub fn new() -> Self {
+        Self::with_language(Language::detect())
+    }
+
+    /// 言語指定で除外推奨エンジンを作成
+    #[must_use]
+    pub fn with_language(lang: Language) -> Self {
         let patterns = vec![
             // 開発環境の依存関係（高信頼度）
             ExcludePattern {
                 pattern: "node_modules".to_string(),
-                reason: "npm/yarn依存関係（package.jsonから再生成可能）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonNpmDeps, lang).to_string(),
                 confidence: 0.99,
                 is_directory: true,
             },
             ExcludePattern {
                 pattern: "target".to_string(),
-                reason: "Rustビルド成果物（Cargo.tomlから再生成可能）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonRustBuild, lang).to_string(),
                 confidence: 0.99,
                 is_directory: true,
             },
             ExcludePattern {
                 pattern: "vendor".to_string(),
-                reason: "依存関係ベンダリング（再生成可能）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonVendor, lang).to_string(),
                 confidence: 0.95,
                 is_directory: true,
             },
             ExcludePattern {
                 pattern: "__pycache__".to_string(),
-                reason: "Pythonキャッシュ（自動生成）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonPythonCache, lang).to_string(),
                 confidence: 0.99,
                 is_directory: true,
             },
             ExcludePattern {
                 pattern: ".pytest_cache".to_string(),
-                reason: "pytestキャッシュ（自動生成）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonPytestCache, lang).to_string(),
                 confidence: 0.99,
                 is_directory: true,
             },
             ExcludePattern {
                 pattern: "dist".to_string(),
-                reason: "ビルド成果物ディレクトリ（再ビルド可能）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonBuildArtifacts, lang).to_string(),
                 confidence: 0.90,
                 is_directory: true,
             },
             ExcludePattern {
                 pattern: "build".to_string(),
-                reason: "ビルド成果物ディレクトリ（再ビルド可能）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonBuildArtifacts, lang).to_string(),
                 confidence: 0.90,
                 is_directory: true,
             },
             // キャッシュディレクトリ（高信頼度）
             ExcludePattern {
                 pattern: ".cache".to_string(),
-                reason: "キャッシュディレクトリ（一時データ）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonCacheDir, lang).to_string(),
                 confidence: 0.95,
                 is_directory: true,
             },
             ExcludePattern {
                 pattern: "cache".to_string(),
-                reason: "キャッシュディレクトリ（一時データ）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonCacheDir, lang).to_string(),
                 confidence: 0.85,
                 is_directory: true,
             },
             // バージョン管理システム（中信頼度）
             ExcludePattern {
                 pattern: ".git".to_string(),
-                reason: "Gitリポジトリメタデータ（リモートから復元可能）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonGitMetadata, lang).to_string(),
                 confidence: 0.70,
                 is_directory: true,
             },
             ExcludePattern {
                 pattern: ".svn".to_string(),
-                reason: "SVNリポジトリメタデータ（リモートから復元可能）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonSvnMetadata, lang).to_string(),
                 confidence: 0.70,
                 is_directory: true,
             },
             // 一時ファイル（高信頼度）
             ExcludePattern {
                 pattern: r".*\.tmp$".to_string(),
-                reason: "一時ファイル".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonTempFile, lang).to_string(),
                 confidence: 0.99,
                 is_directory: false,
             },
             ExcludePattern {
                 pattern: r".*\.temp$".to_string(),
-                reason: "一時ファイル".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonTempFile, lang).to_string(),
                 confidence: 0.99,
                 is_directory: false,
             },
             ExcludePattern {
                 pattern: r".*\.bak$".to_string(),
-                reason: "バックアップファイル（元ファイルがあれば不要）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonBackupFile, lang).to_string(),
                 confidence: 0.85,
                 is_directory: false,
             },
             ExcludePattern {
                 pattern: r".*~$".to_string(),
-                reason: "エディタ一時ファイル".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonEditorTemp, lang).to_string(),
                 confidence: 0.95,
                 is_directory: false,
             },
             // ログファイル（中信頼度）
             ExcludePattern {
                 pattern: r".*\.log$".to_string(),
-                reason: "ログファイル（古いログは通常不要）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonLogFile, lang).to_string(),
                 confidence: 0.70,
                 is_directory: false,
             },
             // OS固有ファイル（高信頼度）
             ExcludePattern {
                 pattern: ".DS_Store".to_string(),
-                reason: "macOSメタデータファイル（自動生成）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonMacOsMetadata, lang).to_string(),
                 confidence: 0.99,
                 is_directory: false,
             },
             ExcludePattern {
                 pattern: "Thumbs.db".to_string(),
-                reason: "Windowsサムネイルキャッシュ（自動生成）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonWindowsThumb, lang).to_string(),
                 confidence: 0.99,
                 is_directory: false,
             },
             ExcludePattern {
                 pattern: "desktop.ini".to_string(),
-                reason: "Windowsデスクトップ設定ファイル（自動生成）".to_string(),
+                reason: get_message(MessageKey::ExcludeReasonWindowsDesktop, lang).to_string(),
                 confidence: 0.95,
                 is_directory: false,
             },
         ];
 
-        Self { patterns }
+        Self { patterns, lang }
     }
 
     /// 除外パターンを提案

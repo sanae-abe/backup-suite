@@ -417,6 +417,130 @@ pub enum MessageKey {
     StatusTitle,
     DaysUnit,
     DryRunParens,
+
+    // Backup progress and result messages
+    FilesDetected,
+    FullBackupMode,
+    IncrementalBackupMode,
+    BackupComplete,
+    BackupCompleteWithFailures,
+    BackupResultTitle,
+    TotalFilesLabel,
+    SuccessfulLabel,
+    FailedLabel,
+    TotalSizeLabel,
+
+    // Remove/Update command messages
+    ConfirmRemoveTarget,
+    UpdatedTarget,
+    PathLabel,
+    PriorityLabel,
+    CategoryLabel,
+    ExcludePatternsLabel,
+
+    // History detailed view
+    PathHistoryLabel,
+    StatusHistoryLabel,
+    FilesHistoryLabel,
+    SizeLabel,
+    CompressionLabel,
+    EncryptionLabel,
+    DurationLabel,
+    EnabledLabel,
+    SecondsUnit,
+
+    // Dashboard sections
+    StatisticsTitle,
+    DiskUsageTitle,
+    AllNormalStatus,
+    WarningsTitle,
+
+    // Dashboard statistics labels
+    TotalTargetsLabel,
+    HighPriorityTargetsLabel,
+    MediumPriorityTargetsLabel,
+    LowPriorityTargetsLabel,
+    TotalBackupsLabel,
+    SuccessCountLabel,
+    TotalFilesCountLabel,
+    TotalDataSizeLabel,
+    LastBackupLabel,
+    EncryptedBackupsLabel,
+    CompressedBackupsLabel,
+    BackupDirectoryLabel,
+    UsedCapacityLabel,
+    FileCountLabel,
+    DiskTotalCapacityLabel,
+    DiskFreeCapacityLabel,
+    DiskUsageRateLabel,
+    UsageStatusLabel,
+    RecentBackupsTitle,
+
+    // Incremental backup messages
+    PreviousBackupLabel,
+    ChangedFilesLabel,
+    NoBackupsFound,
+    FullBackupFallback,
+    MetadataLoadFailed,
+    DryRunMode,
+
+    // Relative time messages
+    DaysAgo,
+    HoursAgo,
+    MinutesAgo,
+    JustNow,
+    NotYetBackedUp,
+
+    // Dashboard warning messages
+    WarningTargetNotExists,
+    WarningDaysSinceLastBackup,
+    WarningNoBackupYet,
+    WarningFailedBackups,
+    WarningLowDiskSpace,
+    DashboardHintRunBackup,
+
+    // Interactive prompts
+    PromptPleaseSelect,
+    PromptDeleteBackup,
+    PromptDeleteOldBackups,
+    PromptDeleteTarget,
+    PromptDeleteCount,
+    PromptConfirmDelete,
+    PromptSelectPriority,
+    PromptBackupConfirm,
+
+    // Smart Analyze categories
+    SmartCategoryDirectory,
+    SmartCategoryRustProject,
+    SmartCategoryNodeJsProject,
+    SmartCategoryPythonProject,
+    SmartCategorySourceCodeProject,
+    SmartCategoryGitManaged,
+    SmartCategoryLowPriority,
+
+    // Smart Analyze reasons
+    SmartReasonSampling,
+    SmartReasonScore,
+    SmartReasonSecurityDir,
+    SmartReasonLowPriorityDir,
+
+    // Smart Exclude reasons
+    ExcludeReasonNpmDeps,
+    ExcludeReasonRustBuild,
+    ExcludeReasonVendor,
+    ExcludeReasonPythonCache,
+    ExcludeReasonPytestCache,
+    ExcludeReasonBuildArtifacts,
+    ExcludeReasonCacheDir,
+    ExcludeReasonGitMetadata,
+    ExcludeReasonSvnMetadata,
+    ExcludeReasonTempFile,
+    ExcludeReasonBackupFile,
+    ExcludeReasonEditorTemp,
+    ExcludeReasonLogFile,
+    ExcludeReasonMacOsMetadata,
+    ExcludeReasonWindowsThumb,
+    ExcludeReasonWindowsDesktop,
 }
 
 impl MessageKey {
@@ -738,6 +862,154 @@ impl MessageKey {
             MessageKey::StatusTitle => "Status",
             MessageKey::DaysUnit => "days",
             MessageKey::DryRunParens => "(dry run)",
+
+            // Backup progress and result messages
+            MessageKey::FilesDetected => "files detected",
+            MessageKey::FullBackupMode => "Full Backup Mode (all files)",
+            MessageKey::IncrementalBackupMode => "Incremental Backup Mode (changed files only)",
+            MessageKey::BackupComplete => "Backup complete",
+            MessageKey::BackupCompleteWithFailures => "Backup complete (with failures)",
+            MessageKey::BackupResultTitle => "Backup Result",
+            MessageKey::TotalFilesLabel => "Total Files",
+            MessageKey::SuccessfulLabel => "Successful",
+            MessageKey::FailedLabel => "Failed",
+            MessageKey::TotalSizeLabel => "Total Size",
+
+            // Remove/Update command messages
+            MessageKey::ConfirmRemoveTarget => {
+                "Are you sure you want to remove {} from backup targets?"
+            }
+            MessageKey::UpdatedTarget => "Updated backup target",
+            MessageKey::PathLabel => "Path",
+            MessageKey::PriorityLabel => "Priority",
+            MessageKey::CategoryLabel => "Category",
+            MessageKey::ExcludePatternsLabel => "Exclude Patterns",
+
+            // History detailed view
+            MessageKey::PathHistoryLabel => "Path",
+            MessageKey::StatusHistoryLabel => "Status",
+            MessageKey::FilesHistoryLabel => "Files",
+            MessageKey::SizeLabel => "Size",
+            MessageKey::CompressionLabel => "Compression",
+            MessageKey::EncryptionLabel => "Encryption",
+            MessageKey::DurationLabel => "Duration",
+            MessageKey::EnabledLabel => "Enabled",
+            MessageKey::SecondsUnit => "seconds",
+
+            // Dashboard sections
+            MessageKey::StatisticsTitle => "📈 Statistics",
+            MessageKey::DiskUsageTitle => "💾 Disk Usage",
+            MessageKey::AllNormalStatus => "⚡ All Normal",
+            MessageKey::WarningsTitle => "⚠️  Warnings",
+
+            // Incremental backup messages
+            MessageKey::PreviousBackupLabel => "Previous backup",
+            MessageKey::ChangedFilesLabel => "Changed files",
+            MessageKey::NoBackupsFound => "ℹ️  No previous backup found. Performing full backup.",
+            MessageKey::FullBackupFallback => {
+                "⚠️  Failed to load previous metadata. Falling back to full backup."
+            }
+            MessageKey::MetadataLoadFailed => "   Details",
+            MessageKey::DryRunMode => "📋 Dry run mode: detected {} files for backup",
+
+            // Dashboard statistics labels
+            MessageKey::TotalTargetsLabel => "Total Targets",
+            MessageKey::HighPriorityTargetsLabel => "  High Priority",
+            MessageKey::MediumPriorityTargetsLabel => "  Medium Priority",
+            MessageKey::LowPriorityTargetsLabel => "  Low Priority",
+            MessageKey::TotalBackupsLabel => "Total Backups",
+            MessageKey::SuccessCountLabel => "  Success",
+            MessageKey::TotalFilesCountLabel => "Total Files",
+            MessageKey::TotalDataSizeLabel => "Total Data Size",
+            MessageKey::LastBackupLabel => "Last Backup",
+            MessageKey::EncryptedBackupsLabel => "Encrypted Backups",
+            MessageKey::CompressedBackupsLabel => "Compressed Backups",
+            MessageKey::BackupDirectoryLabel => "Backup Directory",
+            MessageKey::UsedCapacityLabel => "Used Capacity",
+            MessageKey::FileCountLabel => "File Count",
+            MessageKey::DiskTotalCapacityLabel => "Disk Total Capacity",
+            MessageKey::DiskFreeCapacityLabel => "Disk Free Capacity",
+            MessageKey::DiskUsageRateLabel => "Disk Usage Rate",
+            MessageKey::UsageStatusLabel => "Usage Status",
+            MessageKey::RecentBackupsTitle => "🕒 Recent Backups (Latest 5)",
+
+            // Relative time messages
+            MessageKey::DaysAgo => "{} days ago",
+            MessageKey::HoursAgo => "{} hours ago",
+            MessageKey::MinutesAgo => "{} minutes ago",
+            MessageKey::JustNow => "Just now",
+            MessageKey::NotYetBackedUp => "Not yet",
+
+            // Dashboard warning messages
+            MessageKey::WarningTargetNotExists => "Backup target does not exist: {}",
+            MessageKey::WarningDaysSinceLastBackup => "It has been {} days since the last backup",
+            MessageKey::WarningNoBackupYet => "No backup has been performed yet",
+            MessageKey::WarningFailedBackups => "There are {} failed backups",
+            MessageKey::WarningLowDiskSpace => "Disk space is running low ({:.1}%)",
+            MessageKey::DashboardHintRunBackup => {
+                "💡 Hint: Run 'backup-suite run' to perform a backup"
+            }
+
+            // Interactive prompts
+            MessageKey::PromptPleaseSelect => "Please select",
+            MessageKey::PromptDeleteBackup => "Do you want to delete this backup?",
+            MessageKey::PromptDeleteOldBackups => "🗑️  Delete old backups",
+            MessageKey::PromptDeleteTarget => "Targets to delete: {} backups",
+            MessageKey::PromptDeleteCount => "targets",
+            MessageKey::PromptConfirmDelete => "Do you want to proceed with deletion?",
+            MessageKey::PromptSelectPriority => "Select priority",
+            MessageKey::PromptBackupConfirm => "Do you want to perform a backup?",
+
+            // Smart Analyze categories
+            MessageKey::SmartCategoryDirectory => "Directory",
+            MessageKey::SmartCategoryRustProject => "Rust Project",
+            MessageKey::SmartCategoryNodeJsProject => "Node.js Project",
+            MessageKey::SmartCategoryPythonProject => "Python Project",
+            MessageKey::SmartCategorySourceCodeProject => "Source Code Project",
+            MessageKey::SmartCategoryGitManaged => "Git-managed Directory",
+            MessageKey::SmartCategoryLowPriority => "Low Priority Directory",
+
+            // Smart Analyze reasons
+            MessageKey::SmartReasonSampling => {
+                "(Sampling: {} files, high importance: {}, score: {})"
+            }
+            MessageKey::SmartReasonScore => "(Score: {})",
+            MessageKey::SmartReasonSecurityDir => {
+                "Credentials/Secret keys ({} directory, encryption required, score: 95)"
+            }
+            MessageKey::SmartReasonLowPriorityDir => {
+                "Cache/Log/Archive etc. (Directory: {}, score: 20)"
+            }
+
+            // Smart Exclude reasons
+            MessageKey::ExcludeReasonNpmDeps => {
+                "npm/yarn dependencies (regenerable from package.json)"
+            }
+            MessageKey::ExcludeReasonRustBuild => {
+                "Rust build artifacts (regenerable from Cargo.toml)"
+            }
+            MessageKey::ExcludeReasonVendor => "Dependency vendoring (regenerable)",
+            MessageKey::ExcludeReasonPythonCache => "Python cache (auto-generated)",
+            MessageKey::ExcludeReasonPytestCache => "pytest cache (auto-generated)",
+            MessageKey::ExcludeReasonBuildArtifacts => "Build artifacts directory (rebuildable)",
+            MessageKey::ExcludeReasonCacheDir => "Cache directory (temporary data)",
+            MessageKey::ExcludeReasonGitMetadata => {
+                "Git repository metadata (recoverable from remote)"
+            }
+            MessageKey::ExcludeReasonSvnMetadata => {
+                "SVN repository metadata (recoverable from remote)"
+            }
+            MessageKey::ExcludeReasonTempFile => "Temporary file",
+            MessageKey::ExcludeReasonBackupFile => {
+                "Backup file (unnecessary if original file exists)"
+            }
+            MessageKey::ExcludeReasonEditorTemp => "Editor temporary file",
+            MessageKey::ExcludeReasonLogFile => "Log file (old logs usually unnecessary)",
+            MessageKey::ExcludeReasonMacOsMetadata => "macOS metadata file (auto-generated)",
+            MessageKey::ExcludeReasonWindowsThumb => "Windows thumbnail cache (auto-generated)",
+            MessageKey::ExcludeReasonWindowsDesktop => {
+                "Windows desktop settings file (auto-generated)"
+            }
         }
     }
 
@@ -1034,6 +1306,130 @@ impl MessageKey {
             MessageKey::StatusTitle => "ステータス",
             MessageKey::DaysUnit => "日",
             MessageKey::DryRunParens => "（ドライラン）",
+
+            // Backup progress and result messages
+            MessageKey::FilesDetected => "ファイルを検出",
+            MessageKey::FullBackupMode => "📦 フルバックアップモード（全ファイル）",
+            MessageKey::IncrementalBackupMode => "📦 増分バックアップモード（変更ファイルのみ）",
+            MessageKey::BackupComplete => "✓ バックアップ完了",
+            MessageKey::BackupCompleteWithFailures => "⚠ バックアップ完了（失敗あり）",
+            MessageKey::BackupResultTitle => "📈 バックアップ結果",
+            MessageKey::TotalFilesLabel => "総ファイル数",
+            MessageKey::SuccessfulLabel => "成功",
+            MessageKey::FailedLabel => "失敗",
+            MessageKey::TotalSizeLabel => "合計サイズ",
+
+            // Remove/Update command messages
+            MessageKey::ConfirmRemoveTarget => "本当に {} をバックアップ対象から削除しますか？",
+            MessageKey::UpdatedTarget => "バックアップ対象を更新しました",
+            MessageKey::PathLabel => "パス",
+            MessageKey::PriorityLabel => "優先度",
+            MessageKey::CategoryLabel => "カテゴリ",
+            MessageKey::ExcludePatternsLabel => "除外パターン",
+
+            // History detailed view
+            MessageKey::PathHistoryLabel => "パス",
+            MessageKey::StatusHistoryLabel => "ステータス",
+            MessageKey::FilesHistoryLabel => "ファイル数",
+            MessageKey::SizeLabel => "サイズ",
+            MessageKey::CompressionLabel => "圧縮",
+            MessageKey::EncryptionLabel => "暗号化",
+            MessageKey::DurationLabel => "処理時間",
+            MessageKey::EnabledLabel => "有効",
+            MessageKey::SecondsUnit => "秒",
+
+            // Dashboard sections
+            MessageKey::StatisticsTitle => "📈 統計情報",
+            MessageKey::DiskUsageTitle => "💾 ディスク使用量",
+            MessageKey::AllNormalStatus => "⚡ すべて正常です",
+            MessageKey::WarningsTitle => "⚠️  警告・注意事項",
+
+            // Incremental backup messages
+            MessageKey::PreviousBackupLabel => "前回バックアップ",
+            MessageKey::ChangedFilesLabel => "変更ファイル数",
+            MessageKey::NoBackupsFound => "ℹ️  前回のバックアップが見つかりません。フルバックアップを実行します。",
+            MessageKey::FullBackupFallback => "⚠️  前回のメタデータ読み込みに失敗しました。フルバックアップにフォールバックします。",
+            MessageKey::MetadataLoadFailed => "   詳細",
+            MessageKey::DryRunMode => "📋 ドライランモード: {} ファイルをバックアップ対象として検出",
+
+            // Dashboard statistics labels
+            MessageKey::TotalTargetsLabel => "総対象数",
+            MessageKey::HighPriorityTargetsLabel => "  高優先度",
+            MessageKey::MediumPriorityTargetsLabel => "  中優先度",
+            MessageKey::LowPriorityTargetsLabel => "  低優先度",
+            MessageKey::TotalBackupsLabel => "総バックアップ回数",
+            MessageKey::SuccessCountLabel => "  成功",
+            MessageKey::TotalFilesCountLabel => "総ファイル数",
+            MessageKey::TotalDataSizeLabel => "総データサイズ",
+            MessageKey::LastBackupLabel => "最終バックアップ",
+            MessageKey::EncryptedBackupsLabel => "暗号化バックアップ",
+            MessageKey::CompressedBackupsLabel => "圧縮バックアップ",
+            MessageKey::BackupDirectoryLabel => "バックアップディレクトリ",
+            MessageKey::UsedCapacityLabel => "使用容量",
+            MessageKey::FileCountLabel => "ファイル数",
+            MessageKey::DiskTotalCapacityLabel => "ディスク総容量",
+            MessageKey::DiskFreeCapacityLabel => "ディスク空き容量",
+            MessageKey::DiskUsageRateLabel => "ディスク使用率",
+            MessageKey::UsageStatusLabel => "使用状況",
+            MessageKey::RecentBackupsTitle => "🕒 最近のバックアップ（直近5件）",
+
+            // Relative time messages
+            MessageKey::DaysAgo => "{}日前",
+            MessageKey::HoursAgo => "{}時間前",
+            MessageKey::MinutesAgo => "{}分前",
+            MessageKey::JustNow => "たった今",
+            MessageKey::NotYetBackedUp => "未実施",
+
+            // Dashboard warning messages
+            MessageKey::WarningTargetNotExists => "バックアップ対象が存在しません: {}",
+            MessageKey::WarningDaysSinceLastBackup => "最後のバックアップから{}日経過しています",
+            MessageKey::WarningNoBackupYet => "まだ一度もバックアップが実行されていません",
+            MessageKey::WarningFailedBackups => "失敗したバックアップが{}件あります",
+            MessageKey::WarningLowDiskSpace => "ディスク空き容量が少なくなっています ({:.1}%)",
+            MessageKey::DashboardHintRunBackup => "💡 ヒント: 'backup-suite run' でバックアップを実行できます",
+
+            // Interactive prompts
+            MessageKey::PromptPleaseSelect => "選択してください",
+            MessageKey::PromptDeleteBackup => "このバックアップを削除しますか？",
+            MessageKey::PromptDeleteOldBackups => "🗑️  古いバックアップを削除",
+            MessageKey::PromptDeleteTarget => "削除対象: {} 件のバックアップ",
+            MessageKey::PromptDeleteCount => "件",
+            MessageKey::PromptConfirmDelete => "削除を実行しますか？",
+            MessageKey::PromptSelectPriority => "優先度を選択してください",
+            MessageKey::PromptBackupConfirm => "バックアップを実行しますか？",
+
+            // Smart Analyze categories
+            MessageKey::SmartCategoryDirectory => "ディレクトリ",
+            MessageKey::SmartCategoryRustProject => "Rustプロジェクト",
+            MessageKey::SmartCategoryNodeJsProject => "Node.jsプロジェクト",
+            MessageKey::SmartCategoryPythonProject => "Pythonプロジェクト",
+            MessageKey::SmartCategorySourceCodeProject => "ソースコードプロジェクト",
+            MessageKey::SmartCategoryGitManaged => "Git管理ディレクトリ",
+            MessageKey::SmartCategoryLowPriority => "低優先度ディレクトリ",
+
+            // Smart Analyze reasons
+            MessageKey::SmartReasonSampling => "(サンプリング: {}ファイル, 高重要度: {}件, スコア: {})",
+            MessageKey::SmartReasonScore => "(スコア: {})",
+            MessageKey::SmartReasonSecurityDir => "認証情報・秘密鍵（{}ディレクトリ、暗号化必須、スコア: 95）",
+            MessageKey::SmartReasonLowPriorityDir => "キャッシュ/ログ/アーカイブ等 (ディレクトリ: {}, スコア: 20)",
+
+            // Smart Exclude reasons
+            MessageKey::ExcludeReasonNpmDeps => "npm/yarn依存関係（package.jsonから再生成可能）",
+            MessageKey::ExcludeReasonRustBuild => "Rustビルド成果物（Cargo.tomlから再生成可能）",
+            MessageKey::ExcludeReasonVendor => "依存関係ベンダリング（再生成可能）",
+            MessageKey::ExcludeReasonPythonCache => "Pythonキャッシュ（自動生成）",
+            MessageKey::ExcludeReasonPytestCache => "pytestキャッシュ（自動生成）",
+            MessageKey::ExcludeReasonBuildArtifacts => "ビルド成果物ディレクトリ（再ビルド可能）",
+            MessageKey::ExcludeReasonCacheDir => "キャッシュディレクトリ（一時データ）",
+            MessageKey::ExcludeReasonGitMetadata => "Gitリポジトリメタデータ（リモートから復元可能）",
+            MessageKey::ExcludeReasonSvnMetadata => "SVNリポジトリメタデータ（リモートから復元可能）",
+            MessageKey::ExcludeReasonTempFile => "一時ファイル",
+            MessageKey::ExcludeReasonBackupFile => "バックアップファイル（元ファイルがあれば不要）",
+            MessageKey::ExcludeReasonEditorTemp => "エディタ一時ファイル",
+            MessageKey::ExcludeReasonLogFile => "ログファイル（古いログは通常不要）",
+            MessageKey::ExcludeReasonMacOsMetadata => "macOSメタデータファイル（自動生成）",
+            MessageKey::ExcludeReasonWindowsThumb => "Windowsサムネイルキャッシュ（自動生成）",
+            MessageKey::ExcludeReasonWindowsDesktop => "Windowsデスクトップ設定ファイル（自動生成）",
         }
     }
 
@@ -1071,6 +1467,131 @@ impl MessageKey {
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智能备份",
             // Common messages
             MessageKey::UsageExamples => "使用示例:",
+
+            // Backup progress and result messages
+            MessageKey::FilesDetected => "检测到文件",
+            MessageKey::FullBackupMode => "📦 完全备份模式（所有文件）",
+            MessageKey::IncrementalBackupMode => "📦 增量备份模式（仅变更文件）",
+            MessageKey::BackupComplete => "✓ 备份完成",
+            MessageKey::BackupCompleteWithFailures => "⚠ 备份完成（有失败）",
+            MessageKey::BackupResultTitle => "📈 备份结果",
+            MessageKey::TotalFilesLabel => "总文件数",
+            MessageKey::SuccessfulLabel => "成功",
+            MessageKey::FailedLabel => "失败",
+            MessageKey::TotalSizeLabel => "总大小",
+
+            // Remove/Update command messages
+            MessageKey::ConfirmRemoveTarget => "确定要从备份目标中删除 {} 吗？",
+            MessageKey::UpdatedTarget => "已更新备份目标",
+            MessageKey::PathLabel => "路径",
+            MessageKey::PriorityLabel => "优先级",
+            MessageKey::CategoryLabel => "类别",
+            MessageKey::ExcludePatternsLabel => "排除模式",
+
+            // History detailed view
+            MessageKey::PathHistoryLabel => "路径",
+            MessageKey::StatusHistoryLabel => "状态",
+            MessageKey::FilesHistoryLabel => "文件数",
+            MessageKey::SizeLabel => "大小",
+            MessageKey::CompressionLabel => "压缩",
+            MessageKey::EncryptionLabel => "加密",
+            MessageKey::DurationLabel => "处理时间",
+            MessageKey::EnabledLabel => "已启用",
+            MessageKey::SecondsUnit => "秒",
+
+            // Dashboard sections
+            MessageKey::StatisticsTitle => "📈 统计信息",
+            MessageKey::DiskUsageTitle => "💾 磁盘使用量",
+            MessageKey::AllNormalStatus => "⚡ 一切正常",
+            MessageKey::WarningsTitle => "⚠️  警告·注意事项",
+
+            // Incremental backup messages
+            MessageKey::PreviousBackupLabel => "上次备份",
+            MessageKey::ChangedFilesLabel => "变更文件数",
+            MessageKey::NoBackupsFound => "ℹ️  未找到上次备份。执行完全备份。",
+            MessageKey::FullBackupFallback => "⚠️  加载元数据失败。回退到完全备份。",
+            MessageKey::MetadataLoadFailed => "   详情",
+            MessageKey::DryRunMode => "📋 演习模式: 检测到 {} 个文件待备份",
+
+            // Dashboard statistics labels
+            MessageKey::TotalTargetsLabel => "总目标数",
+            MessageKey::HighPriorityTargetsLabel => "  高优先级",
+            MessageKey::MediumPriorityTargetsLabel => "  中优先级",
+            MessageKey::LowPriorityTargetsLabel => "  低优先级",
+            MessageKey::TotalBackupsLabel => "总备份次数",
+            MessageKey::SuccessCountLabel => "  成功",
+            MessageKey::TotalFilesCountLabel => "总文件数",
+            MessageKey::TotalDataSizeLabel => "总数据大小",
+            MessageKey::LastBackupLabel => "最后备份",
+            MessageKey::EncryptedBackupsLabel => "加密备份",
+            MessageKey::CompressedBackupsLabel => "压缩备份",
+            MessageKey::BackupDirectoryLabel => "备份目录",
+            MessageKey::UsedCapacityLabel => "已用容量",
+            MessageKey::FileCountLabel => "文件数",
+            MessageKey::DiskTotalCapacityLabel => "磁盘总容量",
+            MessageKey::DiskFreeCapacityLabel => "磁盘可用容量",
+            MessageKey::DiskUsageRateLabel => "磁盘使用率",
+            MessageKey::UsageStatusLabel => "使用状态",
+            MessageKey::RecentBackupsTitle => "🕒 最近备份（最新5次）",
+
+            // Relative time messages
+            MessageKey::DaysAgo => "{}天前",
+            MessageKey::HoursAgo => "{}小时前",
+            MessageKey::MinutesAgo => "{}分钟前",
+            MessageKey::JustNow => "刚刚",
+            MessageKey::NotYetBackedUp => "尚未执行",
+
+            // Dashboard warning messages
+            MessageKey::WarningTargetNotExists => "备份目标不存在: {}",
+            MessageKey::WarningDaysSinceLastBackup => "距离上次备份已过去{}天",
+            MessageKey::WarningNoBackupYet => "尚未执行过备份",
+            MessageKey::WarningFailedBackups => "有{}个失败的备份",
+            MessageKey::WarningLowDiskSpace => "磁盘空间不足 ({:.1}%)",
+            MessageKey::DashboardHintRunBackup => "💡 提示: 运行 'backup-suite run' 执行备份",
+
+            // Interactive prompts
+            MessageKey::PromptPleaseSelect => "请选择",
+            MessageKey::PromptDeleteBackup => "确定要删除此备份吗？",
+            MessageKey::PromptDeleteOldBackups => "🗑️  删除旧备份",
+            MessageKey::PromptDeleteTarget => "删除目标: {} 个备份",
+            MessageKey::PromptDeleteCount => "个",
+            MessageKey::PromptConfirmDelete => "确定要执行删除吗？",
+            MessageKey::PromptSelectPriority => "选择优先级",
+            MessageKey::PromptBackupConfirm => "确定要执行备份吗？",
+
+            // Smart Analyze categories
+            MessageKey::SmartCategoryDirectory => "目录",
+            MessageKey::SmartCategoryRustProject => "Rust项目",
+            MessageKey::SmartCategoryNodeJsProject => "Node.js项目",
+            MessageKey::SmartCategoryPythonProject => "Python项目",
+            MessageKey::SmartCategorySourceCodeProject => "源代码项目",
+            MessageKey::SmartCategoryGitManaged => "Git管理目录",
+            MessageKey::SmartCategoryLowPriority => "低优先级目录",
+
+            // Smart Analyze reasons
+            MessageKey::SmartReasonSampling => "(采样: {}文件, 高重要性: {}个, 分数: {})",
+            MessageKey::SmartReasonScore => "(分数: {})",
+            MessageKey::SmartReasonSecurityDir => "凭证/密钥（{}目录，需要加密，分数: 95）",
+            MessageKey::SmartReasonLowPriorityDir => "缓存/日志/存档等 (目录: {}, 分数: 20)",
+
+            // Smart Exclude reasons
+            MessageKey::ExcludeReasonNpmDeps => "npm/yarn依赖（可从package.json重新生成）",
+            MessageKey::ExcludeReasonRustBuild => "Rust构建产物（可从Cargo.toml重新生成）",
+            MessageKey::ExcludeReasonVendor => "依赖供应（可重新生成）",
+            MessageKey::ExcludeReasonPythonCache => "Python缓存（自动生成）",
+            MessageKey::ExcludeReasonPytestCache => "pytest缓存（自动生成）",
+            MessageKey::ExcludeReasonBuildArtifacts => "构建产物目录（可重新构建）",
+            MessageKey::ExcludeReasonCacheDir => "缓存目录（临时数据）",
+            MessageKey::ExcludeReasonGitMetadata => "Git仓库元数据（可从远程恢复）",
+            MessageKey::ExcludeReasonSvnMetadata => "SVN仓库元数据（可从远程恢复）",
+            MessageKey::ExcludeReasonTempFile => "临时文件",
+            MessageKey::ExcludeReasonBackupFile => "备份文件（如果原文件存在则不需要）",
+            MessageKey::ExcludeReasonEditorTemp => "编辑器临时文件",
+            MessageKey::ExcludeReasonLogFile => "日志文件（旧日志通常不需要）",
+            MessageKey::ExcludeReasonMacOsMetadata => "macOS元数据文件（自动生成）",
+            MessageKey::ExcludeReasonWindowsThumb => "Windows缩略图缓存（自动生成）",
+            MessageKey::ExcludeReasonWindowsDesktop => "Windows桌面设置文件（自动生成）",
+
             // Keep all existing Simplified Chinese translations
             _ => self.get_en(), // Fallback to English for non-implemented keys
         }
@@ -1110,6 +1631,131 @@ impl MessageKey {
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智慧備份",
             // Common messages
             MessageKey::UsageExamples => "使用範例:",
+
+            // Backup progress and result messages
+            MessageKey::FilesDetected => "檢測到檔案",
+            MessageKey::FullBackupMode => "📦 完全備份模式（所有檔案）",
+            MessageKey::IncrementalBackupMode => "📦 增量備份模式（僅變更檔案）",
+            MessageKey::BackupComplete => "✓ 備份完成",
+            MessageKey::BackupCompleteWithFailures => "⚠ 備份完成（有失敗）",
+            MessageKey::BackupResultTitle => "📈 備份結果",
+            MessageKey::TotalFilesLabel => "總檔案數",
+            MessageKey::SuccessfulLabel => "成功",
+            MessageKey::FailedLabel => "失敗",
+            MessageKey::TotalSizeLabel => "總大小",
+
+            // Remove/Update command messages
+            MessageKey::ConfirmRemoveTarget => "確定要從備份目標中刪除 {} 嗎？",
+            MessageKey::UpdatedTarget => "已更新備份目標",
+            MessageKey::PathLabel => "路徑",
+            MessageKey::PriorityLabel => "優先級",
+            MessageKey::CategoryLabel => "類別",
+            MessageKey::ExcludePatternsLabel => "排除模式",
+
+            // History detailed view
+            MessageKey::PathHistoryLabel => "路徑",
+            MessageKey::StatusHistoryLabel => "狀態",
+            MessageKey::FilesHistoryLabel => "檔案數",
+            MessageKey::SizeLabel => "大小",
+            MessageKey::CompressionLabel => "壓縮",
+            MessageKey::EncryptionLabel => "加密",
+            MessageKey::DurationLabel => "處理時間",
+            MessageKey::EnabledLabel => "已啟用",
+            MessageKey::SecondsUnit => "秒",
+
+            // Dashboard sections
+            MessageKey::StatisticsTitle => "📈 統計資訊",
+            MessageKey::DiskUsageTitle => "💾 磁碟使用量",
+            MessageKey::AllNormalStatus => "⚡ 一切正常",
+            MessageKey::WarningsTitle => "⚠️  警告·注意事項",
+
+            // Incremental backup messages
+            MessageKey::PreviousBackupLabel => "上次備份",
+            MessageKey::ChangedFilesLabel => "變更檔案數",
+            MessageKey::NoBackupsFound => "ℹ️  未找到上次備份。執行完全備份。",
+            MessageKey::FullBackupFallback => "⚠️  載入元數據失敗。回退到完全備份。",
+            MessageKey::MetadataLoadFailed => "   詳情",
+            MessageKey::DryRunMode => "📋 演習模式: 檢測到 {} 個檔案待備份",
+
+            // Dashboard statistics labels
+            MessageKey::TotalTargetsLabel => "總目標數",
+            MessageKey::HighPriorityTargetsLabel => "  高優先級",
+            MessageKey::MediumPriorityTargetsLabel => "  中優先級",
+            MessageKey::LowPriorityTargetsLabel => "  低優先級",
+            MessageKey::TotalBackupsLabel => "總備份次數",
+            MessageKey::SuccessCountLabel => "  成功",
+            MessageKey::TotalFilesCountLabel => "總檔案數",
+            MessageKey::TotalDataSizeLabel => "總資料大小",
+            MessageKey::LastBackupLabel => "最後備份",
+            MessageKey::EncryptedBackupsLabel => "加密備份",
+            MessageKey::CompressedBackupsLabel => "壓縮備份",
+            MessageKey::BackupDirectoryLabel => "備份目錄",
+            MessageKey::UsedCapacityLabel => "已用容量",
+            MessageKey::FileCountLabel => "檔案數",
+            MessageKey::DiskTotalCapacityLabel => "磁碟總容量",
+            MessageKey::DiskFreeCapacityLabel => "磁碟可用容量",
+            MessageKey::DiskUsageRateLabel => "磁碟使用率",
+            MessageKey::UsageStatusLabel => "使用狀態",
+            MessageKey::RecentBackupsTitle => "🕒 最近備份（最新5次）",
+
+            // Relative time messages
+            MessageKey::DaysAgo => "{}天前",
+            MessageKey::HoursAgo => "{}小時前",
+            MessageKey::MinutesAgo => "{}分鐘前",
+            MessageKey::JustNow => "剛剛",
+            MessageKey::NotYetBackedUp => "尚未執行",
+
+            // Dashboard warning messages
+            MessageKey::WarningTargetNotExists => "備份目標不存在: {}",
+            MessageKey::WarningDaysSinceLastBackup => "距離上次備份已過去{}天",
+            MessageKey::WarningNoBackupYet => "尚未執行過備份",
+            MessageKey::WarningFailedBackups => "有{}個失敗的備份",
+            MessageKey::WarningLowDiskSpace => "磁碟空間不足 ({:.1}%)",
+            MessageKey::DashboardHintRunBackup => "💡 提示: 執行 'backup-suite run' 進行備份",
+
+            // Interactive prompts
+            MessageKey::PromptPleaseSelect => "請選擇",
+            MessageKey::PromptDeleteBackup => "確定要刪除此備份嗎？",
+            MessageKey::PromptDeleteOldBackups => "🗑️  刪除舊備份",
+            MessageKey::PromptDeleteTarget => "刪除目標: {} 個備份",
+            MessageKey::PromptDeleteCount => "個",
+            MessageKey::PromptConfirmDelete => "確定要執行刪除嗎？",
+            MessageKey::PromptSelectPriority => "選擇優先級",
+            MessageKey::PromptBackupConfirm => "確定要執行備份嗎？",
+
+            // Smart Analyze categories
+            MessageKey::SmartCategoryDirectory => "目錄",
+            MessageKey::SmartCategoryRustProject => "Rust專案",
+            MessageKey::SmartCategoryNodeJsProject => "Node.js專案",
+            MessageKey::SmartCategoryPythonProject => "Python專案",
+            MessageKey::SmartCategorySourceCodeProject => "原始碼專案",
+            MessageKey::SmartCategoryGitManaged => "Git管理目錄",
+            MessageKey::SmartCategoryLowPriority => "低優先級目錄",
+
+            // Smart Analyze reasons
+            MessageKey::SmartReasonSampling => "(採樣: {}檔案, 高重要性: {}個, 分數: {})",
+            MessageKey::SmartReasonScore => "(分數: {})",
+            MessageKey::SmartReasonSecurityDir => "憑證/密鑰（{}目錄，需要加密，分數: 95）",
+            MessageKey::SmartReasonLowPriorityDir => "快取/日誌/封存等 (目錄: {}, 分數: 20)",
+
+            // Smart Exclude reasons
+            MessageKey::ExcludeReasonNpmDeps => "npm/yarn依賴（可從package.json重新生成）",
+            MessageKey::ExcludeReasonRustBuild => "Rust建置產物（可從Cargo.toml重新生成）",
+            MessageKey::ExcludeReasonVendor => "依賴供應（可重新生成）",
+            MessageKey::ExcludeReasonPythonCache => "Python快取（自動生成）",
+            MessageKey::ExcludeReasonPytestCache => "pytest快取（自動生成）",
+            MessageKey::ExcludeReasonBuildArtifacts => "建置產物目錄（可重新建置）",
+            MessageKey::ExcludeReasonCacheDir => "快取目錄（暫存資料）",
+            MessageKey::ExcludeReasonGitMetadata => "Git儲存庫元數據（可從遠端恢復）",
+            MessageKey::ExcludeReasonSvnMetadata => "SVN儲存庫元數據（可從遠端恢復）",
+            MessageKey::ExcludeReasonTempFile => "暫存檔案",
+            MessageKey::ExcludeReasonBackupFile => "備份檔案（如果原檔案存在則不需要）",
+            MessageKey::ExcludeReasonEditorTemp => "編輯器暫存檔案",
+            MessageKey::ExcludeReasonLogFile => "日誌檔案（舊日誌通常不需要）",
+            MessageKey::ExcludeReasonMacOsMetadata => "macOS元數據檔案（自動生成）",
+            MessageKey::ExcludeReasonWindowsThumb => "Windows縮圖快取（自動生成）",
+            MessageKey::ExcludeReasonWindowsDesktop => "Windows桌面設定檔案（自動生成）",
+
             // Keep all existing Traditional Chinese translations
             _ => self.get_en(), // Fallback to English for non-implemented keys
         }

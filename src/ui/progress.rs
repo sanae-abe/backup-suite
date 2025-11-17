@@ -2,6 +2,8 @@ use indicatif::{MultiProgress, ProgressBar, ProgressStyle};
 use std::sync::Arc;
 use std::time::Duration;
 
+use crate::i18n::{get_message, MessageKey};
+
 /// バックアップ進捗表示機能
 ///
 /// indicatifライブラリを使用してリアルタイムの進捗状況を表示します。
@@ -30,6 +32,7 @@ pub struct BackupProgress {
     main_bar: ProgressBar,
     detail_bar: ProgressBar,
     stats_bar: ProgressBar,
+    lang: crate::i18n::Language,
 }
 
 impl BackupProgress {
@@ -52,15 +55,25 @@ impl BackupProgress {
     /// ```
     #[must_use]
     pub fn new(total_files: u64) -> Self {
+        let lang = crate::i18n::Language::detect();
+        Self::with_language(total_files, lang)
+    }
+
+    /// 言語指定付きでBackupProgressインスタンスを作成
+    #[must_use]
+    pub fn with_language(total_files: u64, lang: crate::i18n::Language) -> Self {
         let multi = Arc::new(MultiProgress::new());
 
-        // メインプログレスバー（改善版：ETA付き）
+        // メインプログレスバー（改善版：ETA付き、国際化対応）
         let main_bar = multi.add(ProgressBar::new(total_files));
+        let files_label = get_message(MessageKey::Files, lang);
+        let template = format!(
+            "[{{elapsed_precise}}] {{bar:40.cyan/blue}} {{pos}}/{{len}} {} ({{percent}}%) ETA: {{eta}} {{msg}}",
+            files_label
+        );
         main_bar.set_style(
             ProgressStyle::default_bar()
-                .template(
-                    "[{elapsed_precise}] {bar:40.cyan/blue} {pos}/{len} ファイル ({percent}%) ETA: {eta} {msg}"
-                )
+                .template(&template)
                 .unwrap()
                 .progress_chars("█▉▊▋▌▍▎▏  "),
         );
@@ -86,6 +99,7 @@ impl BackupProgress {
             main_bar,
             detail_bar,
             stats_bar,
+            lang,
         }
     }
 
@@ -264,6 +278,13 @@ impl BackupProgress {
     /// ```
     #[must_use]
     pub fn new_spinner() -> Self {
+        let lang = crate::i18n::Language::detect();
+        Self::new_spinner_with_language(lang)
+    }
+
+    /// 言語指定付きでスピナーを作成
+    #[must_use]
+    pub fn new_spinner_with_language(lang: crate::i18n::Language) -> Self {
         let multi = Arc::new(MultiProgress::new());
 
         let main_bar = multi.add(ProgressBar::new_spinner());
@@ -294,6 +315,7 @@ impl BackupProgress {
             main_bar,
             detail_bar,
             stats_bar,
+            lang,
         }
     }
 
@@ -319,13 +341,26 @@ impl BackupProgress {
             let files_per_sec = processed_files as f64 / elapsed_secs;
             let bytes_per_sec = total_bytes as f64 / elapsed_secs;
             let mb_per_sec = bytes_per_sec / 1024.0 / 1024.0;
+            let total_mb = total_bytes as f64 / 1024.0 / 1024.0;
 
-            let stats_msg = format!(
-                "速度: {:.1} ファイル/秒, {:.2} MB/秒 | 合計: {:.2} MB",
-                files_per_sec,
-                mb_per_sec,
-                total_bytes as f64 / 1024.0 / 1024.0
-            );
+            let stats_msg = match self.lang {
+                crate::i18n::Language::Japanese => format!(
+                    "速度: {:.1} ファイル/秒, {:.2} MB/秒 | 合計: {:.2} MB",
+                    files_per_sec, mb_per_sec, total_mb
+                ),
+                crate::i18n::Language::SimplifiedChinese => format!(
+                    "速度: {:.1} 文件/秒, {:.2} MB/秒 | 总计: {:.2} MB",
+                    files_per_sec, mb_per_sec, total_mb
+                ),
+                crate::i18n::Language::TraditionalChinese => format!(
+                    "速度: {:.1} 檔案/秒, {:.2} MB/秒 | 總計: {:.2} MB",
+                    files_per_sec, mb_per_sec, total_mb
+                ),
+                _ => format!(
+                    "Speed: {:.1} files/sec, {:.2} MB/sec | Total: {:.2} MB",
+                    files_per_sec, mb_per_sec, total_mb
+                ),
+            };
 
             self.set_stats(&stats_msg);
         }

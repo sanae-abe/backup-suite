@@ -13,6 +13,7 @@ use super::pipeline::{PipelineConfig, ProcessingPipeline};
 use super::{Config, Priority, Target, TargetType};
 use crate::compression::CompressionType;
 use crate::crypto::{EncryptionConfig, KeyManager};
+use crate::i18n::{get_message, MessageKey};
 use crate::security::{safe_join, AuditEvent, AuditLog};
 use crate::ui::progress::BackupProgress;
 
@@ -108,6 +109,7 @@ pub struct BackupRunner {
     verify_integrity: bool,
     audit_log: Option<AuditLog>,
     incremental: bool,
+    lang: crate::i18n::Language,
 }
 
 impl BackupRunner {
@@ -148,6 +150,7 @@ impl BackupRunner {
             verify_integrity: true, // デフォルトで整合性検証を有効化
             audit_log,
             incremental: false,
+            lang: crate::i18n::Language::detect(),
         }
     }
 
@@ -203,6 +206,13 @@ impl BackupRunner {
     #[must_use]
     pub fn with_incremental(mut self, incremental: bool) -> Self {
         self.incremental = incremental;
+        self
+    }
+
+    /// 言語を設定
+    #[must_use]
+    pub fn with_language(mut self, lang: crate::i18n::Language) -> Self {
+        self.lang = lang;
         self
     }
 
@@ -304,7 +314,7 @@ impl BackupRunner {
         // スピナー表示（ファイル収集中）
         let collection_spinner = if self.show_progress {
             let spinner = BackupProgress::new_spinner();
-            spinner.set_message("バックアップ対象ファイルを収集中...");
+            spinner.set_message("Collecting backup target files...");
             Some(spinner)
         } else {
             None
@@ -425,7 +435,11 @@ impl BackupRunner {
 
         // スピナー完了
         if let Some(spinner) = collection_spinner {
-            spinner.finish(&format!("{}ファイルを検出", all_files.len()));
+            spinner.finish(&format!(
+                "{} {}",
+                all_files.len(),
+                get_message(MessageKey::FilesDetected, self.lang)
+            ));
         }
 
         // 増分バックアップ処理
@@ -437,77 +451,90 @@ impl BackupRunner {
         };
 
         // 増分バックアップの場合、前回のメタデータを読み込み（失敗した場合はフルバックアップにフォールバック）
-        let (actual_backup_type, parent_backup_name, files_to_backup) = if backup_type
-            == BackupType::Incremental
-        {
-            match inc_engine.load_previous_metadata() {
-                Ok(previous_metadata) => {
-                    println!("📦 増分バックアップモード（変更ファイルのみ）");
+        let (actual_backup_type, parent_backup_name, files_to_backup) =
+            if backup_type == BackupType::Incremental {
+                match inc_engine.load_previous_metadata() {
+                    Ok(previous_metadata) => {
+                        println!(
+                            "{}",
+                            get_message(MessageKey::IncrementalBackupMode, self.lang)
+                        );
 
-                    // バックアップディレクトリからの相対パスを計算
-                    let files_with_relative: Vec<(PathBuf, PathBuf)> = all_files
-                        .iter()
-                        .filter_map(|(source, dest)| {
-                            dest.strip_prefix(&backup_base)
-                                .ok()
-                                .map(|rel| (rel.to_path_buf(), source.clone()))
-                        })
-                        .collect();
+                        // バックアップディレクトリからの相対パスを計算
+                        let files_with_relative: Vec<(PathBuf, PathBuf)> = all_files
+                            .iter()
+                            .filter_map(|(source, dest)| {
+                                dest.strip_prefix(&backup_base)
+                                    .ok()
+                                    .map(|rel| (rel.to_path_buf(), source.clone()))
+                            })
+                            .collect();
 
-                    let changed_files_relative = inc_engine
-                        .detect_changed_files(&files_with_relative, &previous_metadata)?;
+                        let changed_files_relative = inc_engine
+                            .detect_changed_files(&files_with_relative, &previous_metadata)?;
 
-                    // 元のall_files形式に戻す（source, dest）
-                    let changed_files: Vec<(PathBuf, PathBuf)> = changed_files_relative
-                        .iter()
-                        .filter_map(|(_relative_path, source_path)| {
-                            all_files
-                                .iter()
-                                .find(|(src, _)| src == source_path)
-                                .cloned()
-                        })
-                        .collect();
+                        // 元のall_files形式に戻す（source, dest）
+                        let changed_files: Vec<(PathBuf, PathBuf)> = changed_files_relative
+                            .iter()
+                            .filter_map(|(_relative_path, source_path)| {
+                                all_files
+                                    .iter()
+                                    .find(|(src, _)| src == source_path)
+                                    .cloned()
+                            })
+                            .collect();
 
-                    let parent_name = inc_engine.get_previous_backup_name()?;
-                    println!("  前回バックアップ: {parent_name:?}");
-                    println!(
-                        "  変更ファイル数: {}/{}",
-                        changed_files.len(),
-                        all_files.len()
-                    );
+                        let parent_name = inc_engine.get_previous_backup_name()?;
+                        println!(
+                            "  {}: {parent_name:?}",
+                            get_message(MessageKey::PreviousBackupLabel, self.lang)
+                        );
+                        println!(
+                            "  {}: {}/{}",
+                            get_message(MessageKey::ChangedFilesLabel, self.lang),
+                            changed_files.len(),
+                            all_files.len()
+                        );
 
-                    (BackupType::Incremental, parent_name, changed_files)
-                }
-                Err(e) => {
-                    // エラーメッセージの内容で初回実行時か実際のエラーかを判別
-                    let error_msg = e.to_string();
-                    if error_msg.contains("前回のバックアップが見つかりません")
-                        || error_msg.contains("前回のバックアップメタデータ読み込み失敗")
-                    {
-                        // 初回実行時: 情報レベルのメッセージ
-                        println!("ℹ️  前回のバックアップが見つかりません。フルバックアップを実行します。");
-                    } else {
-                        // 実際のエラー時（メタデータ破損など）: 警告レベルのメッセージ
-                        eprintln!("⚠️  前回のメタデータ読み込みに失敗しました。フルバックアップにフォールバックします。");
-                        eprintln!("   詳細: {e}");
+                        (BackupType::Incremental, parent_name, changed_files)
                     }
-                    println!("📦 フルバックアップモード（全ファイル）");
-                    (BackupType::Full, None, all_files.clone())
+                    Err(e) => {
+                        // エラーメッセージの内容で初回実行時か実際のエラーかを判別
+                        let error_msg = e.to_string();
+                        if error_msg.contains("前回のバックアップが見つかりません")
+                            || error_msg.contains("前回のバックアップメタデータ読み込み失敗")
+                        {
+                            // 初回実行時: 情報レベルのメッセージ
+                            println!("{}", get_message(MessageKey::NoBackupsFound, self.lang));
+                        } else {
+                            // 実際のエラー時（メタデータ破損など）: 警告レベルのメッセージ
+                            eprintln!("{}", get_message(MessageKey::FullBackupFallback, self.lang));
+                            eprintln!(
+                                "{}: {e}",
+                                get_message(MessageKey::MetadataLoadFailed, self.lang)
+                            );
+                        }
+                        println!("{}", get_message(MessageKey::FullBackupMode, self.lang));
+                        (BackupType::Full, None, all_files.clone())
+                    }
                 }
-            }
-        } else {
-            // --incremental フラグが指定されているが、前回のバックアップがない場合
-            if self.incremental {
-                println!("ℹ️  前回のバックアップが見つかりません。フルバックアップを実行します。");
-            }
-            println!("📦 フルバックアップモード（全ファイル）");
-            (BackupType::Full, None, all_files.clone())
-        };
+            } else {
+                // --incremental フラグが指定されているが、前回のバックアップがない場合
+                if self.incremental {
+                    println!("{}", get_message(MessageKey::NoBackupsFound, self.lang));
+                }
+                println!("{}", get_message(MessageKey::FullBackupMode, self.lang));
+                (BackupType::Full, None, all_files.clone())
+            };
 
         let total_files = files_to_backup.len();
 
         if self.dry_run {
-            println!("📋 ドライランモード: {total_files} ファイルをバックアップ対象として検出");
+            println!(
+                "{}",
+                get_message(MessageKey::DryRunMode, self.lang)
+                    .replace("{}", &total_files.to_string())
+            );
             for (_source, _dest) in &files_to_backup {
                 println!("  _source.display() → _dest.display()");
             }
@@ -545,7 +572,10 @@ impl BackupRunner {
 
         // プログレスバーの初期化
         let progress = if self.show_progress {
-            Some(Arc::new(BackupProgress::new(total_files as u64)))
+            Some(Arc::new(BackupProgress::with_language(
+                total_files as u64,
+                self.lang,
+            )))
         } else {
             None
         };
@@ -670,9 +700,18 @@ impl BackupRunner {
         if let Some(pb) = progress {
             let failed = failed_count.load(Ordering::Relaxed);
             if failed == 0 {
-                pb.finish("✓ バックアップ完了");
+                pb.finish(get_message(MessageKey::BackupComplete, self.lang));
             } else {
-                pb.finish(&format!("⚠ バックアップ完了（{failed}件失敗）"));
+                pb.finish(&format!(
+                    "{} ({} {})",
+                    get_message(MessageKey::BackupCompleteWithFailures, self.lang)
+                        .replace("（失敗あり）", "")
+                        .replace("（有失败）", "")
+                        .replace("（有失敗）", "")
+                        .replace("(with failures)", ""),
+                    failed,
+                    get_message(MessageKey::FailedLabel, self.lang)
+                ));
             }
         }
 

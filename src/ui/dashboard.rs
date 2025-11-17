@@ -10,6 +10,7 @@ use std::fs;
 use super::colors::ColorTheme;
 use super::table::display_history;
 use crate::core::{BackupHistory, Config, Priority};
+use crate::i18n::{get_message, MessageKey};
 
 /// ダッシュボード表示
 ///
@@ -19,7 +20,7 @@ use crate::core::{BackupHistory, Config, Priority};
 /// - 設定ファイルやバックアップ履歴の読み込みに失敗した場合
 /// - バックアップディレクトリの情報取得に失敗した場合
 /// - ディスク情報の取得に失敗した場合（Unix系のみ）
-pub fn display_dashboard() -> Result<()> {
+pub fn display_dashboard(lang: crate::i18n::Language) -> Result<()> {
     let theme = ColorTheme::auto();
 
     println!(
@@ -42,22 +43,22 @@ pub fn display_dashboard() -> Result<()> {
     );
 
     // 統計情報表示
-    display_statistics(&theme)?;
+    display_statistics(&theme, lang)?;
 
     println!();
 
     // ディスク使用量グラフ
-    display_disk_usage(&theme)?;
+    display_disk_usage(&theme, lang)?;
 
     println!();
 
     // 最近のバックアップ一覧
-    display_recent_backups(&theme)?;
+    display_recent_backups(&theme, lang)?;
 
     println!();
 
     // エラー・警告サマリー
-    display_warnings_summary(&theme)?;
+    display_warnings_summary(&theme, lang)?;
 
     println!();
 
@@ -70,7 +71,7 @@ pub fn display_dashboard() -> Result<()> {
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss
 )]
-fn display_statistics(theme: &ColorTheme) -> Result<()> {
+fn display_statistics(theme: &ColorTheme, lang: crate::i18n::Language) -> Result<()> {
     let config = Config::load()?;
     let history = BackupHistory::load_all()?;
 
@@ -96,19 +97,25 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
     let last_backup_str = if let Some(backup) = last_backup {
         let duration = Utc::now().signed_duration_since(backup.timestamp);
         if duration.num_days() > 0 {
-            format!("{}日前", duration.num_days())
+            get_message(MessageKey::DaysAgo, lang).replace("{}", &duration.num_days().to_string())
         } else if duration.num_hours() > 0 {
-            format!("{}時間前", duration.num_hours())
+            get_message(MessageKey::HoursAgo, lang).replace("{}", &duration.num_hours().to_string())
         } else if duration.num_minutes() > 0 {
-            format!("{}分前", duration.num_minutes())
+            get_message(MessageKey::MinutesAgo, lang)
+                .replace("{}", &duration.num_minutes().to_string())
         } else {
-            "たった今".to_string()
+            get_message(MessageKey::JustNow, lang).to_string()
         }
     } else {
-        "未実施".to_string()
+        get_message(MessageKey::NotYetBackedUp, lang).to_string()
     };
 
-    println!("{}", theme.header().apply_to("📈 統計情報"));
+    println!(
+        "{}",
+        theme
+            .header()
+            .apply_to(get_message(MessageKey::StatisticsTitle, lang))
+    );
     println!();
 
     // バックアップ対象の統計
@@ -118,25 +125,25 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
         .set_content_arrangement(ContentArrangement::Dynamic);
 
     targets_table.add_row(vec![
-        Cell::new("総対象数"),
+        Cell::new(get_message(MessageKey::TotalTargetsLabel, lang)),
         Cell::new(total_targets.to_string())
             .fg(Color::Cyan)
             .set_alignment(CellAlignment::Right),
     ]);
     targets_table.add_row(vec![
-        Cell::new("  高優先度"),
+        Cell::new(get_message(MessageKey::HighPriorityTargetsLabel, lang)),
         Cell::new(high_priority.to_string())
             .fg(Color::Red)
             .set_alignment(CellAlignment::Right),
     ]);
     targets_table.add_row(vec![
-        Cell::new("  中優先度"),
+        Cell::new(get_message(MessageKey::MediumPriorityTargetsLabel, lang)),
         Cell::new(medium_priority.to_string())
             .fg(Color::Yellow)
             .set_alignment(CellAlignment::Right),
     ]);
     targets_table.add_row(vec![
-        Cell::new("  低優先度"),
+        Cell::new(get_message(MessageKey::LowPriorityTargetsLabel, lang)),
         Cell::new(low_priority.to_string())
             .fg(Color::Cyan)
             .set_alignment(CellAlignment::Right),
@@ -152,39 +159,39 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
         .set_content_arrangement(ContentArrangement::Dynamic);
 
     history_table.add_row(vec![
-        Cell::new("総バックアップ回数"),
+        Cell::new(get_message(MessageKey::TotalBackupsLabel, lang)),
         Cell::new(total_backups.to_string())
             .fg(Color::Cyan)
             .set_alignment(CellAlignment::Right),
     ]);
     history_table.add_row(vec![
-        Cell::new("  成功"),
+        Cell::new(get_message(MessageKey::SuccessCountLabel, lang)),
         Cell::new(successful_backups.to_string())
             .fg(Color::Green)
             .set_alignment(CellAlignment::Right),
     ]);
     if failed_backups > 0 {
         history_table.add_row(vec![
-            Cell::new("  失敗"),
+            Cell::new(&format!("  {}", get_message(MessageKey::FailedLabel, lang))),
             Cell::new(failed_backups.to_string())
                 .fg(Color::Red)
                 .set_alignment(CellAlignment::Right),
         ]);
     }
     history_table.add_row(vec![
-        Cell::new("総ファイル数"),
+        Cell::new(get_message(MessageKey::TotalFilesCountLabel, lang)),
         Cell::new(total_files.to_string())
             .fg(Color::Cyan)
             .set_alignment(CellAlignment::Right),
     ]);
     history_table.add_row(vec![
-        Cell::new("総データサイズ"),
+        Cell::new(get_message(MessageKey::TotalDataSizeLabel, lang)),
         Cell::new(format_bytes(total_bytes))
             .fg(Color::Cyan)
             .set_alignment(CellAlignment::Right),
     ]);
     history_table.add_row(vec![
-        Cell::new("最終バックアップ"),
+        Cell::new(get_message(MessageKey::LastBackupLabel, lang)),
         Cell::new(&last_backup_str)
             .fg(Color::Yellow)
             .set_alignment(CellAlignment::Right),
@@ -212,13 +219,13 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
     };
 
     security_table.add_row(vec![
-        Cell::new("暗号化バックアップ"),
+        Cell::new(get_message(MessageKey::EncryptedBackupsLabel, lang)),
         Cell::new(format!("{encrypted_backups} ({encryption_rate:.1}%)"))
             .fg(Color::Green)
             .set_alignment(CellAlignment::Right),
     ]);
     security_table.add_row(vec![
-        Cell::new("圧縮バックアップ"),
+        Cell::new(get_message(MessageKey::CompressedBackupsLabel, lang)),
         Cell::new(format!("{compressed_backups} ({compression_rate:.1}%)"))
             .fg(Color::Cyan)
             .set_alignment(CellAlignment::Right),
@@ -235,11 +242,16 @@ fn display_statistics(theme: &ColorTheme) -> Result<()> {
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss
 )]
-fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
+fn display_disk_usage(theme: &ColorTheme, lang: crate::i18n::Language) -> Result<()> {
     let config = Config::load()?;
     let backup_dir = &config.backup.destination;
 
-    println!("{}", theme.header().apply_to("💾 ディスク使用量"));
+    println!(
+        "{}",
+        theme
+            .header()
+            .apply_to(get_message(MessageKey::DiskUsageTitle, lang))
+    );
     println!();
 
     // バックアップディレクトリのサイズを計算
@@ -258,21 +270,21 @@ fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
         .set_content_arrangement(ContentArrangement::Dynamic);
 
     disk_table.add_row(vec![
-        Cell::new("バックアップディレクトリ"),
+        Cell::new(get_message(MessageKey::BackupDirectoryLabel, lang)),
         Cell::new(backup_dir.display().to_string())
             .fg(Color::Cyan)
             .set_alignment(CellAlignment::Left),
     ]);
 
     disk_table.add_row(vec![
-        Cell::new("使用容量"),
+        Cell::new(get_message(MessageKey::UsedCapacityLabel, lang)),
         Cell::new(format_bytes(used_bytes))
             .fg(Color::Yellow)
             .set_alignment(CellAlignment::Right),
     ]);
 
     disk_table.add_row(vec![
-        Cell::new("ファイル数"),
+        Cell::new(get_message(MessageKey::FileCountLabel, lang)),
         Cell::new(file_count.to_string())
             .fg(Color::Cyan)
             .set_alignment(CellAlignment::Right),
@@ -283,14 +295,14 @@ fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
         let used_percent = ((total - available) as f64 / total as f64) * 100.0;
 
         disk_table.add_row(vec![
-            Cell::new("ディスク総容量"),
+            Cell::new(get_message(MessageKey::DiskTotalCapacityLabel, lang)),
             Cell::new(format_bytes(total))
                 .fg(Color::Cyan)
                 .set_alignment(CellAlignment::Right),
         ]);
 
         disk_table.add_row(vec![
-            Cell::new("ディスク空き容量"),
+            Cell::new(get_message(MessageKey::DiskFreeCapacityLabel, lang)),
             Cell::new(format_bytes(available))
                 .fg(if available < total / 10 {
                     Color::Red
@@ -301,7 +313,7 @@ fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
         ]);
 
         disk_table.add_row(vec![
-            Cell::new("ディスク使用率"),
+            Cell::new(get_message(MessageKey::DiskUsageRateLabel, lang)),
             Cell::new(format!("{used_percent:.1}%"))
                 .fg(if used_percent > 90.0 {
                     Color::Red
@@ -316,7 +328,7 @@ fn display_disk_usage(theme: &ColorTheme) -> Result<()> {
         // ディスク使用率のグラフ表示
         let graph = create_usage_graph(used_percent);
         disk_table.add_row(vec![
-            Cell::new("使用状況"),
+            Cell::new(get_message(MessageKey::UsageStatusLabel, lang)),
             Cell::new(graph)
                 .fg(Color::Cyan)
                 .set_alignment(CellAlignment::Left),
@@ -421,7 +433,7 @@ pub fn create_usage_graph(percent: f64) -> String {
 }
 
 /// 最近のバックアップ一覧（直近5件）
-fn display_recent_backups(theme: &ColorTheme) -> Result<()> {
+fn display_recent_backups(theme: &ColorTheme, lang: crate::i18n::Language) -> Result<()> {
     let history = BackupHistory::load_all()?;
 
     if history.is_empty() {
@@ -437,16 +449,18 @@ fn display_recent_backups(theme: &ColorTheme) -> Result<()> {
 
     println!(
         "{}",
-        theme.header().apply_to("🕒 最近のバックアップ（直近5件）")
+        theme
+            .header()
+            .apply_to(get_message(MessageKey::RecentBackupsTitle, lang))
     );
-    display_history(&recent, theme);
+    display_history(&recent, theme, lang);
 
     Ok(())
 }
 
 /// エラー・警告サマリー
 #[allow(clippy::cast_precision_loss)]
-fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
+fn display_warnings_summary(theme: &ColorTheme, lang: crate::i18n::Language) -> Result<()> {
     let config = Config::load()?;
     let mut warnings = Vec::new();
 
@@ -495,9 +509,19 @@ fn display_warnings_summary(theme: &ColorTheme) -> Result<()> {
 
     // 警告表示
     if warnings.is_empty() {
-        println!("{}", theme.success().apply_to("⚡ すべて正常です"));
+        println!(
+            "{}",
+            theme
+                .success()
+                .apply_to(get_message(MessageKey::AllNormalStatus, lang))
+        );
     } else {
-        println!("{}", theme.header().apply_to("⚠️  警告・注意事項"));
+        println!(
+            "{}",
+            theme
+                .header()
+                .apply_to(get_message(MessageKey::WarningsTitle, lang))
+        );
         println!();
 
         let mut table = Table::new();
