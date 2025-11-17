@@ -348,7 +348,7 @@ fn print_completions<G: Generator>(generator: G, cmd: &mut clap::Command) {
     );
 }
 
-fn select_file_with_fuzzy(prompt: &str) -> Result<Option<PathBuf>> {
+fn select_file_with_fuzzy(lang: Language) -> Result<Option<PathBuf>> {
     use std::io::BufRead;
 
     // findコマンドでファイル/ディレクトリ一覧を取得
@@ -384,7 +384,7 @@ fn select_file_with_fuzzy(prompt: &str) -> Result<Option<PathBuf>> {
 
     // dialoguer::FuzzySelectで選択
     let selection = FuzzySelect::new()
-        .with_prompt(prompt)
+        .with_prompt(get_message(MessageKey::PromptSelectFile, lang))
         .items(&paths)
         .default(0)
         .interact_opt()?;
@@ -441,7 +441,7 @@ fn select_target_with_fuzzy(config: &Config, lang: Language) -> Result<Option<Pa
 
     // dialoguer::FuzzySelectで選択
     let selection = FuzzySelect::new()
-        .with_prompt("削除するバックアップ対象を選択")
+        .with_prompt(get_message(MessageKey::PromptSelectTarget, lang))
         .items(&targets_display)
         .default(0)
         .interact_opt()?;
@@ -1533,8 +1533,7 @@ fn main() -> Result<()> {
             // パスを決定（pathが指定されていない場合、またはinteractiveフラグが立っている場合はskin選択）
             let target_path = if let Some(p) = path {
                 if interactive {
-                    match select_file_with_fuzzy("追加するファイル/ディレクトリを選択: ")?
-                    {
+                    match select_file_with_fuzzy(lang)? {
                         Some(selected_path) => selected_path,
                         None => {
                             println!(
@@ -1550,8 +1549,7 @@ fn main() -> Result<()> {
                     p
                 }
             } else {
-                match select_file_with_fuzzy("追加するファイル/ディレクトリを選択: ")?
-                {
+                match select_file_with_fuzzy(lang)? {
                     Some(selected_path) => selected_path,
                     None => {
                         println!(
@@ -2180,11 +2178,11 @@ fn main() -> Result<()> {
             // Validate days range
             if days == 0 || days > 3650 {
                 eprintln!(
-                    "{}❌ {}{}: days は 1-3650 の範囲で指定してください（指定値: {}）",
+                    "{}❌ {}{}: {}",
                     get_color("red", false),
                     get_message(MessageKey::Error, lang),
                     get_color("reset", false),
-                    days
+                    get_message(MessageKey::DaysOutOfRange, lang).replace("{}", &days.to_string())
                 );
                 std::process::exit(1);
             }

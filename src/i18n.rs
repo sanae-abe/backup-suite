@@ -347,6 +347,9 @@ pub enum MessageKey {
     SelectionCancelled,
     ConfirmClearAll,
     ConfirmCleanup,
+    DaysOutOfRange,
+    PromptSelectTarget,
+    PromptSelectFile,
     PathNotExists,
     NotInBackupConfig,
     SpecifyPriorityOrAll,
@@ -788,6 +791,9 @@ impl MessageKey {
                 "⚠️  Warning: Delete all {} backup targets. Are you sure?"
             }
             MessageKey::ConfirmCleanup => "Delete backups older than {} days. Are you sure?",
+            MessageKey::DaysOutOfRange => "days must be in the range 1-3650 (specified: {})",
+            MessageKey::PromptSelectTarget => "Select backup target to remove",
+            MessageKey::PromptSelectFile => "Select file/directory to add: ",
             MessageKey::PathNotExists => "Path does not exist",
             MessageKey::NotInBackupConfig => "Not registered in backup configuration",
             MessageKey::SpecifyPriorityOrAll => "Specify --priority or --all",
@@ -1236,6 +1242,9 @@ impl MessageKey {
             MessageKey::SelectionCancelled => "選択がキャンセルされました",
             MessageKey::ConfirmClearAll => "⚠️  警告: {}個すべてのバックアップ対象を削除します。本当によろしいですか？",
             MessageKey::ConfirmCleanup => "{}日以前の古いバックアップを削除します。よろしいですか？",
+            MessageKey::DaysOutOfRange => "days は 1-3650 の範囲で指定してください（指定値: {}）",
+            MessageKey::PromptSelectTarget => "削除するバックアップ対象を選択",
+            MessageKey::PromptSelectFile => "追加するファイル/ディレクトリを選択: ",
             MessageKey::PathNotExists => "パスが存在しません",
             MessageKey::NotInBackupConfig => "バックアップ設定に登録されていません",
             MessageKey::SpecifyPriorityOrAll => "--priority または --all を指定してください",
@@ -1473,6 +1482,28 @@ impl MessageKey {
             MessageKey::ExampleSmartAnalyze => "# 分析文件重要性",
             MessageKey::ExampleSmartSuggestExclude => "# 获取Smart排除建议",
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智能备份",
+
+            // Runtime messages
+            MessageKey::NoTargetsRegistered => "未注册备份目标",
+            MessageKey::SelectionCancelled => "选择已取消",
+            MessageKey::ConfirmClearAll => "⚠️  警告：删除所有 {} 个备份目标。确定吗？",
+            MessageKey::ConfirmCleanup => "删除 {} 天之前的旧备份。确定吗？",
+            MessageKey::DaysOutOfRange => "days 必须在 1-3650 范围内（指定值：{}）",
+            MessageKey::PathNotExists => "路径不存在",
+            MessageKey::NotInBackupConfig => "未在备份配置中注册",
+            MessageKey::SpecifyPriorityOrAll => "请指定 --priority 或 --all",
+            MessageKey::CountDeleted => "已删除",
+            MessageKey::DryRun => "演习模式",
+            MessageKey::Category => "类别",
+            MessageKey::Encryption => "加密",
+            MessageKey::Compression => "压缩",
+            MessageKey::ErrorDetails => "错误详情",
+            MessageKey::Detected => "检测到",
+            MessageKey::Files => "文件",
+            MessageKey::Days => "天",
+            MessageKey::DryRunParens => "（演习模式）",
+            MessageKey::DaysUnit => "天",
+
             // Common messages
             MessageKey::UsageExamples => "使用示例:",
 
@@ -1566,6 +1597,8 @@ impl MessageKey {
             MessageKey::PromptConfirmDelete => "确定要执行删除吗？",
             MessageKey::PromptSelectPriority => "选择优先级",
             MessageKey::PromptBackupConfirm => "确定要执行备份吗？",
+            MessageKey::PromptSelectTarget => "选择要删除的备份目标",
+            MessageKey::PromptSelectFile => "选择要添加的文件/目录: ",
 
             // Smart Analyze categories
             MessageKey::SmartCategoryDirectory => "目录",
@@ -1637,6 +1670,28 @@ impl MessageKey {
             MessageKey::ExampleSmartAnalyze => "# 分析檔案重要性",
             MessageKey::ExampleSmartSuggestExclude => "# 取得Smart排除建議",
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智慧備份",
+
+            // Runtime messages
+            MessageKey::NoTargetsRegistered => "未註冊備份目標",
+            MessageKey::SelectionCancelled => "選擇已取消",
+            MessageKey::ConfirmClearAll => "⚠️  警告：刪除所有 {} 個備份目標。確定嗎？",
+            MessageKey::ConfirmCleanup => "刪除 {} 天之前的舊備份。確定嗎？",
+            MessageKey::DaysOutOfRange => "days 必須在 1-3650 範圍內（指定值：{}）",
+            MessageKey::PathNotExists => "路徑不存在",
+            MessageKey::NotInBackupConfig => "未在備份設定中註冊",
+            MessageKey::SpecifyPriorityOrAll => "請指定 --priority 或 --all",
+            MessageKey::CountDeleted => "已刪除",
+            MessageKey::DryRun => "演習模式",
+            MessageKey::Category => "類別",
+            MessageKey::Encryption => "加密",
+            MessageKey::Compression => "壓縮",
+            MessageKey::ErrorDetails => "錯誤詳情",
+            MessageKey::Detected => "檢測到",
+            MessageKey::Files => "檔案",
+            MessageKey::Days => "天",
+            MessageKey::DryRunParens => "（演習模式）",
+            MessageKey::DaysUnit => "天",
+
             // Common messages
             MessageKey::UsageExamples => "使用範例:",
 
@@ -1730,6 +1785,8 @@ impl MessageKey {
             MessageKey::PromptConfirmDelete => "確定要執行刪除嗎？",
             MessageKey::PromptSelectPriority => "選擇優先級",
             MessageKey::PromptBackupConfirm => "確定要執行備份嗎？",
+            MessageKey::PromptSelectTarget => "選擇要刪除的備份目標",
+            MessageKey::PromptSelectFile => "選擇要新增的檔案/目錄: ",
 
             // Smart Analyze categories
             MessageKey::SmartCategoryDirectory => "目錄",
