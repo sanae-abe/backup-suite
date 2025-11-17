@@ -354,6 +354,7 @@ pub enum MessageKey {
     NoTargetsRegistered,
     SelectionCancelled,
     ConfirmClearAll,
+    ConfirmClearPriority,
     ConfirmCleanup,
     DaysOutOfRange,
     PromptSelectTarget,
@@ -451,7 +452,22 @@ pub enum MessageKey {
     CategoryLabel,
     ExcludePatternsLabel,
 
+    // Smart Analyze labels
+    ItemLabel,
+    ValueLabel,
+    ImportanceScoreLabel,
+    RecommendedPriorityLabel,
+    ReasonLabel,
+
+    // Smart Auto-Configure labels
+    AnalyzingLabel,
+    AddedToConfiguration,
+    ItemsAdded,
+    ExistingBackupTargets,
+    AddNewTargets,
+
     // History detailed view
+    TimestampLabel,
     PathHistoryLabel,
     StatusHistoryLabel,
     FilesHistoryLabel,
@@ -461,6 +477,9 @@ pub enum MessageKey {
     DurationLabel,
     EnabledLabel,
     SecondsUnit,
+
+    // Schedule table headers
+    ScheduleHeaderLabel,
 
     // Dashboard sections
     StatisticsTitle,
@@ -554,6 +573,66 @@ pub enum MessageKey {
     ExcludeReasonMacOsMetadata,
     ExcludeReasonWindowsThumb,
     ExcludeReasonWindowsDesktop,
+
+    // Password strength messages
+    PasswordStrengthLabel,
+    PasswordStrengthWeak,
+    PasswordStrengthMedium,
+    PasswordStrengthStrong,
+    PasswordStrengthWeakMessage,
+    PasswordStrengthMediumMessage,
+    PasswordStrengthStrongMessage,
+    PasswordStrengthTip,
+
+    // Editor and config
+    EditorLaunchFailed,
+
+    // Smart feature progress
+    SubdirectoriesFound,
+    ProgressEvaluating,
+
+    // Backup confirmation prompts
+    ConfirmBackupTitle,
+    ConfirmBackupTargetFiles,
+    ConfirmBackupDestination,
+
+    // Cleanup confirmation prompts
+    ConfirmCleanupTitle,
+    ConfirmCleanupTargetCount,
+    ConfirmCleanupRetentionDays,
+
+    // Cleanup progress messages
+    CleanupDryRunScheduled,
+    CleanupCompleted,
+    CleanupFailed,
+
+    // Restore progress messages
+    RestoreDryRunDetected,
+    RestoreInProgress,
+    RestoreProgressFile,
+    RestoreIntegrityMetadataLoaded,
+    RestoreCompleted,
+    RestoreCompletedWithFailures,
+
+    // Restore error messages
+    ErrorRelativePathFailed,
+    ErrorPathTraversalDetected,
+    ErrorDirectoryCreateFailed,
+    ErrorFileReadFailed,
+    ErrorFileOpenFailedSymlink,
+    ErrorEncryptedButNoPassword,
+    ErrorMasterKeyRestoreFailed,
+    ErrorDecryptionFailed,
+    ErrorIntegrityVerificationFailed,
+    ErrorFileWriteFailed,
+    ErrorFileCountFailed,
+
+    // Backup progress and error messages
+    BackupProgressProcessing,
+    ErrorBackupDirectoryCreateFailed,
+    ErrorBackupWriteFailed,
+    ErrorBackupProcessFailed,
+    ErrorBackupCopyFailed,
 }
 
 impl MessageKey {
@@ -798,6 +877,9 @@ impl MessageKey {
             MessageKey::ConfirmClearAll => {
                 "⚠️  Warning: Delete all {} backup targets. Are you sure?"
             }
+            MessageKey::ConfirmClearPriority => {
+                "⚠️  Warning: Delete {} backup targets with {} priority. Are you sure?"
+            }
             MessageKey::ConfirmCleanup => "Delete backups older than {} days. Are you sure?",
             MessageKey::DaysOutOfRange => "days must be in the range 1-3650 (specified: {})",
             MessageKey::PromptSelectTarget => "Select backup target to remove",
@@ -905,7 +987,22 @@ impl MessageKey {
             MessageKey::CategoryLabel => "Category",
             MessageKey::ExcludePatternsLabel => "Exclude Patterns",
 
+            // Smart Analyze labels
+            MessageKey::ItemLabel => "Item",
+            MessageKey::ValueLabel => "Value",
+            MessageKey::ImportanceScoreLabel => "Importance Score",
+            MessageKey::RecommendedPriorityLabel => "Recommended Priority",
+            MessageKey::ReasonLabel => "Reason",
+
+            // Smart Auto-Configure labels
+            MessageKey::AnalyzingLabel => "Analyzing",
+            MessageKey::AddedToConfiguration => "Added to configuration",
+            MessageKey::ItemsAdded => "Items added",
+            MessageKey::ExistingBackupTargets => "You have {} existing backup targets",
+            MessageKey::AddNewTargets => "Add new targets?",
+
             // History detailed view
+            MessageKey::TimestampLabel => "Timestamp",
             MessageKey::PathHistoryLabel => "Path",
             MessageKey::StatusHistoryLabel => "Status",
             MessageKey::FilesHistoryLabel => "Files",
@@ -952,6 +1049,9 @@ impl MessageKey {
             MessageKey::DiskUsageRateLabel => "Disk Usage Rate",
             MessageKey::UsageStatusLabel => "Usage Status",
             MessageKey::RecentBackupsTitle => "🕒 Recent Backups (Latest 5)",
+
+            // Schedule table headers
+            MessageKey::ScheduleHeaderLabel => "Schedule",
 
             // Relative time messages
             MessageKey::DaysAgo => "{} days ago",
@@ -1030,6 +1130,74 @@ impl MessageKey {
             MessageKey::ExcludeReasonWindowsDesktop => {
                 "Windows desktop settings file (auto-generated)"
             }
+
+            // Password strength messages
+            MessageKey::PasswordStrengthLabel => "Password Strength:",
+            MessageKey::PasswordStrengthWeak => "Weak",
+            MessageKey::PasswordStrengthMedium => "Medium",
+            MessageKey::PasswordStrengthStrong => "Strong",
+            MessageKey::PasswordStrengthWeakMessage => {
+                "This password may be vulnerable to attacks. Consider using a longer password with varied characters."
+            }
+            MessageKey::PasswordStrengthMediumMessage => {
+                "This password provides moderate security. Adding special characters or length would improve it."
+            }
+            MessageKey::PasswordStrengthStrongMessage => {
+                "This password provides strong security."
+            }
+            MessageKey::PasswordStrengthTip => {
+                "Tip: Use --generate-password to create a strong random password."
+            }
+
+            // Editor and config
+            MessageKey::EditorLaunchFailed => "Failed to launch editor: {}",
+
+            // Smart feature progress
+            MessageKey::SubdirectoriesFound => "Found {} subdirectories",
+            MessageKey::ProgressEvaluating => "Progress - Evaluating: {:?}",
+
+            // Backup confirmation prompts
+            MessageKey::ConfirmBackupTitle => "📦 Backup Execution Confirmation",
+            MessageKey::ConfirmBackupTargetFiles => "Target files: {} files",
+            MessageKey::ConfirmBackupDestination => "Backup destination: {}",
+
+            // Cleanup confirmation prompts
+            MessageKey::ConfirmCleanupTitle => "🗑️  Delete Old Backups",
+            MessageKey::ConfirmCleanupTargetCount => "Deletion targets: {} backups",
+            MessageKey::ConfirmCleanupRetentionDays => "Retention period: {} days",
+
+            // Cleanup progress messages
+            MessageKey::CleanupDryRunScheduled => "🗑️  [Dry Run] Scheduled for deletion: {:?}",
+            MessageKey::CleanupCompleted => "🗑️  Deletion completed: {:?}",
+            MessageKey::CleanupFailed => "Deletion failed {:?}: {}",
+
+            // Restore progress messages
+            MessageKey::RestoreDryRunDetected => "📋 Dry run mode: {} files detected for restore",
+            MessageKey::RestoreInProgress => "Restoring...",
+            MessageKey::RestoreProgressFile => "Restoring: {:?}",
+            MessageKey::RestoreIntegrityMetadataLoaded => "✓ Integrity metadata loaded ({} backups)",
+            MessageKey::RestoreCompleted => "✓ Restore completed",
+            MessageKey::RestoreCompletedWithFailures => "⚠ Restore completed ({} failed)",
+
+            // Restore error messages
+            MessageKey::ErrorRelativePathFailed => "Failed to get relative path {}: {}",
+            MessageKey::ErrorPathTraversalDetected => "Path traversal detected {}: {}",
+            MessageKey::ErrorDirectoryCreateFailed => "Failed to create directory {}: {}",
+            MessageKey::ErrorFileReadFailed => "Failed to read file: {}",
+            MessageKey::ErrorFileOpenFailedSymlink => "Failed to open file (possible symlink attack): {}",
+            MessageKey::ErrorEncryptedButNoPassword => "Encrypted file but no password specified: {}",
+            MessageKey::ErrorMasterKeyRestoreFailed => "Failed to restore master key: {}",
+            MessageKey::ErrorDecryptionFailed => "Decryption failed {}: {}",
+            MessageKey::ErrorIntegrityVerificationFailed => "⚠ Integrity verification failed (file tampered): {}",
+            MessageKey::ErrorFileWriteFailed => "Failed to write file {}: {}",
+            MessageKey::ErrorFileCountFailed => "Errors occurred in {} files",
+
+            // Backup progress and error messages
+            MessageKey::BackupProgressProcessing => "Processing: {:?}",
+            MessageKey::ErrorBackupDirectoryCreateFailed => "Failed to create directory {}: {}",
+            MessageKey::ErrorBackupWriteFailed => "Write failed {}: {}",
+            MessageKey::ErrorBackupProcessFailed => "Processing failed {}: {}",
+            MessageKey::ErrorBackupCopyFailed => "Copy failed {}: {}",
         }
     }
 
@@ -1249,6 +1417,7 @@ impl MessageKey {
             MessageKey::NoTargetsRegistered => "バックアップ対象が登録されていません",
             MessageKey::SelectionCancelled => "選択がキャンセルされました",
             MessageKey::ConfirmClearAll => "⚠️  警告: {}個すべてのバックアップ対象を削除します。本当によろしいですか？",
+            MessageKey::ConfirmClearPriority => "⚠️  警告: {}優先度のバックアップ対象{}個を削除します。本当によろしいですか？",
             MessageKey::ConfirmCleanup => "{}日以前の古いバックアップを削除します。よろしいですか？",
             MessageKey::DaysOutOfRange => "days は 1-3650 の範囲で指定してください（指定値: {}）",
             MessageKey::PromptSelectTarget => "削除するバックアップ対象を選択",
@@ -1352,7 +1521,22 @@ impl MessageKey {
             MessageKey::CategoryLabel => "カテゴリ",
             MessageKey::ExcludePatternsLabel => "除外パターン",
 
+            // Smart Analyze labels
+            MessageKey::ItemLabel => "項目",
+            MessageKey::ValueLabel => "値",
+            MessageKey::ImportanceScoreLabel => "重要度スコア",
+            MessageKey::RecommendedPriorityLabel => "推奨優先度",
+            MessageKey::ReasonLabel => "理由",
+
+            // Smart Auto-Configure labels
+            MessageKey::AnalyzingLabel => "分析中",
+            MessageKey::AddedToConfiguration => "設定に追加しました",
+            MessageKey::ItemsAdded => "追加された項目",
+            MessageKey::ExistingBackupTargets => "現在{}個のバックアップ対象が登録されています",
+            MessageKey::AddNewTargets => "新しいターゲットを追加しますか？",
+
             // History detailed view
+            MessageKey::TimestampLabel => "日時",
             MessageKey::PathHistoryLabel => "パス",
             MessageKey::StatusHistoryLabel => "ステータス",
             MessageKey::FilesHistoryLabel => "ファイル数",
@@ -1397,6 +1581,9 @@ impl MessageKey {
             MessageKey::DiskUsageRateLabel => "ディスク使用率",
             MessageKey::UsageStatusLabel => "使用状況",
             MessageKey::RecentBackupsTitle => "🕒 最近のバックアップ（直近5件）",
+
+            // Schedule table headers
+            MessageKey::ScheduleHeaderLabel => "スケジュール",
 
             // Relative time messages
             MessageKey::DaysAgo => "{}日前",
@@ -1455,6 +1642,74 @@ impl MessageKey {
             MessageKey::ExcludeReasonMacOsMetadata => "macOSメタデータファイル（自動生成）",
             MessageKey::ExcludeReasonWindowsThumb => "Windowsサムネイルキャッシュ（自動生成）",
             MessageKey::ExcludeReasonWindowsDesktop => "Windowsデスクトップ設定ファイル（自動生成）",
+
+            // Password strength messages
+            MessageKey::PasswordStrengthLabel => "パスワード強度:",
+            MessageKey::PasswordStrengthWeak => "弱い",
+            MessageKey::PasswordStrengthMedium => "普通",
+            MessageKey::PasswordStrengthStrong => "強い",
+            MessageKey::PasswordStrengthWeakMessage => {
+                "このパスワードは攻撃に対して脆弱な可能性があります。より長く、多様な文字を含むパスワードの使用を検討してください。"
+            }
+            MessageKey::PasswordStrengthMediumMessage => {
+                "このパスワードは中程度のセキュリティを提供します。特殊文字の追加や長さの延長で改善できます。"
+            }
+            MessageKey::PasswordStrengthStrongMessage => {
+                "このパスワードは強力なセキュリティを提供します。"
+            }
+            MessageKey::PasswordStrengthTip => {
+                "ヒント: --generate-password を使用すると強力なランダムパスワードを生成できます。"
+            }
+
+            // Editor and config
+            MessageKey::EditorLaunchFailed => "エディタ起動失敗: {}",
+
+            // Smart feature progress
+            MessageKey::SubdirectoriesFound => "{}個のサブディレクトリを発見",
+            MessageKey::ProgressEvaluating => "処理進捗 - 評価中: {:?}",
+
+            // Backup confirmation prompts
+            MessageKey::ConfirmBackupTitle => "📦 バックアップ実行確認",
+            MessageKey::ConfirmBackupTargetFiles => "対象ファイル数: {} ファイル",
+            MessageKey::ConfirmBackupDestination => "バックアップ先: {}",
+
+            // Cleanup confirmation prompts
+            MessageKey::ConfirmCleanupTitle => "🗑️  古いバックアップの削除",
+            MessageKey::ConfirmCleanupTargetCount => "削除対象: {} 個のバックアップ",
+            MessageKey::ConfirmCleanupRetentionDays => "保持期間: {} 日",
+
+            // Cleanup progress messages
+            MessageKey::CleanupDryRunScheduled => "🗑️  [ドライラン] 削除予定: {:?}",
+            MessageKey::CleanupCompleted => "🗑️  削除完了: {:?}",
+            MessageKey::CleanupFailed => "削除失敗 {:?}: {}",
+
+            // Restore progress messages
+            MessageKey::RestoreDryRunDetected => "📋 ドライランモード: {} ファイルを復元対象として検出",
+            MessageKey::RestoreInProgress => "復元中...",
+            MessageKey::RestoreProgressFile => "復元中: {:?}",
+            MessageKey::RestoreIntegrityMetadataLoaded => "✓ 整合性メタデータ読み込み完了（{} バックアップ）",
+            MessageKey::RestoreCompleted => "✓ 復元完了",
+            MessageKey::RestoreCompletedWithFailures => "⚠ 復元完了（{}件失敗）",
+
+            // Restore error messages
+            MessageKey::ErrorRelativePathFailed => "相対パス取得失敗 {}: {}",
+            MessageKey::ErrorPathTraversalDetected => "パストラバーサル検出 {}: {}",
+            MessageKey::ErrorDirectoryCreateFailed => "ディレクトリ作成失敗 {}: {}",
+            MessageKey::ErrorFileReadFailed => "ファイル読み込み失敗: {}",
+            MessageKey::ErrorFileOpenFailedSymlink => "ファイルオープン失敗（シンボリックリンク攻撃の可能性）: {}",
+            MessageKey::ErrorEncryptedButNoPassword => "暗号化ファイルですがパスワード未指定: {}",
+            MessageKey::ErrorMasterKeyRestoreFailed => "マスターキー復元失敗: {}",
+            MessageKey::ErrorDecryptionFailed => "復号化失敗 {}: {}",
+            MessageKey::ErrorIntegrityVerificationFailed => "⚠ 整合性検証失敗（ファイル改ざんの可能性）: {}",
+            MessageKey::ErrorFileWriteFailed => "ファイル書き込み失敗 {}: {}",
+            MessageKey::ErrorFileCountFailed => "{}ファイルでエラー発生",
+
+            // Backup progress and error messages
+            MessageKey::BackupProgressProcessing => "処理中: {:?}",
+            MessageKey::ErrorBackupDirectoryCreateFailed => "ディレクトリ作成失敗 {}: {}",
+            MessageKey::ErrorBackupWriteFailed => "書き込み失敗 {}: {}",
+            MessageKey::ErrorBackupProcessFailed => "処理失敗 {}: {}",
+            MessageKey::ErrorBackupCopyFailed => "コピー失敗 {}: {}",
         }
     }
 
@@ -1491,10 +1746,40 @@ impl MessageKey {
             MessageKey::ExampleSmartSuggestExclude => "# 获取Smart排除建议",
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智能备份",
 
+            // Status messages
+            MessageKey::Added => "已添加",
+            MessageKey::Removed => "已删除",
+            MessageKey::Deleted => "已删除",
+            MessageKey::Error => "错误",
+            MessageKey::Warning => "⚠️",
+            MessageKey::BackupRunning => "🚀 正在备份",
+            MessageKey::RestoreStarting => "🔄 开始恢复",
+
+            // Encryption and compression
+            MessageKey::EncryptionPassword => "加密密码",
+            MessageKey::SavePasswordSecurely => "⚠️  请安全保存此密码！",
+            MessageKey::EncryptOption => "--encrypt: AES-256-GCM加密",
+            MessageKey::CompressOption => "--compress zstd/gzip: 压缩",
+            MessageKey::CompressLevel => "--compress-level 1-22: 压缩级别",
+
+            // Run command options
+            MessageKey::IncrementalOption => "--incremental: 增量备份（仅变更文件）",
+            MessageKey::GeneratePasswordOption => "--generate-password: 自动生成安全密码",
+            MessageKey::PasswordOption => "--password <密码>: 指定加密密码",
+            MessageKey::DryRunOption => "--dry-run: 演习模式（不实际备份）",
+            MessageKey::PriorityOption => "--priority <优先级>: 按优先级过滤 (high/medium/low)",
+            MessageKey::CategoryOption => "--category <类别>: 按类别过滤",
+
+            // Restore command options
+            MessageKey::FromOption => "--from <备份名称>: 要恢复的备份",
+            MessageKey::ToOption => "--to <目标路径>: 恢复目标路径",
+            MessageKey::RestorePasswordOption => "--password <密码>: 解密密码（如已加密）",
+
             // Runtime messages
             MessageKey::NoTargetsRegistered => "未注册备份目标",
             MessageKey::SelectionCancelled => "选择已取消",
             MessageKey::ConfirmClearAll => "⚠️  警告：删除所有 {} 个备份目标。确定吗？",
+            MessageKey::ConfirmClearPriority => "⚠️  警告：删除 {} 个{}优先级备份目标。确定吗？",
             MessageKey::ConfirmCleanup => "删除 {} 天之前的旧备份。确定吗？",
             MessageKey::DaysOutOfRange => "days 必须在 1-3650 范围内（指定值：{}）",
             MessageKey::PathNotExists => "路径不存在",
@@ -1535,7 +1820,22 @@ impl MessageKey {
             MessageKey::CategoryLabel => "类别",
             MessageKey::ExcludePatternsLabel => "排除模式",
 
+            // Smart Analyze labels
+            MessageKey::ItemLabel => "项目",
+            MessageKey::ValueLabel => "值",
+            MessageKey::ImportanceScoreLabel => "重要性分数",
+            MessageKey::RecommendedPriorityLabel => "推荐优先级",
+            MessageKey::ReasonLabel => "原因",
+
+            // Smart Auto-Configure labels
+            MessageKey::AnalyzingLabel => "分析中",
+            MessageKey::AddedToConfiguration => "已添加到配置",
+            MessageKey::ItemsAdded => "已添加项目",
+            MessageKey::ExistingBackupTargets => "您现有{}个备份目标",
+            MessageKey::AddNewTargets => "添加新目标？",
+
             // History detailed view
+            MessageKey::TimestampLabel => "时间",
             MessageKey::PathHistoryLabel => "路径",
             MessageKey::StatusHistoryLabel => "状态",
             MessageKey::FilesHistoryLabel => "文件数",
@@ -1580,6 +1880,9 @@ impl MessageKey {
             MessageKey::DiskUsageRateLabel => "磁盘使用率",
             MessageKey::UsageStatusLabel => "使用状态",
             MessageKey::RecentBackupsTitle => "🕒 最近备份（最新5次）",
+
+            // Schedule table headers
+            MessageKey::ScheduleHeaderLabel => "计划",
 
             // Relative time messages
             MessageKey::DaysAgo => "{}天前",
@@ -1641,6 +1944,102 @@ impl MessageKey {
             MessageKey::ExcludeReasonWindowsThumb => "Windows缩略图缓存（自动生成）",
             MessageKey::ExcludeReasonWindowsDesktop => "Windows桌面设置文件（自动生成）",
 
+            // Password strength messages
+            MessageKey::PasswordStrengthLabel => "密码强度:",
+            MessageKey::PasswordStrengthWeak => "弱",
+            MessageKey::PasswordStrengthMedium => "中等",
+            MessageKey::PasswordStrengthStrong => "强",
+            MessageKey::PasswordStrengthWeakMessage => {
+                "此密码可能容易受到攻击。建议使用更长且包含多种字符的密码。"
+            }
+            MessageKey::PasswordStrengthMediumMessage => {
+                "此密码提供中等安全性。添加特殊字符或增加长度可以改善。"
+            }
+            MessageKey::PasswordStrengthStrongMessage => "此密码提供强大的安全性。",
+            MessageKey::PasswordStrengthTip => "提示: 使用 --generate-password 生成强随机密码。",
+
+            // Editor and config
+            MessageKey::EditorLaunchFailed => "启动编辑器失败: {}",
+
+            // Smart feature progress
+            MessageKey::SubdirectoriesFound => "发现{}个子目录",
+            MessageKey::ProgressEvaluating => "处理进度 - 评估中: {:?}",
+
+            // Backup confirmation prompts
+            MessageKey::ConfirmBackupTitle => "📦 备份执行确认",
+            MessageKey::ConfirmBackupTargetFiles => "目标文件数: {} 文件",
+            MessageKey::ConfirmBackupDestination => "备份目标: {}",
+
+            // Cleanup confirmation prompts
+            MessageKey::ConfirmCleanupTitle => "🗑️  删除旧备份",
+            MessageKey::ConfirmCleanupTargetCount => "删除目标: {} 个备份",
+            MessageKey::ConfirmCleanupRetentionDays => "保留期限: {} 天",
+
+            // Cleanup progress messages
+            MessageKey::CleanupDryRunScheduled => "🗑️  [演习模式] 计划删除: {:?}",
+            MessageKey::CleanupCompleted => "🗑️  删除完成: {:?}",
+            MessageKey::CleanupFailed => "删除失败 {:?}: {}",
+
+            // Restore progress messages
+            MessageKey::RestoreDryRunDetected => "📋 演习模式: 检测到 {} 个文件待还原",
+            MessageKey::RestoreInProgress => "还原中...",
+            MessageKey::RestoreProgressFile => "还原中: {:?}",
+            MessageKey::RestoreIntegrityMetadataLoaded => "✓ 完整性元数据已加载（{} 个备份）",
+            MessageKey::RestoreCompleted => "✓ 还原完成",
+            MessageKey::RestoreCompletedWithFailures => "⚠ 还原完成（{}个失败）",
+
+            // Restore error messages
+            MessageKey::ErrorRelativePathFailed => "获取相对路径失败 {}: {}",
+            MessageKey::ErrorPathTraversalDetected => "检测到路径遍历 {}: {}",
+            MessageKey::ErrorDirectoryCreateFailed => "创建目录失败 {}: {}",
+            MessageKey::ErrorFileReadFailed => "读取文件失败: {}",
+            MessageKey::ErrorFileOpenFailedSymlink => "打开文件失败（可能是符号链接攻击）: {}",
+            MessageKey::ErrorEncryptedButNoPassword => "加密文件但未指定密码: {}",
+            MessageKey::ErrorMasterKeyRestoreFailed => "恢复主密钥失败: {}",
+            MessageKey::ErrorDecryptionFailed => "解密失败 {}: {}",
+            MessageKey::ErrorIntegrityVerificationFailed => {
+                "⚠ 完整性验证失败（文件可能被篡改）: {}"
+            }
+            MessageKey::ErrorFileWriteFailed => "写入文件失败 {}: {}",
+            MessageKey::ErrorFileCountFailed => "{}个文件发生错误",
+
+            // Backup progress and error messages
+            MessageKey::BackupProgressProcessing => "处理中: {:?}",
+            MessageKey::ErrorBackupDirectoryCreateFailed => "创建目录失败 {}: {}",
+            MessageKey::ErrorBackupWriteFailed => "写入失败 {}: {}",
+            MessageKey::ErrorBackupProcessFailed => "处理失败 {}: {}",
+            MessageKey::ErrorBackupCopyFailed => "复制失败 {}: {}",
+
+            // Newly added translations for Simplified Chinese
+            MessageKey::NoBackups => "无备份",
+            MessageKey::RestoreStart => "开始恢复",
+            MessageKey::Restoring => "恢复中...",
+            MessageKey::RestoredSuccess => "成功恢复备份到",
+            MessageKey::RestoredFileCount => "恢复文件数:",
+            MessageKey::BackupHistory => "备份历史",
+            MessageKey::ActualScheduleStatus => "实际调度状态",
+            MessageKey::Enabled => "已启用",
+            MessageKey::Disabled => "已禁用",
+            MessageKey::ScheduleSettings => "调度设置",
+            MessageKey::ScheduleUpdated => "调度已更新并应用",
+            MessageKey::ScheduleUpdatedEnableLater => {
+                "调度设置已更新（使用 'schedule enable' 启用）"
+            }
+            MessageKey::HighPriority => "高优先级",
+            MessageKey::MediumPriority => "中优先级",
+            MessageKey::LowPriority => "低优先级",
+            MessageKey::CurrentDestination => "当前备份目标",
+            MessageKey::DestinationChanged => "备份目标已更改",
+            MessageKey::Before => "之前",
+            MessageKey::After => "之后",
+            MessageKey::KeepDaysOutOfRange => "keep_days 必须在 1-3650 之间（指定值：",
+            MessageKey::KeepDaysChanged => "备份保留期限已更改",
+            MessageKey::CurrentKeepDays => "当前备份保留期限",
+            MessageKey::OpeningConfigFile => "打开配置文件",
+            MessageKey::EditorDidNotExitCleanly => "编辑器未正常退出",
+            MessageKey::AutoBackupEnabled => "已启用自动备份",
+            MessageKey::AutoBackupDisabled => "已禁用自动备份",
+
             // Keep all existing Simplified Chinese translations
             _ => self.get_en(), // Fallback to English for non-implemented keys
         }
@@ -1679,10 +2078,40 @@ impl MessageKey {
             MessageKey::ExampleSmartSuggestExclude => "# 取得Smart排除建議",
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智慧備份",
 
+            // Status messages
+            MessageKey::Added => "已加入",
+            MessageKey::Removed => "已刪除",
+            MessageKey::Deleted => "已刪除",
+            MessageKey::Error => "錯誤",
+            MessageKey::Warning => "⚠️",
+            MessageKey::BackupRunning => "🚀 正在備份",
+            MessageKey::RestoreStarting => "🔄 開始還原",
+
+            // Encryption and compression
+            MessageKey::EncryptionPassword => "加密密碼",
+            MessageKey::SavePasswordSecurely => "⚠️  請安全儲存此密碼！",
+            MessageKey::EncryptOption => "--encrypt: AES-256-GCM加密",
+            MessageKey::CompressOption => "--compress zstd/gzip: 壓縮",
+            MessageKey::CompressLevel => "--compress-level 1-22: 壓縮級別",
+
+            // Run command options
+            MessageKey::IncrementalOption => "--incremental: 增量備份（僅變更檔案）",
+            MessageKey::GeneratePasswordOption => "--generate-password: 自動生成安全密碼",
+            MessageKey::PasswordOption => "--password <密碼>: 指定加密密碼",
+            MessageKey::DryRunOption => "--dry-run: 演習模式（不實際備份）",
+            MessageKey::PriorityOption => "--priority <優先級>: 按優先級過濾 (high/medium/low)",
+            MessageKey::CategoryOption => "--category <類別>: 按類別過濾",
+
+            // Restore command options
+            MessageKey::FromOption => "--from <備份名稱>: 要還原的備份",
+            MessageKey::ToOption => "--to <目標路徑>: 還原目標路徑",
+            MessageKey::RestorePasswordOption => "--password <密碼>: 解密密碼（如已加密）",
+
             // Runtime messages
             MessageKey::NoTargetsRegistered => "未註冊備份目標",
             MessageKey::SelectionCancelled => "選擇已取消",
             MessageKey::ConfirmClearAll => "⚠️  警告：刪除所有 {} 個備份目標。確定嗎？",
+            MessageKey::ConfirmClearPriority => "⚠️  警告：刪除 {} 個{}優先級備份目標。確定嗎？",
             MessageKey::ConfirmCleanup => "刪除 {} 天之前的舊備份。確定嗎？",
             MessageKey::DaysOutOfRange => "days 必須在 1-3650 範圍內（指定值：{}）",
             MessageKey::PathNotExists => "路徑不存在",
@@ -1723,7 +2152,22 @@ impl MessageKey {
             MessageKey::CategoryLabel => "類別",
             MessageKey::ExcludePatternsLabel => "排除模式",
 
+            // Smart Analyze labels
+            MessageKey::ItemLabel => "項目",
+            MessageKey::ValueLabel => "值",
+            MessageKey::ImportanceScoreLabel => "重要性分數",
+            MessageKey::RecommendedPriorityLabel => "推薦優先級",
+            MessageKey::ReasonLabel => "原因",
+
+            // Smart Auto-Configure labels
+            MessageKey::AnalyzingLabel => "分析中",
+            MessageKey::AddedToConfiguration => "已加入至設定",
+            MessageKey::ItemsAdded => "已加入項目",
+            MessageKey::ExistingBackupTargets => "您現有{}個備份目標",
+            MessageKey::AddNewTargets => "加入新目標？",
+
             // History detailed view
+            MessageKey::TimestampLabel => "時間",
             MessageKey::PathHistoryLabel => "路徑",
             MessageKey::StatusHistoryLabel => "狀態",
             MessageKey::FilesHistoryLabel => "檔案數",
@@ -1768,6 +2212,9 @@ impl MessageKey {
             MessageKey::DiskUsageRateLabel => "磁碟使用率",
             MessageKey::UsageStatusLabel => "使用狀態",
             MessageKey::RecentBackupsTitle => "🕒 最近備份（最新5次）",
+
+            // Schedule table headers
+            MessageKey::ScheduleHeaderLabel => "計劃",
 
             // Relative time messages
             MessageKey::DaysAgo => "{}天前",
@@ -1828,6 +2275,102 @@ impl MessageKey {
             MessageKey::ExcludeReasonMacOsMetadata => "macOS元數據檔案（自動生成）",
             MessageKey::ExcludeReasonWindowsThumb => "Windows縮圖快取（自動生成）",
             MessageKey::ExcludeReasonWindowsDesktop => "Windows桌面設定檔案（自動生成）",
+
+            // Password strength messages
+            MessageKey::PasswordStrengthLabel => "密碼強度:",
+            MessageKey::PasswordStrengthWeak => "弱",
+            MessageKey::PasswordStrengthMedium => "中等",
+            MessageKey::PasswordStrengthStrong => "強",
+            MessageKey::PasswordStrengthWeakMessage => {
+                "此密碼可能容易受到攻擊。建議使用更長且包含多種字元的密碼。"
+            }
+            MessageKey::PasswordStrengthMediumMessage => {
+                "此密碼提供中等安全性。新增特殊字元或增加長度可以改善。"
+            }
+            MessageKey::PasswordStrengthStrongMessage => "此密碼提供強大的安全性。",
+            MessageKey::PasswordStrengthTip => "提示: 使用 --generate-password 生成強隨機密碼。",
+
+            // Editor and config
+            MessageKey::EditorLaunchFailed => "啟動編輯器失敗: {}",
+
+            // Smart feature progress
+            MessageKey::SubdirectoriesFound => "發現{}個子目錄",
+            MessageKey::ProgressEvaluating => "處理進度 - 評估中: {:?}",
+
+            // Backup confirmation prompts
+            MessageKey::ConfirmBackupTitle => "📦 備份執行確認",
+            MessageKey::ConfirmBackupTargetFiles => "目標檔案數: {} 檔案",
+            MessageKey::ConfirmBackupDestination => "備份目標: {}",
+
+            // Cleanup confirmation prompts
+            MessageKey::ConfirmCleanupTitle => "🗑️  刪除舊備份",
+            MessageKey::ConfirmCleanupTargetCount => "刪除目標: {} 個備份",
+            MessageKey::ConfirmCleanupRetentionDays => "保留期限: {} 天",
+
+            // Cleanup progress messages
+            MessageKey::CleanupDryRunScheduled => "🗑️  [演習模式] 計劃刪除: {:?}",
+            MessageKey::CleanupCompleted => "🗑️  刪除完成: {:?}",
+            MessageKey::CleanupFailed => "刪除失敗 {:?}: {}",
+
+            // Restore progress messages
+            MessageKey::RestoreDryRunDetected => "📋 演習模式: 檢測到 {} 個檔案待還原",
+            MessageKey::RestoreInProgress => "還原中...",
+            MessageKey::RestoreProgressFile => "還原中: {:?}",
+            MessageKey::RestoreIntegrityMetadataLoaded => "✓ 完整性元數據已載入（{} 個備份）",
+            MessageKey::RestoreCompleted => "✓ 還原完成",
+            MessageKey::RestoreCompletedWithFailures => "⚠ 還原完成（{}個失敗）",
+
+            // Restore error messages
+            MessageKey::ErrorRelativePathFailed => "取得相對路徑失敗 {}: {}",
+            MessageKey::ErrorPathTraversalDetected => "偵測到路徑遍歷 {}: {}",
+            MessageKey::ErrorDirectoryCreateFailed => "建立目錄失敗 {}: {}",
+            MessageKey::ErrorFileReadFailed => "讀取檔案失敗: {}",
+            MessageKey::ErrorFileOpenFailedSymlink => "開啟檔案失敗（可能是符號連結攻擊）: {}",
+            MessageKey::ErrorEncryptedButNoPassword => "加密檔案但未指定密碼: {}",
+            MessageKey::ErrorMasterKeyRestoreFailed => "恢復主金鑰失敗: {}",
+            MessageKey::ErrorDecryptionFailed => "解密失敗 {}: {}",
+            MessageKey::ErrorIntegrityVerificationFailed => {
+                "⚠ 完整性驗證失敗（檔案可能被竄改）: {}"
+            }
+            MessageKey::ErrorFileWriteFailed => "寫入檔案失敗 {}: {}",
+            MessageKey::ErrorFileCountFailed => "{}個檔案發生錯誤",
+
+            // Backup progress and error messages
+            MessageKey::BackupProgressProcessing => "處理中: {:?}",
+            MessageKey::ErrorBackupDirectoryCreateFailed => "建立目錄失敗 {}: {}",
+            MessageKey::ErrorBackupWriteFailed => "寫入失敗 {}: {}",
+            MessageKey::ErrorBackupProcessFailed => "處理失敗 {}: {}",
+            MessageKey::ErrorBackupCopyFailed => "複製失敗 {}: {}",
+
+            // Newly added translations for Traditional Chinese
+            MessageKey::NoBackups => "無備份",
+            MessageKey::RestoreStart => "開始還原",
+            MessageKey::Restoring => "還原中...",
+            MessageKey::RestoredSuccess => "成功還原備份到",
+            MessageKey::RestoredFileCount => "還原檔案數:",
+            MessageKey::BackupHistory => "備份歷史",
+            MessageKey::ActualScheduleStatus => "實際排程狀態",
+            MessageKey::Enabled => "已啟用",
+            MessageKey::Disabled => "已停用",
+            MessageKey::ScheduleSettings => "排程設定",
+            MessageKey::ScheduleUpdated => "排程已更新並套用",
+            MessageKey::ScheduleUpdatedEnableLater => {
+                "排程設定已更新（使用 'schedule enable' 啟用）"
+            }
+            MessageKey::HighPriority => "高優先級",
+            MessageKey::MediumPriority => "中優先級",
+            MessageKey::LowPriority => "低優先級",
+            MessageKey::CurrentDestination => "目前備份目標",
+            MessageKey::DestinationChanged => "備份目標已變更",
+            MessageKey::Before => "之前",
+            MessageKey::After => "之後",
+            MessageKey::KeepDaysOutOfRange => "keep_days 必須在 1-3650 之間（指定值：",
+            MessageKey::KeepDaysChanged => "備份保留期限已變更",
+            MessageKey::CurrentKeepDays => "目前備份保留期限",
+            MessageKey::OpeningConfigFile => "開啟設定檔",
+            MessageKey::EditorDidNotExitCleanly => "編輯器未正常結束",
+            MessageKey::AutoBackupEnabled => "已啟用自動備份",
+            MessageKey::AutoBackupDisabled => "已停用自動備份",
 
             // Keep all existing Traditional Chinese translations
             _ => self.get_en(), // Fallback to English for non-implemented keys

@@ -33,6 +33,7 @@
 use anyhow::{Context, Result};
 use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Generator, Shell};
+use comfy_table::{presets::UTF8_FULL, Cell, CellAlignment, Color, ContentArrangement, Table};
 use dialoguer::FuzzySelect;
 use is_terminal::IsTerminal;
 use std::env;
@@ -1512,13 +1513,7 @@ fn main() -> Result<()> {
 
     // --version フラグの処理
     if cli.version {
-        println!(
-            "{}{}{}",
-            get_color("green", cli.no_color),
-            get_message(MessageKey::AppVersion, lang),
-            get_color("reset", cli.no_color)
-        );
-        println!("{}", get_message(MessageKey::RustFastTypeSafe, lang));
+        println!("Backup Suite {}", env!("CARGO_PKG_VERSION"));
         return Ok(());
     }
 
@@ -1819,6 +1814,66 @@ fn main() -> Result<()> {
 
                 config.targets.clear();
             } else if let Some(p) = priority {
+                // 削除される件数を事前にカウント
+                let to_delete_count = config.targets.iter().filter(|t| t.priority == p).count();
+
+                if to_delete_count == 0 {
+                    println!(
+                        "{}⚠️ 指定された優先度のバックアップ対象は0件です{}",
+                        get_color("yellow", false),
+                        get_color("reset", false)
+                    );
+                    return Ok(());
+                }
+
+                // 優先度別の削除前確認プロンプト
+                use dialoguer::Confirm;
+                let priority_name = match p {
+                    Priority::High => match lang {
+                        Language::Japanese => "高",
+                        Language::SimplifiedChinese => "高",
+                        Language::TraditionalChinese => "高",
+                        Language::English => "High",
+                    },
+                    Priority::Medium => match lang {
+                        Language::Japanese => "中",
+                        Language::SimplifiedChinese => "中",
+                        Language::TraditionalChinese => "中",
+                        Language::English => "Medium",
+                    },
+                    Priority::Low => match lang {
+                        Language::Japanese => "低",
+                        Language::SimplifiedChinese => "低",
+                        Language::TraditionalChinese => "低",
+                        Language::English => "Low",
+                    },
+                };
+
+                // 日本語は優先度が先、他言語は件数が先
+                let prompt = if lang == Language::Japanese {
+                    get_message(MessageKey::ConfirmClearPriority, lang)
+                        .replacen("{}", priority_name, 1)
+                        .replacen("{}", &to_delete_count.to_string(), 1)
+                } else {
+                    get_message(MessageKey::ConfirmClearPriority, lang)
+                        .replacen("{}", &to_delete_count.to_string(), 1)
+                        .replacen("{}", priority_name, 1)
+                };
+
+                if !Confirm::new()
+                    .with_prompt(prompt)
+                    .default(false)
+                    .interact()?
+                {
+                    println!(
+                        "{}{}{}",
+                        get_color("yellow", false),
+                        get_message(MessageKey::SelectionCancelled, lang),
+                        get_color("reset", false)
+                    );
+                    return Ok(());
+                }
+
                 config.targets.retain(|t| t.priority != p);
             } else {
                 println!(
@@ -2265,22 +2320,19 @@ fn main() -> Result<()> {
         Some(Commands::Status) => {
             let config = Config::load()?;
             println!(
-                "{}📊 {}{}",
-                get_color("magenta", false),
-                get_message(MessageKey::StatusTitle, lang),
-                get_color("reset", false)
+                "\n\x1b[1m📊 {}\x1b[0m\n",
+                get_message(MessageKey::StatusTitle, lang)
             );
+
+            // 保存先を独立した行として表示
             println!(
-                "  {}: {:?}",
+                "{}: {:?}",
                 get_message(MessageKey::Destination, lang),
                 config.backup.destination
             );
-            println!(
-                "  {}: {}",
-                get_message(MessageKey::Targets, lang),
-                config.targets.len()
-            );
+
             // 各優先度の正確な件数をカウント（== 比較）
+            let total_targets = config.targets.len();
             let high_count = config
                 .targets
                 .iter()
@@ -2296,27 +2348,61 @@ fn main() -> Result<()> {
                 .iter()
                 .filter(|t| t.priority == Priority::Low)
                 .count();
-            println!(
-                "    {}{}{}: {}",
-                get_color("red", false),
-                get_message(MessageKey::High, lang),
-                get_color("reset", false),
-                high_count
-            );
-            println!(
-                "    {}{}{}: {}",
-                get_color("yellow", false),
-                get_message(MessageKey::Medium, lang),
-                get_color("reset", false),
-                medium_count
-            );
-            println!(
-                "    {}{}{}: {}",
-                get_color("gray", false),
-                get_message(MessageKey::Low, lang),
-                get_color("reset", false),
-                low_count
-            );
+
+            let mut table = Table::new();
+            table
+                .load_preset(UTF8_FULL)
+                .set_content_arrangement(ContentArrangement::Dynamic);
+
+            // 総対象数
+            table.add_row(vec![
+                Cell::new(if lang == Language::Japanese {
+                    "総対象数"
+                } else {
+                    "Total Targets"
+                }),
+                Cell::new(total_targets.to_string())
+                    .fg(Color::Cyan)
+                    .set_alignment(CellAlignment::Right),
+            ]);
+
+            // 高優先度
+            table.add_row(vec![
+                Cell::new(if lang == Language::Japanese {
+                    "  高優先度"
+                } else {
+                    "  High Priority"
+                }),
+                Cell::new(high_count.to_string())
+                    .fg(Color::Red)
+                    .set_alignment(CellAlignment::Right),
+            ]);
+
+            // 中優先度
+            table.add_row(vec![
+                Cell::new(if lang == Language::Japanese {
+                    "  中優先度"
+                } else {
+                    "  Medium Priority"
+                }),
+                Cell::new(medium_count.to_string())
+                    .fg(Color::Yellow)
+                    .set_alignment(CellAlignment::Right),
+            ]);
+
+            // 低優先度
+            table.add_row(vec![
+                Cell::new(if lang == Language::Japanese {
+                    "  低優先度"
+                } else {
+                    "  Low Priority"
+                }),
+                Cell::new(low_count.to_string())
+                    .fg(Color::Cyan)
+                    .set_alignment(CellAlignment::Right),
+            ]);
+
+            println!("{table}");
         }
         Some(Commands::History {
             days,
@@ -2340,10 +2426,8 @@ fn main() -> Result<()> {
             }
 
             println!(
-                "\n{}📜 {}{}（{}{}）",
-                get_color("magenta", false),
+                "\n\x1b[1m📜 {}\x1b[0m（{}{}）",
                 get_message(MessageKey::BackupHistory, lang),
-                get_color("reset", false),
                 days,
                 get_message(MessageKey::Days, lang)
             );
@@ -2359,7 +2443,7 @@ fn main() -> Result<()> {
                     );
                     println!(
                         "🕒 {}: {}",
-                        get_message(MessageKey::StatusTitle, lang),
+                        get_message(MessageKey::TimestampLabel, lang),
                         entry.timestamp.format("%Y-%m-%d %H:%M:%S")
                     );
                     println!(
@@ -2509,99 +2593,122 @@ fn main() -> Result<()> {
                 }
                 ScheduleAction::Status => {
                     println!(
-                        "{}📅 {}{}",
-                        get_color("magenta", false),
-                        get_message(MessageKey::ScheduleSettings, lang),
-                        get_color("reset", false)
+                        "\n\x1b[1m📅 {}\x1b[0m\n",
+                        if lang == Language::Japanese {
+                            "スケジュール"
+                        } else {
+                            "Schedule"
+                        }
                     );
+
+                    // frequency値を事前に抽出（Scheduler::new()でconfigがmoveされる前）
+                    let high_freq = config.schedule.high_frequency.clone();
+                    let medium_freq = config.schedule.medium_frequency.clone();
+                    let low_freq = config.schedule.low_frequency.clone();
+
+                    // 設定状態を表外に表示（チェックマーク位置修正: ✅を先に）
                     println!(
-                        "  {}: {}",
-                        get_message(MessageKey::Enabled, lang),
+                        "{}: {} {}\n",
+                        if lang == Language::Japanese {
+                            "設定"
+                        } else {
+                            "Configuration"
+                        },
                         if config.schedule.enabled {
                             "✅"
                         } else {
                             "❌"
+                        },
+                        if config.schedule.enabled {
+                            if lang == Language::Japanese {
+                                "有効"
+                            } else {
+                                "Enabled"
+                            }
+                        } else {
+                            if lang == Language::Japanese {
+                                "無効"
+                            } else {
+                                "Disabled"
+                            }
                         }
-                    );
-                    println!(
-                        "  {}: {}",
-                        get_message(MessageKey::HighPriority, lang),
-                        config.schedule.high_frequency
-                    );
-                    println!(
-                        "  {}: {}",
-                        get_message(MessageKey::MediumPriority, lang),
-                        config.schedule.medium_frequency
-                    );
-                    println!(
-                        "  {}: {}",
-                        get_message(MessageKey::LowPriority, lang),
-                        config.schedule.low_frequency
                     );
 
                     // 実際の状態確認
                     let scheduler = Scheduler::new(config)?;
                     let status = scheduler.check_status()?;
 
-                    println!();
-                    println!(
-                        "{}📋 {}{}",
-                        get_color("magenta", false),
-                        get_message(MessageKey::ActualScheduleStatus, lang),
-                        get_color("reset", false)
-                    );
+                    let mut table = Table::new();
+                    table
+                        .load_preset(UTF8_FULL)
+                        .set_content_arrangement(ContentArrangement::Dynamic)
+                        .set_header(vec![
+                            Cell::new(get_message(MessageKey::PriorityLabel, lang)),
+                            Cell::new(get_message(MessageKey::ScheduleHeaderLabel, lang)),
+                            Cell::new(get_message(MessageKey::StatusHistoryLabel, lang)),
+                        ]);
 
-                    println!(
-                        "  high: {}{}{}{}",
-                        if status.high_enabled {
-                            get_color("green", false)
+                    // 高優先度
+                    table.add_row(vec![
+                        Cell::new(get_message(MessageKey::HighPriority, lang)),
+                        Cell::new(&high_freq),
+                        Cell::new(format!(
+                            "{} {}",
+                            if status.high_enabled { "✅" } else { "❌" },
+                            if status.high_enabled {
+                                get_message(MessageKey::EnabledLabel, lang)
+                            } else {
+                                get_message(MessageKey::Disabled, lang)
+                            }
+                        ))
+                        .fg(if status.high_enabled {
+                            Color::Green
                         } else {
-                            get_color("red", false)
-                        },
-                        if status.high_enabled { "✅ " } else { "❌ " },
-                        if status.high_enabled {
-                            get_message(MessageKey::Enabled, lang)
-                        } else {
-                            get_message(MessageKey::Disabled, lang)
-                        },
-                        get_color("reset", false)
-                    );
+                            Color::Red
+                        }),
+                    ]);
 
-                    println!(
-                        "  medium: {}{}{}{}",
-                        if status.medium_enabled {
-                            get_color("green", false)
+                    // 中優先度
+                    table.add_row(vec![
+                        Cell::new(get_message(MessageKey::MediumPriority, lang)),
+                        Cell::new(&medium_freq),
+                        Cell::new(format!(
+                            "{} {}",
+                            if status.medium_enabled { "✅" } else { "❌" },
+                            if status.medium_enabled {
+                                get_message(MessageKey::EnabledLabel, lang)
+                            } else {
+                                get_message(MessageKey::Disabled, lang)
+                            }
+                        ))
+                        .fg(if status.medium_enabled {
+                            Color::Green
                         } else {
-                            get_color("red", false)
-                        },
-                        if status.medium_enabled {
-                            "✅ "
-                        } else {
-                            "❌ "
-                        },
-                        if status.medium_enabled {
-                            get_message(MessageKey::Enabled, lang)
-                        } else {
-                            get_message(MessageKey::Disabled, lang)
-                        },
-                        get_color("reset", false)
-                    );
+                            Color::Red
+                        }),
+                    ]);
 
-                    println!(
-                        "  low: {}{}{}{}",
-                        if status.low_enabled {
-                            get_color("green", false)
+                    // 低優先度
+                    table.add_row(vec![
+                        Cell::new(get_message(MessageKey::LowPriority, lang)),
+                        Cell::new(&low_freq),
+                        Cell::new(format!(
+                            "{} {}",
+                            if status.low_enabled { "✅" } else { "❌" },
+                            if status.low_enabled {
+                                get_message(MessageKey::EnabledLabel, lang)
+                            } else {
+                                get_message(MessageKey::Disabled, lang)
+                            }
+                        ))
+                        .fg(if status.low_enabled {
+                            Color::Green
                         } else {
-                            get_color("red", false)
-                        },
-                        if status.low_enabled { "✅ " } else { "❌ " },
-                        if status.low_enabled {
-                            get_message(MessageKey::Enabled, lang)
-                        } else {
-                            get_message(MessageKey::Disabled, lang)
-                        },
-                        get_color("reset", false)
-                    );
+                            Color::Red
+                        }),
+                    ]);
+
+                    println!("{table}");
                 }
                 ScheduleAction::Setup { high, medium, low } => {
                     config.schedule.high_frequency = high.clone();
@@ -2811,7 +2918,10 @@ fn main() -> Result<()> {
                     let status = std::process::Command::new(&editor)
                         .arg(&config_path)
                         .status()
-                        .context(format!("エディタ起動失敗: {editor}"))?;
+                        .context(
+                            get_message(MessageKey::EditorLaunchFailed, lang)
+                                .replace("{}", &editor),
+                        )?;
 
                     if !status.success() {
                         println!(
@@ -2851,10 +2961,8 @@ fn main() -> Result<()> {
                     }
 
                     println!(
-                        "{}{}{}",
-                        get_color("magenta", false),
-                        get_message(MessageKey::SmartDetectTitle, lang),
-                        get_color("reset", false)
+                        "\x1b[1m{}\x1b[0m",
+                        get_message(MessageKey::SmartDetectTitle, lang)
                     );
                     println!(
                         "{}{}{}...\n",
@@ -2931,16 +3039,8 @@ fn main() -> Result<()> {
                                     .load_preset(UTF8_FULL)
                                     .set_content_arrangement(ContentArrangement::Dynamic)
                                     .set_header(vec![
-                                        Cell::new(if lang == Language::Japanese {
-                                            "項目"
-                                        } else {
-                                            "Item"
-                                        }),
-                                        Cell::new(if lang == Language::Japanese {
-                                            "値"
-                                        } else {
-                                            "Value"
-                                        }),
+                                        Cell::new(get_message(MessageKey::ItemLabel, lang)),
+                                        Cell::new(get_message(MessageKey::ValueLabel, lang)),
                                     ]);
                                 table.add_row(vec!["Z-score", &format!("{:.2}", result.z_score())]);
                                 table.add_row(vec![
@@ -3086,18 +3186,12 @@ fn main() -> Result<()> {
                         .context("指定されたパスは許可されていません")?;
 
                     println!(
-                        "{}{}{}",
-                        get_color("magenta", false),
-                        get_message(MessageKey::SmartAnalyzeTitle, lang),
-                        get_color("reset", false)
+                        "\x1b[1m{}\x1b[0m",
+                        get_message(MessageKey::SmartAnalyzeTitle, lang)
                     );
                     println!(
                         "{}: {:?}\n",
-                        if lang == Language::Japanese {
-                            "パス"
-                        } else {
-                            "Path"
-                        },
+                        get_message(MessageKey::PathLabel, lang),
                         normalized_path
                     );
 
@@ -3110,85 +3204,45 @@ fn main() -> Result<()> {
                                     .load_preset(UTF8_FULL)
                                     .set_content_arrangement(ContentArrangement::Dynamic)
                                     .set_header(vec![
-                                        Cell::new(if lang == Language::Japanese {
-                                            "項目"
-                                        } else {
-                                            "Item"
-                                        }),
-                                        Cell::new(if lang == Language::Japanese {
-                                            "値"
-                                        } else {
-                                            "Value"
-                                        }),
+                                        Cell::new(get_message(MessageKey::ItemLabel, lang)),
+                                        Cell::new(get_message(MessageKey::ValueLabel, lang)),
                                     ]);
                                 table.add_row(vec![
-                                    if lang == Language::Japanese {
-                                        "重要度スコア"
-                                    } else {
-                                        "Importance Score"
-                                    },
+                                    get_message(MessageKey::ImportanceScoreLabel, lang),
                                     &format!("{}/100", result.score().get()),
                                 ]);
                                 table.add_row(vec![
-                                    if lang == Language::Japanese {
-                                        "推奨優先度"
-                                    } else {
-                                        "Recommended Priority"
-                                    },
+                                    get_message(MessageKey::RecommendedPriorityLabel, lang),
                                     &format!("{:?}", *result.priority()),
                                 ]);
                                 table.add_row(vec![
-                                    if lang == Language::Japanese {
-                                        "カテゴリ"
-                                    } else {
-                                        "Category"
-                                    },
+                                    get_message(MessageKey::CategoryLabel, lang),
                                     result.category(),
                                 ]);
                                 table.add_row(vec![
-                                    if lang == Language::Japanese {
-                                        "理由"
-                                    } else {
-                                        "Reason"
-                                    },
+                                    get_message(MessageKey::ReasonLabel, lang),
                                     result.reason(),
                                 ]);
                                 println!("{table}");
                             } else {
                                 println!(
                                     "  {}: {}/100",
-                                    if lang == Language::Japanese {
-                                        "重要度スコア"
-                                    } else {
-                                        "Importance Score"
-                                    },
+                                    get_message(MessageKey::ImportanceScoreLabel, lang),
                                     result.score().get()
                                 );
                                 println!(
                                     "  {}: {:?}",
-                                    if lang == Language::Japanese {
-                                        "推奨優先度"
-                                    } else {
-                                        "Recommended Priority"
-                                    },
+                                    get_message(MessageKey::RecommendedPriorityLabel, lang),
                                     *result.priority()
                                 );
                                 println!(
                                     "  {}: {}",
-                                    if lang == Language::Japanese {
-                                        "カテゴリ"
-                                    } else {
-                                        "Category"
-                                    },
+                                    get_message(MessageKey::CategoryLabel, lang),
                                     result.category()
                                 );
                                 println!(
                                     "  {}: {}",
-                                    if lang == Language::Japanese {
-                                        "理由"
-                                    } else {
-                                        "Reason"
-                                    },
+                                    get_message(MessageKey::ReasonLabel, lang),
                                     result.reason()
                                 );
                             }
@@ -3253,18 +3307,12 @@ fn main() -> Result<()> {
                         .context("指定されたパスは許可されていません")?;
 
                     println!(
-                        "{}{}{}",
-                        get_color("magenta", false),
-                        get_message(MessageKey::SmartSuggestExcludeTitle, lang),
-                        get_color("reset", false)
+                        "\x1b[1m{}\x1b[0m\n",
+                        get_message(MessageKey::SmartSuggestExcludeTitle, lang)
                     );
                     println!(
-                        "{}: {:?}\n",
-                        if lang == Language::Japanese {
-                            "パス"
-                        } else {
-                            "Path"
-                        },
+                        "{}: {:?}",
+                        get_message(MessageKey::PathLabel, lang),
                         normalized_path
                     );
 
@@ -3418,10 +3466,8 @@ fn main() -> Result<()> {
                     }
 
                     println!(
-                        "{}{}{}",
-                        get_color("magenta", false),
-                        get_message(MessageKey::SmartAutoConfigureTitle, lang),
-                        get_color("reset", false)
+                        "\x1b[1m{}\x1b[0m",
+                        get_message(MessageKey::SmartAutoConfigureTitle, lang)
                     );
                     if dry_run {
                         println!(
@@ -3441,14 +3487,8 @@ fn main() -> Result<()> {
                     // Warn if existing backup targets will be affected
                     if !config.targets.is_empty() && !dry_run && !interactive {
                         use dialoguer::Confirm;
-                        let message = if lang == Language::Japanese {
-                            format!(
-                                "現在{}個のバックアップ対象が登録されています",
-                                config.targets.len()
-                            )
-                        } else {
-                            format!("You have {} existing backup targets", config.targets.len())
-                        };
+                        let message = get_message(MessageKey::ExistingBackupTargets, lang)
+                            .replace("{}", &config.targets.len().to_string());
                         println!(
                             "\n{}⚠️  {}{}",
                             get_color("yellow", false),
@@ -3456,11 +3496,7 @@ fn main() -> Result<()> {
                             get_color("reset", false)
                         );
 
-                        let prompt = if lang == Language::Japanese {
-                            "新しいターゲットを追加しますか？"
-                        } else {
-                            "Add new targets?"
-                        };
+                        let prompt = get_message(MessageKey::AddNewTargets, lang);
 
                         if !Confirm::new()
                             .with_prompt(prompt)
@@ -3468,8 +3504,9 @@ fn main() -> Result<()> {
                             .interact()?
                         {
                             println!(
-                                "{}キャンセルしました{}",
+                                "{}{}{}",
                                 get_color("yellow", false),
+                                get_message(MessageKey::SelectionCancelled, lang),
                                 get_color("reset", false)
                             );
                             return Ok(());
@@ -3527,11 +3564,7 @@ fn main() -> Result<()> {
 
                         println!(
                             "{}: {:?}",
-                            if lang == Language::Japanese {
-                                "分析中"
-                            } else {
-                                "Analyzing"
-                            },
+                            get_message(MessageKey::AnalyzingLabel, lang),
                             normalized_path
                         );
 
@@ -3572,11 +3605,8 @@ fn main() -> Result<()> {
                                 println!(
                                     "  {}📁 {}: {}{}",
                                     get_color("cyan", false),
-                                    if lang == Language::Japanese {
-                                        format!("{}個のサブディレクトリを発見", subdirs.len())
-                                    } else {
-                                        format!("Found {} subdirectories", subdirs.len())
-                                    },
+                                    get_message(MessageKey::SubdirectoriesFound, lang)
+                                        .replace("{}", &subdirs.len().to_string()),
                                     subdirs.len(),
                                     get_color("reset", false)
                                 );
@@ -3639,11 +3669,8 @@ fn main() -> Result<()> {
                             // プログレスバーを更新してから処理を開始
                             if let Some(ref pb) = pb {
                                 pb.set_position((idx + 1) as u64);
-                                let msg = if lang == Language::Japanese {
-                                    format!("処理進捗 - 評価中: {:?}", target_path)
-                                } else {
-                                    format!("Progress - Evaluating: {:?}", target_path)
-                                };
+                                let msg = get_message(MessageKey::ProgressEvaluating, lang)
+                                    .replace("{:?}", &format!("{:?}", target_path));
                                 pb.set_message(msg);
                             }
 
@@ -3852,11 +3879,7 @@ fn main() -> Result<()> {
                                             output_buffer.push(format!(
                                                 "      {}✅ {}{}",
                                                 get_color("green", false),
-                                                if lang == Language::Japanese {
-                                                    "設定に追加しました"
-                                                } else {
-                                                    "Added to configuration"
-                                                },
+                                                get_message(MessageKey::AddedToConfiguration, lang),
                                                 get_color("reset", false)
                                             ));
                                         } else {
@@ -3906,11 +3929,7 @@ fn main() -> Result<()> {
                         );
                         println!(
                             "  {}: {}",
-                            if lang == Language::Japanese {
-                                "追加された項目"
-                            } else {
-                                "Items added"
-                            },
+                            get_message(MessageKey::ItemsAdded, lang),
                             added_count
                         );
                     }
