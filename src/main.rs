@@ -3688,23 +3688,52 @@ fn main() -> Result<()> {
                                                             // パターン詳細表示は省略（スピナー行の上書きを維持）
 
                                                             if interactive {
-                                                                use dialoguer::Confirm;
-                                                                let prompt = format!(
-                                                                    "{}\"{}\" {}{}",
-                                                                    get_color("yellow", false),
-                                                                    rec.pattern(),
-                                                                    if lang == Language::Japanese {
-                                                                        "を除外リストに追加しますか？"
-                                                                    } else {
-                                                                        "to exclude list?"
-                                                                    },
-                                                                    get_color("reset", false)
-                                                                );
-
-                                                                if Confirm::new()
-                                                                    .with_prompt(prompt)
-                                                                    .interact()?
+                                                                // プログレスバーを一時停止してプロンプトを表示
+                                                                let should_add = if let Some(
+                                                                    ref pb,
+                                                                ) = pb
                                                                 {
+                                                                    pb.suspend(|| {
+                                                                        use dialoguer::Confirm;
+                                                                        let prompt = format!(
+                                                                            "{}\"{}\" {}{}",
+                                                                            get_color("yellow", false),
+                                                                            rec.pattern(),
+                                                                            if lang == Language::Japanese {
+                                                                                "を除外リストに追加しますか？"
+                                                                            } else {
+                                                                                "to exclude list?"
+                                                                            },
+                                                                            get_color("reset", false)
+                                                                        );
+
+                                                                        Confirm::new()
+                                                                            .with_prompt(prompt)
+                                                                            .interact()
+                                                                            .unwrap_or(false)
+                                                                    })
+                                                                } else {
+                                                                    use dialoguer::Confirm;
+                                                                    let prompt = format!(
+                                                                        "{}\"{}\" {}{}",
+                                                                        get_color("yellow", false),
+                                                                        rec.pattern(),
+                                                                        if lang
+                                                                            == Language::Japanese
+                                                                        {
+                                                                            "を除外リストに追加しますか？"
+                                                                        } else {
+                                                                            "to exclude list?"
+                                                                        },
+                                                                        get_color("reset", false)
+                                                                    );
+
+                                                                    Confirm::new()
+                                                                        .with_prompt(prompt)
+                                                                        .interact()?
+                                                                };
+
+                                                                if should_add {
                                                                     exclude_patterns.push(
                                                                         rec.pattern().to_string(),
                                                                     );
@@ -3726,26 +3755,57 @@ fn main() -> Result<()> {
 
                                     // Interactive モードでは追加するかどうかを確認（優先度はAI推奨をそのまま使用）
                                     if interactive {
-                                        use dialoguer::Confirm;
-                                        let prompt = if lang == Language::Japanese {
-                                            format!(
-                                                "{}AI推奨: {:?} (優先度: {:?}) を追加しますか？{}",
-                                                get_color("yellow", false),
-                                                target_path,
-                                                *result.priority(),
-                                                get_color("reset", false)
-                                            )
+                                        // プログレスバーを一時停止してプロンプトを表示
+                                        let should_continue = if let Some(ref pb) = pb {
+                                            pb.suspend(|| {
+                                                use dialoguer::Confirm;
+                                                let prompt = if lang == Language::Japanese {
+                                                    format!(
+                                                        "{}Smart推奨: {:?} (優先度: {:?}) を追加しますか？{}",
+                                                        get_color("yellow", false),
+                                                        target_path,
+                                                        *result.priority(),
+                                                        get_color("reset", false)
+                                                    )
+                                                } else {
+                                                    format!(
+                                                        "{}Smart recommends: Add {:?} (priority: {:?})?{}",
+                                                        get_color("yellow", false),
+                                                        target_path,
+                                                        *result.priority(),
+                                                        get_color("reset", false)
+                                                    )
+                                                };
+
+                                                Confirm::new()
+                                                    .with_prompt(prompt)
+                                                    .interact()
+                                                    .unwrap_or(true)
+                                            })
                                         } else {
-                                            format!(
-                                                "{}AI recommends: Add {:?} (priority: {:?})?{}",
-                                                get_color("yellow", false),
-                                                target_path,
-                                                *result.priority(),
-                                                get_color("reset", false)
-                                            )
+                                            use dialoguer::Confirm;
+                                            let prompt = if lang == Language::Japanese {
+                                                format!(
+                                                    "{}Smart推奨: {:?} (優先度: {:?}) を追加しますか？{}",
+                                                    get_color("yellow", false),
+                                                    target_path,
+                                                    *result.priority(),
+                                                    get_color("reset", false)
+                                                )
+                                            } else {
+                                                format!(
+                                                    "{}Smart recommends: Add {:?} (priority: {:?})?{}",
+                                                    get_color("yellow", false),
+                                                    target_path,
+                                                    *result.priority(),
+                                                    get_color("reset", false)
+                                                )
+                                            };
+
+                                            Confirm::new().with_prompt(prompt).interact()?
                                         };
 
-                                        if !Confirm::new().with_prompt(prompt).interact()? {
+                                        if !should_continue {
                                             continue;
                                         }
                                     }
