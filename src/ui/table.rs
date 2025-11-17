@@ -338,7 +338,7 @@ mod tests {
         let theme = ColorTheme::auto();
 
         // パニックしないことを確認
-        display_targets(&targets, &theme);
+        display_targets(&targets, &theme, Language::Japanese);
     }
 
     #[test]
@@ -347,7 +347,7 @@ mod tests {
         let theme = ColorTheme::auto();
 
         // パニックしないことを確認
-        display_history(&history, &theme);
+        display_history(&history, &theme, Language::Japanese);
     }
 
     #[test]
@@ -361,7 +361,7 @@ mod tests {
         let theme = ColorTheme::auto();
 
         // パニックしないことを確認
-        display_targets(&targets, &theme);
+        display_targets(&targets, &theme, Language::Japanese);
     }
 
     #[test]
@@ -374,7 +374,7 @@ mod tests {
         )];
         let theme = ColorTheme::auto();
 
-        display_targets(&targets, &theme);
+        display_targets(&targets, &theme, Language::Japanese);
     }
 
     #[test]
@@ -387,7 +387,7 @@ mod tests {
         )];
         let theme = ColorTheme::auto();
 
-        display_targets(&targets, &theme);
+        display_targets(&targets, &theme, Language::Japanese);
     }
 
     #[test]
@@ -412,7 +412,7 @@ mod tests {
         ];
         let theme = ColorTheme::auto();
 
-        display_targets(&targets, &theme);
+        display_targets(&targets, &theme, Language::Japanese);
     }
 
     #[test]
@@ -426,7 +426,7 @@ mod tests {
         target.exclude_patterns = vec!["*.tmp".to_string(), "node_modules".to_string()];
 
         let theme = ColorTheme::auto();
-        display_targets(&[target], &theme);
+        display_targets(&[target], &theme, Language::Japanese);
     }
 
     #[test]
@@ -448,7 +448,7 @@ mod tests {
         }];
         let theme = ColorTheme::auto();
 
-        display_history(&history, &theme);
+        display_history(&history, &theme, Language::Japanese);
     }
 
     #[test]
@@ -470,7 +470,7 @@ mod tests {
         }];
         let theme = ColorTheme::auto();
 
-        display_history(&history, &theme);
+        display_history(&history, &theme, Language::Japanese);
     }
 
     #[test]
@@ -508,36 +508,43 @@ mod tests {
         ];
         let theme = ColorTheme::auto();
 
-        display_history(&history, &theme);
+        display_history(&history, &theme, Language::Japanese);
     }
 
     #[test]
     fn test_display_backup_result_all_success() {
         let theme = ColorTheme::auto();
-        display_backup_result(100, 100, 0, 1_048_576, &theme);
+        display_backup_result(100, 100, 0, 1_048_576, &theme, Language::Japanese);
     }
 
     #[test]
     fn test_display_backup_result_with_failures() {
         let theme = ColorTheme::auto();
-        display_backup_result(100, 95, 5, 1_048_576, &theme);
+        display_backup_result(100, 95, 5, 1_048_576, &theme, Language::Japanese);
     }
 
     #[test]
     fn test_display_backup_result_all_failed() {
         let theme = ColorTheme::auto();
-        display_backup_result(10, 0, 10, 0, &theme);
+        display_backup_result(10, 0, 10, 0, &theme, Language::Japanese);
     }
 
     #[test]
     fn test_display_backup_result_zero_files() {
         let theme = ColorTheme::auto();
-        display_backup_result(0, 0, 0, 0, &theme);
+        display_backup_result(0, 0, 0, 0, &theme, Language::Japanese);
     }
 
     #[test]
     fn test_display_backup_result_large_numbers() {
         let theme = ColorTheme::auto();
-        display_backup_result(10_000, 9_999, 1, 1_099_511_627_776, &theme);
+        display_backup_result(
+            10_000,
+            9_999,
+            1,
+            1_099_511_627_776,
+            &theme,
+            Language::Japanese,
+        );
     }
 }

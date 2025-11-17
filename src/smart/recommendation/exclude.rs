@@ -111,6 +111,7 @@ struct ExcludePattern {
 #[derive(Debug)]
 pub struct ExcludeRecommendationEngine {
     patterns: Vec<ExcludePattern>,
+    #[allow(dead_code)]
     lang: Language,
 }
 

@@ -172,7 +172,7 @@ fn display_statistics(theme: &ColorTheme, lang: crate::i18n::Language) -> Result
     ]);
     if failed_backups > 0 {
         history_table.add_row(vec![
-            Cell::new(&format!("  {}", get_message(MessageKey::FailedLabel, lang))),
+            Cell::new(format!("  {}", get_message(MessageKey::FailedLabel, lang))),
             Cell::new(failed_backups.to_string())
                 .fg(Color::Red)
                 .set_alignment(CellAlignment::Right),
