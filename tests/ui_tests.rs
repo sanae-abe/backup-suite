@@ -13,6 +13,7 @@
 /// 目的: Phase 1 カバレッジ目標 51.11% → 66-70% 達成
 use backup_suite::core::history::BackupStatus;
 use backup_suite::core::{BackupHistory, Priority, Target};
+use backup_suite::i18n::Language;
 use backup_suite::ui::dashboard;
 use chrono::{Duration, Utc};
 use std::fs;
@@ -463,7 +464,7 @@ fn test_display_targets_with_data() {
     let theme = ColorTheme::auto();
 
     // パニックしないことを確認（実際の出力は目視確認）
-    display_targets(&targets, &theme);
+    display_targets(&targets, &theme, Language::Japanese);
 }
 
 /// display_history のテスト - データあり
@@ -509,7 +510,7 @@ fn test_display_history_with_data() {
     let theme = ColorTheme::auto();
 
     // パニックしないことを確認
-    display_history(&history, &theme);
+    display_history(&history, &theme, Language::Japanese);
 }
 
 /// display_backup_result のテスト
