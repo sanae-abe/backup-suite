@@ -4,6 +4,14 @@
 //! Default language: English
 //! Supported languages: English, Japanese, Simplified Chinese, Traditional Chinese
 
+use std::sync::OnceLock;
+
+/// Application version string (generated once at runtime)
+fn app_version() -> &'static str {
+    static VERSION_STRING: OnceLock<String> = OnceLock::new();
+    VERSION_STRING.get_or_init(|| format!("Backup Suite v{}", env!("CARGO_PKG_VERSION")))
+}
+
 /// Supported languages
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Language {
@@ -564,7 +572,7 @@ impl MessageKey {
     fn get_en(&self) -> &'static str {
         match self {
             // Version and title
-            MessageKey::AppVersion => "Backup Suite v1.0.0",
+            MessageKey::AppVersion => app_version(),
             MessageKey::AppTitle => {
                 "Fast Local Backup Tool - Written in Rust, Type-safe, High-performance"
             }
@@ -1029,7 +1037,7 @@ impl MessageKey {
     fn get_ja(&self) -> &'static str {
         match self {
             // Version and title
-            MessageKey::AppVersion => "Backup Suite v1.0.0",
+            MessageKey::AppVersion => app_version(),
             MessageKey::AppTitle => "高速ローカルバックアップツール - Rust製・型安全・高性能",
             MessageKey::AppDescription => "Backup Suite - 高速ローカルバックアップツール",
 
@@ -1927,25 +1935,25 @@ mod tests {
         // Test English
         assert_eq!(
             get_message(MessageKey::AppVersion, Language::English),
-            "Backup Suite v1.0.0"
+            app_version()
         );
 
         // Test Japanese
         assert_eq!(
             get_message(MessageKey::AppVersion, Language::Japanese),
-            "Backup Suite v1.0.0"
+            app_version()
         );
 
         // Test Simplified Chinese
         assert_eq!(
             get_message(MessageKey::AppVersion, Language::SimplifiedChinese),
-            "Backup Suite v1.0.0"
+            app_version()
         );
 
         // Test Traditional Chinese
         assert_eq!(
             get_message(MessageKey::AppVersion, Language::TraditionalChinese),
-            "Backup Suite v1.0.0"
+            app_version()
         );
 
         // Test different messages

@@ -76,7 +76,7 @@ fn get_color(color_code: &str, no_color: bool) -> &'static str {
 #[derive(Parser)]
 #[command(name = "backup-suite")]
 #[command(about = "Backup Suite - 高速ローカルバックアップツール")]
-#[command(version = "1.0.0")]
+#[command(version = env!("CARGO_PKG_VERSION"))]
 #[command(disable_version_flag = true)]
 #[command(disable_help_subcommand = true)]
 struct Cli {
@@ -3918,7 +3918,9 @@ fn main() -> Result<()> {
             }
         }
         None => {
-            // clap が自動でヘルプを表示
+            // 引数なし実行時はヘルプを表示
+            Cli::command().print_help()?;
+            println!(); // 改行
         }
     }
 
