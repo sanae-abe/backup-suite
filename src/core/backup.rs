@@ -535,8 +535,8 @@ impl BackupRunner {
                 get_message(MessageKey::DryRunMode, self.lang)
                     .replace("{}", &total_files.to_string())
             );
-            for (_source, _dest) in &files_to_backup {
-                println!("  {} → {}", _source.display(), _dest.display());
+            for (source, dest) in &files_to_backup {
+                println!("  {} → {}", source.display(), dest.display());
             }
             return Ok(BackupResult {
                 total_files,

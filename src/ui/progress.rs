@@ -356,7 +356,7 @@ impl BackupProgress {
                     "速度: {:.1} 檔案/秒, {:.2} MB/秒 | 總計: {:.2} MB",
                     files_per_sec, mb_per_sec, total_mb
                 ),
-                _ => format!(
+                crate::i18n::Language::English => format!(
                     "Speed: {:.1} files/sec, {:.2} MB/sec | Total: {:.2} MB",
                     files_per_sec, mb_per_sec, total_mb
                 ),
