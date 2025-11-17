@@ -22,9 +22,7 @@ jobs:
         cp target/release/backup-suite /usr/local/bin/
 
     - name: Install BATS
-      run: |
-        npm install -g bats
-        bats --version
+      uses: bats-core/bats-action@2.0.0
 
     - name: Setup test environment
       run: |
