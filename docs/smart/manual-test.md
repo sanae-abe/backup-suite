@@ -36,14 +36,14 @@ mkdir -p ~/.local/share/backup-suite/backups
 ```bash
 backup-suite --version
 # 期待値: Backup Suite v1.0.0
-#         AES-256暗号化 & AI搭載のインテリジェントバックアップ
+#         AES-256暗号化 & Smart搭載のインテリジェントバックアップ
 ```
 
 ---
 
 ## ✅ テスト項目
 
-### Test 1: AI helpコマンド
+### Test 1: Smart helpコマンド
 
 **目的**: Smart機能のヘルプ表示確認
 
@@ -53,12 +53,12 @@ backup-suite smart help
 
 **期待される出力**:
 ```
-🤖 AIコマンド ヘルプ
+🤖 Smartコマンド ヘルプ
 
   detect           バックアップ履歴の異常検知
   analyze          ファイル重要度分析
   suggest-exclude  除外パターン提案
-  auto-configure   AIによる自動設定
+  auto-configure   Smartによる自動設定
 
 使用例:
   # 直近7日間の異常検知
@@ -67,7 +67,7 @@ backup-suite smart help
   # ファイル重要度分析
   backup-suite smart analyze /path/to/file
 
-  # AI除外推奨を取得
+  # Smart除外推奨を取得
   backup-suite smart suggest-exclude /path/to/dir
 ```
 
@@ -78,7 +78,7 @@ backup-suite smart help
 
 ---
 
-### Test 2: AI異常検知 (detect)
+### Test 2: Smart異常検知 (detect)
 
 **目的**: バックアップ履歴の異常検知機能
 
@@ -126,7 +126,7 @@ if (Test-Path "$historyPath.backup") {
 
 **期待される出力**:
 ```
-🤖 AI異常検知
+🤖 Smart異常検知
 過去7日間のバックアップを分析中...
 
 ⚠️  データが不足しています（最低3件必要、0件しかありません）
@@ -150,7 +150,7 @@ backup-suite smart detect --days 7
 
 **期待される出力**:
 ```
-🤖 AI異常検知
+🤖 Smart異常検知
 
 異常は検出されませんでした
 または
@@ -163,7 +163,7 @@ backup-suite smart detect --days 7
 
 ---
 
-### Test 3: AI ファイル重要度分析 (analyze)
+### Test 3: Smart ファイル重要度分析 (analyze)
 
 **目的**: ファイルの重要度を分析
 
@@ -175,7 +175,7 @@ backup-suite smart analyze ~/backup-suite-test/project/src/index.js
 
 **期待される出力**:
 ```
-🤖 AI ファイル重要度分析
+🤖 Smart ファイル重要度分析
 
 ファイル: ~/backup-suite-test/project/src/index.js
 重要度: 高 (High)
@@ -194,7 +194,7 @@ backup-suite smart analyze ~/backup-suite-test/project/.DS_Store
 
 **期待される出力**:
 ```
-🤖 AI ファイル重要度分析
+🤖 Smart ファイル重要度分析
 パス: "/Users/sanae.abe/backup-suite-test/project/.DS_Store"
 
   重要度スコア: 5/100
@@ -225,7 +225,7 @@ backup-suite smart analyze /nonexistent/file.txt
 
 ---
 
-### Test 4: AI 除外パターン推奨 (suggest-exclude)
+### Test 4: Smart 除外パターン推奨 (suggest-exclude)
 
 **目的**: プロジェクトディレクトリの除外パターンを推奨
 
@@ -237,7 +237,7 @@ backup-suite smart suggest-exclude ~/backup-suite-test/project
 
 **期待される出力**:
 ```
-🤖 AI除外パターン提案
+🤖 Smart除外パターン提案
 パス: "/Users/sanae.abe/backup-suite-test/project"
 
 +--------------+--------+--------------+------------------------------------------------+
@@ -266,7 +266,7 @@ backup-suite smart suggest-exclude ~/backup-suite-test/project --confidence 0.6
 
 **期待される出力**:
 ```
-🤖 AI除外パターン提案
+🤖 Smart除外パターン提案
 パス: "/Users/sanae.abe/backup-suite-test/project"
 
 +--------------+--------+--------------+-------------------------------------------------+
@@ -289,9 +289,9 @@ backup-suite smart suggest-exclude ~/backup-suite-test/project --confidence 0.6
 
 ---
 
-### Test 5: AI 自動設定 (auto-configure)
+### Test 5: Smart 自動設定 (auto-configure)
 
-**目的**: AIによる自動バックアップ設定
+**目的**: Smartによる自動バックアップ設定
 
 **前提条件**: プロジェクトディレクトリが未登録の状態
 
@@ -308,7 +308,7 @@ backup-suite smart auto-configure ~/backup-suite-test/project
 
 **期待される出力**:
 ```
-🤖 AI自動設定
+🤖 Smart自動設定
 分析中: "/Users/sanae.abe/backup-suite-test/project"
   推奨優先度: High (スコア: 90)
   ✅ 設定に追加しました
@@ -335,7 +335,7 @@ backup-suite smart auto-configure ~/backup-suite-test/project2 --dry-run
 
 **期待される出力**:
 ```
-🤖 AI自動設定
+🤖 Smart自動設定
 [ドライラン モード]
 
 分析中: "/Users/sanae.abe/backup-suite-test/project2"
@@ -427,7 +427,7 @@ LANG=en_US.UTF-8 backup-suite smart help
 
 **期待される出力**:
 ```
-🤖 AI Commands
+🤖 Smart Commands
 
   detect           Detect anomalies in backup history
   analyze          Analyze file importance
@@ -445,7 +445,7 @@ LANG=zh_CN.UTF-8 backup-suite smart help
 
 **期待される出力**:
 ```
-🤖 AI命令
+🤖 Smart命令
 
   detect           检测备份历史中的异常
   analyze          分析文件重要性
@@ -517,7 +517,7 @@ backup-suite smart analyze ~/.ssh/id_rsa 2>&1 | grep -i "password\|key\|secret"
 
 | # | テスト項目 | 結果 | 備考 |
 |---|----------|------|------|
-| 1 | AI helpコマンド | ☐ Pass / ☐ Fail |  |
+| 1 | Smart helpコマンド | ☐ Pass / ☐ Fail |  |
 | 2-1 | 異常検知（データなし） | ☐ Pass / ☐ Fail |  |
 | 2-2 | 異常検知（通常） | ☐ Pass / ☐ Fail |  |
 | 3-1 | 重要度分析（ソースコード） | ☐ Pass / ☐ Fail |  |
