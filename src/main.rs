@@ -2280,26 +2280,42 @@ fn main() -> Result<()> {
                 get_message(MessageKey::Targets, lang),
                 config.targets.len()
             );
+            // 各優先度の正確な件数をカウント（== 比較）
+            let high_count = config
+                .targets
+                .iter()
+                .filter(|t| t.priority == Priority::High)
+                .count();
+            let medium_count = config
+                .targets
+                .iter()
+                .filter(|t| t.priority == Priority::Medium)
+                .count();
+            let low_count = config
+                .targets
+                .iter()
+                .filter(|t| t.priority == Priority::Low)
+                .count();
             println!(
                 "    {}{}{}: {}",
                 get_color("red", false),
                 get_message(MessageKey::High, lang),
                 get_color("reset", false),
-                config.filter_by_priority(&Priority::High).len()
+                high_count
             );
             println!(
                 "    {}{}{}: {}",
                 get_color("yellow", false),
                 get_message(MessageKey::Medium, lang),
                 get_color("reset", false),
-                config.filter_by_priority(&Priority::Medium).len()
+                medium_count
             );
             println!(
                 "    {}{}{}: {}",
                 get_color("gray", false),
                 get_message(MessageKey::Low, lang),
                 get_color("reset", false),
-                config.filter_by_priority(&Priority::Low).len()
+                low_count
             );
         }
         Some(Commands::History {

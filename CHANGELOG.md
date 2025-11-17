@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2025-01-17
+
+### Fixed - 🐛 バグ修正
+
+#### 優先度カウント修正
+- **status コマンド**: 優先度別カウントの誤表示を修正
+  - 修正前: Low 優先度が全ターゲット数（9件）を表示
+  - 修正後: 各優先度の正確な件数を表示（High: 0, Medium: 9, Low: 0）
+  - `src/main.rs`: `filter_by_priority` (>= 比較) から直接カウント (== 比較) に変更
+- **dashboard コマンド**: 優先度別統計の誤表示を修正
+  - `src/ui/dashboard.rs`: 同様の修正を適用
+
+#### CI/CD修正
+- **Clippy strict mode violations**: used_underscore_binding, match_wildcard_for_single_variants 修正
+  - `src/core/backup.rs`: `_source`, `_dest` → `source`, `dest` に変更
+  - `src/ui/progress.rs`: wildcard `_` → `Language::English` に変更
+- **CI workflow cleanup**: 未使用の Enhanced CLI Testing workflow 削除
+  - BATS テストファイル未実装のため削除
+  - 既存の cli-testing.yml で包括的にカバー済み
+
 ### Security - 🔒 セキュリティ強化（バリデーション）
 
 #### パス検証の徹底

@@ -75,11 +75,23 @@ fn display_statistics(theme: &ColorTheme, lang: crate::i18n::Language) -> Result
     let config = Config::load()?;
     let history = BackupHistory::load_all()?;
 
-    // 統計情報の計算
+    // 統計情報の計算（各優先度の正確な件数をカウント）
     let total_targets = config.targets.len();
-    let high_priority = config.filter_by_priority(&Priority::High).len();
-    let medium_priority = config.filter_by_priority(&Priority::Medium).len();
-    let low_priority = config.filter_by_priority(&Priority::Low).len();
+    let high_priority = config
+        .targets
+        .iter()
+        .filter(|t| t.priority == Priority::High)
+        .count();
+    let medium_priority = config
+        .targets
+        .iter()
+        .filter(|t| t.priority == Priority::Medium)
+        .count();
+    let low_priority = config
+        .targets
+        .iter()
+        .filter(|t| t.priority == Priority::Low)
+        .count();
 
     let total_backups = history.len();
     let successful_backups = history.iter().filter(|h| h.success).count();
