@@ -246,13 +246,14 @@ mod tests {
     use std::path::PathBuf;
 
     fn create_failed_history(error_msg: &str) -> BackupHistory {
-        let mut history = BackupHistory::new(PathBuf::from("/tmp/backup"), 100, 1000, false);
+        let mut history =
+            BackupHistory::new(PathBuf::from("/tmp/backup"), 100, 1000, false, false, false);
         history.error_message = Some(error_msg.to_string());
         history
     }
 
     fn create_successful_history() -> BackupHistory {
-        BackupHistory::new(PathBuf::from("/tmp/backup"), 100, 1000, true)
+        BackupHistory::new(PathBuf::from("/tmp/backup"), 100, 1000, true, false, false)
     }
 
     #[test]

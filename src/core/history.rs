@@ -86,6 +86,8 @@ impl BackupHistory {
     /// * `total_files` - バックアップしたファイル数
     /// * `total_bytes` - バックアップした総バイト数
     /// * `success` - 成功フラグ
+    /// * `compressed` - 圧縮されているか
+    /// * `encrypted` - 暗号化されているか
     ///
     /// # 戻り値
     ///
@@ -101,11 +103,20 @@ impl BackupHistory {
     ///     PathBuf::from("/backup/backup_20250105_120000"),
     ///     100,
     ///     500000,
+    ///     true,
+    ///     true,
     ///     true
     /// );
     /// ```
     #[must_use]
-    pub fn new(backup_dir: PathBuf, total_files: usize, total_bytes: u64, success: bool) -> Self {
+    pub fn new(
+        backup_dir: PathBuf,
+        total_files: usize,
+        total_bytes: u64,
+        success: bool,
+        compressed: bool,
+        encrypted: bool,
+    ) -> Self {
         Self {
             timestamp: Utc::now(),
             backup_dir,
@@ -118,8 +129,8 @@ impl BackupHistory {
             },
             total_files,
             total_bytes,
-            compressed: false,
-            encrypted: false,
+            compressed,
+            encrypted,
             duration_ms: 0,
             error_message: None,
             success,

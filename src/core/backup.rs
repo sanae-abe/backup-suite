@@ -767,6 +767,8 @@ impl BackupRunner {
             result.total_files,
             result.total_bytes,
             success,
+            self.compression_type != CompressionType::None,
+            self.enable_encryption,
         )) {
             eprintln!("履歴保存失敗: {e}");
         }

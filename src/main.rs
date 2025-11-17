@@ -1094,15 +1094,7 @@ fn print_smart_help(lang: Language) {
         "{}{} {}{}",
         magenta,
         get_message(MessageKey::SmartCommands, lang),
-        if lang == Language::English {
-            "Help"
-        } else if lang == Language::Japanese {
-            "ヘルプ"
-        } else if lang == Language::SimplifiedChinese {
-            "帮助"
-        } else {
-            "說明"
-        },
+        get_message(MessageKey::HelpLabel, lang),
         reset
     );
     println!();

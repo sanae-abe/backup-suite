@@ -236,7 +236,10 @@ pub enum MessageKey {
     SmartAutoConfigureSuccess,
     SmartErrorNotEnabled,
     SmartErrorInsufficientData,
+    SmartErrorInsufficientDataDetailed,
     SmartErrorAnalysisFailed,
+    SmartErrorAnalysisLabel,
+    HelpLabel,
 
     // Options
     Options,
@@ -736,7 +739,12 @@ impl MessageKey {
                 "AI features are not enabled. Compile with --features ai"
             }
             MessageKey::SmartErrorInsufficientData => "Insufficient data for Smart analysis",
+            MessageKey::SmartErrorInsufficientDataDetailed => {
+                "Insufficient data (minimum 3 entries required, found {})"
+            }
             MessageKey::SmartErrorAnalysisFailed => "Smart analysis failed",
+            MessageKey::SmartErrorAnalysisLabel => "Analysis error",
+            MessageKey::HelpLabel => "Help",
 
             // Options
             MessageKey::Options => "Options:",
@@ -1295,7 +1303,12 @@ impl MessageKey {
                 "Smart機能が有効化されていません。--features smart でコンパイルしてください"
             }
             MessageKey::SmartErrorInsufficientData => "Smart分析に必要なデータが不足しています",
+            MessageKey::SmartErrorInsufficientDataDetailed => {
+                "データが不足しています（最低3件必要、{}件しかありません）"
+            }
             MessageKey::SmartErrorAnalysisFailed => "Smart分析に失敗しました",
+            MessageKey::SmartErrorAnalysisLabel => "分析エラー",
+            MessageKey::HelpLabel => "ヘルプ",
 
             // Options
             MessageKey::Options => "オプション:",
@@ -1761,7 +1774,12 @@ impl MessageKey {
             MessageKey::SmartAutoConfigureSuccess => "自动配置成功完成",
             MessageKey::SmartErrorNotEnabled => "Smart功能未启用。请使用 --features smart 编译",
             MessageKey::SmartErrorInsufficientData => "Smart分析数据不足",
+            MessageKey::SmartErrorInsufficientDataDetailed => {
+                "数据不足（至少需要3条记录，只找到{}条）"
+            }
             MessageKey::SmartErrorAnalysisFailed => "Smart分析失败",
+            MessageKey::SmartErrorAnalysisLabel => "分析错误",
+            MessageKey::HelpLabel => "帮助",
             MessageKey::ExampleSmartDetect => "# 检测最近7天的异常",
             MessageKey::ExampleSmartAnalyze => "# 分析文件重要性",
             MessageKey::ExampleSmartSuggestExclude => "# 获取Smart排除建议",
@@ -2100,7 +2118,12 @@ impl MessageKey {
             MessageKey::SmartAutoConfigureSuccess => "自動設定成功完成",
             MessageKey::SmartErrorNotEnabled => "Smart功能未啟用。請使用 --features smart 編譯",
             MessageKey::SmartErrorInsufficientData => "Smart分析資料不足",
+            MessageKey::SmartErrorInsufficientDataDetailed => {
+                "資料不足（至少需要3筆記錄，只找到{}筆）"
+            }
             MessageKey::SmartErrorAnalysisFailed => "Smart分析失敗",
+            MessageKey::SmartErrorAnalysisLabel => "分析錯誤",
+            MessageKey::HelpLabel => "說明",
             MessageKey::ExampleSmartDetect => "# 偵測最近7天的異常",
             MessageKey::ExampleSmartAnalyze => "# 分析檔案重要性",
             MessageKey::ExampleSmartSuggestExclude => "# 取得Smart排除建議",

@@ -1,6 +1,6 @@
 [package]
 name = "backup-suite"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 authors = ["Backup Suite Contributors"]
 description = "Fast, secure & intelligent local backup tool with AES-256 encryption and Zstd compression"

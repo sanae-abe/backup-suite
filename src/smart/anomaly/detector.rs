@@ -361,7 +361,7 @@ mod tests {
     use std::path::PathBuf;
 
     fn create_mock_history(size: u64) -> BackupHistory {
-        BackupHistory::new(PathBuf::from("/tmp/backup"), 100, size, true)
+        BackupHistory::new(PathBuf::from("/tmp/backup"), 100, size, true, false, false)
     }
 
     #[test]

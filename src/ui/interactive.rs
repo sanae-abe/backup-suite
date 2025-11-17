@@ -324,15 +324,28 @@ pub fn multi_select(message: &str, items: &[&str]) -> Result<Vec<usize>> {
 /// }
 /// # Ok::<(), anyhow::Error>(())
 /// ```
-pub fn confirm_backup(file_count: usize, destination: &str) -> Result<bool> {
+pub fn confirm_backup(
+    file_count: usize,
+    destination: &str,
+    lang: crate::i18n::Language,
+) -> Result<bool> {
+    use crate::i18n::{get_message, MessageKey};
+
     println!("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    println!("📦 バックアップ実行確認");
+    println!("{}", get_message(MessageKey::ConfirmBackupTitle, lang));
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-    println!("対象ファイル数: {file_count} ファイル");
-    println!("バックアップ先: {destination}");
+    println!(
+        "{}",
+        get_message(MessageKey::ConfirmBackupTargetFiles, lang)
+            .replace("{}", &file_count.to_string())
+    );
+    println!(
+        "{}",
+        get_message(MessageKey::ConfirmBackupDestination, lang).replace("{}", destination)
+    );
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    confirm("バックアップを実行しますか？", true)
+    confirm(&get_message(MessageKey::PromptBackupConfirm, lang), true)
 }
 
 /// 古いバックアップの削除確認
@@ -363,12 +376,21 @@ pub fn confirm_backup(file_count: usize, destination: &str) -> Result<bool> {
 /// }
 /// # Ok::<(), anyhow::Error>(())
 /// ```
-pub fn confirm_cleanup(count: usize, keep_days: u32) -> Result<bool> {
-    println!("\n🗑️  古いバックアップの削除");
-    println!("削除対象: {count} 個のバックアップ");
-    println!("保持期間: {keep_days} 日");
+pub fn confirm_cleanup(count: usize, keep_days: u32, lang: crate::i18n::Language) -> Result<bool> {
+    use crate::i18n::{get_message, MessageKey};
 
-    confirm("削除を実行しますか？", false)
+    println!("\n{}", get_message(MessageKey::ConfirmCleanupTitle, lang));
+    println!(
+        "{}",
+        get_message(MessageKey::ConfirmCleanupTargetCount, lang).replace("{}", &count.to_string())
+    );
+    println!(
+        "{}",
+        get_message(MessageKey::ConfirmCleanupRetentionDays, lang)
+            .replace("{}", &keep_days.to_string())
+    );
+
+    confirm(&get_message(MessageKey::PromptConfirmDelete, lang), false)
 }
 
 /// 優先度選択プロンプト

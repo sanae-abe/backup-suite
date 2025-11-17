@@ -479,10 +479,10 @@ fn display_warnings_summary(theme: &ColorTheme, lang: crate::i18n::Language) -> 
     // バックアップ対象が存在しない場合の警告
     for target in &config.targets {
         if !target.path.exists() {
-            warnings.push(format!(
-                "バックアップ対象が存在しません: {}",
-                target.path.display()
-            ));
+            warnings.push(
+                get_message(MessageKey::WarningTargetNotExists, lang)
+                    .replace("{}", &target.path.display().to_string()),
+            );
         }
     }
 
@@ -492,18 +492,22 @@ fn display_warnings_summary(theme: &ColorTheme, lang: crate::i18n::Language) -> 
         let days_since = Utc::now().signed_duration_since(last.timestamp).num_days();
 
         if days_since > 7 {
-            warnings.push(format!(
-                "最後のバックアップから{days_since}日経過しています"
-            ));
+            warnings.push(
+                get_message(MessageKey::WarningDaysSinceLastBackup, lang)
+                    .replace("{}", &days_since.to_string()),
+            );
         }
     } else {
-        warnings.push("まだ一度もバックアップが実行されていません".to_string());
+        warnings.push(get_message(MessageKey::WarningNoBackupYet, lang).to_string());
     }
 
     // 失敗したバックアップの警告
     let failed_count = history.iter().filter(|h| !h.success).count();
     if failed_count > 0 {
-        warnings.push(format!("失敗したバックアップが{failed_count}件あります"));
+        warnings.push(
+            get_message(MessageKey::WarningFailedBackups, lang)
+                .replace("{}", &failed_count.to_string()),
+        );
     }
 
     // ディスク容量警告
@@ -512,9 +516,10 @@ fn display_warnings_summary(theme: &ColorTheme, lang: crate::i18n::Language) -> 
         if let Ok(Some((total, available))) = get_disk_info(&config.backup.destination) {
             let available_percent = (available as f64 / total as f64) * 100.0;
             if available_percent < 10.0 {
-                warnings.push(format!(
-                    "ディスク空き容量が少なくなっています ({available_percent:.1}%)"
-                ));
+                warnings.push(
+                    get_message(MessageKey::WarningLowDiskSpace, lang)
+                        .replace("{:.1}", &format!("{:.1}", available_percent)),
+                );
             }
         }
     }

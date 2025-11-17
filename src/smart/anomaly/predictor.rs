@@ -385,7 +385,8 @@ mod tests {
     use std::path::PathBuf;
 
     fn create_mock_history_with_timestamp(size: u64, days_ago: i64) -> BackupHistory {
-        let mut history = BackupHistory::new(PathBuf::from("/tmp/backup"), 100, size, true);
+        let mut history =
+            BackupHistory::new(PathBuf::from("/tmp/backup"), 100, size, true, false, false);
         history.timestamp = Utc::now() - Duration::days(days_ago);
         history
     }
