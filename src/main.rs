@@ -2917,18 +2917,21 @@ fn main() -> Result<()> {
                             }
                             _ => {
                                 let mut table = Table::new();
-                                table.set_header(vec![
-                                    if lang == Language::Japanese {
-                                        "項目"
-                                    } else {
-                                        "Item"
-                                    },
-                                    if lang == Language::Japanese {
-                                        "値"
-                                    } else {
-                                        "Value"
-                                    },
-                                ]);
+                                table
+                                    .load_preset(UTF8_FULL)
+                                    .set_content_arrangement(ContentArrangement::Dynamic)
+                                    .set_header(vec![
+                                        Cell::new(if lang == Language::Japanese {
+                                            "項目"
+                                        } else {
+                                            "Item"
+                                        }),
+                                        Cell::new(if lang == Language::Japanese {
+                                            "値"
+                                        } else {
+                                            "Value"
+                                        }),
+                                    ]);
                                 table.add_row(vec!["Z-score", &format!("{:.2}", result.z_score())]);
                                 table.add_row(vec![
                                     if lang == Language::Japanese {
@@ -3093,18 +3096,21 @@ fn main() -> Result<()> {
                         Ok(result) => {
                             if detailed {
                                 let mut table = Table::new();
-                                table.set_header(vec![
-                                    if lang == Language::Japanese {
-                                        "項目"
-                                    } else {
-                                        "Item"
-                                    },
-                                    if lang == Language::Japanese {
-                                        "値"
-                                    } else {
-                                        "Value"
-                                    },
-                                ]);
+                                table
+                                    .load_preset(UTF8_FULL)
+                                    .set_content_arrangement(ContentArrangement::Dynamic)
+                                    .set_header(vec![
+                                        Cell::new(if lang == Language::Japanese {
+                                            "項目"
+                                        } else {
+                                            "Item"
+                                        }),
+                                        Cell::new(if lang == Language::Japanese {
+                                            "値"
+                                        } else {
+                                            "Value"
+                                        }),
+                                    ]);
                                 table.add_row(vec![
                                     if lang == Language::Japanese {
                                         "重要度スコア"
