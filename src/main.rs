@@ -1150,31 +1150,19 @@ fn print_smart_help(lang: Language) {
     println!();
     println!(
         "  {}",
-        if lang == Language::Japanese {
-            "# Smart自動設定（サブディレクトリを個別に評価・除外パターン自動適用）"
-        } else {
-            "# Smart auto-configure (evaluate subdirectories individually with auto-exclusion)"
-        }
+        get_message(MessageKey::ExampleSmartAutoConfigureComment, lang)
     );
     println!("  backup-suite smart auto-configure ~/projects");
     println!();
     println!(
         "  {}",
-        if lang == Language::Japanese {
-            "# ドライラン（確認のみ、設定適用なし）"
-        } else {
-            "# Dry-run (show recommendations only)"
-        }
+        get_message(MessageKey::ExampleSmartDryRunComment, lang)
     );
     println!("  backup-suite smart auto-configure ~/projects --dry-run");
     println!();
     println!(
         "  {}",
-        if lang == Language::Japanese {
-            "# 対話モード（各サブディレクトリと除外パターンを確認）"
-        } else {
-            "# Interactive mode (confirm each subdirectory and exclusion pattern)"
-        }
+        get_message(MessageKey::ExampleSmartInteractiveComment, lang)
     );
     println!("  backup-suite smart auto-configure ~/projects --interactive");
     println!();

@@ -258,6 +258,9 @@ pub enum MessageKey {
     ExampleSmartDetect,
     ExampleSmartAnalyze,
     ExampleSmartSuggestExclude,
+    ExampleSmartAutoConfigureComment,
+    ExampleSmartDryRunComment,
+    ExampleSmartInteractiveComment,
 
     // Detailed info
     DetailedInfo,
@@ -763,6 +766,9 @@ impl MessageKey {
             MessageKey::ExampleSmartDetect => "# Detect anomalies in last 7 days",
             MessageKey::ExampleSmartAnalyze => "# Analyze file importance",
             MessageKey::ExampleSmartSuggestExclude => "# Get Smart exclude suggestions",
+            MessageKey::ExampleSmartAutoConfigureComment => "# Smart auto-configure (evaluate subdirectories individually with auto-exclusion)",
+            MessageKey::ExampleSmartDryRunComment => "# Dry-run (show recommendations only)",
+            MessageKey::ExampleSmartInteractiveComment => "# Interactive mode (confirm each subdirectory and exclusion pattern)",
 
             // Detailed info
             MessageKey::DetailedInfo => "Detailed Information:",
@@ -1327,6 +1333,9 @@ impl MessageKey {
             MessageKey::ExampleSmartDetect => "# 直近7日間の異常検知",
             MessageKey::ExampleSmartAnalyze => "# ファイル重要度分析",
             MessageKey::ExampleSmartSuggestExclude => "# Smart除外推奨を取得",
+            MessageKey::ExampleSmartAutoConfigureComment => "# Smart自動設定（サブディレクトリを個別に評価・除外パターン自動適用）",
+            MessageKey::ExampleSmartDryRunComment => "# ドライラン（確認のみ、設定適用なし）",
+            MessageKey::ExampleSmartInteractiveComment => "# 対話モード（各サブディレクトリと除外パターンを確認）",
 
             // Detailed info
             MessageKey::DetailedInfo => "詳細情報:",
@@ -1783,6 +1792,11 @@ impl MessageKey {
             MessageKey::ExampleSmartDetect => "# 检测最近7天的异常",
             MessageKey::ExampleSmartAnalyze => "# 分析文件重要性",
             MessageKey::ExampleSmartSuggestExclude => "# 获取Smart排除建议",
+            MessageKey::ExampleSmartAutoConfigureComment => {
+                "# Smart自动配置（单独评估子目录并自动排除）"
+            }
+            MessageKey::ExampleSmartDryRunComment => "# 演习模式（仅显示建议）",
+            MessageKey::ExampleSmartInteractiveComment => "# 交互模式（确认每个子目录和排除模式）",
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智能备份",
 
             // Status messages
@@ -2127,6 +2141,11 @@ impl MessageKey {
             MessageKey::ExampleSmartDetect => "# 偵測最近7天的異常",
             MessageKey::ExampleSmartAnalyze => "# 分析檔案重要性",
             MessageKey::ExampleSmartSuggestExclude => "# 取得Smart排除建議",
+            MessageKey::ExampleSmartAutoConfigureComment => {
+                "# Smart自動設定（單獨評估子目錄並自動排除）"
+            }
+            MessageKey::ExampleSmartDryRunComment => "# 演習模式（僅顯示建議）",
+            MessageKey::ExampleSmartInteractiveComment => "# 交互模式（確認每個子目錄和排除模式）",
             MessageKey::RustFastTypeSafe => "AES-256加密 & Smart分析功能的智慧備份",
 
             // Status messages
