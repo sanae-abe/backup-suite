@@ -44,6 +44,8 @@ fn create_mock_histories(count: usize, base_size: u64) -> Vec<BackupHistory> {
                 100 + i,
                 size,
                 true,
+                false,
+                false,
             );
             history.timestamp = now - Duration::hours(i as i64);
             history.category = Some("default".to_string());
