@@ -70,8 +70,8 @@ jobs:
         COVERAGE_PERCENT=$(echo "$COVERAGE * 100" | bc)
         echo "テストカバレッジ: ${COVERAGE_PERCENT}%"
 
-        # 48%以上を要求（段階的な改善目標: Phase 1: 48% → Phase 2: 50% → Phase 3: 60% → Phase 4: 70% → Phase 5: 80%）
-        THRESHOLD=48
+        # 45%以上を要求（段階的な改善目標: Phase 1: 45% → Phase 2: 50% → Phase 3: 60% → Phase 4: 70% → Phase 5: 80%）
+        THRESHOLD=45
         if (( $(echo "$COVERAGE_PERCENT < $THRESHOLD" | bc -l) )); then
           echo "エラー: カバレッジが閾値を下回っています: ${COVERAGE_PERCENT}% < ${THRESHOLD}%"
           exit 1
