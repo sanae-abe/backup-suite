@@ -45,7 +45,9 @@ pub enum BackupStatus {
 ///     PathBuf::from("/backup/backup_20250105_120000"),
 ///     150,
 ///     1024000,
-///     true
+///     true,
+///     false,
+///     false
 /// );
 /// BackupHistory::save(&history).unwrap();
 /// ```
@@ -187,7 +189,9 @@ impl BackupHistory {
     ///     PathBuf::from("/backup/backup_20250105_120000"),
     ///     100,
     ///     500000,
-    ///     true
+    ///     true,
+    ///     false,
+    ///     false
     /// );
     /// BackupHistory::save(&history).unwrap();
     /// ```

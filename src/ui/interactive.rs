@@ -318,8 +318,9 @@ pub fn multi_select(message: &str, items: &[&str]) -> Result<Vec<usize>> {
 ///
 /// ```no_run
 /// use backup_suite::ui::interactive::confirm_backup;
+/// use backup_suite::i18n::Language;
 ///
-/// if confirm_backup(150, "/backup/destination")? {
+/// if confirm_backup(150, "/backup/destination", Language::Japanese)? {
 ///     println!("バックアップを開始します");
 /// }
 /// # Ok::<(), anyhow::Error>(())
@@ -370,8 +371,9 @@ pub fn confirm_backup(
 ///
 /// ```no_run
 /// use backup_suite::ui::interactive::confirm_cleanup;
+/// use backup_suite::i18n::Language;
 ///
-/// if confirm_cleanup(5, 30)? {
+/// if confirm_cleanup(5, 30, Language::Japanese)? {
 ///     println!("古いバックアップを削除します");
 /// }
 /// # Ok::<(), anyhow::Error>(())
