@@ -205,7 +205,9 @@ impl BackupHistory {
             history.drain(0..history.len() - 100);
         }
 
-        let content = toml::to_string_pretty(&HistoryFile { history })?;
+        // Windows での PathBuf シリアライゼーション問題を回避するため、
+        // pretty フォーマットを無効化
+        let content = toml::to_string(&HistoryFile { history })?;
 
         // 原子的書き込み: 一時ファイルに書き込んでからリネーム
         // これにより中断時に履歴ファイルが破損しない
