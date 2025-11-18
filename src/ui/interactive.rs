@@ -346,7 +346,7 @@ pub fn confirm_backup(
     );
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    confirm(&get_message(MessageKey::PromptBackupConfirm, lang), true)
+    confirm(get_message(MessageKey::PromptBackupConfirm, lang), true)
 }
 
 /// 古いバックアップの削除確認
@@ -392,7 +392,7 @@ pub fn confirm_cleanup(count: usize, keep_days: u32, lang: crate::i18n::Language
             .replace("{}", &keep_days.to_string())
     );
 
-    confirm(&get_message(MessageKey::PromptConfirmDelete, lang), false)
+    confirm(get_message(MessageKey::PromptConfirmDelete, lang), false)
 }
 
 /// 優先度選択プロンプト
