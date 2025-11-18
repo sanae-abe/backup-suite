@@ -214,7 +214,7 @@ impl BackupHistory {
         let temp_path = log_path.with_extension("toml.tmp");
 
         // ファイルシステムへの同期を保証（データの永続化）
-        // Windows: 書き込みとsyncを一つの操作で行い、権限エラーを回避
+        // Windows: 書き込み → flush → sync で確実にディスクに書き込む
         {
             use std::io::Write;
             let mut file = fs::OpenOptions::new()
@@ -223,6 +223,7 @@ impl BackupHistory {
                 .truncate(true)
                 .open(&temp_path)?;
             file.write_all(content.as_bytes())?;
+            file.flush()?; // バッファを確実にディスクに書き込む（Windows対策）
             file.sync_all()?;
         } // ファイルハンドルがここでドロップされる
 
