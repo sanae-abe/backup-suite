@@ -30,7 +30,7 @@ path = "src/main.rs"
 anyhow = "1.0.100"
 chrono = { version = "0.4.42", features = ["serde"] }
 clap = { version = "4.5", features = ["derive", "cargo"] }
-clap_complete = "4.5.60"
+clap_complete = "4.5.61"
 comfy-table = "7.1.1"
 console = "0.16"
 dialoguer = { version = "0.12", features = ["fuzzy-select"] }
